@@ -21,6 +21,7 @@ set(fppFiles
     stdlib_io_npy_load.fypp
     stdlib_io_npy_save.fypp
     stdlib_kinds.fypp
+    blas/stdlib_blas_constants.fypp
     stdlib_linalg.fypp
     stdlib_linalg_diag.fypp
     stdlib_linalg_least_squares.fypp
@@ -83,22 +84,55 @@ set(fppFiles
 # Preprocessed files to contain preprocessor directives -> .F90
 set(cppFiles
     stdlib_linalg_constants.fypp
-    stdlib_linalg_blas.fypp
     stdlib_linalg_blas_aux.fypp
-    stdlib_linalg_blas_s.fypp
-    stdlib_linalg_blas_d.fypp
-    stdlib_linalg_blas_q.fypp
-    stdlib_linalg_blas_c.fypp
-    stdlib_linalg_blas_z.fypp
-    stdlib_linalg_blas_w.fypp
-    stdlib_linalg_lapack.fypp
+    blas/stdlib_blas_level1.fypp
+    blas/stdlib_blas_level2_gen.fypp
+    blas/stdlib_blas_level2_ban.fypp
+    blas/stdlib_blas_level2_pac.fypp
+    blas/stdlib_blas_level2_sym.fypp
+    blas/stdlib_blas_level2_tri.fypp
+    blas/stdlib_blas_level3_gen.fypp
+    blas/stdlib_blas_level3_sym.fypp
+    blas/stdlib_blas_level3_tri.fypp
+
     stdlib_linalg_lapack_aux.fypp
-    stdlib_linalg_lapack_s.fypp
-    stdlib_linalg_lapack_d.fypp
-    stdlib_linalg_lapack_q.fypp
-    stdlib_linalg_lapack_c.fypp
-    stdlib_linalg_lapack_z.fypp
-    stdlib_linalg_lapack_w.fypp
+    lapack/stdlib_lapack_auxiliary_error.fypp
+    lapack/stdlib_lapack_auxiliary_others.fypp
+    lapack/stdlib_lapack_auxiliary_parameters.fypp
+    lapack/stdlib_lapack_blas_like_base.fypp
+    lapack/stdlib_lapack_blas_like_l1.fypp
+    lapack/stdlib_lapack_blas_like_l2.fypp
+    lapack/stdlib_lapack_blas_like_l3.fypp
+    lapack/stdlib_lapack_blas_like_mnorm.fypp
+    lapack/stdlib_lapack_blas_like_scalar.fypp
+    lapack/stdlib_lapack_cosine_sine.fypp
+    lapack/stdlib_lapack_eigv_comp.fypp
+    lapack/stdlib_lapack_eigv_gen.fypp
+    lapack/stdlib_lapack_eigv_sym_comp.fypp
+    lapack/stdlib_lapack_eigv_sym.fypp
+    lapack/stdlib_lapack_givens_jacobi_rot.fypp
+    lapack/stdlib_lapack_householder_reflectors.fypp
+    lapack/stdlib_lapack_lsq_aux.fypp
+    lapack/stdlib_lapack_lsq_constrained.fypp
+    lapack/stdlib_lapack_lsq_std.fypp
+    lapack/stdlib_lapack_orthogonal_factors_ql.fypp
+    lapack/stdlib_lapack_orthogonal_factors_qr.fypp
+    lapack/stdlib_lapack_orthogonal_factors_rz.fypp
+    lapack/stdlib_lapack_solve_aux.fypp
+    lapack/stdlib_lapack_solve_chol_comp.fypp
+    lapack/stdlib_lapack_solve_chol.fypp
+    lapack/stdlib_lapack_solve_ldl_comp.fypp
+    lapack/stdlib_lapack_solve_ldl.fypp
+    lapack/stdlib_lapack_solve_lu_comp.fypp
+    lapack/stdlib_lapack_solve_lu.fypp
+    lapack/stdlib_lapack_solve_tri_comp.fypp
+    lapack/stdlib_lapack_svd_bidiag_dc.fypp
+    lapack/stdlib_lapack_svd_bidiag_qr.fypp
+    lapack/stdlib_lapack_svd_comp.fypp
+    lapack/stdlib_lapack_svd_drivers.fypp
+
+    stdlib_linalg_blas.fypp
+    stdlib_linalg_lapack.fypp
 )
 
 fypp_f90("${fyppFlags}" "${fppFiles}" outFiles)

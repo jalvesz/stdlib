@@ -1,0 +1,881 @@
+#:include "common.fypp" 
+module stdlib_lapack_blas_like_mnorm
+  use stdlib_linalg_constants
+  use stdlib_linalg_lapack_aux
+  use stdlib_linalg_blas
+  use stdlib_lapack_blas_like_scalar
+  use stdlib_lapack_blas_like_l1
+  implicit none(type,external)
+
+
+  contains
+
+     pure real(sp) function stdlib_clanht( norm, n, d, e )
+     !! CLANHT returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! complex Hermitian tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(sp), intent(in) :: d(*)
+           complex(sp), intent(in) :: e(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(sp) :: anorm, scale, sum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 sum = abs( d( i ) )
+                 if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+                 sum = abs( e( i ) )
+                 if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' .or.stdlib_lsame( norm, 'I' ) ) &
+                     then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( e( 1 ) )
+                 sum = abs( e( n-1 ) )+abs( d( n ) )
+                 if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+                 do i = 2, n - 1
+                    sum = abs( d( i ) )+abs( e( i ) )+abs( e( i-1 ) )
+                    if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              if( n>1 ) then
+                 call stdlib_classq( n-1, e, 1, scale, sum )
+                 sum = 2*sum
+              end if
+              call stdlib_slassq( n, d, 1, scale, sum )
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_clanht = anorm
+           return
+     end function stdlib_clanht
+
+     pure real(dp) function stdlib_zlanht( norm, n, d, e )
+     !! ZLANHT returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! complex Hermitian tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(dp), intent(in) :: d(*)
+           complex(dp), intent(in) :: e(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(dp) :: anorm, scale, sum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 sum =  abs( d( i ) )
+                 if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+                 sum = abs( e( i ) )
+                 if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' .or.stdlib_lsame( norm, 'I' ) ) &
+                     then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( e( 1 ) )
+                 sum = abs( e( n-1 ) )+abs( d( n ) )
+                 if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+                 do i = 2, n - 1
+                    sum = abs( d( i ) )+abs( e( i ) )+abs( e( i-1 ) )
+                    if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              if( n>1 ) then
+                 call stdlib_zlassq( n-1, e, 1, scale, sum )
+                 sum = 2*sum
+              end if
+              call stdlib_dlassq( n, d, 1, scale, sum )
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_zlanht = anorm
+           return
+     end function stdlib_zlanht
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure real(${ck}$) function stdlib_${ci}$lanht( norm, n, d, e )
+     !! ZLANHT:  returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! complex Hermitian tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(${ck}$), intent(in) :: d(*)
+           complex(${ck}$), intent(in) :: e(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(${ck}$) :: anorm, scale, sum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 sum =  abs( d( i ) )
+                 if( anorm < sum .or. stdlib_${c2ri(ci)}$isnan( sum ) ) anorm = sum
+                 sum = abs( e( i ) )
+                 if( anorm < sum .or. stdlib_${c2ri(ci)}$isnan( sum ) ) anorm = sum
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' .or.stdlib_lsame( norm, 'I' ) ) &
+                     then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( e( 1 ) )
+                 sum = abs( e( n-1 ) )+abs( d( n ) )
+                 if( anorm < sum .or. stdlib_${c2ri(ci)}$isnan( sum ) ) anorm = sum
+                 do i = 2, n - 1
+                    sum = abs( d( i ) )+abs( e( i ) )+abs( e( i-1 ) )
+                    if( anorm < sum .or. stdlib_${c2ri(ci)}$isnan( sum ) ) anorm = sum
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              if( n>1 ) then
+                 call stdlib_${ci}$lassq( n-1, e, 1, scale, sum )
+                 sum = 2*sum
+              end if
+              call stdlib_${c2ri(ci)}$lassq( n, d, 1, scale, sum )
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_${ci}$lanht = anorm
+           return
+     end function stdlib_${ci}$lanht
+
+#:endif
+#:endfor
+
+
+
+
+
+     pure real(sp) function stdlib_slangt( norm, n, dl, d, du )
+     !! SLANGT returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! real tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(sp), intent(in) :: d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(sp) :: anorm, scale, sum, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 if( anorm<abs( dl( i ) ) .or. stdlib_sisnan( abs( dl( i ) ) ) )anorm = abs(dl(i))
+                           
+                 if( anorm<abs( d( i ) ) .or. stdlib_sisnan( abs( d( i ) ) ) )anorm = abs(d(i))
+                           
+                 if( anorm<abs( du( i ) ) .or. stdlib_sisnan (abs( du( i ) ) ) )anorm = abs(du(i))
+                           
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' ) then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( dl( 1 ) )
+                 temp = abs( d( n ) )+abs( du( n-1 ) )
+                 if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( dl( i ) )+abs( du( i-1 ) )
+                    if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( stdlib_lsame( norm, 'I' ) ) then
+              ! find normi(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( du( 1 ) )
+                 temp = abs( d( n ) )+abs( dl( n-1 ) )
+                 if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( du( i ) )+abs( dl( i-1 ) )
+                    if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              call stdlib_slassq( n, d, 1, scale, sum )
+              if( n>1 ) then
+                 call stdlib_slassq( n-1, dl, 1, scale, sum )
+                 call stdlib_slassq( n-1, du, 1, scale, sum )
+              end if
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_slangt = anorm
+           return
+     end function stdlib_slangt
+
+     pure real(dp) function stdlib_dlangt( norm, n, dl, d, du )
+     !! DLANGT returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! real tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(dp), intent(in) :: d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(dp) :: anorm, scale, sum, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 if( anorm<abs( dl( i ) ) .or. stdlib_disnan( abs( dl( i ) ) ) )anorm = abs(dl(i))
+                           
+                 if( anorm<abs( d( i ) ) .or. stdlib_disnan( abs( d( i ) ) ) )anorm = abs(d(i))
+                           
+                 if( anorm<abs( du( i ) ) .or. stdlib_disnan (abs( du( i ) ) ) )anorm = abs(du(i))
+                           
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' ) then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( dl( 1 ) )
+                 temp = abs( d( n ) )+abs( du( n-1 ) )
+                 if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( dl( i ) )+abs( du( i-1 ) )
+                    if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( stdlib_lsame( norm, 'I' ) ) then
+              ! find normi(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( du( 1 ) )
+                 temp = abs( d( n ) )+abs( dl( n-1 ) )
+                 if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( du( i ) )+abs( dl( i-1 ) )
+                    if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              call stdlib_dlassq( n, d, 1, scale, sum )
+              if( n>1 ) then
+                 call stdlib_dlassq( n-1, dl, 1, scale, sum )
+                 call stdlib_dlassq( n-1, du, 1, scale, sum )
+              end if
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_dlangt = anorm
+           return
+     end function stdlib_dlangt
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) function stdlib_${ri}$langt( norm, n, dl, d, du )
+     !! DLANGT:  returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! real tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(${rk}$) :: anorm, scale, sum, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 if( anorm<abs( dl( i ) ) .or. stdlib_${ri}$isnan( abs( dl( i ) ) ) )anorm = abs(dl(i))
+                           
+                 if( anorm<abs( d( i ) ) .or. stdlib_${ri}$isnan( abs( d( i ) ) ) )anorm = abs(d(i))
+                           
+                 if( anorm<abs( du( i ) ) .or. stdlib_${ri}$isnan (abs( du( i ) ) ) )anorm = abs(du(i))
+                           
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' ) then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( dl( 1 ) )
+                 temp = abs( d( n ) )+abs( du( n-1 ) )
+                 if( anorm < temp .or. stdlib_${ri}$isnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( dl( i ) )+abs( du( i-1 ) )
+                    if( anorm < temp .or. stdlib_${ri}$isnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( stdlib_lsame( norm, 'I' ) ) then
+              ! find normi(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( du( 1 ) )
+                 temp = abs( d( n ) )+abs( dl( n-1 ) )
+                 if( anorm < temp .or. stdlib_${ri}$isnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( du( i ) )+abs( dl( i-1 ) )
+                    if( anorm < temp .or. stdlib_${ri}$isnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              call stdlib_${ri}$lassq( n, d, 1, scale, sum )
+              if( n>1 ) then
+                 call stdlib_${ri}$lassq( n-1, dl, 1, scale, sum )
+                 call stdlib_${ri}$lassq( n-1, du, 1, scale, sum )
+              end if
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_${ri}$langt = anorm
+           return
+     end function stdlib_${ri}$langt
+
+#:endif
+#:endfor
+
+     pure real(sp) function stdlib_clangt( norm, n, dl, d, du )
+     !! CLANGT returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! complex tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           complex(sp), intent(in) :: d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(sp) :: anorm, scale, sum, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 if( anorm<abs( dl( i ) ) .or. stdlib_sisnan( abs( dl( i ) ) ) )anorm = abs(dl(i))
+                           
+                 if( anorm<abs( d( i ) ) .or. stdlib_sisnan( abs( d( i ) ) ) )anorm = abs(d(i))
+                           
+                 if( anorm<abs( du( i ) ) .or. stdlib_sisnan (abs( du( i ) ) ) )anorm = abs(du(i))
+                           
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' ) then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( dl( 1 ) )
+                 temp = abs( d( n ) )+abs( du( n-1 ) )
+                 if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( dl( i ) )+abs( du( i-1 ) )
+                    if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( stdlib_lsame( norm, 'I' ) ) then
+              ! find normi(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( du( 1 ) )
+                 temp = abs( d( n ) )+abs( dl( n-1 ) )
+                 if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( du( i ) )+abs( dl( i-1 ) )
+                    if( anorm < temp .or. stdlib_sisnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              call stdlib_classq( n, d, 1, scale, sum )
+              if( n>1 ) then
+                 call stdlib_classq( n-1, dl, 1, scale, sum )
+                 call stdlib_classq( n-1, du, 1, scale, sum )
+              end if
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_clangt = anorm
+           return
+     end function stdlib_clangt
+
+     pure real(dp) function stdlib_zlangt( norm, n, dl, d, du )
+     !! ZLANGT returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! complex tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           complex(dp), intent(in) :: d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(dp) :: anorm, scale, sum, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 if( anorm<abs( dl( i ) ) .or. stdlib_disnan( abs( dl( i ) ) ) )anorm = abs(dl(i))
+                           
+                 if( anorm<abs( d( i ) ) .or. stdlib_disnan( abs( d( i ) ) ) )anorm = abs(d(i))
+                           
+                 if( anorm<abs( du( i ) ) .or. stdlib_disnan (abs( du( i ) ) ) )anorm = abs(du(i))
+                           
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' ) then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( dl( 1 ) )
+                 temp = abs( d( n ) )+abs( du( n-1 ) )
+                 if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( dl( i ) )+abs( du( i-1 ) )
+                    if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( stdlib_lsame( norm, 'I' ) ) then
+              ! find normi(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( du( 1 ) )
+                 temp = abs( d( n ) )+abs( dl( n-1 ) )
+                 if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( du( i ) )+abs( dl( i-1 ) )
+                    if( anorm < temp .or. stdlib_disnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              call stdlib_zlassq( n, d, 1, scale, sum )
+              if( n>1 ) then
+                 call stdlib_zlassq( n-1, dl, 1, scale, sum )
+                 call stdlib_zlassq( n-1, du, 1, scale, sum )
+              end if
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_zlangt = anorm
+           return
+     end function stdlib_zlangt
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure real(${ck}$) function stdlib_${ci}$langt( norm, n, dl, d, du )
+     !! ZLANGT:  returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! complex tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(${ck}$) :: anorm, scale, sum, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 if( anorm<abs( dl( i ) ) .or. stdlib_${c2ri(ci)}$isnan( abs( dl( i ) ) ) )anorm = abs(dl(i))
+                           
+                 if( anorm<abs( d( i ) ) .or. stdlib_${c2ri(ci)}$isnan( abs( d( i ) ) ) )anorm = abs(d(i))
+                           
+                 if( anorm<abs( du( i ) ) .or. stdlib_${c2ri(ci)}$isnan (abs( du( i ) ) ) )anorm = abs(du(i))
+                           
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' ) then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( dl( 1 ) )
+                 temp = abs( d( n ) )+abs( du( n-1 ) )
+                 if( anorm < temp .or. stdlib_${c2ri(ci)}$isnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( dl( i ) )+abs( du( i-1 ) )
+                    if( anorm < temp .or. stdlib_${c2ri(ci)}$isnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( stdlib_lsame( norm, 'I' ) ) then
+              ! find normi(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( du( 1 ) )
+                 temp = abs( d( n ) )+abs( dl( n-1 ) )
+                 if( anorm < temp .or. stdlib_${c2ri(ci)}$isnan( temp ) ) anorm = temp
+                 do i = 2, n - 1
+                    temp = abs( d( i ) )+abs( du( i ) )+abs( dl( i-1 ) )
+                    if( anorm < temp .or. stdlib_${c2ri(ci)}$isnan( temp ) ) anorm = temp
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              call stdlib_${ci}$lassq( n, d, 1, scale, sum )
+              if( n>1 ) then
+                 call stdlib_${ci}$lassq( n-1, dl, 1, scale, sum )
+                 call stdlib_${ci}$lassq( n-1, du, 1, scale, sum )
+              end if
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_${ci}$langt = anorm
+           return
+     end function stdlib_${ci}$langt
+
+#:endif
+#:endfor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     pure real(sp) function stdlib_slanst( norm, n, d, e )
+     !! SLANST returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! real symmetric tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(sp), intent(in) :: d(*), e(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(sp) :: anorm, scale, sum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 sum = abs( d( i ) )
+                 if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+                 sum = abs( e( i ) )
+                 if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' .or.stdlib_lsame( norm, 'I' ) ) &
+                     then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( e( 1 ) )
+                 sum = abs( e( n-1 ) )+abs( d( n ) )
+                 if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+                 do i = 2, n - 1
+                    sum = abs( d( i ) )+abs( e( i ) )+abs( e( i-1 ) )
+                    if( anorm < sum .or. stdlib_sisnan( sum ) ) anorm = sum
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              if( n>1 ) then
+                 call stdlib_slassq( n-1, e, 1, scale, sum )
+                 sum = 2*sum
+              end if
+              call stdlib_slassq( n, d, 1, scale, sum )
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_slanst = anorm
+           return
+     end function stdlib_slanst
+
+     pure real(dp) function stdlib_dlanst( norm, n, d, e )
+     !! DLANST returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! real symmetric tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(dp), intent(in) :: d(*), e(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(dp) :: anorm, scale, sum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 sum = abs( d( i ) )
+                 if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+                 sum = abs( e( i ) )
+                 if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' .or.stdlib_lsame( norm, 'I' ) ) &
+                     then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( e( 1 ) )
+                 sum = abs( e( n-1 ) )+abs( d( n ) )
+                 if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+                 do i = 2, n - 1
+                    sum = abs( d( i ) )+abs( e( i ) )+abs( e( i-1 ) )
+                    if( anorm < sum .or. stdlib_disnan( sum ) ) anorm = sum
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              if( n>1 ) then
+                 call stdlib_dlassq( n-1, e, 1, scale, sum )
+                 sum = 2*sum
+              end if
+              call stdlib_dlassq( n, d, 1, scale, sum )
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_dlanst = anorm
+           return
+     end function stdlib_dlanst
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) function stdlib_${ri}$lanst( norm, n, d, e )
+     !! DLANST:  returns the value of the one norm,  or the Frobenius norm, or
+     !! the  infinity norm,  or the  element of  largest absolute value  of a
+     !! real symmetric tridiagonal matrix A.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: d(*), e(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i
+           real(${rk}$) :: anorm, scale, sum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n<=0 ) then
+              anorm = zero
+           else if( stdlib_lsame( norm, 'M' ) ) then
+              ! find max(abs(a(i,j))).
+              anorm = abs( d( n ) )
+              do i = 1, n - 1
+                 sum = abs( d( i ) )
+                 if( anorm < sum .or. stdlib_${ri}$isnan( sum ) ) anorm = sum
+                 sum = abs( e( i ) )
+                 if( anorm < sum .or. stdlib_${ri}$isnan( sum ) ) anorm = sum
+              end do
+           else if( stdlib_lsame( norm, 'O' ) .or. norm=='1' .or.stdlib_lsame( norm, 'I' ) ) &
+                     then
+              ! find norm1(a).
+              if( n==1 ) then
+                 anorm = abs( d( 1 ) )
+              else
+                 anorm = abs( d( 1 ) )+abs( e( 1 ) )
+                 sum = abs( e( n-1 ) )+abs( d( n ) )
+                 if( anorm < sum .or. stdlib_${ri}$isnan( sum ) ) anorm = sum
+                 do i = 2, n - 1
+                    sum = abs( d( i ) )+abs( e( i ) )+abs( e( i-1 ) )
+                    if( anorm < sum .or. stdlib_${ri}$isnan( sum ) ) anorm = sum
+                 end do
+              end if
+           else if( ( stdlib_lsame( norm, 'F' ) ) .or. ( stdlib_lsame( norm, 'E' ) ) ) &
+                     then
+              ! find normf(a).
+              scale = zero
+              sum = one
+              if( n>1 ) then
+                 call stdlib_${ri}$lassq( n-1, e, 1, scale, sum )
+                 sum = 2*sum
+              end if
+              call stdlib_${ri}$lassq( n, d, 1, scale, sum )
+              anorm = scale*sqrt( sum )
+           end if
+           stdlib_${ri}$lanst = anorm
+           return
+     end function stdlib_${ri}$lanst
+
+#:endif
+#:endfor
+
+
+end module stdlib_lapack_blas_like_mnorm

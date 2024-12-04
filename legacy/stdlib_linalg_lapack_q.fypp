@@ -526,6 +526,7 @@ module stdlib_linalg_lapack_${ri}$
 
 
      pure subroutine stdlib_${ri}$bbcsd( jobu1, jobu2, jobv1t, jobv2t, trans, m, p, q,theta, phi, u1, &
+     ldu1, u2, ldu2, v1t, ldv1t,v2t, ldv2t, b11d, b11e, b12d, b12e, b21d, b21e,b22d, b22e, work, lwork, info )
      !! DBBCSD: computes the CS decomposition of an orthogonal matrix in
      !! bidiagonal-block form,
      !! [ B11 | B12 0  0 ]
@@ -547,8 +548,7 @@ module stdlib_linalg_lapack_${ri}$
      !! The orthogonal matrices U1, U2, V1T, and V2T are input/output.
      !! The input matrices are pre- or post-multiplied by the appropriate
      !! singular vector matrices.
-     ldu1, u2, ldu2, v1t, ldv1t,v2t, ldv2t, b11d, b11e, b12d, b12e, b21d, b21e,b22d, b22e, work, &
-               lwork, info )
+     
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -13382,6 +13382,7 @@ module stdlib_linalg_lapack_${ri}$
 
 
      subroutine stdlib_${ri}$gesvdq( joba, jobp, jobr, jobu, jobv, m, n, a, lda,s, u, ldu, v, ldv, &
+      numrank, iwork, liwork,work, lwork, rwork, lrwork, info )
      !! DGESVDQ: computes the singular value decomposition (SVD) of a real
      !! M-by-N matrix A, where M >= N. The SVD of A is written as
      !! [++]   [xx]   [x0]   [xx]
@@ -13391,7 +13392,7 @@ module stdlib_linalg_lapack_${ri}$
      !! matrix, and V is an N-by-N orthogonal matrix. The diagonal elements
      !! of SIGMA are the singular values of A. The columns of U and V are the
      !! left and the right singular vectors of A, respectively.
-               numrank, iwork, liwork,work, lwork, rwork, lrwork, info )
+               
            ! Scalar Arguments 
            character, intent(in) :: joba, jobp, jobr, jobu, jobv
            integer(ilp), intent(in) :: m, n, lda, ldu, ldv, liwork, lrwork
@@ -25197,6 +25198,7 @@ module stdlib_linalg_lapack_${ri}$
 
 
      pure subroutine stdlib_${ri}$laebz( ijob, nitmax, n, mmax, minp, nbmin, abstol,reltol, pivmin, d, &
+     e, e2, nval, ab, c, mout,nab, work, iwork, info )
      !! DLAEBZ: contains the iteration loops which compute and use the
      !! function N(w), which is the count of eigenvalues of a symmetric
      !! tridiagonal matrix T less than or equal to its argument  w.  It
@@ -25228,7 +25230,7 @@ module stdlib_linalg_lapack_${ri}$
      !! University, July 21, 1966
      !! Note: the arguments are, in general, *not* checked for unreasonable
      !! values.
-               e, e2, nval, ab, c, mout,nab, work, iwork, info )
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -27532,10 +27534,11 @@ module stdlib_linalg_lapack_${ri}$
 
 
      pure subroutine stdlib_${ri}$laeda( n, tlvls, curlvl, curpbm, prmptr, perm, givptr,givcol, givnum,&
+     q, qptr, z, ztemp, info )
      !! DLAEDA: computes the Z vector corresponding to the merge step in the
      !! CURLVLth step of the merge process with TLVLS steps for the CURPBMth
      !! problem.
-                q, qptr, z, ztemp, info )
+                
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -30836,17 +30839,11 @@ module stdlib_linalg_lapack_${ri}$
        ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: rnd, eps, sfmin, small, rmach
+           real(${rk}$) :: sfmin, small, rmach
            ! Intrinsic Functions 
            intrinsic :: digits,epsilon,huge,maxexponent,minexponent,radix,tiny
            ! Executable Statements 
            ! assume rounding, not chopping. always.
-           rnd = one
-           if( one==rnd ) then
-              eps = epsilon(zero) * 0.5
-           else
-              eps = epsilon(zero)
-           end if
            if( stdlib_lsame( cmach, 'E' ) ) then
               rmach = eps
            else if( stdlib_lsame( cmach, 'S' ) ) then
@@ -30865,7 +30862,7 @@ module stdlib_linalg_lapack_${ri}$
            else if( stdlib_lsame( cmach, 'N' ) ) then
               rmach = digits(zero)
            else if( stdlib_lsame( cmach, 'R' ) ) then
-              rmach = rnd
+              rmach = one
            else if( stdlib_lsame( cmach, 'M' ) ) then
               rmach = minexponent(zero)
            else if( stdlib_lsame( cmach, 'U' ) ) then
@@ -30958,7 +30955,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$lamrg
 
 
-     pure subroutine stdlib_${ri}$lamswlq( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, &
+     pure subroutine stdlib_${ri}$lamswlq( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, lwork, info )
      !! DLAMSWLQ: overwrites the general real M-by-N matrix C with
      !! SIDE = 'L'     SIDE = 'R'
      !! TRANS = 'N':      Q * C          C * Q
@@ -30966,7 +30963,7 @@ module stdlib_linalg_lapack_${ri}$
      !! where Q is a real orthogonal matrix defined as the product of blocked
      !! elementary reflectors computed by short wide LQ
      !! factorization (DLASWLQ)
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -31116,7 +31113,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$lamswlq
 
 
-     pure subroutine stdlib_${ri}$lamtsqr( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, &
+     pure subroutine stdlib_${ri}$lamtsqr( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, lwork, info )
      !! DLAMTSQR: overwrites the general real M-by-N matrix C with
      !! SIDE = 'L'     SIDE = 'R'
      !! TRANS = 'N':      Q * C          C * Q
@@ -31124,7 +31121,7 @@ module stdlib_linalg_lapack_${ri}$
      !! where Q is a real orthogonal matrix defined as the product
      !! of blocked elementary reflectors computed by tall skinny
      !! QR factorization (DLATSQR)
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -34316,7 +34313,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$laqps
 
 
-     subroutine stdlib_${ri}$laqr0( wantt, wantz, n, ilo, ihi, h, ldh, wr, wi,iloz, ihiz, z, ldz, work,&
+     subroutine stdlib_${ri}$laqr0( wantt, wantz, n, ilo, ihi, h, ldh, wr, wi,iloz, ihiz, z, ldz, work, lwork, info )
      !! DLAQR0: computes the eigenvalues of a Hessenberg matrix H
      !! and, optionally, the matrices T and Z from the Schur decomposition
      !! H = Z T Z**T, where T is an upper quasi-triangular matrix (the
@@ -34325,7 +34322,7 @@ module stdlib_linalg_lapack_${ri}$
      !! matrix Q so that this routine can give the Schur factorization
      !! of a matrix A which has been reduced to the Hessenberg form H
      !! by the orthogonal matrix Q:  A = Q*H*Q**T = (QZ)*T*(QZ)**T.
-                lwork, info )
+                
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -35360,7 +35357,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$laqr3
 
 
-     subroutine stdlib_${ri}$laqr4( wantt, wantz, n, ilo, ihi, h, ldh, wr, wi,iloz, ihiz, z, ldz, work,&
+     subroutine stdlib_${ri}$laqr4( wantt, wantz, n, ilo, ihi, h, ldh, wr, wi,iloz, ihiz, z, ldz, work, lwork, info )
      !! DLAQR4: implements one level of recursion for DLAQR0.
      !! It is a complete implementation of the small bulge multi-shift
      !! QR algorithm.  It may be called by DLAQR0 and, for large enough
@@ -35375,7 +35372,7 @@ module stdlib_linalg_lapack_${ri}$
      !! matrix Q so that this routine can give the Schur factorization
      !! of a matrix A which has been reduced to the Hessenberg form H
      !! by the orthogonal matrix Q:  A = Q*H*Q**T = (QZ)*T*(QZ)**T.
-                lwork, info )
+                
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -38193,10 +38190,10 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$larf
 
 
-     pure subroutine stdlib_${ri}$larfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, &
+     pure subroutine stdlib_${ri}$larfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, work, ldwork )
      !! DLARFB: applies a real block reflector H or its transpose H**T to a
      !! real m by n matrix C, from either the left or the right.
-               work, ldwork )
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -39928,6 +39925,7 @@ module stdlib_linalg_lapack_${ri}$
 
 
      pure subroutine stdlib_${ri}$larrd( range, order, n, vl, vu, il, iu, gers,reltol, d, e, e2, &
+     pivmin, nsplit, isplit,m, w, werr, wl, wu, iblock, indexw,work, iwork, info )
      !! DLARRD: computes the eigenvalues of a symmetric tridiagonal
      !! matrix T to suitable accuracy. This is an auxiliary code to be
      !! called from DSTEMR.
@@ -39940,7 +39938,7 @@ module stdlib_linalg_lapack_${ri}$
      !! See W. Kahan "Accurate Eigenvalues of a Symmetric Tridiagonal
      !! Matrix", Report CS41, Computer Science Dept., Stanford
      !! University, July 21, 1966.
-               pivmin, nsplit, isplit,m, w, werr, wl, wu, iblock, indexw,work, iwork, info )
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -52268,7 +52266,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$orbdb4
 
 
-     pure subroutine stdlib_${ri}$orbdb5( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, &
+     pure subroutine stdlib_${ri}$orbdb5( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, lwork, info )
      !! DORBDB5: orthogonalizes the column vector
      !! X = [ X1 ]
      !! [ X2 ]
@@ -52280,7 +52278,7 @@ module stdlib_linalg_lapack_${ri}$
      !! criterion, then some other vector from the orthogonal complement
      !! is returned. This vector is chosen in an arbitrary but deterministic
      !! way.
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -52367,7 +52365,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$orbdb5
 
 
-     pure subroutine stdlib_${ri}$orbdb6( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, &
+     pure subroutine stdlib_${ri}$orbdb6( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, lwork, info )
      !! DORBDB6: orthogonalizes the column vector
      !! X = [ X1 ]
      !! [ X2 ]
@@ -52377,7 +52375,7 @@ module stdlib_linalg_lapack_${ri}$
      !! The columns of Q must be orthonormal.
      !! If the projection is zero according to Kahan's "twice is enough"
      !! criterion, then the zero vector is returned.
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--

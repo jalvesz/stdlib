@@ -1,0 +1,1989 @@
+#:include "common.fypp" 
+module stdlib_lapack_solve_lu
+  use stdlib_linalg_constants
+  use stdlib_linalg_lapack_aux
+  use stdlib_linalg_blas
+  use stdlib_lapack_blas_like_mnorm
+  use stdlib_lapack_solve_lu_comp
+  use stdlib_lapack_blas_like_base
+  implicit none(type,external)
+
+
+  contains
+
+
+
+     pure subroutine stdlib_sgbsv( n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb, info )
+     !! SGBSV computes the solution to a real system of linear equations
+     !! A * X = B, where A is a band matrix of order N with KL subdiagonals
+     !! and KU superdiagonals, and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as A = L * U, where L is a product of permutation
+     !! and unit lower triangular matrices with KL subdiagonals, and U is
+     !! upper triangular with KL+KU superdiagonals.  The factored form of A
+     !! is then used to solve the system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, ldab, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           real(sp), intent(inout) :: ab(ldab,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( kl<0 ) then
+              info = -2
+           else if( ku<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<2*kl+ku+1 ) then
+              info = -6
+           else if( ldb<max( n, 1 ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SGBSV ', -info )
+              return
+           end if
+           ! compute the lu factorization of the band matrix a.
+           call stdlib_sgbtrf( n, n, kl, ku, ab, ldab, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_sgbtrs( 'NO TRANSPOSE', n, kl, ku, nrhs, ab, ldab, ipiv,b, ldb, info )
+                        
+           end if
+           return
+     end subroutine stdlib_sgbsv
+
+     pure subroutine stdlib_dgbsv( n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb, info )
+     !! DGBSV computes the solution to a real system of linear equations
+     !! A * X = B, where A is a band matrix of order N with KL subdiagonals
+     !! and KU superdiagonals, and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as A = L * U, where L is a product of permutation
+     !! and unit lower triangular matrices with KL subdiagonals, and U is
+     !! upper triangular with KL+KU superdiagonals.  The factored form of A
+     !! is then used to solve the system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, ldab, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           real(dp), intent(inout) :: ab(ldab,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( kl<0 ) then
+              info = -2
+           else if( ku<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<2*kl+ku+1 ) then
+              info = -6
+           else if( ldb<max( n, 1 ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGBSV ', -info )
+              return
+           end if
+           ! compute the lu factorization of the band matrix a.
+           call stdlib_dgbtrf( n, n, kl, ku, ab, ldab, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_dgbtrs( 'NO TRANSPOSE', n, kl, ku, nrhs, ab, ldab, ipiv,b, ldb, info )
+                        
+           end if
+           return
+     end subroutine stdlib_dgbsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$gbsv( n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb, info )
+     !! DGBSV: computes the solution to a real system of linear equations
+     !! A * X = B, where A is a band matrix of order N with KL subdiagonals
+     !! and KU superdiagonals, and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as A = L * U, where L is a product of permutation
+     !! and unit lower triangular matrices with KL subdiagonals, and U is
+     !! upper triangular with KL+KU superdiagonals.  The factored form of A
+     !! is then used to solve the system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, ldab, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           real(${rk}$), intent(inout) :: ab(ldab,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( kl<0 ) then
+              info = -2
+           else if( ku<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<2*kl+ku+1 ) then
+              info = -6
+           else if( ldb<max( n, 1 ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGBSV ', -info )
+              return
+           end if
+           ! compute the lu factorization of the band matrix a.
+           call stdlib_${ri}$gbtrf( n, n, kl, ku, ab, ldab, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_${ri}$gbtrs( 'NO TRANSPOSE', n, kl, ku, nrhs, ab, ldab, ipiv,b, ldb, info )
+                        
+           end if
+           return
+     end subroutine stdlib_${ri}$gbsv
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_cgbsv( n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb, info )
+     !! CGBSV computes the solution to a complex system of linear equations
+     !! A * X = B, where A is a band matrix of order N with KL subdiagonals
+     !! and KU superdiagonals, and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as A = L * U, where L is a product of permutation
+     !! and unit lower triangular matrices with KL subdiagonals, and U is
+     !! upper triangular with KL+KU superdiagonals.  The factored form of A
+     !! is then used to solve the system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, ldab, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           complex(sp), intent(inout) :: ab(ldab,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( kl<0 ) then
+              info = -2
+           else if( ku<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<2*kl+ku+1 ) then
+              info = -6
+           else if( ldb<max( n, 1 ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CGBSV ', -info )
+              return
+           end if
+           ! compute the lu factorization of the band matrix a.
+           call stdlib_cgbtrf( n, n, kl, ku, ab, ldab, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_cgbtrs( 'NO TRANSPOSE', n, kl, ku, nrhs, ab, ldab, ipiv,b, ldb, info )
+                        
+           end if
+           return
+     end subroutine stdlib_cgbsv
+
+     pure subroutine stdlib_zgbsv( n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb, info )
+     !! ZGBSV computes the solution to a complex system of linear equations
+     !! A * X = B, where A is a band matrix of order N with KL subdiagonals
+     !! and KU superdiagonals, and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as A = L * U, where L is a product of permutation
+     !! and unit lower triangular matrices with KL subdiagonals, and U is
+     !! upper triangular with KL+KU superdiagonals.  The factored form of A
+     !! is then used to solve the system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, ldab, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           complex(dp), intent(inout) :: ab(ldab,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( kl<0 ) then
+              info = -2
+           else if( ku<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<2*kl+ku+1 ) then
+              info = -6
+           else if( ldb<max( n, 1 ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGBSV ', -info )
+              return
+           end if
+           ! compute the lu factorization of the band matrix a.
+           call stdlib_zgbtrf( n, n, kl, ku, ab, ldab, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_zgbtrs( 'NO TRANSPOSE', n, kl, ku, nrhs, ab, ldab, ipiv,b, ldb, info )
+                        
+           end if
+           return
+     end subroutine stdlib_zgbsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$gbsv( n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb, info )
+     !! ZGBSV: computes the solution to a complex system of linear equations
+     !! A * X = B, where A is a band matrix of order N with KL subdiagonals
+     !! and KU superdiagonals, and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as A = L * U, where L is a product of permutation
+     !! and unit lower triangular matrices with KL subdiagonals, and U is
+     !! upper triangular with KL+KU superdiagonals.  The factored form of A
+     !! is then used to solve the system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, ldab, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           complex(${ck}$), intent(inout) :: ab(ldab,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( kl<0 ) then
+              info = -2
+           else if( ku<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<2*kl+ku+1 ) then
+              info = -6
+           else if( ldb<max( n, 1 ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGBSV ', -info )
+              return
+           end if
+           ! compute the lu factorization of the band matrix a.
+           call stdlib_${ci}$gbtrf( n, n, kl, ku, ab, ldab, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_${ci}$gbtrs( 'NO TRANSPOSE', n, kl, ku, nrhs, ab, ldab, ipiv,b, ldb, info )
+                        
+           end if
+           return
+     end subroutine stdlib_${ci}$gbsv
+
+#:endif
+#:endfor
+
+
+
+     pure subroutine stdlib_sgtsv( n, nrhs, dl, d, du, b, ldb, info )
+     !! SGTSV solves the equation
+     !! A*X = B,
+     !! where A is an n by n tridiagonal matrix, by Gaussian elimination with
+     !! partial pivoting.
+     !! Note that the equation  A**T*X = B  may be solved by interchanging the
+     !! order of the arguments DU and DL.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, n, nrhs
+           ! Array Arguments 
+           real(sp), intent(inout) :: b(ldb,*), d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(sp) :: fact, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SGTSV ', -info )
+              return
+           end if
+           if( n==0 )return
+           if( nrhs==1 ) then
+              loop_10: do i = 1, n - 2
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    ! no row interchange required
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       b( i+1, 1 ) = b( i+1, 1 ) - fact*b( i, 1 )
+                    else
+                       info = i
+                       return
+                    end if
+                    dl( i ) = zero
+                 else
+                    ! interchange rows i and i+1
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    dl( i ) = du( i+1 )
+                    du( i+1 ) = -fact*dl( i )
+                    du( i ) = temp
+                    temp = b( i, 1 )
+                    b( i, 1 ) = b( i+1, 1 )
+                    b( i+1, 1 ) = temp - fact*b( i+1, 1 )
+                 end if
+              end do loop_10
+              if( n>1 ) then
+                 i = n - 1
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       b( i+1, 1 ) = b( i+1, 1 ) - fact*b( i, 1 )
+                    else
+                       info = i
+                       return
+                    end if
+                 else
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    du( i ) = temp
+                    temp = b( i, 1 )
+                    b( i, 1 ) = b( i+1, 1 )
+                    b( i+1, 1 ) = temp - fact*b( i+1, 1 )
+                 end if
+              end if
+              if( d( n )==zero ) then
+                 info = n
+                 return
+              end if
+           else
+              loop_40: do i = 1, n - 2
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    ! no row interchange required
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       do j = 1, nrhs
+                          b( i+1, j ) = b( i+1, j ) - fact*b( i, j )
+                       end do
+                    else
+                       info = i
+                       return
+                    end if
+                    dl( i ) = zero
+                 else
+                    ! interchange rows i and i+1
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    dl( i ) = du( i+1 )
+                    du( i+1 ) = -fact*dl( i )
+                    du( i ) = temp
+                    do j = 1, nrhs
+                       temp = b( i, j )
+                       b( i, j ) = b( i+1, j )
+                       b( i+1, j ) = temp - fact*b( i+1, j )
+                    end do
+                 end if
+              end do loop_40
+              if( n>1 ) then
+                 i = n - 1
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       do j = 1, nrhs
+                          b( i+1, j ) = b( i+1, j ) - fact*b( i, j )
+                       end do
+                    else
+                       info = i
+                       return
+                    end if
+                 else
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    du( i ) = temp
+                    do j = 1, nrhs
+                       temp = b( i, j )
+                       b( i, j ) = b( i+1, j )
+                       b( i+1, j ) = temp - fact*b( i+1, j )
+                    end do
+                 end if
+              end if
+              if( d( n )==zero ) then
+                 info = n
+                 return
+              end if
+           end if
+           ! back solve with the matrix u from the factorization.
+           if( nrhs<=2 ) then
+              j = 1
+              70 continue
+              b( n, j ) = b( n, j ) / d( n )
+              if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) / d( n-1 )
+              do i = n - 2, 1, -1
+                 b( i, j ) = ( b( i, j )-du( i )*b( i+1, j )-dl( i )*b( i+2, j ) ) / d( i )
+                           
+              end do
+              if( j<nrhs ) then
+                 j = j + 1
+                 go to 70
+              end if
+           else
+              do j = 1, nrhs
+                 b( n, j ) = b( n, j ) / d( n )
+                 if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) /d( n-1 )
+                 do i = n - 2, 1, -1
+                    b( i, j ) = ( b( i, j )-du( i )*b( i+1, j )-dl( i )*b( i+2, j ) ) / d( i )
+                              
+                 end do
+              end do
+           end if
+           return
+     end subroutine stdlib_sgtsv
+
+     pure subroutine stdlib_dgtsv( n, nrhs, dl, d, du, b, ldb, info )
+     !! DGTSV solves the equation
+     !! A*X = B,
+     !! where A is an n by n tridiagonal matrix, by Gaussian elimination with
+     !! partial pivoting.
+     !! Note that the equation  A**T*X = B  may be solved by interchanging the
+     !! order of the arguments DU and DL.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, n, nrhs
+           ! Array Arguments 
+           real(dp), intent(inout) :: b(ldb,*), d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(dp) :: fact, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGTSV ', -info )
+              return
+           end if
+           if( n==0 )return
+           if( nrhs==1 ) then
+              loop_10: do i = 1, n - 2
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    ! no row interchange required
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       b( i+1, 1 ) = b( i+1, 1 ) - fact*b( i, 1 )
+                    else
+                       info = i
+                       return
+                    end if
+                    dl( i ) = zero
+                 else
+                    ! interchange rows i and i+1
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    dl( i ) = du( i+1 )
+                    du( i+1 ) = -fact*dl( i )
+                    du( i ) = temp
+                    temp = b( i, 1 )
+                    b( i, 1 ) = b( i+1, 1 )
+                    b( i+1, 1 ) = temp - fact*b( i+1, 1 )
+                 end if
+              end do loop_10
+              if( n>1 ) then
+                 i = n - 1
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       b( i+1, 1 ) = b( i+1, 1 ) - fact*b( i, 1 )
+                    else
+                       info = i
+                       return
+                    end if
+                 else
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    du( i ) = temp
+                    temp = b( i, 1 )
+                    b( i, 1 ) = b( i+1, 1 )
+                    b( i+1, 1 ) = temp - fact*b( i+1, 1 )
+                 end if
+              end if
+              if( d( n )==zero ) then
+                 info = n
+                 return
+              end if
+           else
+              loop_40: do i = 1, n - 2
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    ! no row interchange required
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       do j = 1, nrhs
+                          b( i+1, j ) = b( i+1, j ) - fact*b( i, j )
+                       end do
+                    else
+                       info = i
+                       return
+                    end if
+                    dl( i ) = zero
+                 else
+                    ! interchange rows i and i+1
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    dl( i ) = du( i+1 )
+                    du( i+1 ) = -fact*dl( i )
+                    du( i ) = temp
+                    do j = 1, nrhs
+                       temp = b( i, j )
+                       b( i, j ) = b( i+1, j )
+                       b( i+1, j ) = temp - fact*b( i+1, j )
+                    end do
+                 end if
+              end do loop_40
+              if( n>1 ) then
+                 i = n - 1
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       do j = 1, nrhs
+                          b( i+1, j ) = b( i+1, j ) - fact*b( i, j )
+                       end do
+                    else
+                       info = i
+                       return
+                    end if
+                 else
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    du( i ) = temp
+                    do j = 1, nrhs
+                       temp = b( i, j )
+                       b( i, j ) = b( i+1, j )
+                       b( i+1, j ) = temp - fact*b( i+1, j )
+                    end do
+                 end if
+              end if
+              if( d( n )==zero ) then
+                 info = n
+                 return
+              end if
+           end if
+           ! back solve with the matrix u from the factorization.
+           if( nrhs<=2 ) then
+              j = 1
+              70 continue
+              b( n, j ) = b( n, j ) / d( n )
+              if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) / d( n-1 )
+              do i = n - 2, 1, -1
+                 b( i, j ) = ( b( i, j )-du( i )*b( i+1, j )-dl( i )*b( i+2, j ) ) / d( i )
+                           
+              end do
+              if( j<nrhs ) then
+                 j = j + 1
+                 go to 70
+              end if
+           else
+              do j = 1, nrhs
+                 b( n, j ) = b( n, j ) / d( n )
+                 if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) /d( n-1 )
+                 do i = n - 2, 1, -1
+                    b( i, j ) = ( b( i, j )-du( i )*b( i+1, j )-dl( i )*b( i+2, j ) ) / d( i )
+                              
+                 end do
+              end do
+           end if
+           return
+     end subroutine stdlib_dgtsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$gtsv( n, nrhs, dl, d, du, b, ldb, info )
+     !! DGTSV:  solves the equation
+     !! A*X = B,
+     !! where A is an n by n tridiagonal matrix, by Gaussian elimination with
+     !! partial pivoting.
+     !! Note that the equation  A**T*X = B  may be solved by interchanging the
+     !! order of the arguments DU and DL.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, n, nrhs
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: b(ldb,*), d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(${rk}$) :: fact, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGTSV ', -info )
+              return
+           end if
+           if( n==0 )return
+           if( nrhs==1 ) then
+              loop_10: do i = 1, n - 2
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    ! no row interchange required
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       b( i+1, 1 ) = b( i+1, 1 ) - fact*b( i, 1 )
+                    else
+                       info = i
+                       return
+                    end if
+                    dl( i ) = zero
+                 else
+                    ! interchange rows i and i+1
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    dl( i ) = du( i+1 )
+                    du( i+1 ) = -fact*dl( i )
+                    du( i ) = temp
+                    temp = b( i, 1 )
+                    b( i, 1 ) = b( i+1, 1 )
+                    b( i+1, 1 ) = temp - fact*b( i+1, 1 )
+                 end if
+              end do loop_10
+              if( n>1 ) then
+                 i = n - 1
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       b( i+1, 1 ) = b( i+1, 1 ) - fact*b( i, 1 )
+                    else
+                       info = i
+                       return
+                    end if
+                 else
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    du( i ) = temp
+                    temp = b( i, 1 )
+                    b( i, 1 ) = b( i+1, 1 )
+                    b( i+1, 1 ) = temp - fact*b( i+1, 1 )
+                 end if
+              end if
+              if( d( n )==zero ) then
+                 info = n
+                 return
+              end if
+           else
+              loop_40: do i = 1, n - 2
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    ! no row interchange required
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       do j = 1, nrhs
+                          b( i+1, j ) = b( i+1, j ) - fact*b( i, j )
+                       end do
+                    else
+                       info = i
+                       return
+                    end if
+                    dl( i ) = zero
+                 else
+                    ! interchange rows i and i+1
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    dl( i ) = du( i+1 )
+                    du( i+1 ) = -fact*dl( i )
+                    du( i ) = temp
+                    do j = 1, nrhs
+                       temp = b( i, j )
+                       b( i, j ) = b( i+1, j )
+                       b( i+1, j ) = temp - fact*b( i+1, j )
+                    end do
+                 end if
+              end do loop_40
+              if( n>1 ) then
+                 i = n - 1
+                 if( abs( d( i ) )>=abs( dl( i ) ) ) then
+                    if( d( i )/=zero ) then
+                       fact = dl( i ) / d( i )
+                       d( i+1 ) = d( i+1 ) - fact*du( i )
+                       do j = 1, nrhs
+                          b( i+1, j ) = b( i+1, j ) - fact*b( i, j )
+                       end do
+                    else
+                       info = i
+                       return
+                    end if
+                 else
+                    fact = d( i ) / dl( i )
+                    d( i ) = dl( i )
+                    temp = d( i+1 )
+                    d( i+1 ) = du( i ) - fact*temp
+                    du( i ) = temp
+                    do j = 1, nrhs
+                       temp = b( i, j )
+                       b( i, j ) = b( i+1, j )
+                       b( i+1, j ) = temp - fact*b( i+1, j )
+                    end do
+                 end if
+              end if
+              if( d( n )==zero ) then
+                 info = n
+                 return
+              end if
+           end if
+           ! back solve with the matrix u from the factorization.
+           if( nrhs<=2 ) then
+              j = 1
+              70 continue
+              b( n, j ) = b( n, j ) / d( n )
+              if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) / d( n-1 )
+              do i = n - 2, 1, -1
+                 b( i, j ) = ( b( i, j )-du( i )*b( i+1, j )-dl( i )*b( i+2, j ) ) / d( i )
+                           
+              end do
+              if( j<nrhs ) then
+                 j = j + 1
+                 go to 70
+              end if
+           else
+              do j = 1, nrhs
+                 b( n, j ) = b( n, j ) / d( n )
+                 if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) /d( n-1 )
+                 do i = n - 2, 1, -1
+                    b( i, j ) = ( b( i, j )-du( i )*b( i+1, j )-dl( i )*b( i+2, j ) ) / d( i )
+                              
+                 end do
+              end do
+           end if
+           return
+     end subroutine stdlib_${ri}$gtsv
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_cgtsv( n, nrhs, dl, d, du, b, ldb, info )
+     !! CGTSV solves the equation
+     !! A*X = B,
+     !! where A is an N-by-N tridiagonal matrix, by Gaussian elimination with
+     !! partial pivoting.
+     !! Note that the equation  A**T *X = B  may be solved by interchanging the
+     !! order of the arguments DU and DL.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, n, nrhs
+           ! Array Arguments 
+           complex(sp), intent(inout) :: b(ldb,*), d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j, k
+           complex(sp) :: mult, temp, zdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CGTSV ', -info )
+              return
+           end if
+           if( n==0 )return
+           loop_30: do k = 1, n - 1
+              if( dl( k )==czero ) then
+                 ! subdiagonal is czero, no elimination is required.
+                 if( d( k )==czero ) then
+                    ! diagonal is czero: set info = k and return; a unique
+                    ! solution can not be found.
+                    info = k
+                    return
+                 end if
+              else if( cabs1( d( k ) )>=cabs1( dl( k ) ) ) then
+                 ! no row interchange required
+                 mult = dl( k ) / d( k )
+                 d( k+1 ) = d( k+1 ) - mult*du( k )
+                 do j = 1, nrhs
+                    b( k+1, j ) = b( k+1, j ) - mult*b( k, j )
+                 end do
+                 if( k<( n-1 ) )dl( k ) = czero
+              else
+                 ! interchange rows k and k+1
+                 mult = d( k ) / dl( k )
+                 d( k ) = dl( k )
+                 temp = d( k+1 )
+                 d( k+1 ) = du( k ) - mult*temp
+                 if( k<( n-1 ) ) then
+                    dl( k ) = du( k+1 )
+                    du( k+1 ) = -mult*dl( k )
+                 end if
+                 du( k ) = temp
+                 do j = 1, nrhs
+                    temp = b( k, j )
+                    b( k, j ) = b( k+1, j )
+                    b( k+1, j ) = temp - mult*b( k+1, j )
+                 end do
+              end if
+           end do loop_30
+           if( d( n )==czero ) then
+              info = n
+              return
+           end if
+           ! back solve with the matrix u from the factorization.
+           do j = 1, nrhs
+              b( n, j ) = b( n, j ) / d( n )
+              if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) / d( n-1 )
+              do k = n - 2, 1, -1
+                 b( k, j ) = ( b( k, j )-du( k )*b( k+1, j )-dl( k )*b( k+2, j ) ) / d( k )
+                           
+              end do
+           end do
+           return
+     end subroutine stdlib_cgtsv
+
+     pure subroutine stdlib_zgtsv( n, nrhs, dl, d, du, b, ldb, info )
+     !! ZGTSV solves the equation
+     !! A*X = B,
+     !! where A is an N-by-N tridiagonal matrix, by Gaussian elimination with
+     !! partial pivoting.
+     !! Note that the equation  A**T *X = B  may be solved by interchanging the
+     !! order of the arguments DU and DL.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, n, nrhs
+           ! Array Arguments 
+           complex(dp), intent(inout) :: b(ldb,*), d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j, k
+           complex(dp) :: mult, temp, zdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGTSV ', -info )
+              return
+           end if
+           if( n==0 )return
+           loop_30: do k = 1, n - 1
+              if( dl( k )==czero ) then
+                 ! subdiagonal is czero, no elimination is required.
+                 if( d( k )==czero ) then
+                    ! diagonal is czero: set info = k and return; a unique
+                    ! solution can not be found.
+                    info = k
+                    return
+                 end if
+              else if( cabs1( d( k ) )>=cabs1( dl( k ) ) ) then
+                 ! no row interchange required
+                 mult = dl( k ) / d( k )
+                 d( k+1 ) = d( k+1 ) - mult*du( k )
+                 do j = 1, nrhs
+                    b( k+1, j ) = b( k+1, j ) - mult*b( k, j )
+                 end do
+                 if( k<( n-1 ) )dl( k ) = czero
+              else
+                 ! interchange rows k and k+1
+                 mult = d( k ) / dl( k )
+                 d( k ) = dl( k )
+                 temp = d( k+1 )
+                 d( k+1 ) = du( k ) - mult*temp
+                 if( k<( n-1 ) ) then
+                    dl( k ) = du( k+1 )
+                    du( k+1 ) = -mult*dl( k )
+                 end if
+                 du( k ) = temp
+                 do j = 1, nrhs
+                    temp = b( k, j )
+                    b( k, j ) = b( k+1, j )
+                    b( k+1, j ) = temp - mult*b( k+1, j )
+                 end do
+              end if
+           end do loop_30
+           if( d( n )==czero ) then
+              info = n
+              return
+           end if
+           ! back solve with the matrix u from the factorization.
+           do j = 1, nrhs
+              b( n, j ) = b( n, j ) / d( n )
+              if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) / d( n-1 )
+              do k = n - 2, 1, -1
+                 b( k, j ) = ( b( k, j )-du( k )*b( k+1, j )-dl( k )*b( k+2, j ) ) / d( k )
+                           
+              end do
+           end do
+           return
+     end subroutine stdlib_zgtsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$gtsv( n, nrhs, dl, d, du, b, ldb, info )
+     !! ZGTSV:  solves the equation
+     !! A*X = B,
+     !! where A is an N-by-N tridiagonal matrix, by Gaussian elimination with
+     !! partial pivoting.
+     !! Note that the equation  A**T *X = B  may be solved by interchanging the
+     !! order of the arguments DU and DL.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, n, nrhs
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: b(ldb,*), d(*), dl(*), du(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j, k
+           complex(${ck}$) :: mult, temp, zdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGTSV ', -info )
+              return
+           end if
+           if( n==0 )return
+           loop_30: do k = 1, n - 1
+              if( dl( k )==czero ) then
+                 ! subdiagonal is czero, no elimination is required.
+                 if( d( k )==czero ) then
+                    ! diagonal is czero: set info = k and return; a unique
+                    ! solution can not be found.
+                    info = k
+                    return
+                 end if
+              else if( cabs1( d( k ) )>=cabs1( dl( k ) ) ) then
+                 ! no row interchange required
+                 mult = dl( k ) / d( k )
+                 d( k+1 ) = d( k+1 ) - mult*du( k )
+                 do j = 1, nrhs
+                    b( k+1, j ) = b( k+1, j ) - mult*b( k, j )
+                 end do
+                 if( k<( n-1 ) )dl( k ) = czero
+              else
+                 ! interchange rows k and k+1
+                 mult = d( k ) / dl( k )
+                 d( k ) = dl( k )
+                 temp = d( k+1 )
+                 d( k+1 ) = du( k ) - mult*temp
+                 if( k<( n-1 ) ) then
+                    dl( k ) = du( k+1 )
+                    du( k+1 ) = -mult*dl( k )
+                 end if
+                 du( k ) = temp
+                 do j = 1, nrhs
+                    temp = b( k, j )
+                    b( k, j ) = b( k+1, j )
+                    b( k+1, j ) = temp - mult*b( k+1, j )
+                 end do
+              end if
+           end do loop_30
+           if( d( n )==czero ) then
+              info = n
+              return
+           end if
+           ! back solve with the matrix u from the factorization.
+           do j = 1, nrhs
+              b( n, j ) = b( n, j ) / d( n )
+              if( n>1 )b( n-1, j ) = ( b( n-1, j )-du( n-1 )*b( n, j ) ) / d( n-1 )
+              do k = n - 2, 1, -1
+                 b( k, j ) = ( b( k, j )-du( k )*b( k+1, j )-dl( k )*b( k+2, j ) ) / d( k )
+                           
+              end do
+           end do
+           return
+     end subroutine stdlib_${ci}$gtsv
+
+#:endif
+#:endfor
+
+
+
+
+
+     pure subroutine stdlib_sgesv( n, nrhs, a, lda, ipiv, b, ldb, info )
+     !! SGESV computes the solution to a real system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as
+     !! A = P * L * U,
+     !! where P is a permutation matrix, L is unit lower triangular, and U is
+     !! upper triangular.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           real(sp), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SGESV ', -info )
+              return
+           end if
+           ! compute the lu factorization of a.
+           call stdlib_sgetrf( n, n, a, lda, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_sgetrs( 'NO TRANSPOSE', n, nrhs, a, lda, ipiv, b, ldb,info )
+           end if
+           return
+     end subroutine stdlib_sgesv
+
+     pure subroutine stdlib_dgesv( n, nrhs, a, lda, ipiv, b, ldb, info )
+     !! DGESV computes the solution to a real system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as
+     !! A = P * L * U,
+     !! where P is a permutation matrix, L is unit lower triangular, and U is
+     !! upper triangular.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           real(dp), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGESV ', -info )
+              return
+           end if
+           ! compute the lu factorization of a.
+           call stdlib_dgetrf( n, n, a, lda, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_dgetrs( 'NO TRANSPOSE', n, nrhs, a, lda, ipiv, b, ldb,info )
+           end if
+           return
+     end subroutine stdlib_dgesv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$gesv( n, nrhs, a, lda, ipiv, b, ldb, info )
+     !! DGESV: computes the solution to a real system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as
+     !! A = P * L * U,
+     !! where P is a permutation matrix, L is unit lower triangular, and U is
+     !! upper triangular.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           real(${rk}$), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGESV ', -info )
+              return
+           end if
+           ! compute the lu factorization of a.
+           call stdlib_${ri}$getrf( n, n, a, lda, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_${ri}$getrs( 'NO TRANSPOSE', n, nrhs, a, lda, ipiv, b, ldb,info )
+           end if
+           return
+     end subroutine stdlib_${ri}$gesv
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_cgesv( n, nrhs, a, lda, ipiv, b, ldb, info )
+     !! CGESV computes the solution to a complex system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as
+     !! A = P * L * U,
+     !! where P is a permutation matrix, L is unit lower triangular, and U is
+     !! upper triangular.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           complex(sp), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CGESV ', -info )
+              return
+           end if
+           ! compute the lu factorization of a.
+           call stdlib_cgetrf( n, n, a, lda, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_cgetrs( 'NO TRANSPOSE', n, nrhs, a, lda, ipiv, b, ldb,info )
+           end if
+           return
+     end subroutine stdlib_cgesv
+
+     pure subroutine stdlib_zgesv( n, nrhs, a, lda, ipiv, b, ldb, info )
+     !! ZGESV computes the solution to a complex system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as
+     !! A = P * L * U,
+     !! where P is a permutation matrix, L is unit lower triangular, and U is
+     !! upper triangular.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           complex(dp), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGESV ', -info )
+              return
+           end if
+           ! compute the lu factorization of a.
+           call stdlib_zgetrf( n, n, a, lda, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_zgetrs( 'NO TRANSPOSE', n, nrhs, a, lda, ipiv, b, ldb,info )
+           end if
+           return
+     end subroutine stdlib_zgesv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$gesv( n, nrhs, a, lda, ipiv, b, ldb, info )
+     !! ZGESV: computes the solution to a complex system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
+     !! The LU decomposition with partial pivoting and row interchanges is
+     !! used to factor A as
+     !! A = P * L * U,
+     !! where P is a permutation matrix, L is unit lower triangular, and U is
+     !! upper triangular.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldb, n, nrhs
+           ! Array Arguments 
+           integer(ilp), intent(out) :: ipiv(*)
+           complex(${ck}$), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           if( n<0 ) then
+              info = -1
+           else if( nrhs<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -7
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGESV ', -info )
+              return
+           end if
+           ! compute the lu factorization of a.
+           call stdlib_${ci}$getrf( n, n, a, lda, ipiv, info )
+           if( info==0 ) then
+              ! solve the system a*x = b, overwriting b with x.
+              call stdlib_${ci}$getrs( 'NO TRANSPOSE', n, nrhs, a, lda, ipiv, b, ldb,info )
+           end if
+           return
+     end subroutine stdlib_${ci}$gesv
+
+#:endif
+#:endfor
+
+
+
+     pure subroutine stdlib_sgtsvx( fact, trans, n, nrhs, dl, d, du, dlf, df, duf,du2, ipiv, b, &
+     !! SGTSVX uses the LU factorization to compute the solution to a real
+     !! system of linear equations A * X = B or A**T * X = B,
+     !! where A is a tridiagonal matrix of order N and X and B are N-by-NRHS
+     !! matrices.
+     !! Error bounds on the solution and a condition estimate are also
+     !! provided.
+               ldb, x, ldx, rcond, ferr, berr,work, iwork, info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: fact, trans
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(sp), intent(out) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: ipiv(*)
+           integer(ilp), intent(out) :: iwork(*)
+           real(sp), intent(in) :: b(ldb,*), d(*), dl(*), du(*)
+           real(sp), intent(out) :: berr(*), ferr(*), work(*), x(ldx,*)
+           real(sp), intent(inout) :: df(*), dlf(*), du2(*), duf(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: nofact, notran
+           character :: norm
+           real(sp) :: anorm
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           nofact = stdlib_lsame( fact, 'N' )
+           notran = stdlib_lsame( trans, 'N' )
+           if( .not.nofact .and. .not.stdlib_lsame( fact, 'F' ) ) then
+              info = -1
+           else if( .not.notran .and. .not.stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -14
+           else if( ldx<max( 1, n ) ) then
+              info = -16
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SGTSVX', -info )
+              return
+           end if
+           if( nofact ) then
+              ! compute the lu factorization of a.
+              call stdlib_scopy( n, d, 1, df, 1 )
+              if( n>1 ) then
+                 call stdlib_scopy( n-1, dl, 1, dlf, 1 )
+                 call stdlib_scopy( n-1, du, 1, duf, 1 )
+              end if
+              call stdlib_sgttrf( n, dlf, df, duf, du2, ipiv, info )
+              ! return if info is non-zero.
+              if( info>0 )then
+                 rcond = zero
+                 return
+              end if
+           end if
+           ! compute the norm of the matrix a.
+           if( notran ) then
+              norm = '1'
+           else
+              norm = 'I'
+           end if
+           anorm = stdlib_slangt( norm, n, dl, d, du )
+           ! compute the reciprocal of the condition number of a.
+           call stdlib_sgtcon( norm, n, dlf, df, duf, du2, ipiv, anorm, rcond, work,iwork, info )
+                     
+           ! compute the solution vectors x.
+           call stdlib_slacpy( 'FULL', n, nrhs, b, ldb, x, ldx )
+           call stdlib_sgttrs( trans, n, nrhs, dlf, df, duf, du2, ipiv, x, ldx,info )
+           ! use iterative refinement to improve the computed solutions and
+           ! compute error bounds and backward error estimates for them.
+           call stdlib_sgtrfs( trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv,b, ldb, x, ldx, &
+                     ferr, berr, work, iwork, info )
+           ! set info = n+1 if the matrix is singular to working precision.
+           if( rcond<stdlib_slamch( 'EPSILON' ) )info = n + 1
+           return
+     end subroutine stdlib_sgtsvx
+
+     pure subroutine stdlib_dgtsvx( fact, trans, n, nrhs, dl, d, du, dlf, df, duf,du2, ipiv, b, &
+     !! DGTSVX uses the LU factorization to compute the solution to a real
+     !! system of linear equations A * X = B or A**T * X = B,
+     !! where A is a tridiagonal matrix of order N and X and B are N-by-NRHS
+     !! matrices.
+     !! Error bounds on the solution and a condition estimate are also
+     !! provided.
+               ldb, x, ldx, rcond, ferr, berr,work, iwork, info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: fact, trans
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(dp), intent(out) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: ipiv(*)
+           integer(ilp), intent(out) :: iwork(*)
+           real(dp), intent(in) :: b(ldb,*), d(*), dl(*), du(*)
+           real(dp), intent(out) :: berr(*), ferr(*), work(*), x(ldx,*)
+           real(dp), intent(inout) :: df(*), dlf(*), du2(*), duf(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: nofact, notran
+           character :: norm
+           real(dp) :: anorm
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           nofact = stdlib_lsame( fact, 'N' )
+           notran = stdlib_lsame( trans, 'N' )
+           if( .not.nofact .and. .not.stdlib_lsame( fact, 'F' ) ) then
+              info = -1
+           else if( .not.notran .and. .not.stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -14
+           else if( ldx<max( 1, n ) ) then
+              info = -16
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGTSVX', -info )
+              return
+           end if
+           if( nofact ) then
+              ! compute the lu factorization of a.
+              call stdlib_dcopy( n, d, 1, df, 1 )
+              if( n>1 ) then
+                 call stdlib_dcopy( n-1, dl, 1, dlf, 1 )
+                 call stdlib_dcopy( n-1, du, 1, duf, 1 )
+              end if
+              call stdlib_dgttrf( n, dlf, df, duf, du2, ipiv, info )
+              ! return if info is non-zero.
+              if( info>0 )then
+                 rcond = zero
+                 return
+              end if
+           end if
+           ! compute the norm of the matrix a.
+           if( notran ) then
+              norm = '1'
+           else
+              norm = 'I'
+           end if
+           anorm = stdlib_dlangt( norm, n, dl, d, du )
+           ! compute the reciprocal of the condition number of a.
+           call stdlib_dgtcon( norm, n, dlf, df, duf, du2, ipiv, anorm, rcond, work,iwork, info )
+                     
+           ! compute the solution vectors x.
+           call stdlib_dlacpy( 'FULL', n, nrhs, b, ldb, x, ldx )
+           call stdlib_dgttrs( trans, n, nrhs, dlf, df, duf, du2, ipiv, x, ldx,info )
+           ! use iterative refinement to improve the computed solutions and
+           ! compute error bounds and backward error estimates for them.
+           call stdlib_dgtrfs( trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv,b, ldb, x, ldx, &
+                     ferr, berr, work, iwork, info )
+           ! set info = n+1 if the matrix is singular to working precision.
+           if( rcond<stdlib_dlamch( 'EPSILON' ) )info = n + 1
+           return
+     end subroutine stdlib_dgtsvx
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$gtsvx( fact, trans, n, nrhs, dl, d, du, dlf, df, duf,du2, ipiv, b, &
+     !! DGTSVX: uses the LU factorization to compute the solution to a real
+     !! system of linear equations A * X = B or A**T * X = B,
+     !! where A is a tridiagonal matrix of order N and X and B are N-by-NRHS
+     !! matrices.
+     !! Error bounds on the solution and a condition estimate are also
+     !! provided.
+               ldb, x, ldx, rcond, ferr, berr,work, iwork, info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: fact, trans
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(${rk}$), intent(out) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: ipiv(*)
+           integer(ilp), intent(out) :: iwork(*)
+           real(${rk}$), intent(in) :: b(ldb,*), d(*), dl(*), du(*)
+           real(${rk}$), intent(out) :: berr(*), ferr(*), work(*), x(ldx,*)
+           real(${rk}$), intent(inout) :: df(*), dlf(*), du2(*), duf(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: nofact, notran
+           character :: norm
+           real(${rk}$) :: anorm
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           nofact = stdlib_lsame( fact, 'N' )
+           notran = stdlib_lsame( trans, 'N' )
+           if( .not.nofact .and. .not.stdlib_lsame( fact, 'F' ) ) then
+              info = -1
+           else if( .not.notran .and. .not.stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -14
+           else if( ldx<max( 1, n ) ) then
+              info = -16
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGTSVX', -info )
+              return
+           end if
+           if( nofact ) then
+              ! compute the lu factorization of a.
+              call stdlib_${ri}$copy( n, d, 1, df, 1 )
+              if( n>1 ) then
+                 call stdlib_${ri}$copy( n-1, dl, 1, dlf, 1 )
+                 call stdlib_${ri}$copy( n-1, du, 1, duf, 1 )
+              end if
+              call stdlib_${ri}$gttrf( n, dlf, df, duf, du2, ipiv, info )
+              ! return if info is non-zero.
+              if( info>0 )then
+                 rcond = zero
+                 return
+              end if
+           end if
+           ! compute the norm of the matrix a.
+           if( notran ) then
+              norm = '1'
+           else
+              norm = 'I'
+           end if
+           anorm = stdlib_${ri}$langt( norm, n, dl, d, du )
+           ! compute the reciprocal of the condition number of a.
+           call stdlib_${ri}$gtcon( norm, n, dlf, df, duf, du2, ipiv, anorm, rcond, work,iwork, info )
+                     
+           ! compute the solution vectors x.
+           call stdlib_${ri}$lacpy( 'FULL', n, nrhs, b, ldb, x, ldx )
+           call stdlib_${ri}$gttrs( trans, n, nrhs, dlf, df, duf, du2, ipiv, x, ldx,info )
+           ! use iterative refinement to improve the computed solutions and
+           ! compute error bounds and backward error estimates for them.
+           call stdlib_${ri}$gtrfs( trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv,b, ldb, x, ldx, &
+                     ferr, berr, work, iwork, info )
+           ! set info = n+1 if the matrix is singular to working precision.
+           if( rcond<stdlib_${ri}$lamch( 'EPSILON' ) )info = n + 1
+           return
+     end subroutine stdlib_${ri}$gtsvx
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_cgtsvx( fact, trans, n, nrhs, dl, d, du, dlf, df, duf,du2, ipiv, b, &
+     !! CGTSVX uses the LU factorization to compute the solution to a complex
+     !! system of linear equations A * X = B, A**T * X = B, or A**H * X = B,
+     !! where A is a tridiagonal matrix of order N and X and B are N-by-NRHS
+     !! matrices.
+     !! Error bounds on the solution and a condition estimate are also
+     !! provided.
+               ldb, x, ldx, rcond, ferr, berr,work, rwork, info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: fact, trans
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(sp), intent(out) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: ipiv(*)
+           real(sp), intent(out) :: berr(*), ferr(*), rwork(*)
+           complex(sp), intent(in) :: b(ldb,*), d(*), dl(*), du(*)
+           complex(sp), intent(inout) :: df(*), dlf(*), du2(*), duf(*)
+           complex(sp), intent(out) :: work(*), x(ldx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: nofact, notran
+           character :: norm
+           real(sp) :: anorm
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           nofact = stdlib_lsame( fact, 'N' )
+           notran = stdlib_lsame( trans, 'N' )
+           if( .not.nofact .and. .not.stdlib_lsame( fact, 'F' ) ) then
+              info = -1
+           else if( .not.notran .and. .not.stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -14
+           else if( ldx<max( 1, n ) ) then
+              info = -16
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CGTSVX', -info )
+              return
+           end if
+           if( nofact ) then
+              ! compute the lu factorization of a.
+              call stdlib_ccopy( n, d, 1, df, 1 )
+              if( n>1 ) then
+                 call stdlib_ccopy( n-1, dl, 1, dlf, 1 )
+                 call stdlib_ccopy( n-1, du, 1, duf, 1 )
+              end if
+              call stdlib_cgttrf( n, dlf, df, duf, du2, ipiv, info )
+              ! return if info is non-zero.
+              if( info>0 )then
+                 rcond = zero
+                 return
+              end if
+           end if
+           ! compute the norm of the matrix a.
+           if( notran ) then
+              norm = '1'
+           else
+              norm = 'I'
+           end if
+           anorm = stdlib_clangt( norm, n, dl, d, du )
+           ! compute the reciprocal of the condition number of a.
+           call stdlib_cgtcon( norm, n, dlf, df, duf, du2, ipiv, anorm, rcond, work,info )
+           ! compute the solution vectors x.
+           call stdlib_clacpy( 'FULL', n, nrhs, b, ldb, x, ldx )
+           call stdlib_cgttrs( trans, n, nrhs, dlf, df, duf, du2, ipiv, x, ldx,info )
+           ! use iterative refinement to improve the computed solutions and
+           ! compute error bounds and backward error estimates for them.
+           call stdlib_cgtrfs( trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv,b, ldb, x, ldx, &
+                     ferr, berr, work, rwork, info )
+           ! set info = n+1 if the matrix is singular to working precision.
+           if( rcond<stdlib_slamch( 'EPSILON' ) )info = n + 1
+           return
+     end subroutine stdlib_cgtsvx
+
+     pure subroutine stdlib_zgtsvx( fact, trans, n, nrhs, dl, d, du, dlf, df, duf,du2, ipiv, b, &
+     !! ZGTSVX uses the LU factorization to compute the solution to a complex
+     !! system of linear equations A * X = B, A**T * X = B, or A**H * X = B,
+     !! where A is a tridiagonal matrix of order N and X and B are N-by-NRHS
+     !! matrices.
+     !! Error bounds on the solution and a condition estimate are also
+     !! provided.
+               ldb, x, ldx, rcond, ferr, berr,work, rwork, info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: fact, trans
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(dp), intent(out) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: ipiv(*)
+           real(dp), intent(out) :: berr(*), ferr(*), rwork(*)
+           complex(dp), intent(in) :: b(ldb,*), d(*), dl(*), du(*)
+           complex(dp), intent(inout) :: df(*), dlf(*), du2(*), duf(*)
+           complex(dp), intent(out) :: work(*), x(ldx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: nofact, notran
+           character :: norm
+           real(dp) :: anorm
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           nofact = stdlib_lsame( fact, 'N' )
+           notran = stdlib_lsame( trans, 'N' )
+           if( .not.nofact .and. .not.stdlib_lsame( fact, 'F' ) ) then
+              info = -1
+           else if( .not.notran .and. .not.stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -14
+           else if( ldx<max( 1, n ) ) then
+              info = -16
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGTSVX', -info )
+              return
+           end if
+           if( nofact ) then
+              ! compute the lu factorization of a.
+              call stdlib_zcopy( n, d, 1, df, 1 )
+              if( n>1 ) then
+                 call stdlib_zcopy( n-1, dl, 1, dlf, 1 )
+                 call stdlib_zcopy( n-1, du, 1, duf, 1 )
+              end if
+              call stdlib_zgttrf( n, dlf, df, duf, du2, ipiv, info )
+              ! return if info is non-zero.
+              if( info>0 )then
+                 rcond = zero
+                 return
+              end if
+           end if
+           ! compute the norm of the matrix a.
+           if( notran ) then
+              norm = '1'
+           else
+              norm = 'I'
+           end if
+           anorm = stdlib_zlangt( norm, n, dl, d, du )
+           ! compute the reciprocal of the condition number of a.
+           call stdlib_zgtcon( norm, n, dlf, df, duf, du2, ipiv, anorm, rcond, work,info )
+           ! compute the solution vectors x.
+           call stdlib_zlacpy( 'FULL', n, nrhs, b, ldb, x, ldx )
+           call stdlib_zgttrs( trans, n, nrhs, dlf, df, duf, du2, ipiv, x, ldx,info )
+           ! use iterative refinement to improve the computed solutions and
+           ! compute error bounds and backward error estimates for them.
+           call stdlib_zgtrfs( trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv,b, ldb, x, ldx, &
+                     ferr, berr, work, rwork, info )
+           ! set info = n+1 if the matrix is singular to working precision.
+           if( rcond<stdlib_dlamch( 'EPSILON' ) )info = n + 1
+           return
+     end subroutine stdlib_zgtsvx
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$gtsvx( fact, trans, n, nrhs, dl, d, du, dlf, df, duf,du2, ipiv, b, &
+     !! ZGTSVX: uses the LU factorization to compute the solution to a complex
+     !! system of linear equations A * X = B, A**T * X = B, or A**H * X = B,
+     !! where A is a tridiagonal matrix of order N and X and B are N-by-NRHS
+     !! matrices.
+     !! Error bounds on the solution and a condition estimate are also
+     !! provided.
+               ldb, x, ldx, rcond, ferr, berr,work, rwork, info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: fact, trans
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(${ck}$), intent(out) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: ipiv(*)
+           real(${ck}$), intent(out) :: berr(*), ferr(*), rwork(*)
+           complex(${ck}$), intent(in) :: b(ldb,*), d(*), dl(*), du(*)
+           complex(${ck}$), intent(inout) :: df(*), dlf(*), du2(*), duf(*)
+           complex(${ck}$), intent(out) :: work(*), x(ldx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: nofact, notran
+           character :: norm
+           real(${ck}$) :: anorm
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           info = 0
+           nofact = stdlib_lsame( fact, 'N' )
+           notran = stdlib_lsame( trans, 'N' )
+           if( .not.nofact .and. .not.stdlib_lsame( fact, 'F' ) ) then
+              info = -1
+           else if( .not.notran .and. .not.stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -14
+           else if( ldx<max( 1, n ) ) then
+              info = -16
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGTSVX', -info )
+              return
+           end if
+           if( nofact ) then
+              ! compute the lu factorization of a.
+              call stdlib_${ci}$copy( n, d, 1, df, 1 )
+              if( n>1 ) then
+                 call stdlib_${ci}$copy( n-1, dl, 1, dlf, 1 )
+                 call stdlib_${ci}$copy( n-1, du, 1, duf, 1 )
+              end if
+              call stdlib_${ci}$gttrf( n, dlf, df, duf, du2, ipiv, info )
+              ! return if info is non-zero.
+              if( info>0 )then
+                 rcond = zero
+                 return
+              end if
+           end if
+           ! compute the norm of the matrix a.
+           if( notran ) then
+              norm = '1'
+           else
+              norm = 'I'
+           end if
+           anorm = stdlib_${ci}$langt( norm, n, dl, d, du )
+           ! compute the reciprocal of the condition number of a.
+           call stdlib_${ci}$gtcon( norm, n, dlf, df, duf, du2, ipiv, anorm, rcond, work,info )
+           ! compute the solution vectors x.
+           call stdlib_${ci}$lacpy( 'FULL', n, nrhs, b, ldb, x, ldx )
+           call stdlib_${ci}$gttrs( trans, n, nrhs, dlf, df, duf, du2, ipiv, x, ldx,info )
+           ! use iterative refinement to improve the computed solutions and
+           ! compute error bounds and backward error estimates for them.
+           call stdlib_${ci}$gtrfs( trans, n, nrhs, dl, d, du, dlf, df, duf, du2, ipiv,b, ldb, x, ldx, &
+                     ferr, berr, work, rwork, info )
+           ! set info = n+1 if the matrix is singular to working precision.
+           if( rcond<stdlib_${c2ri(ci)}$lamch( 'EPSILON' ) )info = n + 1
+           return
+     end subroutine stdlib_${ci}$gtsvx
+
+#:endif
+#:endfor
+
+
+
+
+
+
+end module stdlib_lapack_solve_lu

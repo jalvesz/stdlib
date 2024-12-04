@@ -1227,11 +1227,9 @@ module stdlib_linalg_blas_s
            real(sp), intent(inout) :: sx(*), sy(*)
         ! =====================================================================
            ! Local Scalars 
-           real(sp) :: sflag, sh11, sh12, sh21, sh22, two, w, z, zero
+           real(sp) :: sflag, sh11, sh12, sh21, sh22, w, z
            integer(ilp) :: i, kx, ky, nsteps
            ! Data Statements 
-           zero = 0.0_sp
-           two = 2.0_sp
            sflag = sparam(1)
            if (n<=0 .or. (sflag+two==zero)) return
            if (incx==incy.and.incx>0) then
@@ -1335,14 +1333,11 @@ module stdlib_linalg_blas_s
            real(sp), intent(out) :: sparam(5)
         ! =====================================================================
            ! Local Scalars 
-           real(sp) :: gam, gamsq, one, rgamsq, sflag, sh11, sh12, sh21, sh22, sp1, sp2, sq1, sq2,&
-                      stemp, su, two, zero
+           real(sp) :: gam, gamsq, rgamsq, sflag, sh11, sh12, sh21, sh22, sp1, sp2, sq1, sq2,&
+                      stemp, su
            ! Intrinsic Functions 
            intrinsic :: abs
            ! Data Statements 
-           zero = 0.0_sp
-           one = 1.0_sp
-           two = 2.0_sp
            gam = 4096.0_sp
            gamsq = 1.67772e7_sp
            rgamsq = 5.96046e-8_sp

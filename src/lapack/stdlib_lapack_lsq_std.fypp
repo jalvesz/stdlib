@@ -1,0 +1,22 @@
+#:include "common.fypp" 
+module stdlib_lapack_lsq_std
+  use stdlib_linalg_constants
+  use stdlib_linalg_lapack_aux
+  use stdlib_linalg_blas
+  implicit none(type,external)
+
+
+  contains
+
+
+
+
+
+
+
+
+
+
+
+
+end module stdlib_lapack_lsq_std

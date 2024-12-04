@@ -4,9 +4,52 @@ module stdlib_linalg_lapack
      use stdlib_linalg_constants
      use stdlib_linalg_blas
      use stdlib_linalg_lapack_aux
-     #:for rk,rt,ri in RC_KINDS_TYPES
-     use stdlib_linalg_lapack_${ri}$
-     #:endfor     
+
+     use stdlib_lapack_auxiliary_error
+     use stdlib_lapack_auxiliary_others
+     use stdlib_lapack_auxiliary_parameters
+
+     use stdlib_lapack_blas_like_base
+     
+     use stdlib_lapack_blas_like_l1
+     use stdlib_lapack_blas_like_l2
+     use stdlib_lapack_blas_like_l3
+     use stdlib_lapack_blas_like_mnorm
+     use stdlib_lapack_blas_like_scalar
+     use stdlib_lapack_cosine_sine
+
+     use stdlib_lapack_eigv_comp
+     use stdlib_lapack_eigv_gen
+     use stdlib_lapack_eigv_sym_comp
+     use stdlib_lapack_eigv_sym
+
+     use stdlib_lapack_givens_jacobi_rot
+     use stdlib_lapack_householder_reflectors
+
+     use stdlib_lapack_lsq_aux
+     use stdlib_lapack_lsq_constrained
+     use stdlib_lapack_lsq_std
+
+     use stdlib_lapack_orthogonal_factors_lq
+     use stdlib_lapack_orthogonal_factors_ql
+     use stdlib_lapack_orthogonal_factors_qr
+     use stdlib_lapack_orthogonal_factors_rq
+     use stdlib_lapack_orthogonal_factors_rz
+     
+     use stdlib_lapack_solve_aux
+     use stdlib_lapack_solve_chol_comp
+     use stdlib_lapack_solve_chol
+     use stdlib_lapack_solve_ldl_comp
+     use stdlib_lapack_solve_ldl
+     use stdlib_lapack_solve_lu_comp
+     use stdlib_lapack_solve_lu
+     use stdlib_lapack_solve_tri_comp
+
+     use stdlib_lapack_svd_bidiag_dc
+     use stdlib_lapack_svd_bidiag_qr
+     use stdlib_lapack_svd_comp
+     use stdlib_lapack_svd_drivers
+     
      implicit none(type,external)
      public
 

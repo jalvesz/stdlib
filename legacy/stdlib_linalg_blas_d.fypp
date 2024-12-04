@@ -1,112 +1,108 @@
 #:include "common.fypp" 
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-module stdlib_linalg_blas_${ri}$
+module stdlib_linalg_blas_d
      use stdlib_linalg_constants
      use stdlib_linalg_blas_aux
      use stdlib_linalg_blas_s
      use stdlib_linalg_blas_c
-     use stdlib_linalg_blas_d
-     use stdlib_linalg_blas_z
      implicit none(type,external)
      private
 
 
-     public :: sp,dp,${rk}$,lk,ilp
-     public :: stdlib_${ri}$asum
-     public :: stdlib_${ri}$axpy
-     public :: stdlib_${ri}$copy
-     public :: stdlib_${ri}$dot
-     public :: stdlib_${ri}$gbmv
-     public :: stdlib_${ri}$gemm
-     public :: stdlib_${ri}$gemv
-     public :: stdlib_${ri}$ger
-     public :: stdlib_${ri}$nrm2
-     public :: stdlib_${ri}$rot
-     public :: stdlib_${ri}$rotg
-     public :: stdlib_${ri}$rotm
-     public :: stdlib_${ri}$rotmg
-     public :: stdlib_${ri}$sbmv
-     public :: stdlib_${ri}$scal
-     public :: stdlib_${ri}$sdot
-     public :: stdlib_${ri}$spmv
-     public :: stdlib_${ri}$spr
-     public :: stdlib_${ri}$spr2
-     public :: stdlib_${ri}$swap
-     public :: stdlib_${ri}$symm
-     public :: stdlib_${ri}$symv
-     public :: stdlib_${ri}$syr
-     public :: stdlib_${ri}$syr2
-     public :: stdlib_${ri}$syr2k
-     public :: stdlib_${ri}$syrk
-     public :: stdlib_${ri}$tbmv
-     public :: stdlib_${ri}$tbsv
-     public :: stdlib_${ri}$tpmv
-     public :: stdlib_${ri}$tpsv
-     public :: stdlib_${ri}$trmm
-     public :: stdlib_${ri}$trmv
-     public :: stdlib_${ri}$trsm
-     public :: stdlib_${ri}$trsv
-     public :: stdlib_${ri}$zasum
-     public :: stdlib_${ri}$znrm2
+     public :: sp,dp,qp,lk,ilp
+     public :: stdlib_dasum
+     public :: stdlib_daxpy
+     public :: stdlib_dcopy
+     public :: stdlib_ddot
+     public :: stdlib_dgbmv
+     public :: stdlib_dgemm
+     public :: stdlib_dgemv
+     public :: stdlib_dger
+     public :: stdlib_dnrm2
+     public :: stdlib_drot
+     public :: stdlib_drotg
+     public :: stdlib_drotm
+     public :: stdlib_drotmg
+     public :: stdlib_dsbmv
+     public :: stdlib_dscal
+     public :: stdlib_dsdot
+     public :: stdlib_dspmv
+     public :: stdlib_dspr
+     public :: stdlib_dspr2
+     public :: stdlib_dswap
+     public :: stdlib_dsymm
+     public :: stdlib_dsymv
+     public :: stdlib_dsyr
+     public :: stdlib_dsyr2
+     public :: stdlib_dsyr2k
+     public :: stdlib_dsyrk
+     public :: stdlib_dtbmv
+     public :: stdlib_dtbsv
+     public :: stdlib_dtpmv
+     public :: stdlib_dtpsv
+     public :: stdlib_dtrmm
+     public :: stdlib_dtrmv
+     public :: stdlib_dtrsm
+     public :: stdlib_dtrsv
+     public :: stdlib_dzasum
+     public :: stdlib_dznrm2
 
-     ! 128-bit real constants 
-     real(${rk}$),    parameter, private ::     negone = -1.00_${rk}$
-     real(${rk}$),    parameter, private ::       zero = 0.00_${rk}$
-     real(${rk}$),    parameter, private ::       half = 0.50_${rk}$
-     real(${rk}$),    parameter, private ::        one = 1.00_${rk}$
-     real(${rk}$),    parameter, private ::        two = 2.00_${rk}$
-     real(${rk}$),    parameter, private ::      three = 3.00_${rk}$
-     real(${rk}$),    parameter, private ::       four = 4.00_${rk}$
-     real(${rk}$),    parameter, private ::      eight = 8.00_${rk}$
-     real(${rk}$),    parameter, private ::        ten = 10.00_${rk}$
+     ! 64-bit real constants 
+     real(dp),    parameter, private ::     negone = -1.00_dp
+     real(dp),    parameter, private ::       zero = 0.00_dp
+     real(dp),    parameter, private ::       half = 0.50_dp
+     real(dp),    parameter, private ::        one = 1.00_dp
+     real(dp),    parameter, private ::        two = 2.00_dp
+     real(dp),    parameter, private ::      three = 3.00_dp
+     real(dp),    parameter, private ::       four = 4.00_dp
+     real(dp),    parameter, private ::      eight = 8.00_dp
+     real(dp),    parameter, private ::        ten = 10.00_dp
 
-     ! 128-bit complex constants 
-     complex(${rk}$), parameter, private :: czero   = ( 0.0_${rk}$,0.0_${rk}$)
-     complex(${rk}$), parameter, private :: chalf   = ( 0.5_${rk}$,0.0_${rk}$)
-     complex(${rk}$), parameter, private :: cone    = ( 1.0_${rk}$,0.0_${rk}$)
-     complex(${rk}$), parameter, private :: cnegone = (-1.0_${rk}$,0.0_${rk}$)
+     ! 64-bit complex constants 
+     complex(dp), parameter, private :: czero   = ( 0.0_dp,0.0_dp)
+     complex(dp), parameter, private :: chalf   = ( 0.5_dp,0.0_dp)
+     complex(dp), parameter, private :: cone    = ( 1.0_dp,0.0_dp)
+     complex(dp), parameter, private :: cnegone = (-1.0_dp,0.0_dp)
 
-     ! 128-bit scaling constants 
+     ! 64-bit scaling constants 
      integer,     parameter, private :: maxexp = maxexponent(zero) 
      integer,     parameter, private :: minexp = minexponent(zero) 
-     real(${rk}$),    parameter, private :: rradix = real(radix(zero),${rk}$) 
-     real(${rk}$),    parameter, private :: ulp    = epsilon(zero) 
-     real(${rk}$),    parameter, private :: eps    = ulp*half 
-     real(${rk}$),    parameter, private :: safmin = rradix**max(minexp-1,1-maxexp) 
-     real(${rk}$),    parameter, private :: safmax = one/safmin 
-     real(${rk}$),    parameter, private :: smlnum = safmin/ulp 
-     real(${rk}$),    parameter, private :: bignum = safmax*ulp 
-     real(${rk}$),    parameter, private :: rtmin  = sqrt(smlnum) 
-     real(${rk}$),    parameter, private :: rtmax  = sqrt(bignum) 
+     real(dp),    parameter, private :: rradix = real(radix(zero),dp) 
+     real(dp),    parameter, private :: ulp    = epsilon(zero) 
+     real(dp),    parameter, private :: eps    = ulp*half 
+     real(dp),    parameter, private :: safmin = rradix**max(minexp-1,1-maxexp) 
+     real(dp),    parameter, private :: safmax = one/safmin 
+     real(dp),    parameter, private :: smlnum = safmin/ulp 
+     real(dp),    parameter, private :: bignum = safmax*ulp 
+     real(dp),    parameter, private :: rtmin  = sqrt(smlnum) 
+     real(dp),    parameter, private :: rtmax  = sqrt(bignum) 
 
-     ! 128-bit Blue's scaling constants 
+     ! 64-bit Blue's scaling constants 
      ! ssml>=1/s and sbig==1/S with s,S as defined in https://doi.org/10.1145/355769.355771 
-     real(${rk}$),    parameter, private :: tsml   = rradix**ceiling((minexp-1)*half) 
-     real(${rk}$),    parameter, private :: tbig   = rradix**floor((maxexp-digits(zero)+1)*half) 
-     real(${rk}$),    parameter, private :: ssml   = rradix**(-floor((minexp-digits(zero))*half)) 
-     real(${rk}$),    parameter, private :: sbig   = rradix**(-ceiling((maxexp+digits(zero)-1)*half)) 
+     real(dp),    parameter, private :: tsml   = rradix**ceiling((minexp-1)*half) 
+     real(dp),    parameter, private :: tbig   = rradix**floor((maxexp-digits(zero)+1)*half) 
+     real(dp),    parameter, private :: ssml   = rradix**(-floor((minexp-digits(zero))*half)) 
+     real(dp),    parameter, private :: sbig   = rradix**(-ceiling((maxexp+digits(zero)-1)*half)) 
 
 
      contains
 
 
-     pure real(${rk}$) function stdlib_${ri}$asum(n,dx,incx)
-     !! DASUM: takes the sum of the absolute values.
+     pure real(dp) function stdlib_dasum(n,dx,incx)
+     !! DASUM takes the sum of the absolute values.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, n
            ! Array Arguments 
-           real(${rk}$), intent(in) :: dx(*)
+           real(dp), intent(in) :: dx(*)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: dtemp
+           real(dp) :: dtemp
            integer(ilp) :: i, m, mp1, nincx
            ! Intrinsic Functions 
            intrinsic :: abs,mod
-           stdlib_${ri}$asum = zero
+           stdlib_dasum = zero
            dtemp = zero
            if (n<=0 .or. incx<=0) return
            if (incx==1) then
@@ -118,7 +114,7 @@ module stdlib_linalg_blas_${ri}$
                     dtemp = dtemp + abs(dx(i))
                  end do
                  if (n<6) then
-                    stdlib_${ri}$asum = dtemp
+                    stdlib_dasum = dtemp
                     return
                  end if
               end if
@@ -134,30 +130,30 @@ module stdlib_linalg_blas_${ri}$
                  dtemp = dtemp + abs(dx(i))
               end do
            end if
-           stdlib_${ri}$asum = dtemp
+           stdlib_dasum = dtemp
            return
-     end function stdlib_${ri}$asum
+     end function stdlib_dasum
 
 
-     pure subroutine stdlib_${ri}$axpy(n,da,dx,incx,dy,incy)
-     !! DAXPY: constant times a vector plus a vector.
+     pure subroutine stdlib_daxpy(n,da,dx,incx,dy,incy)
+     !! DAXPY constant times a vector plus a vector.
      !! uses unrolled loops for increments equal to one.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: da
+           real(dp), intent(in) :: da
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(${rk}$), intent(in) :: dx(*)
-           real(${rk}$), intent(inout) :: dy(*)
+           real(dp), intent(in) :: dx(*)
+           real(dp), intent(inout) :: dy(*)
         ! =====================================================================
            ! Local Scalars 
            integer(ilp) :: i, ix, iy, m, mp1
            ! Intrinsic Functions 
            intrinsic :: mod
            if (n<=0) return
-           if (da==0.0_${rk}$) return
+           if (da==0.0_dp) return
            if (incx==1 .and. incy==1) then
               ! code for both increments equal to 1
               ! clean-up loop
@@ -189,11 +185,11 @@ module stdlib_linalg_blas_${ri}$
               end do
            end if
            return
-     end subroutine stdlib_${ri}$axpy
+     end subroutine stdlib_daxpy
 
 
-     pure subroutine stdlib_${ri}$copy(n,dx,incx,dy,incy)
-     !! DCOPY: copies a vector, x, to a vector, y.
+     pure subroutine stdlib_dcopy(n,dx,incx,dy,incy)
+     !! DCOPY copies a vector, x, to a vector, y.
      !! uses unrolled loops for increments equal to 1.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
@@ -201,8 +197,8 @@ module stdlib_linalg_blas_${ri}$
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(${rk}$), intent(in) :: dx(*)
-           real(${rk}$), intent(out) :: dy(*)
+           real(dp), intent(in) :: dx(*)
+           real(dp), intent(out) :: dy(*)
         ! =====================================================================
            ! Local Scalars 
            integer(ilp) :: i, ix, iy, m, mp1
@@ -243,11 +239,11 @@ module stdlib_linalg_blas_${ri}$
               end do
            end if
            return
-     end subroutine stdlib_${ri}$copy
+     end subroutine stdlib_dcopy
 
 
-     pure real(${rk}$) function stdlib_${ri}$dot(n,dx,incx,dy,incy)
-     !! DDOT: forms the dot product of two vectors.
+     pure real(dp) function stdlib_ddot(n,dx,incx,dy,incy)
+     !! DDOT forms the dot product of two vectors.
      !! uses unrolled loops for increments equal to one.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
@@ -255,14 +251,14 @@ module stdlib_linalg_blas_${ri}$
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(${rk}$), intent(in) :: dx(*), dy(*)
+           real(dp), intent(in) :: dx(*), dy(*)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: dtemp
+           real(dp) :: dtemp
            integer(ilp) :: i, ix, iy, m, mp1
            ! Intrinsic Functions 
            intrinsic :: mod
-           stdlib_${ri}$dot = zero
+           stdlib_ddot = zero
            dtemp = zero
            if (n<=0) return
            if (incx==1 .and. incy==1) then
@@ -274,7 +270,7 @@ module stdlib_linalg_blas_${ri}$
                     dtemp = dtemp + dx(i)*dy(i)
                  end do
                  if (n<5) then
-                    stdlib_${ri}$dot=dtemp
+                    stdlib_ddot=dtemp
                  return
                  end if
               end if
@@ -296,13 +292,13 @@ module stdlib_linalg_blas_${ri}$
                  iy = iy + incy
               end do
            end if
-           stdlib_${ri}$dot = dtemp
+           stdlib_ddot = dtemp
            return
-     end function stdlib_${ri}$dot
+     end function stdlib_ddot
 
 
-     pure subroutine stdlib_${ri}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
-     !! DGBMV:  performs one of the matrix-vector operations
+     pure subroutine stdlib_dgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     !! DGBMV performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
      !! where alpha and beta are scalars, x and y are vectors and A is an
      !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
@@ -310,16 +306,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
            character, intent(in) :: trans
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, iy, j, jx, jy, k, kup1, kx, ky, lenx, leny
            ! Intrinsic Functions 
            intrinsic :: max,min
@@ -453,11 +449,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$gbmv
+     end subroutine stdlib_dgbmv
 
 
-     pure subroutine stdlib_${ri}$gemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
-     !! DGEMM:  performs one of the matrix-matrix operations
+     pure subroutine stdlib_dgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     !! DGEMM performs one of the matrix-matrix operations
      !! C := alpha*op( A )*op( B ) + beta*C,
      !! where  op( X ) is one of
      !! op( X ) = X   or   op( X ) = X**T,
@@ -467,17 +463,17 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
            character, intent(in) :: transa, transb
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), b(ldb,*)
-           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: a(lda,*), b(ldb,*)
+           real(dp), intent(inout) :: c(ldc,*)
         ! =====================================================================
            ! Intrinsic Functions 
            intrinsic :: max
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, j, l, nrowa, nrowb
            logical(lk) :: nota, notb
            
@@ -616,11 +612,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$gemm
+     end subroutine stdlib_dgemm
 
 
-     pure subroutine stdlib_${ri}$gemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
-     !! DGEMV:  performs one of the matrix-vector operations
+     pure subroutine stdlib_dgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     !! DGEMV performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
      !! where alpha and beta are scalars, x and y are vectors and A is an
      !! m by n matrix.
@@ -628,16 +624,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: incx, incy, lda, m, n
            character, intent(in) :: trans
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky, lenx, leny
            ! Intrinsic Functions 
            intrinsic :: max
@@ -760,11 +756,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$gemv
+     end subroutine stdlib_dgemv
 
 
-     pure subroutine stdlib_${ri}$ger(m,n,alpha,x,incx,y,incy,a,lda)
-     !! DGER:   performs the rank 1 operation
+     pure subroutine stdlib_dger(m,n,alpha,x,incx,y,incy,a,lda)
+     !! DGER performs the rank 1 operation
      !! A := alpha*x*y**T + A,
      !! where alpha is a scalar, x is an m element vector, y is an n element
      !! vector and A is an m by n matrix.
@@ -772,15 +768,15 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: incx, incy, lda, m, n
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: a(lda,*)
-           real(${rk}$), intent(in) :: x(*), y(*)
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*), y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jy, kx
            ! Intrinsic Functions 
            intrinsic :: max
@@ -839,31 +835,31 @@ module stdlib_linalg_blas_${ri}$
                end do
            end if
            return
-     end subroutine stdlib_${ri}$ger
+     end subroutine stdlib_dger
 
 
-     pure function stdlib_${ri}$nrm2( n, x, incx )
-     !! DNRM2: returns the euclidean norm of a vector via the function
+     pure function stdlib_dnrm2( n, x, incx )
+     !! DNRM2 returns the euclidean norm of a vector via the function
      !! name, so that
      !! DNRM2 := sqrt( x'*x )
-        real(${rk}$) :: stdlib_${ri}$nrm2
-        ! -- reference blas level1 routine (version 3.9.1_${rk}$) --
+        real(dp) :: stdlib_dnrm2
+        ! -- reference blas level1 routine (version 3.9.1_dp) --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! march 2021
         ! Constants 
-        real(${rk}$), parameter :: maxn = huge(0.0_${rk}$)
+        real(dp), parameter :: maxn = huge(0.0_dp)
         ! .. blue's scaling constants ..
         ! Scalar Arguments 
      integer(ilp), intent(in) :: incx, n
         ! Array Arguments 
-        real(${rk}$), intent(in) :: x(*)
+        real(dp), intent(in) :: x(*)
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
-        real(${rk}$) :: abig, amed, asml, ax, scl, sumsq, ymax, ymin
+        real(dp) :: abig, amed, asml, ax, scl, sumsq, ymax, ymin
         ! quick return if possible
-        stdlib_${ri}$nrm2 = zero
+        stdlib_dnrm2 = zero
         if( n <= 0 ) return
         scl = one
         sumsq = zero
@@ -924,24 +920,24 @@ module stdlib_linalg_blas_${ri}$
            scl = one
            sumsq = amed
         end if
-        stdlib_${ri}$nrm2 = scl*sqrt( sumsq )
+        stdlib_dnrm2 = scl*sqrt( sumsq )
         return
-     end function stdlib_${ri}$nrm2
+     end function stdlib_dnrm2
 
 
-     pure subroutine stdlib_${ri}$rot(n,dx,incx,dy,incy,c,s)
-     !! DROT: applies a plane rotation.
+     pure subroutine stdlib_drot(n,dx,incx,dy,incy,c,s)
+     !! DROT applies a plane rotation.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: c, s
+           real(dp), intent(in) :: c, s
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: dx(*), dy(*)
+           real(dp), intent(inout) :: dx(*), dy(*)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: dtemp
+           real(dp) :: dtemp
            integer(ilp) :: i, ix, iy
            if (n<=0) return
            if (incx==1 .and. incy==1) then
@@ -967,10 +963,10 @@ module stdlib_linalg_blas_${ri}$
               end do
            end if
            return
-     end subroutine stdlib_${ri}$rot
+     end subroutine stdlib_drot
 
 
-     pure subroutine stdlib_${ri}$rotg( a, b, c, s )
+     pure subroutine stdlib_drotg( a, b, c, s )
      !! The computation uses the formulas
      !! sigma = sgn(a)    if |a| >  |b|
      !! = sgn(b)    if |b| >= |a|
@@ -990,10 +986,10 @@ module stdlib_linalg_blas_${ri}$
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
         ! Scaling Constants 
         ! Scalar Arguments 
-        real(${rk}$), intent(inout) :: a, b
-        real(${rk}$), intent(out) :: c, s
+        real(dp), intent(inout) :: a, b
+        real(dp), intent(out) :: c, s
         ! Local Scalars 
-        real(${rk}$) :: anorm, bnorm, scl, sigma, r, z
+        real(dp) :: anorm, bnorm, scl, sigma, r, z
         anorm = abs(a)
         bnorm = abs(b)
         if( bnorm == zero ) then
@@ -1026,11 +1022,11 @@ module stdlib_linalg_blas_${ri}$
            b = z
         end if
         return
-     end subroutine stdlib_${ri}$rotg
+     end subroutine stdlib_drotg
 
 
-     pure subroutine stdlib_${ri}$rotm(n,dx,incx,dy,incy,dparam)
-     !! QROTM applies the modified Givens transformation, \(H\), to the 2-by-N matrix 
+     pure subroutine stdlib_drotm(n,dx,incx,dy,incy,dparam)    
+     !! DROTM applies the modified Givens transformation, \(H\), to the 2-by-N matrix 
      !! $$ \left[ \begin{array}{c}DX^T\\DY^T\\ \end{array} \right], $$ 
      !! where \(^T\) indicates transpose. The elements of \(DX\) are in 
      !! DX(LX+I*INCX), I = 0:N-1, where LX = 1 if INCX >= 0, else LX = (-INCX)*N, 
@@ -1040,22 +1036,20 @@ module stdlib_linalg_blas_${ri}$
      !!      \underbrace{\begin{bmatrix}1 & DH_{12}\\DH_{21} & 1\end{bmatrix}}_{DFLAG=0}, 
      !!      \underbrace{\begin{bmatrix}DH_{11} & 1\\-1 & DH_{22}\end{bmatrix}}_{DFLAG=1},  
      !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{DFLAG=-2}. $$     
-     !! See QROTMG for a description of data storage in DPARAM.   
+     !! See DROTMG for a description of data storage in DPARAM.   
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(${rk}$), intent(in) :: dparam(5)
-           real(${rk}$), intent(inout) :: dx(*), dy(*)
+           real(dp), intent(in) :: dparam(5)
+           real(dp), intent(inout) :: dx(*), dy(*)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: dflag, dh11, dh12, dh21, dh22, two, w, z, zero
+           real(dp) :: dflag, dh11, dh12, dh21, dh22, w, z
            integer(ilp) :: i, kx, ky, nsteps
            ! Data Statements 
-           zero = 0.0_${rk}$
-           two = 2.0_${rk}$
            dflag = dparam(1)
            if (n<=0 .or. (dflag+two==zero)) return
            if (incx==incy.and.incx>0) then
@@ -1133,11 +1127,11 @@ module stdlib_linalg_blas_${ri}$
               end if
            end if
            return
-     end subroutine stdlib_${ri}$rotm
+     end subroutine stdlib_drotm
 
 
-     pure subroutine stdlib_${ri}$rotmg(dd1,dd2,dx1,dy1,dparam)
-     !! QROTMG Constructs the modified Givens transformation matrix \(H\) which zeros the 
+     pure subroutine stdlib_drotmg(dd1,dd2,dx1,dy1,dparam)
+     !! DROTMG Constructs the modified Givens transformation matrix \(H\) which zeros the 
      !! second component of the 2-vector 
      !! $$ \left[ {\sqrt{DD_1}\cdot DX_1,\sqrt{DD_2}\cdot DY_2} \right]^T. $$
      !! With DPARAM(1)=DFLAG, \(H\) has one of the following forms:          
@@ -1148,28 +1142,25 @@ module stdlib_linalg_blas_${ri}$
      !! Locations 2-4 of DPARAM contain DH11, DH21, DH12 and DH22 respectively.
      !! (Values of 1.0, -1.0, or 0.0 implied by the value of DPARAM(1) are not stored in DPARAM.)
      !! The values of parameters GAMSQ and RGAMSQ may be inexact. This is OK as they are only 
-     !! used for testing the size of DD1 and DD2. All actual scaling of data is done using GAM.       
+     !! used for testing the size of DD1 and DD2. All actual scaling of data is done using GAM.          
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(inout) :: dd1, dd2, dx1
-           real(${rk}$), intent(in) :: dy1
+           real(dp), intent(inout) :: dd1, dd2, dx1
+           real(dp), intent(in) :: dy1
            ! Array Arguments 
-           real(${rk}$), intent(out) :: dparam(5)
+           real(dp), intent(out) :: dparam(5)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: dflag, dh11, dh12, dh21, dh22, dp1, dp2, dq1, dq2, dtemp, du, gam, gamsq, &
-                     one, rgamsq, two, zero
+           real(dp) :: dflag, dh11, dh12, dh21, dh22, dp1, dp2, dq1, dq2, dtemp, du, gam, gamsq, &
+                     rgamsq
            ! Intrinsic Functions 
            intrinsic :: abs
            ! Data Statements 
-           zero = 0.0_${rk}$
-           one = 1.0_${rk}$
-           two = 2.0_${rk}$
-           gam = 4096.0_${rk}$
-           gamsq = 16777216.0_${rk}$
-           rgamsq = 5.9604645e-8_${rk}$
+           gam = 4096.0_dp
+           gamsq = 16777216.0_dp
+           rgamsq = 5.9604645e-8_dp
            if (dd1<zero) then
               ! go zero-h-d-and-dx1..
               dflag = -one
@@ -1298,11 +1289,11 @@ module stdlib_linalg_blas_${ri}$
            end if
            dparam(1) = dflag
            return
-     end subroutine stdlib_${ri}$rotmg
+     end subroutine stdlib_drotmg
 
 
-     pure subroutine stdlib_${ri}$sbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
-     !! DSBMV:  performs the matrix-vector  operation
+     pure subroutine stdlib_dsbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     !! DSBMV performs the matrix-vector  operation
      !! y := alpha*A*x + beta*y,
      !! where alpha and beta are scalars, x and y are n element vectors and
      !! A is an n by n symmetric band matrix, with k super-diagonals.
@@ -1310,16 +1301,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: incx, incy, k, lda, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, ix, iy, j, jx, jy, kplus1, kx, ky, l
            ! Intrinsic Functions 
            intrinsic :: max,min
@@ -1460,20 +1451,20 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$sbmv
+     end subroutine stdlib_dsbmv
 
 
-     pure subroutine stdlib_${ri}$scal(n,da,dx,incx)
-     !! DSCAL: scales a vector by a constant.
+     pure subroutine stdlib_dscal(n,da,dx,incx)
+     !! DSCAL scales a vector by a constant.
      !! uses unrolled loops for increment equal to 1.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: da
+           real(dp), intent(in) :: da
            integer(ilp), intent(in) :: incx, n
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: dx(*)
+           real(dp), intent(inout) :: dx(*)
         ! =====================================================================
            ! Local Scalars 
            integer(ilp) :: i, m, mp1, nincx
@@ -1506,14 +1497,14 @@ module stdlib_linalg_blas_${ri}$
               end do
            end if
            return
-     end subroutine stdlib_${ri}$scal
+     end subroutine stdlib_dscal
 
 
-     pure real(${rk}$) function stdlib_${ri}$sdot(n,sx,incx,sy,incy)
+     pure real(dp) function stdlib_dsdot(n,sx,incx,sy,incy)
      !! Compute the inner product of two vectors with extended
      !! precision accumulation and result.
      !! Returns D.P. dot product accumulated in D.P., for S.P. SX and SY
-     !! DSDOT: = sum for I = 0 to N-1 of  SX(LX+I*INCX) * SY(LY+I*INCY),
+     !! DSDOT = sum for I = 0 to N-1 of  SX(LX+I*INCX) * SY(LY+I*INCY),
      !! where LX = 1 if INCX >= 0, else LX = 1+(1-N)*INCX, and LY is
      !! defined in a similar way using INCY.
         ! -- reference blas level1 routine --
@@ -1522,7 +1513,7 @@ module stdlib_linalg_blas_${ri}$
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(dp), intent(in) :: sx(*), sy(*)
+           real(sp), intent(in) :: sx(*), sy(*)
         ! authors:
         ! ========
         ! lawson, c. l., (jpl), hanson, r. j., (snla),
@@ -1532,13 +1523,13 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp) :: i, kx, ky, ns
            ! Intrinsic Functions 
            intrinsic :: real
-           stdlib_${ri}$sdot = zero
+           stdlib_dsdot = zero
            if (n<=0) return
            if (incx==incy .and. incx>0) then
            ! code for equal, positive, non-unit increments.
               ns = n*incx
               do i = 1,ns,incx
-                 stdlib_${ri}$sdot = stdlib_${ri}$sdot + real(sx(i),KIND=${rk}$)*real(sy(i),KIND=${rk}$)
+                 stdlib_dsdot = stdlib_dsdot + real(sx(i),KIND=dp)*real(sy(i),KIND=dp)
               end do
            else
            ! code for unequal or nonpositive increments.
@@ -1547,17 +1538,17 @@ module stdlib_linalg_blas_${ri}$
               if (incx<0) kx = 1 + (1-n)*incx
               if (incy<0) ky = 1 + (1-n)*incy
               do i = 1,n
-                 stdlib_${ri}$sdot = stdlib_${ri}$sdot + real(sx(kx),KIND=${rk}$)*real(sy(ky),KIND=${rk}$)
+                 stdlib_dsdot = stdlib_dsdot + real(sx(kx),KIND=dp)*real(sy(ky),KIND=dp)
                  kx = kx + incx
                  ky = ky + incy
               end do
            end if
            return
-     end function stdlib_${ri}$sdot
+     end function stdlib_dsdot
 
 
-     pure subroutine stdlib_${ri}$spmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
-     !! DSPMV:  performs the matrix-vector operation
+     pure subroutine stdlib_dspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     !! DSPMV performs the matrix-vector operation
      !! y := alpha*A*x + beta*y,
      !! where alpha and beta are scalars, x and y are n element vectors and
      !! A is an n by n symmetric matrix, supplied in packed form.
@@ -1565,16 +1556,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: incx, incy, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: ap(*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
+           real(dp), intent(in) :: ap(*), x(*)
+           real(dp), intent(inout) :: y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, ix, iy, j, jx, jy, k, kk, kx, ky
            ! test the input parameters.
            info = 0
@@ -1709,11 +1700,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$spmv
+     end subroutine stdlib_dspmv
 
 
-     pure subroutine stdlib_${ri}$spr(uplo,n,alpha,x,incx,ap)
-     !! DSPR:    performs the symmetric rank 1 operation
+     pure subroutine stdlib_dspr(uplo,n,alpha,x,incx,ap)
+     !! DSPR performs the symmetric rank 1 operation
      !! A := alpha*x*x**T + A,
      !! where alpha is a real scalar, x is an n element vector and A is an
      !! n by n symmetric matrix, supplied in packed form.
@@ -1721,16 +1712,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: incx, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: ap(*)
-           real(${rk}$), intent(in) :: x(*)
+           real(dp), intent(inout) :: ap(*)
+           real(dp), intent(in) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, k, kk, kx
            ! test the input parameters.
            info = 0
@@ -1816,11 +1807,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$spr
+     end subroutine stdlib_dspr
 
 
-     pure subroutine stdlib_${ri}$spr2(uplo,n,alpha,x,incx,y,incy,ap)
-     !! DSPR2:  performs the symmetric rank 2 operation
+     pure subroutine stdlib_dspr2(uplo,n,alpha,x,incx,y,incy,ap)
+     !! DSPR2 performs the symmetric rank 2 operation
      !! A := alpha*x*y**T + alpha*y*x**T + A,
      !! where alpha is a scalar, x and y are n element vectors and A is an
      !! n by n symmetric matrix, supplied in packed form.
@@ -1828,16 +1819,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: incx, incy, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: ap(*)
-           real(${rk}$), intent(in) :: x(*), y(*)
+           real(dp), intent(inout) :: ap(*)
+           real(dp), intent(in) :: x(*), y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, ix, iy, j, jx, jy, k, kk, kx, ky
            ! test the input parameters.
            info = 0
@@ -1943,11 +1934,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$spr2
+     end subroutine stdlib_dspr2
 
 
-     pure subroutine stdlib_${ri}$swap(n,dx,incx,dy,incy)
-     !! DSWAP: interchanges two vectors.
+     pure subroutine stdlib_dswap(n,dx,incx,dy,incy)
+     !! DSWAP interchanges two vectors.
      !! uses unrolled loops for increments equal to 1.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
@@ -1955,10 +1946,10 @@ module stdlib_linalg_blas_${ri}$
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, incy, n
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: dx(*), dy(*)
+           real(dp), intent(inout) :: dx(*), dy(*)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: dtemp
+           real(dp) :: dtemp
            integer(ilp) :: i, ix, iy, m, mp1
            ! Intrinsic Functions 
            intrinsic :: mod
@@ -2003,11 +1994,11 @@ module stdlib_linalg_blas_${ri}$
               end do
            end if
            return
-     end subroutine stdlib_${ri}$swap
+     end subroutine stdlib_dswap
 
 
-     pure subroutine stdlib_${ri}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
-     !! DSYMM:  performs one of the matrix-matrix operations
+     pure subroutine stdlib_dsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     !! DSYMM performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
      !! or
      !! C := alpha*B*A + beta*C,
@@ -2017,17 +2008,17 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: lda, ldb, ldc, m, n
            character, intent(in) :: side, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), b(ldb,*)
-           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: a(lda,*), b(ldb,*)
+           real(dp), intent(inout) :: c(ldc,*)
         ! =====================================================================
            ! Intrinsic Functions 
            intrinsic :: max
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, j, k, nrowa
            logical(lk) :: upper
            
@@ -2150,11 +2141,11 @@ module stdlib_linalg_blas_${ri}$
                end do loop_170
            end if
            return
-     end subroutine stdlib_${ri}$symm
+     end subroutine stdlib_dsymm
 
 
-     pure subroutine stdlib_${ri}$symv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
-     !! DSYMV:  performs the matrix-vector  operation
+     pure subroutine stdlib_dsymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     !! DSYMV performs the matrix-vector  operation
      !! y := alpha*A*x + beta*y,
      !! where alpha and beta are scalars, x and y are n element vectors and
      !! A is an n by n symmetric matrix.
@@ -2162,16 +2153,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: incx, incy, lda, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
            ! Intrinsic Functions 
            intrinsic :: max
@@ -2302,11 +2293,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$symv
+     end subroutine stdlib_dsymv
 
 
-     pure subroutine stdlib_${ri}$syr(uplo,n,alpha,x,incx,a,lda)
-     !! DSYR:   performs the symmetric rank 1 operation
+     pure subroutine stdlib_dsyr(uplo,n,alpha,x,incx,a,lda)
+     !! DSYR performs the symmetric rank 1 operation
      !! A := alpha*x*x**T + A,
      !! where alpha is a real scalar, x is an n element vector and A is an
      !! n by n symmetric matrix.
@@ -2314,16 +2305,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: a(lda,*)
-           real(${rk}$), intent(in) :: x(*)
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, kx
            ! Intrinsic Functions 
            intrinsic :: max
@@ -2405,11 +2396,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$syr
+     end subroutine stdlib_dsyr
 
 
-     pure subroutine stdlib_${ri}$syr2(uplo,n,alpha,x,incx,y,incy,a,lda)
-     !! DSYR2:  performs the symmetric rank 2 operation
+     pure subroutine stdlib_dsyr2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     !! DSYR2 performs the symmetric rank 2 operation
      !! A := alpha*x*y**T + alpha*y*x**T + A,
      !! where alpha is a scalar, x and y are n element vectors and A is an n
      !! by n symmetric matrix.
@@ -2417,16 +2408,16 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: incx, incy, lda, n
            character, intent(in) :: uplo
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: a(lda,*)
-           real(${rk}$), intent(in) :: x(*), y(*)
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*), y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
            ! Intrinsic Functions 
            intrinsic :: max
@@ -2528,11 +2519,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$syr2
+     end subroutine stdlib_dsyr2
 
 
-     pure subroutine stdlib_${ri}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
-     !! DSYR2K:  performs one of the symmetric rank 2k operations
+     pure subroutine stdlib_dsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     !! DSYR2K performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
      !! or
      !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
@@ -2543,17 +2534,17 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: k, lda, ldb, ldc, n
            character, intent(in) :: trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), b(ldb,*)
-           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: a(lda,*), b(ldb,*)
+           real(dp), intent(inout) :: c(ldc,*)
         ! =====================================================================
            ! Intrinsic Functions 
            intrinsic :: max
            ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
+           real(dp) :: temp1, temp2
            integer(ilp) :: i, info, j, l, nrowa
            logical(lk) :: upper
            
@@ -2703,11 +2694,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$syr2k
+     end subroutine stdlib_dsyr2k
 
 
-     pure subroutine stdlib_${ri}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
-     !! DSYRK:  performs one of the symmetric rank k operations
+     pure subroutine stdlib_dsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     !! DSYRK performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
      !! or
      !! C := alpha*A**T*A + beta*C,
@@ -2718,17 +2709,17 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
+           real(dp), intent(in) :: alpha, beta
            integer(ilp), intent(in) :: k, lda, ldc, n
            character, intent(in) :: trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: c(ldc,*)
         ! =====================================================================
            ! Intrinsic Functions 
            intrinsic :: max
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, j, l, nrowa
            logical(lk) :: upper
            
@@ -2870,11 +2861,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$syrk
+     end subroutine stdlib_dsyrk
 
 
-     pure subroutine stdlib_${ri}$tbmv(uplo,trans,diag,n,k,a,lda,x,incx)
-     !! DTBMV:  performs one of the matrix-vector operations
+     pure subroutine stdlib_dtbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     !! DTBMV performs one of the matrix-vector operations
      !! x := A*x,   or   x := A**T*x,
      !! where x is an n element vector and  A is an n by n unit, or non-unit,
      !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
@@ -2885,12 +2876,12 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp), intent(in) :: incx, k, lda, n
            character, intent(in) :: diag, trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, kplus1, kx, l
            logical(lk) :: nounit
            ! Intrinsic Functions 
@@ -3053,11 +3044,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$tbmv
+     end subroutine stdlib_dtbmv
 
 
-     pure subroutine stdlib_${ri}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
-     !! DTBSV:  solves one of the systems of equations
+     pure subroutine stdlib_dtbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     !! DTBSV solves one of the systems of equations
      !! A*x = b,   or   A**T*x = b,
      !! where b and x are n element vectors and A is an n by n unit, or
      !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
@@ -3071,12 +3062,12 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp), intent(in) :: incx, k, lda, n
            character, intent(in) :: diag, trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, kplus1, kx, l
            logical(lk) :: nounit
            ! Intrinsic Functions 
@@ -3239,11 +3230,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$tbsv
+     end subroutine stdlib_dtbsv
 
 
-     pure subroutine stdlib_${ri}$tpmv(uplo,trans,diag,n,ap,x,incx)
-     !! DTPMV:  performs one of the matrix-vector operations
+     pure subroutine stdlib_dtpmv(uplo,trans,diag,n,ap,x,incx)
+     !! DTPMV performs one of the matrix-vector operations
      !! x := A*x,   or   x := A**T*x,
      !! where x is an n element vector and  A is an n by n unit, or non-unit,
      !! upper or lower triangular matrix, supplied in packed form.
@@ -3254,12 +3245,12 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp), intent(in) :: incx, n
            character, intent(in) :: diag, trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: ap(*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, k, kk, kx
            logical(lk) :: nounit
            ! test the input parameters.
@@ -3421,11 +3412,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$tpmv
+     end subroutine stdlib_dtpmv
 
 
-     pure subroutine stdlib_${ri}$tpsv(uplo,trans,diag,n,ap,x,incx)
-     !! DTPSV:  solves one of the systems of equations
+     pure subroutine stdlib_dtpsv(uplo,trans,diag,n,ap,x,incx)
+     !! DTPSV solves one of the systems of equations
      !! A*x = b,   or   A**T*x = b,
      !! where b and x are n element vectors and A is an n by n unit, or
      !! non-unit, upper or lower triangular matrix, supplied in packed form.
@@ -3438,12 +3429,12 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp), intent(in) :: incx, n
            character, intent(in) :: diag, trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: ap(*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, k, kk, kx
            logical(lk) :: nounit
            ! test the input parameters.
@@ -3605,11 +3596,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$tpsv
+     end subroutine stdlib_dtpsv
 
 
-     pure subroutine stdlib_${ri}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
-     !! DTRMM:  performs one of the matrix-matrix operations
+     pure subroutine stdlib_dtrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     !! DTRMM performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
      !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
      !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
@@ -3618,17 +3609,17 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: lda, ldb, m, n
            character, intent(in) :: diag, side, transa, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: b(ldb,*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            intrinsic :: max
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, j, k, nrowa
            logical(lk) :: lside, nounit, upper
            
@@ -3811,11 +3802,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$trmm
+     end subroutine stdlib_dtrmm
 
 
-     pure subroutine stdlib_${ri}$trmv(uplo,trans,diag,n,a,lda,x,incx)
-     !! DTRMV:  performs one of the matrix-vector operations
+     pure subroutine stdlib_dtrmv(uplo,trans,diag,n,a,lda,x,incx)
+     !! DTRMV performs one of the matrix-vector operations
      !! x := A*x,   or   x := A**T*x,
      !! where x is an n element vector and  A is an n by n unit, or non-unit,
      !! upper or lower triangular matrix.
@@ -3826,12 +3817,12 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, kx
            logical(lk) :: nounit
            ! Intrinsic Functions 
@@ -3977,11 +3968,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$trmv
+     end subroutine stdlib_dtrmv
 
 
-     pure subroutine stdlib_${ri}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
-     !! DTRSM:  solves one of the matrix equations
+     pure subroutine stdlib_dtrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     !! DTRSM solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
      !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
      !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
@@ -3991,17 +3982,17 @@ module stdlib_linalg_blas_${ri}$
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
+           real(dp), intent(in) :: alpha
            integer(ilp), intent(in) :: lda, ldb, m, n
            character, intent(in) :: diag, side, transa, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: b(ldb,*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            intrinsic :: max
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, j, k, nrowa
            logical(lk) :: lside, nounit, upper
            
@@ -4208,11 +4199,11 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$trsm
+     end subroutine stdlib_dtrsm
 
 
-     pure subroutine stdlib_${ri}$trsv(uplo,trans,diag,n,a,lda,x,incx)
-     !! DTRSV:  solves one of the systems of equations
+     pure subroutine stdlib_dtrsv(uplo,trans,diag,n,a,lda,x,incx)
+     !! DTRSV solves one of the systems of equations
      !! A*x = b,   or   A**T*x = b,
      !! where b and x are n element vectors and A is an n by n unit, or
      !! non-unit, upper or lower triangular matrix.
@@ -4225,12 +4216,12 @@ module stdlib_linalg_blas_${ri}$
            integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: temp
+           real(dp) :: temp
            integer(ilp) :: i, info, ix, j, jx, kx
            logical(lk) :: nounit
            ! Intrinsic Functions 
@@ -4376,24 +4367,24 @@ module stdlib_linalg_blas_${ri}$
                end if
            end if
            return
-     end subroutine stdlib_${ri}$trsv
+     end subroutine stdlib_dtrsv
 
 
-     pure real(${rk}$) function stdlib_${ri}$zasum(n,zx,incx)
-     !! DZASUM: takes the sum of the (|Re(.)| + |Im(.)|)'s of a complex vector and
-     !! returns a quad precision result.
+     pure real(dp) function stdlib_dzasum(n,zx,incx)
+     !! DZASUM takes the sum of the (|Re(.)| + |Im(.)|)'s of a complex vector and
+     !! returns a double precision result.
         ! -- reference blas level1 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
            integer(ilp), intent(in) :: incx, n
            ! Array Arguments 
-           complex(${rk}$), intent(in) :: zx(*)
+           complex(dp), intent(in) :: zx(*)
         ! =====================================================================
            ! Local Scalars 
-           real(${rk}$) :: stemp
+           real(dp) :: stemp
            integer(ilp) :: i, nincx
-           stdlib_${ri}$zasum = zero
+           stdlib_dzasum = zero
            stemp = zero
            if (n<=0 .or. incx<=0) return
            if (incx==1) then
@@ -4408,33 +4399,33 @@ module stdlib_linalg_blas_${ri}$
                  stemp = stemp + stdlib_cabs1(zx(i))
               end do
            end if
-           stdlib_${ri}$zasum = stemp
+           stdlib_dzasum = stemp
            return
-     end function stdlib_${ri}$zasum
+     end function stdlib_dzasum
 
 
-     pure function stdlib_${ri}$znrm2( n, x, incx )
-     !! DZNRM2: returns the euclidean norm of a vector via the function
+     pure function stdlib_dznrm2( n, x, incx )
+     !! DZNRM2 returns the euclidean norm of a vector via the function
      !! name, so that
      !! DZNRM2 := sqrt( x**H*x )
-        real(${rk}$) :: stdlib_${ri}$znrm2
-        ! -- reference blas level1 routine (version 3.9.1_${rk}$) --
+        real(dp) :: stdlib_dznrm2
+        ! -- reference blas level1 routine (version 3.9.1_dp) --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! march 2021
         ! Constants 
-        real(${rk}$), parameter :: maxn = huge(0.0_${rk}$)
+        real(dp), parameter :: maxn = huge(0.0_dp)
         ! .. blue's scaling constants ..
         ! Scalar Arguments 
      integer(ilp), intent(in) :: incx, n
         ! Array Arguments 
-        complex(${rk}$), intent(in) :: x(*)
+        complex(dp), intent(in) :: x(*)
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
-        real(${rk}$) :: abig, amed, asml, ax, scl, sumsq, ymax, ymin
+        real(dp) :: abig, amed, asml, ax, scl, sumsq, ymax, ymin
         ! quick return if possible
-        stdlib_${ri}$znrm2 = zero
+        stdlib_dznrm2 = zero
         if( n <= 0 ) return
         scl = one
         sumsq = zero
@@ -4452,7 +4443,7 @@ module stdlib_linalg_blas_${ri}$
         ix = 1
         if( incx < 0 ) ix = 1 - (n-1)*incx
         do i = 1, n
-           ax = abs(real(x(ix),KIND=${rk}$))
+           ax = abs(real(x(ix),KIND=dp))
            if (ax > tbig) then
               abig = abig + (ax*sbig)**2
               notbig = .false.
@@ -4504,11 +4495,10 @@ module stdlib_linalg_blas_${ri}$
            scl = one
            sumsq = amed
         end if
-        stdlib_${ri}$znrm2 = scl*sqrt( sumsq )
+        stdlib_dznrm2 = scl*sqrt( sumsq )
         return
-     end function stdlib_${ri}$znrm2
+     end function stdlib_dznrm2
 
-end module stdlib_linalg_blas_${ri}$
-#:endif
 
-#:endfor
+
+end module stdlib_linalg_blas_d

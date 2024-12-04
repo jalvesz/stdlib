@@ -539,6 +539,7 @@ module stdlib_linalg_lapack_${ci}$
 
 
      pure subroutine stdlib_${ci}$bbcsd( jobu1, jobu2, jobv1t, jobv2t, trans, m, p, q,theta, phi, u1, &
+     ldu1, u2, ldu2, v1t, ldv1t,v2t, ldv2t, b11d, b11e, b12d, b12e, b21d, b21e,b22d, b22e, rwork, lrwork, info )
      !! ZBBCSD: computes the CS decomposition of a unitary matrix in
      !! bidiagonal-block form,
      !! [ B11 | B12 0  0 ]
@@ -560,8 +561,7 @@ module stdlib_linalg_lapack_${ci}$
      !! The unitary matrices U1, U2, V1T, and V2T are input/output.
      !! The input matrices are pre- or post-multiplied by the appropriate
      !! singular vector matrices.
-     ldu1, u2, ldu2, v1t, ldv1t,v2t, ldv2t, b11d, b11e, b12d, b12e, b21d, b21e,b22d, b22e, rwork, &
-               lrwork, info )
+     
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -14430,6 +14430,7 @@ module stdlib_linalg_lapack_${ci}$
 
 
      subroutine stdlib_${ci}$gesvdq( joba, jobp, jobr, jobu, jobv, m, n, a, lda,s, u, ldu, v, ldv, &
+      numrank, iwork, liwork,cwork, lcwork, rwork, lrwork, info )
      !! ZCGESVDQ computes the singular value decomposition (SVD) of a complex
      !! M-by-N matrix A, where M >= N. The SVD of A is written as
      !! [++]   [xx]   [x0]   [xx]
@@ -14439,7 +14440,7 @@ module stdlib_linalg_lapack_${ci}$
      !! matrix, and V is an N-by-N unitary matrix. The diagonal elements
      !! of SIGMA are the singular values of A. The columns of U and V are the
      !! left and the right singular vectors of A, respectively.
-               numrank, iwork, liwork,cwork, lcwork, rwork, lrwork, info )
+               
            ! Scalar Arguments 
            character, intent(in) :: joba, jobp, jobr, jobu, jobv
            integer(ilp), intent(in) :: m, n, lda, ldu, ldv, liwork, lrwork
@@ -15307,7 +15308,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$gesvdq
 
 
-     pure subroutine stdlib_${ci}$gesvj( joba, jobu, jobv, m, n, a, lda, sva, mv, v,ldv, cwork, lwork, &
+     pure subroutine stdlib_${ci}$gesvj( joba, jobu, jobv, m, n, a, lda, sva, mv, v,ldv, cwork, lwork, rwork, lrwork, info )
      !! ZGESVJ: computes the singular value decomposition (SVD) of a complex
      !! M-by-N matrix A, where M >= N. The SVD of A is written as
      !! [++]   [xx]   [x0]   [xx]
@@ -15317,7 +15318,7 @@ module stdlib_linalg_lapack_${ci}$
      !! matrix, and V is an N-by-N unitary matrix. The diagonal elements
      !! of SIGMA are the singular values of A. The columns of U and V are the
      !! left and the right singular vectors of A, respectively.
-               rwork, lrwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -37153,7 +37154,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$lacrt
 
 
-     pure complex(${ck}$)     function stdlib_${ci}$ladiv( x, y )
+     pure complex(${ck}$) function stdlib_${ci}$ladiv( x, y )
      !! ZLADIV: := X / Y, where X and Y are complex.  The computation of X / Y
      !! will not overflow on an intermediary step unless the results
      !! overflows.
@@ -41962,7 +41963,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$lalsd
 
 
-     pure subroutine stdlib_${ci}$lamswlq( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, &
+     pure subroutine stdlib_${ci}$lamswlq( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, lwork, info )
      !! ZLAMSWLQ: overwrites the general complex M-by-N matrix C with
      !! SIDE = 'L'     SIDE = 'R'
      !! TRANS = 'N':      Q * C          C * Q
@@ -41970,7 +41971,7 @@ module stdlib_linalg_lapack_${ci}$
      !! where Q is a complex unitary matrix defined as the product of blocked
      !! elementary reflectors computed by short wide LQ
      !! factorization (ZLASWLQ)
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -42120,7 +42121,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$lamswlq
 
 
-     pure subroutine stdlib_${ci}$lamtsqr( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, &
+     pure subroutine stdlib_${ci}$lamtsqr( side, trans, m, n, k, mb, nb, a, lda, t,ldt, c, ldc, work, lwork, info )
      !! ZLAMTSQR: overwrites the general complex M-by-N matrix C with
      !! SIDE = 'L'     SIDE = 'R'
      !! TRANS = 'N':      Q * C          C * Q
@@ -42128,7 +42129,7 @@ module stdlib_linalg_lapack_${ci}$
      !! where Q is a complex unitary matrix defined as the product
      !! of blocked elementary reflectors computed by tall skinny
      !! QR factorization (ZLATSQR)
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -45865,7 +45866,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$laqps
 
 
-     pure subroutine stdlib_${ci}$laqr0( wantt, wantz, n, ilo, ihi, h, ldh, w, iloz,ihiz, z, ldz, work,&
+     pure subroutine stdlib_${ci}$laqr0( wantt, wantz, n, ilo, ihi, h, ldh, w, iloz,ihiz, z, ldz, work, lwork, info )
      !! ZLAQR0: computes the eigenvalues of a Hessenberg matrix H
      !! and, optionally, the matrices T and Z from the Schur decomposition
      !! H = Z T Z**H, where T is an upper triangular matrix (the
@@ -45874,7 +45875,7 @@ module stdlib_linalg_lapack_${ci}$
      !! matrix Q so that this routine can give the Schur factorization
      !! of a matrix A which has been reduced to the Hessenberg form H
      !! by the unitary matrix Q:  A = Q*H*Q**H = (QZ)*H*(QZ)**H.
-                lwork, info )
+                
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -46711,7 +46712,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$laqr3
 
 
-     pure subroutine stdlib_${ci}$laqr4( wantt, wantz, n, ilo, ihi, h, ldh, w, iloz,ihiz, z, ldz, work,&
+     pure subroutine stdlib_${ci}$laqr4( wantt, wantz, n, ilo, ihi, h, ldh, w, iloz,ihiz, z, ldz, work, lwork, info )
      !! ZLAQR4: implements one level of recursion for ZLAQR0.
      !! It is a complete implementation of the small bulge multi-shift
      !! QR algorithm.  It may be called by ZLAQR0 and, for large enough
@@ -46726,7 +46727,7 @@ module stdlib_linalg_lapack_${ci}$
      !! matrix Q so that this routine can give the Schur factorization
      !! of a matrix A which has been reduced to the Hessenberg form H
      !! by the unitary matrix Q:  A = Q*H*Q**H = (QZ)*H*(QZ)**H.
-                lwork, info )
+                
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -48884,10 +48885,10 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$larf
 
 
-     pure subroutine stdlib_${ci}$larfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, &
+     pure subroutine stdlib_${ci}$larfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, work, ldwork )
      !! ZLARFB: applies a complex block reflector H or its transpose H**H to a
      !! complex M-by-N matrix C, from either the left or the right.
-               work, ldwork )
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -76765,7 +76766,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$unbdb4
 
 
-     pure subroutine stdlib_${ci}$unbdb5( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, &
+     pure subroutine stdlib_${ci}$unbdb5( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, lwork, info )
      !! ZUNBDB5: orthogonalizes the column vector
      !! X = [ X1 ]
      !! [ X2 ]
@@ -76777,7 +76778,7 @@ module stdlib_linalg_lapack_${ci}$
      !! criterion, then some other vector from the orthogonal complement
      !! is returned. This vector is chosen in an arbitrary but deterministic
      !! way.
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -76864,7 +76865,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$unbdb5
 
 
-     pure subroutine stdlib_${ci}$unbdb6( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, &
+     pure subroutine stdlib_${ci}$unbdb6( m1, m2, n, x1, incx1, x2, incx2, q1, ldq1, q2,ldq2, work, lwork, info )
      !! ZUNBDB6: orthogonalizes the column vector
      !! X = [ X1 ]
      !! [ X2 ]
@@ -76874,7 +76875,7 @@ module stdlib_linalg_lapack_${ci}$
      !! The columns of Q must be orthonormal.
      !! If the projection is zero according to Kahan's "twice is enough"
      !! criterion, then the zero vector is returned.
-               lwork, info )
+               
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--

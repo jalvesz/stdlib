@@ -1,0 +1,1222 @@
+#:include "common.fypp" 
+module stdlib_lapack_blas_like_l2
+  use stdlib_linalg_constants
+  use stdlib_linalg_lapack_aux
+  use stdlib_linalg_blas
+  use stdlib_lapack_blas_like_scalar
+  use stdlib_lapack_auxiliary_parameters
+  implicit none(type,external)
+
+
+  contains
+
+     pure subroutine stdlib_sla_wwaddw( n, x, y, w )
+     !! SLA_WWADDW adds a vector W into a doubled-single vector (X, Y).
+     !! This works for all extant IBM's hex and binary floating point
+     !! arithmetic, but not for decimal.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(sp), intent(inout) :: x(*), y(*)
+           real(sp), intent(in) :: w(*)
+        ! =====================================================================
+           ! Local Scalars 
+           real(sp) :: s
+           integer(ilp) :: i
+           ! Executable Statements 
+           do 10 i = 1, n
+             s = x(i) + w(i)
+             s = (s + s) - s
+             y(i) = ((x(i) - s) + w(i)) + y(i)
+             x(i) = s
+             10 continue
+           return
+     end subroutine stdlib_sla_wwaddw
+
+     pure subroutine stdlib_dla_wwaddw( n, x, y, w )
+     !! DLA_WWADDW adds a vector W into a doubled-single vector (X, Y).
+     !! This works for all extant IBM's hex and binary floating point
+     !! arithmetic, but not for decimal.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(dp), intent(inout) :: x(*), y(*)
+           real(dp), intent(in) :: w(*)
+        ! =====================================================================
+           ! Local Scalars 
+           real(dp) :: s
+           integer(ilp) :: i
+           ! Executable Statements 
+           do 10 i = 1, n
+             s = x(i) + w(i)
+             s = (s + s) - s
+             y(i) = ((x(i) - s) + w(i)) + y(i)
+             x(i) = s
+             10 continue
+           return
+     end subroutine stdlib_dla_wwaddw
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$la_wwaddw( n, x, y, w )
+     !! DLA_WWADDW: adds a vector W into a doubled-single vector (X, Y).
+     !! This works for all extant IBM's hex and binary floating point
+     !! arithmetic, but not for decimal.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: x(*), y(*)
+           real(${rk}$), intent(in) :: w(*)
+        ! =====================================================================
+           ! Local Scalars 
+           real(${rk}$) :: s
+           integer(ilp) :: i
+           ! Executable Statements 
+           do 10 i = 1, n
+             s = x(i) + w(i)
+             s = (s + s) - s
+             y(i) = ((x(i) - s) + w(i)) + y(i)
+             x(i) = s
+             10 continue
+           return
+     end subroutine stdlib_${ri}$la_wwaddw
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_cla_wwaddw( n, x, y, w )
+     !! CLA_WWADDW adds a vector W into a doubled-single vector (X, Y).
+     !! This works for all extant IBM's hex and binary floating point
+     !! arithmetic, but not for decimal.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: x(*), y(*)
+           complex(sp), intent(in) :: w(*)
+        ! =====================================================================
+           ! Local Scalars 
+           complex(sp) :: s
+           integer(ilp) :: i
+           ! Executable Statements 
+           do 10 i = 1, n
+             s = x(i) + w(i)
+             s = (s + s) - s
+             y(i) = ((x(i) - s) + w(i)) + y(i)
+             x(i) = s
+             10 continue
+           return
+     end subroutine stdlib_cla_wwaddw
+
+     pure subroutine stdlib_zla_wwaddw( n, x, y, w )
+     !! ZLA_WWADDW adds a vector W into a doubled-single vector (X, Y).
+     !! This works for all extant IBM's hex and binary floating point
+     !! arithmetic, but not for decimal.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: x(*), y(*)
+           complex(dp), intent(in) :: w(*)
+        ! =====================================================================
+           ! Local Scalars 
+           complex(dp) :: s
+           integer(ilp) :: i
+           ! Executable Statements 
+           do 10 i = 1, n
+             s = x(i) + w(i)
+             s = (s + s) - s
+             y(i) = ((x(i) - s) + w(i)) + y(i)
+             x(i) = s
+             10 continue
+           return
+     end subroutine stdlib_zla_wwaddw
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$la_wwaddw( n, x, y, w )
+     !! ZLA_WWADDW: adds a vector W into a doubled-single vector (X, Y).
+     !! This works for all extant IBM's hex and binary floating point
+     !! arithmetic, but not for decimal.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: x(*), y(*)
+           complex(${ck}$), intent(in) :: w(*)
+        ! =====================================================================
+           ! Local Scalars 
+           complex(${ck}$) :: s
+           integer(ilp) :: i
+           ! Executable Statements 
+           do 10 i = 1, n
+             s = x(i) + w(i)
+             s = (s + s) - s
+             y(i) = ((x(i) - s) + w(i)) + y(i)
+             x(i) = s
+             10 continue
+           return
+     end subroutine stdlib_${ci}$la_wwaddw
+
+#:endif
+#:endfor
+
+
+
+
+
+
+
+
+
+
+
+
+
+     pure subroutine stdlib_slascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+     !! SLASCL multiplies the M by N real matrix A by the real scalar
+     !! CTO/CFROM.  This is done without over/underflow as long as the final
+     !! result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that
+     !! A may be full, upper triangular, lower triangular, upper Hessenberg,
+     !! or banded.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: zero, half, one
+           ! Scalar Arguments 
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(sp), intent(in) :: cfrom, cto
+           ! Array Arguments 
+           real(sp), intent(inout) :: a(lda,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           integer(ilp) :: i, itype, j, k1, k2, k3, k4
+           real(sp) :: bignum, cfrom1, cfromc, cto1, ctoc, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input arguments
+           info = 0
+           if( stdlib_lsame( type, 'G' ) ) then
+              itype = 0
+           else if( stdlib_lsame( type, 'L' ) ) then
+              itype = 1
+           else if( stdlib_lsame( type, 'U' ) ) then
+              itype = 2
+           else if( stdlib_lsame( type, 'H' ) ) then
+              itype = 3
+           else if( stdlib_lsame( type, 'B' ) ) then
+              itype = 4
+           else if( stdlib_lsame( type, 'Q' ) ) then
+              itype = 5
+           else if( stdlib_lsame( type, 'Z' ) ) then
+              itype = 6
+           else
+              itype = -1
+           end if
+           if( itype==-1 ) then
+              info = -1
+           else if( cfrom==zero .or. stdlib_sisnan(cfrom) ) then
+              info = -4
+           else if( stdlib_sisnan(cto) ) then
+              info = -5
+           else if( m<0 ) then
+              info = -6
+           else if( n<0 .or. ( itype==4 .and. n/=m ) .or.( itype==5 .and. n/=m ) ) then
+              info = -7
+           else if( itype<=3 .and. lda<max( 1, m ) ) then
+              info = -9
+           else if( itype>=4 ) then
+              if( kl<0 .or. kl>max( m-1, 0 ) ) then
+                 info = -2
+              else if( ku<0 .or. ku>max( n-1, 0 ) .or.( ( itype==4 .or. itype==5 ) .and. kl/=ku ) &
+                        )then
+                 info = -3
+              else if( ( itype==4 .and. lda<kl+1 ) .or.( itype==5 .and. lda<ku+1 ) .or.( itype==6 &
+                        .and. lda<2*kl+ku+1 ) ) then
+                 info = -9
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SLASCL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 .or. m==0 )return
+           ! get machine parameters
+           smlnum = stdlib_slamch( 'S' )
+           bignum = one / smlnum
+           cfromc = cfrom
+           ctoc = cto
+           10 continue
+           cfrom1 = cfromc*smlnum
+           if( cfrom1==cfromc ) then
+              ! cfromc is an inf.  multiply by a correctly signed zero for
+              ! finite ctoc, or a nan if ctoc is infinite.
+              mul = ctoc / cfromc
+              done = .true.
+              cto1 = ctoc
+           else
+              cto1 = ctoc / bignum
+              if( cto1==ctoc ) then
+                 ! ctoc is either 0 or an inf.  in both cases, ctoc itself
+                 ! serves as the correct multiplication factor.
+                 mul = ctoc
+                 done = .true.
+                 cfromc = one
+              else if( abs( cfrom1 )>abs( ctoc ) .and. ctoc/=zero ) then
+                 mul = smlnum
+                 done = .false.
+                 cfromc = cfrom1
+              else if( abs( cto1 )>abs( cfromc ) ) then
+                 mul = bignum
+                 done = .false.
+                 ctoc = cto1
+              else
+                 mul = ctoc / cfromc
+                 done = .true.
+              end if
+           end if
+           if( itype==0 ) then
+              ! full matrix
+              do j = 1, n
+                 do i = 1, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==1 ) then
+              ! lower triangular matrix
+              do j = 1, n
+                 do i = j, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==2 ) then
+              ! upper triangular matrix
+              do j = 1, n
+                 do i = 1, min( j, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==3 ) then
+              ! upper hessenberg matrix
+              do j = 1, n
+                 do i = 1, min( j+1, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==4 ) then
+              ! lower half of a symmetric band matrix
+              k3 = kl + 1
+              k4 = n + 1
+              do j = 1, n
+                 do i = 1, min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==5 ) then
+              ! upper half of a symmetric band matrix
+              k1 = ku + 2
+              k3 = ku + 1
+              do j = 1, n
+                 do i = max( k1-j, 1 ), k3
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==6 ) then
+              ! band matrix
+              k1 = kl + ku + 2
+              k2 = kl + 1
+              k3 = 2*kl + ku + 1
+              k4 = kl + ku + 1 + m
+              do j = 1, n
+                 do i = max( k1-j, k2 ), min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           end if
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_slascl
+
+     pure subroutine stdlib_dlascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+     !! DLASCL multiplies the M by N real matrix A by the real scalar
+     !! CTO/CFROM.  This is done without over/underflow as long as the final
+     !! result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that
+     !! A may be full, upper triangular, lower triangular, upper Hessenberg,
+     !! or banded.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: zero, half, one
+           ! Scalar Arguments 
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(dp), intent(in) :: cfrom, cto
+           ! Array Arguments 
+           real(dp), intent(inout) :: a(lda,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           integer(ilp) :: i, itype, j, k1, k2, k3, k4
+           real(dp) :: bignum, cfrom1, cfromc, cto1, ctoc, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input arguments
+           info = 0
+           if( stdlib_lsame( type, 'G' ) ) then
+              itype = 0
+           else if( stdlib_lsame( type, 'L' ) ) then
+              itype = 1
+           else if( stdlib_lsame( type, 'U' ) ) then
+              itype = 2
+           else if( stdlib_lsame( type, 'H' ) ) then
+              itype = 3
+           else if( stdlib_lsame( type, 'B' ) ) then
+              itype = 4
+           else if( stdlib_lsame( type, 'Q' ) ) then
+              itype = 5
+           else if( stdlib_lsame( type, 'Z' ) ) then
+              itype = 6
+           else
+              itype = -1
+           end if
+           if( itype==-1 ) then
+              info = -1
+           else if( cfrom==zero .or. stdlib_disnan(cfrom) ) then
+              info = -4
+           else if( stdlib_disnan(cto) ) then
+              info = -5
+           else if( m<0 ) then
+              info = -6
+           else if( n<0 .or. ( itype==4 .and. n/=m ) .or.( itype==5 .and. n/=m ) ) then
+              info = -7
+           else if( itype<=3 .and. lda<max( 1, m ) ) then
+              info = -9
+           else if( itype>=4 ) then
+              if( kl<0 .or. kl>max( m-1, 0 ) ) then
+                 info = -2
+              else if( ku<0 .or. ku>max( n-1, 0 ) .or.( ( itype==4 .or. itype==5 ) .and. kl/=ku ) &
+                        )then
+                 info = -3
+              else if( ( itype==4 .and. lda<kl+1 ) .or.( itype==5 .and. lda<ku+1 ) .or.( itype==6 &
+                        .and. lda<2*kl+ku+1 ) ) then
+                 info = -9
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DLASCL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 .or. m==0 )return
+           ! get machine parameters
+           smlnum = stdlib_dlamch( 'S' )
+           bignum = one / smlnum
+           cfromc = cfrom
+           ctoc = cto
+           10 continue
+           cfrom1 = cfromc*smlnum
+           if( cfrom1==cfromc ) then
+              ! cfromc is an inf.  multiply by a correctly signed zero for
+              ! finite ctoc, or a nan if ctoc is infinite.
+              mul = ctoc / cfromc
+              done = .true.
+              cto1 = ctoc
+           else
+              cto1 = ctoc / bignum
+              if( cto1==ctoc ) then
+                 ! ctoc is either 0 or an inf.  in both cases, ctoc itself
+                 ! serves as the correct multiplication factor.
+                 mul = ctoc
+                 done = .true.
+                 cfromc = one
+              else if( abs( cfrom1 )>abs( ctoc ) .and. ctoc/=zero ) then
+                 mul = smlnum
+                 done = .false.
+                 cfromc = cfrom1
+              else if( abs( cto1 )>abs( cfromc ) ) then
+                 mul = bignum
+                 done = .false.
+                 ctoc = cto1
+              else
+                 mul = ctoc / cfromc
+                 done = .true.
+              end if
+           end if
+           if( itype==0 ) then
+              ! full matrix
+              do j = 1, n
+                 do i = 1, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==1 ) then
+              ! lower triangular matrix
+              do j = 1, n
+                 do i = j, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==2 ) then
+              ! upper triangular matrix
+              do j = 1, n
+                 do i = 1, min( j, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==3 ) then
+              ! upper hessenberg matrix
+              do j = 1, n
+                 do i = 1, min( j+1, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==4 ) then
+              ! lower half of a symmetric band matrix
+              k3 = kl + 1
+              k4 = n + 1
+              do j = 1, n
+                 do i = 1, min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==5 ) then
+              ! upper half of a symmetric band matrix
+              k1 = ku + 2
+              k3 = ku + 1
+              do j = 1, n
+                 do i = max( k1-j, 1 ), k3
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==6 ) then
+              ! band matrix
+              k1 = kl + ku + 2
+              k2 = kl + 1
+              k3 = 2*kl + ku + 1
+              k4 = kl + ku + 1 + m
+              do j = 1, n
+                 do i = max( k1-j, k2 ), min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           end if
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_dlascl
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$lascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+     !! DLASCL: multiplies the M by N real matrix A by the real scalar
+     !! CTO/CFROM.  This is done without over/underflow as long as the final
+     !! result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that
+     !! A may be full, upper triangular, lower triangular, upper Hessenberg,
+     !! or banded.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: zero, half, one
+           ! Scalar Arguments 
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(${rk}$), intent(in) :: cfrom, cto
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: a(lda,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           integer(ilp) :: i, itype, j, k1, k2, k3, k4
+           real(${rk}$) :: bignum, cfrom1, cfromc, cto1, ctoc, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input arguments
+           info = 0
+           if( stdlib_lsame( type, 'G' ) ) then
+              itype = 0
+           else if( stdlib_lsame( type, 'L' ) ) then
+              itype = 1
+           else if( stdlib_lsame( type, 'U' ) ) then
+              itype = 2
+           else if( stdlib_lsame( type, 'H' ) ) then
+              itype = 3
+           else if( stdlib_lsame( type, 'B' ) ) then
+              itype = 4
+           else if( stdlib_lsame( type, 'Q' ) ) then
+              itype = 5
+           else if( stdlib_lsame( type, 'Z' ) ) then
+              itype = 6
+           else
+              itype = -1
+           end if
+           if( itype==-1 ) then
+              info = -1
+           else if( cfrom==zero .or. stdlib_${ri}$isnan(cfrom) ) then
+              info = -4
+           else if( stdlib_${ri}$isnan(cto) ) then
+              info = -5
+           else if( m<0 ) then
+              info = -6
+           else if( n<0 .or. ( itype==4 .and. n/=m ) .or.( itype==5 .and. n/=m ) ) then
+              info = -7
+           else if( itype<=3 .and. lda<max( 1, m ) ) then
+              info = -9
+           else if( itype>=4 ) then
+              if( kl<0 .or. kl>max( m-1, 0 ) ) then
+                 info = -2
+              else if( ku<0 .or. ku>max( n-1, 0 ) .or.( ( itype==4 .or. itype==5 ) .and. kl/=ku ) &
+                        )then
+                 info = -3
+              else if( ( itype==4 .and. lda<kl+1 ) .or.( itype==5 .and. lda<ku+1 ) .or.( itype==6 &
+                        .and. lda<2*kl+ku+1 ) ) then
+                 info = -9
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DLASCL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 .or. m==0 )return
+           ! get machine parameters
+           smlnum = stdlib_${ri}$lamch( 'S' )
+           bignum = one / smlnum
+           cfromc = cfrom
+           ctoc = cto
+           10 continue
+           cfrom1 = cfromc*smlnum
+           if( cfrom1==cfromc ) then
+              ! cfromc is an inf.  multiply by a correctly signed zero for
+              ! finite ctoc, or a nan if ctoc is infinite.
+              mul = ctoc / cfromc
+              done = .true.
+              cto1 = ctoc
+           else
+              cto1 = ctoc / bignum
+              if( cto1==ctoc ) then
+                 ! ctoc is either 0 or an inf.  in both cases, ctoc itself
+                 ! serves as the correct multiplication factor.
+                 mul = ctoc
+                 done = .true.
+                 cfromc = one
+              else if( abs( cfrom1 )>abs( ctoc ) .and. ctoc/=zero ) then
+                 mul = smlnum
+                 done = .false.
+                 cfromc = cfrom1
+              else if( abs( cto1 )>abs( cfromc ) ) then
+                 mul = bignum
+                 done = .false.
+                 ctoc = cto1
+              else
+                 mul = ctoc / cfromc
+                 done = .true.
+              end if
+           end if
+           if( itype==0 ) then
+              ! full matrix
+              do j = 1, n
+                 do i = 1, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==1 ) then
+              ! lower triangular matrix
+              do j = 1, n
+                 do i = j, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==2 ) then
+              ! upper triangular matrix
+              do j = 1, n
+                 do i = 1, min( j, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==3 ) then
+              ! upper hessenberg matrix
+              do j = 1, n
+                 do i = 1, min( j+1, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==4 ) then
+              ! lower half of a symmetric band matrix
+              k3 = kl + 1
+              k4 = n + 1
+              do j = 1, n
+                 do i = 1, min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==5 ) then
+              ! upper half of a symmetric band matrix
+              k1 = ku + 2
+              k3 = ku + 1
+              do j = 1, n
+                 do i = max( k1-j, 1 ), k3
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==6 ) then
+              ! band matrix
+              k1 = kl + ku + 2
+              k2 = kl + 1
+              k3 = 2*kl + ku + 1
+              k4 = kl + ku + 1 + m
+              do j = 1, n
+                 do i = max( k1-j, k2 ), min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           end if
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_${ri}$lascl
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_clascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+     !! CLASCL multiplies the M by N complex matrix A by the real scalar
+     !! CTO/CFROM.  This is done without over/underflow as long as the final
+     !! result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that
+     !! A may be full, upper triangular, lower triangular, upper Hessenberg,
+     !! or banded.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: zero, half, one
+           ! Scalar Arguments 
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(sp), intent(in) :: cfrom, cto
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           integer(ilp) :: i, itype, j, k1, k2, k3, k4
+           real(sp) :: bignum, cfrom1, cfromc, cto1, ctoc, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input arguments
+           info = 0
+           if( stdlib_lsame( type, 'G' ) ) then
+              itype = 0
+           else if( stdlib_lsame( type, 'L' ) ) then
+              itype = 1
+           else if( stdlib_lsame( type, 'U' ) ) then
+              itype = 2
+           else if( stdlib_lsame( type, 'H' ) ) then
+              itype = 3
+           else if( stdlib_lsame( type, 'B' ) ) then
+              itype = 4
+           else if( stdlib_lsame( type, 'Q' ) ) then
+              itype = 5
+           else if( stdlib_lsame( type, 'Z' ) ) then
+              itype = 6
+           else
+              itype = -1
+           end if
+           if( itype==-1 ) then
+              info = -1
+           else if( cfrom==zero .or. stdlib_sisnan(cfrom) ) then
+              info = -4
+           else if( stdlib_sisnan(cto) ) then
+              info = -5
+           else if( m<0 ) then
+              info = -6
+           else if( n<0 .or. ( itype==4 .and. n/=m ) .or.( itype==5 .and. n/=m ) ) then
+              info = -7
+           else if( itype<=3 .and. lda<max( 1, m ) ) then
+              info = -9
+           else if( itype>=4 ) then
+              if( kl<0 .or. kl>max( m-1, 0 ) ) then
+                 info = -2
+              else if( ku<0 .or. ku>max( n-1, 0 ) .or.( ( itype==4 .or. itype==5 ) .and. kl/=ku ) &
+                        )then
+                 info = -3
+              else if( ( itype==4 .and. lda<kl+1 ) .or.( itype==5 .and. lda<ku+1 ) .or.( itype==6 &
+                        .and. lda<2*kl+ku+1 ) ) then
+                 info = -9
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CLASCL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 .or. m==0 )return
+           ! get machine parameters
+           smlnum = stdlib_slamch( 'S' )
+           bignum = one / smlnum
+           cfromc = cfrom
+           ctoc = cto
+           10 continue
+           cfrom1 = cfromc*smlnum
+           if( cfrom1==cfromc ) then
+              ! cfromc is an inf.  multiply by a correctly signed zero for
+              ! finite ctoc, or a nan if ctoc is infinite.
+              mul = ctoc / cfromc
+              done = .true.
+              cto1 = ctoc
+           else
+              cto1 = ctoc / bignum
+              if( cto1==ctoc ) then
+                 ! ctoc is either 0 or an inf.  in both cases, ctoc itself
+                 ! serves as the correct multiplication factor.
+                 mul = ctoc
+                 done = .true.
+                 cfromc = one
+              else if( abs( cfrom1 )>abs( ctoc ) .and. ctoc/=zero ) then
+                 mul = smlnum
+                 done = .false.
+                 cfromc = cfrom1
+              else if( abs( cto1 )>abs( cfromc ) ) then
+                 mul = bignum
+                 done = .false.
+                 ctoc = cto1
+              else
+                 mul = ctoc / cfromc
+                 done = .true.
+              end if
+           end if
+           if( itype==0 ) then
+              ! full matrix
+              do j = 1, n
+                 do i = 1, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==1 ) then
+              ! lower triangular matrix
+              do j = 1, n
+                 do i = j, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==2 ) then
+              ! upper triangular matrix
+              do j = 1, n
+                 do i = 1, min( j, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==3 ) then
+              ! upper hessenberg matrix
+              do j = 1, n
+                 do i = 1, min( j+1, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==4 ) then
+              ! lower chalf of a symmetric band matrix
+              k3 = kl + 1
+              k4 = n + 1
+              do j = 1, n
+                 do i = 1, min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==5 ) then
+              ! upper chalf of a symmetric band matrix
+              k1 = ku + 2
+              k3 = ku + 1
+              do j = 1, n
+                 do i = max( k1-j, 1 ), k3
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==6 ) then
+              ! band matrix
+              k1 = kl + ku + 2
+              k2 = kl + 1
+              k3 = 2*kl + ku + 1
+              k4 = kl + ku + 1 + m
+              do j = 1, n
+                 do i = max( k1-j, k2 ), min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           end if
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_clascl
+
+     pure subroutine stdlib_zlascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+     !! ZLASCL multiplies the M by N complex matrix A by the real scalar
+     !! CTO/CFROM.  This is done without over/underflow as long as the final
+     !! result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that
+     !! A may be full, upper triangular, lower triangular, upper Hessenberg,
+     !! or banded.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: zero, half, one
+           ! Scalar Arguments 
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(dp), intent(in) :: cfrom, cto
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           integer(ilp) :: i, itype, j, k1, k2, k3, k4
+           real(dp) :: bignum, cfrom1, cfromc, cto1, ctoc, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input arguments
+           info = 0
+           if( stdlib_lsame( type, 'G' ) ) then
+              itype = 0
+           else if( stdlib_lsame( type, 'L' ) ) then
+              itype = 1
+           else if( stdlib_lsame( type, 'U' ) ) then
+              itype = 2
+           else if( stdlib_lsame( type, 'H' ) ) then
+              itype = 3
+           else if( stdlib_lsame( type, 'B' ) ) then
+              itype = 4
+           else if( stdlib_lsame( type, 'Q' ) ) then
+              itype = 5
+           else if( stdlib_lsame( type, 'Z' ) ) then
+              itype = 6
+           else
+              itype = -1
+           end if
+           if( itype==-1 ) then
+              info = -1
+           else if( cfrom==zero .or. stdlib_disnan(cfrom) ) then
+              info = -4
+           else if( stdlib_disnan(cto) ) then
+              info = -5
+           else if( m<0 ) then
+              info = -6
+           else if( n<0 .or. ( itype==4 .and. n/=m ) .or.( itype==5 .and. n/=m ) ) then
+              info = -7
+           else if( itype<=3 .and. lda<max( 1, m ) ) then
+              info = -9
+           else if( itype>=4 ) then
+              if( kl<0 .or. kl>max( m-1, 0 ) ) then
+                 info = -2
+              else if( ku<0 .or. ku>max( n-1, 0 ) .or.( ( itype==4 .or. itype==5 ) .and. kl/=ku ) &
+                        )then
+                 info = -3
+              else if( ( itype==4 .and. lda<kl+1 ) .or.( itype==5 .and. lda<ku+1 ) .or.( itype==6 &
+                        .and. lda<2*kl+ku+1 ) ) then
+                 info = -9
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLASCL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 .or. m==0 )return
+           ! get machine parameters
+           smlnum = stdlib_dlamch( 'S' )
+           bignum = one / smlnum
+           cfromc = cfrom
+           ctoc = cto
+           10 continue
+           cfrom1 = cfromc*smlnum
+           if( cfrom1==cfromc ) then
+              ! cfromc is an inf.  multiply by a correctly signed zero for
+              ! finite ctoc, or a nan if ctoc is infinite.
+              mul = ctoc / cfromc
+              done = .true.
+              cto1 = ctoc
+           else
+              cto1 = ctoc / bignum
+              if( cto1==ctoc ) then
+                 ! ctoc is either 0 or an inf.  in both cases, ctoc itself
+                 ! serves as the correct multiplication factor.
+                 mul = ctoc
+                 done = .true.
+                 cfromc = one
+              else if( abs( cfrom1 )>abs( ctoc ) .and. ctoc/=zero ) then
+                 mul = smlnum
+                 done = .false.
+                 cfromc = cfrom1
+              else if( abs( cto1 )>abs( cfromc ) ) then
+                 mul = bignum
+                 done = .false.
+                 ctoc = cto1
+              else
+                 mul = ctoc / cfromc
+                 done = .true.
+              end if
+           end if
+           if( itype==0 ) then
+              ! full matrix
+              do j = 1, n
+                 do i = 1, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==1 ) then
+              ! lower triangular matrix
+              do j = 1, n
+                 do i = j, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==2 ) then
+              ! upper triangular matrix
+              do j = 1, n
+                 do i = 1, min( j, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==3 ) then
+              ! upper hessenberg matrix
+              do j = 1, n
+                 do i = 1, min( j+1, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==4 ) then
+              ! lower chalf of a symmetric band matrix
+              k3 = kl + 1
+              k4 = n + 1
+              do j = 1, n
+                 do i = 1, min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==5 ) then
+              ! upper chalf of a symmetric band matrix
+              k1 = ku + 2
+              k3 = ku + 1
+              do j = 1, n
+                 do i = max( k1-j, 1 ), k3
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==6 ) then
+              ! band matrix
+              k1 = kl + ku + 2
+              k2 = kl + 1
+              k3 = 2*kl + ku + 1
+              k4 = kl + ku + 1 + m
+              do j = 1, n
+                 do i = max( k1-j, k2 ), min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           end if
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_zlascl
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$lascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+     !! ZLASCL: multiplies the M by N complex matrix A by the real scalar
+     !! CTO/CFROM.  This is done without over/underflow as long as the final
+     !! result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that
+     !! A may be full, upper triangular, lower triangular, upper Hessenberg,
+     !! or banded.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: zero, half, one
+           ! Scalar Arguments 
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(${ck}$), intent(in) :: cfrom, cto
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           integer(ilp) :: i, itype, j, k1, k2, k3, k4
+           real(${ck}$) :: bignum, cfrom1, cfromc, cto1, ctoc, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input arguments
+           info = 0
+           if( stdlib_lsame( type, 'G' ) ) then
+              itype = 0
+           else if( stdlib_lsame( type, 'L' ) ) then
+              itype = 1
+           else if( stdlib_lsame( type, 'U' ) ) then
+              itype = 2
+           else if( stdlib_lsame( type, 'H' ) ) then
+              itype = 3
+           else if( stdlib_lsame( type, 'B' ) ) then
+              itype = 4
+           else if( stdlib_lsame( type, 'Q' ) ) then
+              itype = 5
+           else if( stdlib_lsame( type, 'Z' ) ) then
+              itype = 6
+           else
+              itype = -1
+           end if
+           if( itype==-1 ) then
+              info = -1
+           else if( cfrom==zero .or. stdlib_${c2ri(ci)}$isnan(cfrom) ) then
+              info = -4
+           else if( stdlib_${c2ri(ci)}$isnan(cto) ) then
+              info = -5
+           else if( m<0 ) then
+              info = -6
+           else if( n<0 .or. ( itype==4 .and. n/=m ) .or.( itype==5 .and. n/=m ) ) then
+              info = -7
+           else if( itype<=3 .and. lda<max( 1, m ) ) then
+              info = -9
+           else if( itype>=4 ) then
+              if( kl<0 .or. kl>max( m-1, 0 ) ) then
+                 info = -2
+              else if( ku<0 .or. ku>max( n-1, 0 ) .or.( ( itype==4 .or. itype==5 ) .and. kl/=ku ) &
+                        )then
+                 info = -3
+              else if( ( itype==4 .and. lda<kl+1 ) .or.( itype==5 .and. lda<ku+1 ) .or.( itype==6 &
+                        .and. lda<2*kl+ku+1 ) ) then
+                 info = -9
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLASCL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 .or. m==0 )return
+           ! get machine parameters
+           smlnum = stdlib_${c2ri(ci)}$lamch( 'S' )
+           bignum = one / smlnum
+           cfromc = cfrom
+           ctoc = cto
+           10 continue
+           cfrom1 = cfromc*smlnum
+           if( cfrom1==cfromc ) then
+              ! cfromc is an inf.  multiply by a correctly signed zero for
+              ! finite ctoc, or a nan if ctoc is infinite.
+              mul = ctoc / cfromc
+              done = .true.
+              cto1 = ctoc
+           else
+              cto1 = ctoc / bignum
+              if( cto1==ctoc ) then
+                 ! ctoc is either 0 or an inf.  in both cases, ctoc itself
+                 ! serves as the correct multiplication factor.
+                 mul = ctoc
+                 done = .true.
+                 cfromc = one
+              else if( abs( cfrom1 )>abs( ctoc ) .and. ctoc/=zero ) then
+                 mul = smlnum
+                 done = .false.
+                 cfromc = cfrom1
+              else if( abs( cto1 )>abs( cfromc ) ) then
+                 mul = bignum
+                 done = .false.
+                 ctoc = cto1
+              else
+                 mul = ctoc / cfromc
+                 done = .true.
+              end if
+           end if
+           if( itype==0 ) then
+              ! full matrix
+              do j = 1, n
+                 do i = 1, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==1 ) then
+              ! lower triangular matrix
+              do j = 1, n
+                 do i = j, m
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==2 ) then
+              ! upper triangular matrix
+              do j = 1, n
+                 do i = 1, min( j, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==3 ) then
+              ! upper hessenberg matrix
+              do j = 1, n
+                 do i = 1, min( j+1, m )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==4 ) then
+              ! lower chalf of a symmetric band matrix
+              k3 = kl + 1
+              k4 = n + 1
+              do j = 1, n
+                 do i = 1, min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==5 ) then
+              ! upper chalf of a symmetric band matrix
+              k1 = ku + 2
+              k3 = ku + 1
+              do j = 1, n
+                 do i = max( k1-j, 1 ), k3
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           else if( itype==6 ) then
+              ! band matrix
+              k1 = kl + ku + 2
+              k2 = kl + 1
+              k3 = 2*kl + ku + 1
+              k4 = kl + ku + 1 + m
+              do j = 1, n
+                 do i = max( k1-j, k2 ), min( k3, k4-j )
+                    a( i, j ) = a( i, j )*mul
+                 end do
+              end do
+           end if
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_${ci}$lascl
+
+#:endif
+#:endfor
+
+
+end module stdlib_lapack_blas_like_l2
