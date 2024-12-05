@@ -1,0 +1,84 @@
+#:include "common.fypp" 
+module stdlib_lapack_eigv_std_driver
+  use stdlib_linalg_constants
+  use stdlib_linalg_lapack_aux
+  use stdlib_linalg_blas
+  use stdlib_lapack_blas_like_l2
+  use stdlib_lapack_eigv_sym_comp
+  use stdlib_lapack_blas_like_mnorm
+  use stdlib_lapack_svd_comp
+  use stdlib_lapack_blas_like_l3
+  use stdlib_lapack_blas_like_base
+  implicit none(type,external)
+
+
+  contains
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+end module stdlib_lapack_eigv_std_driver

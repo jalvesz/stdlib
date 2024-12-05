@@ -3,8 +3,8 @@ module stdlib_lapack_solve_lu
   use stdlib_linalg_constants
   use stdlib_linalg_lapack_aux
   use stdlib_linalg_blas
-  use stdlib_lapack_blas_like_mnorm
   use stdlib_lapack_solve_lu_comp
+  use stdlib_lapack_blas_like_mnorm
   use stdlib_lapack_blas_like_base
   implicit none(type,external)
 
@@ -1150,8 +1150,6 @@ module stdlib_lapack_solve_lu
 
 
 
-
-
      pure subroutine stdlib_sgesv( n, nrhs, a, lda, ipiv, b, ldb, info )
      !! SGESV computes the solution to a real system of linear equations
      !! A * X = B,
@@ -1443,6 +1441,10 @@ module stdlib_lapack_solve_lu
 
 #:endif
 #:endfor
+
+
+
+
 
 
 
@@ -1980,8 +1982,6 @@ module stdlib_lapack_solve_lu
 
 #:endif
 #:endfor
-
-
 
 
 

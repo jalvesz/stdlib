@@ -9,1006 +9,6 @@ module stdlib_lapack_givens_jacobi_rot
 
   contains
 
-     pure subroutine stdlib_slar2v( n, x, y, z, incx, c, s, incc )
-     !! SLAR2V applies a vector of real plane rotations from both sides to
-     !! a sequence of 2-by-2 real symmetric matrices, defined by the elements
-     !! of the vectors x, y and z. For i = 1,2,...,n
-     !! ( x(i)  z(i) ) := (  c(i)  s(i) ) ( x(i)  z(i) ) ( c(i) -s(i) )
-     !! ( z(i)  y(i) )    ( -s(i)  c(i) ) ( z(i)  y(i) ) ( s(i)  c(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, n
-           ! Array Arguments 
-           real(sp), intent(in) :: c(*), s(*)
-           real(sp), intent(inout) :: x(*), y(*), z(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix
-           real(sp) :: ci, si, t1, t2, t3, t4, t5, t6, xi, yi, zi
-           ! Executable Statements 
-           ix = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( ix )
-              zi = z( ix )
-              ci = c( ic )
-              si = s( ic )
-              t1 = si*zi
-              t2 = ci*zi
-              t3 = t2 - si*xi
-              t4 = t2 + si*yi
-              t5 = ci*xi + t1
-              t6 = ci*yi - t1
-              x( ix ) = ci*t5 + si*t4
-              y( ix ) = ci*t6 - si*t3
-              z( ix ) = ci*t4 - si*t5
-              ix = ix + incx
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_slar2v
-
-     pure subroutine stdlib_dlar2v( n, x, y, z, incx, c, s, incc )
-     !! DLAR2V applies a vector of real plane rotations from both sides to
-     !! a sequence of 2-by-2 real symmetric matrices, defined by the elements
-     !! of the vectors x, y and z. For i = 1,2,...,n
-     !! ( x(i)  z(i) ) := (  c(i)  s(i) ) ( x(i)  z(i) ) ( c(i) -s(i) )
-     !! ( z(i)  y(i) )    ( -s(i)  c(i) ) ( z(i)  y(i) ) ( s(i)  c(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, n
-           ! Array Arguments 
-           real(dp), intent(in) :: c(*), s(*)
-           real(dp), intent(inout) :: x(*), y(*), z(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix
-           real(dp) :: ci, si, t1, t2, t3, t4, t5, t6, xi, yi, zi
-           ! Executable Statements 
-           ix = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( ix )
-              zi = z( ix )
-              ci = c( ic )
-              si = s( ic )
-              t1 = si*zi
-              t2 = ci*zi
-              t3 = t2 - si*xi
-              t4 = t2 + si*yi
-              t5 = ci*xi + t1
-              t6 = ci*yi - t1
-              x( ix ) = ci*t5 + si*t4
-              y( ix ) = ci*t6 - si*t3
-              z( ix ) = ci*t4 - si*t5
-              ix = ix + incx
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_dlar2v
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lar2v( n, x, y, z, incx, c, s, incc )
-     !! DLAR2V: applies a vector of real plane rotations from both sides to
-     !! a sequence of 2-by-2 real symmetric matrices, defined by the elements
-     !! of the vectors x, y and z. For i = 1,2,...,n
-     !! ( x(i)  z(i) ) := (  c(i)  s(i) ) ( x(i)  z(i) ) ( c(i) -s(i) )
-     !! ( z(i)  y(i) )    ( -s(i)  c(i) ) ( z(i)  y(i) ) ( s(i)  c(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, n
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: c(*), s(*)
-           real(${rk}$), intent(inout) :: x(*), y(*), z(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix
-           real(${rk}$) :: ci, si, t1, t2, t3, t4, t5, t6, xi, yi, zi
-           ! Executable Statements 
-           ix = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( ix )
-              zi = z( ix )
-              ci = c( ic )
-              si = s( ic )
-              t1 = si*zi
-              t2 = ci*zi
-              t3 = t2 - si*xi
-              t4 = t2 + si*yi
-              t5 = ci*xi + t1
-              t6 = ci*yi - t1
-              x( ix ) = ci*t5 + si*t4
-              y( ix ) = ci*t6 - si*t3
-              z( ix ) = ci*t4 - si*t5
-              ix = ix + incx
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_${ri}$lar2v
-
-#:endif
-#:endfor
-
-     pure subroutine stdlib_clar2v( n, x, y, z, incx, c, s, incc )
-     !! CLAR2V applies a vector of complex plane rotations with real cosines
-     !! from both sides to a sequence of 2-by-2 complex Hermitian matrices,
-     !! defined by the elements of the vectors x, y and z. For i = 1,2,...,n
-     !! (       x(i)  z(i) ) :=
-     !! ( conjg(z(i)) y(i) )
-     !! (  c(i) conjg(s(i)) ) (       x(i)  z(i) ) ( c(i) -conjg(s(i)) )
-     !! ( -s(i)       c(i)  ) ( conjg(z(i)) y(i) ) ( s(i)        c(i)  )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, n
-           ! Array Arguments 
-           real(sp), intent(in) :: c(*)
-           complex(sp), intent(in) :: s(*)
-           complex(sp), intent(inout) :: x(*), y(*), z(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix
-           real(sp) :: ci, sii, sir, t1i, t1r, t5, t6, xi, yi, zii, zir
-           complex(sp) :: si, t2, t3, t4, zi
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ix = 1
-           ic = 1
-           do i = 1, n
-              xi = real( x( ix ),KIND=sp)
-              yi = real( y( ix ),KIND=sp)
-              zi = z( ix )
-              zir = real( zi,KIND=sp)
-              zii = aimag( zi )
-              ci = c( ic )
-              si = s( ic )
-              sir = real( si,KIND=sp)
-              sii = aimag( si )
-              t1r = sir*zir - sii*zii
-              t1i = sir*zii + sii*zir
-              t2 = ci*zi
-              t3 = t2 - conjg( si )*xi
-              t4 = conjg( t2 ) + si*yi
-              t5 = ci*xi + t1r
-              t6 = ci*yi - t1r
-              x( ix ) = ci*t5 + ( sir*real( t4,KIND=sp)+sii*aimag( t4 ) )
-              y( ix ) = ci*t6 - ( sir*real( t3,KIND=sp)-sii*aimag( t3 ) )
-              z( ix ) = ci*t3 + conjg( si )*cmplx( t6, t1i,KIND=sp)
-              ix = ix + incx
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_clar2v
-
-     pure subroutine stdlib_zlar2v( n, x, y, z, incx, c, s, incc )
-     !! ZLAR2V applies a vector of complex plane rotations with real cosines
-     !! from both sides to a sequence of 2-by-2 complex Hermitian matrices,
-     !! defined by the elements of the vectors x, y and z. For i = 1,2,...,n
-     !! (       x(i)  z(i) ) :=
-     !! ( conjg(z(i)) y(i) )
-     !! (  c(i) conjg(s(i)) ) (       x(i)  z(i) ) ( c(i) -conjg(s(i)) )
-     !! ( -s(i)       c(i)  ) ( conjg(z(i)) y(i) ) ( s(i)        c(i)  )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, n
-           ! Array Arguments 
-           real(dp), intent(in) :: c(*)
-           complex(dp), intent(in) :: s(*)
-           complex(dp), intent(inout) :: x(*), y(*), z(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix
-           real(dp) :: ci, sii, sir, t1i, t1r, t5, t6, xi, yi, zii, zir
-           complex(dp) :: si, t2, t3, t4, zi
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ix = 1
-           ic = 1
-           do i = 1, n
-              xi = real( x( ix ),KIND=dp)
-              yi = real( y( ix ),KIND=dp)
-              zi = z( ix )
-              zir = real( zi,KIND=dp)
-              zii = aimag( zi )
-              ci = c( ic )
-              si = s( ic )
-              sir = real( si,KIND=dp)
-              sii = aimag( si )
-              t1r = sir*zir - sii*zii
-              t1i = sir*zii + sii*zir
-              t2 = ci*zi
-              t3 = t2 - conjg( si )*xi
-              t4 = conjg( t2 ) + si*yi
-              t5 = ci*xi + t1r
-              t6 = ci*yi - t1r
-              x( ix ) = ci*t5 + ( sir*real( t4,KIND=dp)+sii*aimag( t4 ) )
-              y( ix ) = ci*t6 - ( sir*real( t3,KIND=dp)-sii*aimag( t3 ) )
-              z( ix ) = ci*t3 + conjg( si )*cmplx( t6, t1i,KIND=dp)
-              ix = ix + incx
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_zlar2v
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$lar2v( n, x, y, z, incx, c, s, incc )
-     !! ZLAR2V: applies a vector of complex plane rotations with real cosines
-     !! from both sides to a sequence of 2-by-2 complex Hermitian matrices,
-     !! defined by the elements of the vectors x, y and z. For i = 1,2,...,n
-     !! (       x(i)  z(i) ) :=
-     !! ( conjg(z(i)) y(i) )
-     !! (  c(i) conjg(s(i)) ) (       x(i)  z(i) ) ( c(i) -conjg(s(i)) )
-     !! ( -s(i)       c(i)  ) ( conjg(z(i)) y(i) ) ( s(i)        c(i)  )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, n
-           ! Array Arguments 
-           real(${ck}$), intent(in) :: c(*)
-           complex(${ck}$), intent(in) :: s(*)
-           complex(${ck}$), intent(inout) :: x(*), y(*), z(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix
-           real(${ck}$) :: ci, sii, sir, t1i, t1r, t5, t6, xi, yi, zii, zir
-           complex(${ck}$) :: si, t2, t3, t4, zi
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ix = 1
-           ic = 1
-           do i = 1, n
-              xi = real( x( ix ),KIND=${ck}$)
-              yi = real( y( ix ),KIND=${ck}$)
-              zi = z( ix )
-              zir = real( zi,KIND=${ck}$)
-              zii = aimag( zi )
-              ci = c( ic )
-              si = s( ic )
-              sir = real( si,KIND=${ck}$)
-              sii = aimag( si )
-              t1r = sir*zir - sii*zii
-              t1i = sir*zii + sii*zir
-              t2 = ci*zi
-              t3 = t2 - conjg( si )*xi
-              t4 = conjg( t2 ) + si*yi
-              t5 = ci*xi + t1r
-              t6 = ci*yi - t1r
-              x( ix ) = ci*t5 + ( sir*real( t4,KIND=${ck}$)+sii*aimag( t4 ) )
-              y( ix ) = ci*t6 - ( sir*real( t3,KIND=${ck}$)-sii*aimag( t3 ) )
-              z( ix ) = ci*t3 + conjg( si )*cmplx( t6, t1i,KIND=${ck}$)
-              ix = ix + incx
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_${ci}$lar2v
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_slartg( f, g, c, s, r )
-     !! SLARTG generates a plane rotation so that
-     !! [  C  S  ]  .  [ F ]  =  [ R ]
-     !! [ -S  C  ]     [ G ]     [ 0 ]
-     !! where C**2 + S**2 = 1.
-     !! The mathematical formulas used for C and S are
-     !! R = sign(F) * sqrt(F**2 + G**2)
-     !! C = F / R
-     !! S = G / R
-     !! Hence C >= 0. The algorithm used to compute these quantities
-     !! incorporates scaling to avoid overflow or underflow in computing the
-     !! square root of the sum of squares.
-     !! This version is discontinuous in R at F = 0 but it returns the same
-     !! C and S as SLARTG for complex inputs (F,0) and (G,0).
-     !! This is a more accurate version of the BLAS1 routine SROTG,
-     !! with the following other differences:
-     !! F and G are unchanged on return.
-     !! If G=0, then C=1 and S=0.
-     !! If F=0 and (G .ne. 0), then C=0 and S=sign(1,G) without doing any
-     !! floating point operations (saves work in SBDSQR when
-     !! there are zeros on the diagonal).
-     !! If F exceeds G in magnitude, C will be positive.
-     !! Below, wp=>sp stands for single precision from LA_CONSTANTS module.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! february 2021
-           use stdlib_blas_constants_sp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
-        ! Scalar Arguments 
-        real(sp), intent(out) :: c, r, s
-        real(sp), intent(in) :: f, g
-        ! Local Scalars 
-        real(sp) :: d, f1, fs, g1, gs, p, u, uu
-        ! Intrinsic Functions 
-        ! Executable Statements 
-        f1 = abs( f )
-        g1 = abs( g )
-        if( g == zero ) then
-           c = one
-           s = zero
-           r = f
-        else if( f == zero ) then
-           c = zero
-           s = sign( one, g )
-           r = g1
-     else if( f1 > rtmin .and. f1 < rtmax .and.            g1 > rtmin .and. g1 < rtmax ) &
-               then
-           d = sqrt( f*f + g*g )
-           p = one / d
-           c = f1*p
-           s = g*sign( p, f )
-           r = sign( d, f )
-        else
-           u = min( safmax, max( safmin, f1, g1 ) )
-           uu = one / u
-           fs = f*uu
-           gs = g*uu
-           d = sqrt( fs*fs + gs*gs )
-           p = one / d
-           c = abs( fs )*p
-           s = gs*sign( p, f )
-           r = sign( d, f )*u
-        end if
-        return
-     end subroutine stdlib_slartg
-
-     pure subroutine stdlib_dlartg( f, g, c, s, r )
-     !! DLARTG generates a plane rotation so that
-     !! [  C  S  ]  .  [ F ]  =  [ R ]
-     !! [ -S  C  ]     [ G ]     [ 0 ]
-     !! where C**2 + S**2 = 1.
-     !! The mathematical formulas used for C and S are
-     !! R = sign(F) * sqrt(F**2 + G**2)
-     !! C = F / R
-     !! S = G / R
-     !! Hence C >= 0. The algorithm used to compute these quantities
-     !! incorporates scaling to avoid overflow or underflow in computing the
-     !! square root of the sum of squares.
-     !! This version is discontinuous in R at F = 0 but it returns the same
-     !! C and S as ZLARTG for complex inputs (F,0) and (G,0).
-     !! This is a more accurate version of the BLAS1 routine DROTG,
-     !! with the following other differences:
-     !! F and G are unchanged on return.
-     !! If G=0, then C=1 and S=0.
-     !! If F=0 and (G .ne. 0), then C=0 and S=sign(1,G) without doing any
-     !! floating point operations (saves work in DBDSQR when
-     !! there are zeros on the diagonal).
-     !! If F exceeds G in magnitude, C will be positive.
-     !! Below, wp=>dp stands for double precision from LA_CONSTANTS module.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! february 2021
-           use stdlib_blas_constants_dp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
-        ! Scalar Arguments 
-        real(dp), intent(out) :: c, r, s
-        real(dp), intent(in) :: f, g
-        ! Local Scalars 
-        real(dp) :: d, f1, fs, g1, gs, p, u, uu
-        ! Intrinsic Functions 
-        ! Executable Statements 
-        f1 = abs( f )
-        g1 = abs( g )
-        if( g == zero ) then
-           c = one
-           s = zero
-           r = f
-        else if( f == zero ) then
-           c = zero
-           s = sign( one, g )
-           r = g1
-     else if( f1 > rtmin .and. f1 < rtmax .and.            g1 > rtmin .and. g1 < rtmax ) &
-               then
-           d = sqrt( f*f + g*g )
-           p = one / d
-           c = f1*p
-           s = g*sign( p, f )
-           r = sign( d, f )
-        else
-           u = min( safmax, max( safmin, f1, g1 ) )
-           uu = one / u
-           fs = f*uu
-           gs = g*uu
-           d = sqrt( fs*fs + gs*gs )
-           p = one / d
-           c = abs( fs )*p
-           s = gs*sign( p, f )
-           r = sign( d, f )*u
-        end if
-        return
-     end subroutine stdlib_dlartg
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lartg( f, g, c, s, r )
-     !! DLARTG: generates a plane rotation so that
-     !! [  C  S  ]  .  [ F ]  =  [ R ]
-     !! [ -S  C  ]     [ G ]     [ 0 ]
-     !! where C**2 + S**2 = 1.
-     !! The mathematical formulas used for C and S are
-     !! R = sign(F) * sqrt(F**2 + G**2)
-     !! C = F / R
-     !! S = G / R
-     !! Hence C >= 0. The algorithm used to compute these quantities
-     !! incorporates scaling to avoid overflow or underflow in computing the
-     !! square root of the sum of squares.
-     !! This version is discontinuous in R at F = 0 but it returns the same
-     !! C and S as ZLARTG for complex inputs (F,0) and (G,0).
-     !! This is a more accurate version of the BLAS1 routine DROTG,
-     !! with the following other differences:
-     !! F and G are unchanged on return.
-     !! If G=0, then C=1 and S=0.
-     !! If F=0 and (G .ne. 0), then C=0 and S=sign(1,G) without doing any
-     !! floating point operations (saves work in DBDSQR when
-     !! there are zeros on the diagonal).
-     !! If F exceeds G in magnitude, C will be positive.
-     !! Below, wp=>dp stands for quad precision from LA_CONSTANTS module.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! february 2021
-           use stdlib_blas_constants_${rk}$, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
-        ! Scalar Arguments 
-        real(${rk}$), intent(out) :: c, r, s
-        real(${rk}$), intent(in) :: f, g
-        ! Local Scalars 
-        real(${rk}$) :: d, f1, fs, g1, gs, p, u, uu
-        ! Intrinsic Functions 
-        ! Executable Statements 
-        f1 = abs( f )
-        g1 = abs( g )
-        if( g == zero ) then
-           c = one
-           s = zero
-           r = f
-        else if( f == zero ) then
-           c = zero
-           s = sign( one, g )
-           r = g1
-     else if( f1 > rtmin .and. f1 < rtmax .and.            g1 > rtmin .and. g1 < rtmax ) &
-               then
-           d = sqrt( f*f + g*g )
-           p = one / d
-           c = f1*p
-           s = g*sign( p, f )
-           r = sign( d, f )
-        else
-           u = min( safmax, max( safmin, f1, g1 ) )
-           uu = one / u
-           fs = f*uu
-           gs = g*uu
-           d = sqrt( fs*fs + gs*gs )
-           p = one / d
-           c = abs( fs )*p
-           s = gs*sign( p, f )
-           r = sign( d, f )*u
-        end if
-        return
-     end subroutine stdlib_${ri}$lartg
-
-#:endif
-#:endfor
-
-     pure subroutine stdlib_clartg( f, g, c, s, r )
-     !! CLARTG generates a plane rotation so that
-     !! [  C         S  ] . [ F ]  =  [ R ]
-     !! [ -conjg(S)  C  ]   [ G ]     [ 0 ]
-     !! where C is real and C**2 + |S|**2 = 1.
-     !! The mathematical formulas used for C and S are
-     !! sgn(x) = {  x / |x|,   x != 0
-     !! {  1,         x = 0
-     !! R = sgn(F) * sqrt(|F|**2 + |G|**2)
-     !! C = |F| / sqrt(|F|**2 + |G|**2)
-     !! S = sgn(F) * conjg(G) / sqrt(|F|**2 + |G|**2)
-     !! When F and G are real, the formulas simplify to C = F/R and
-     !! S = G/R, and the returned values of C, S, and R should be
-     !! identical to those returned by CLARTG.
-     !! The algorithm used to compute these quantities incorporates scaling
-     !! to avoid overflow or underflow in computing the square root of the
-     !! sum of squares.
-     !! This is a faster version of the BLAS1 routine CROTG, except for
-     !! the following differences:
-     !! F and G are unchanged on return.
-     !! If G=0, then C=1 and S=0.
-     !! If F=0, then C=0 and S is chosen so that R is real.
-     !! Below, wp=>sp stands for single precision from LA_CONSTANTS module.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! february 2021
-           use stdlib_blas_constants_sp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
-        ! Scalar Arguments 
-        real(sp), intent(out) :: c
-        complex(sp), intent(in) :: f, g
-        complex(sp), intent(out) :: r, s
-        ! Local Scalars 
-        real(sp) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
-        complex(sp) :: fs, gs, t
-        ! Intrinsic Functions 
-        ! Statement Functions 
-        real(sp) :: abssq
-        ! Statement Function Definitions 
-        abssq( t ) = real( t,KIND=sp)**2 + aimag( t )**2
-        ! Executable Statements 
-        if( g == czero ) then
-           c = one
-           s = czero
-           r = f
-        else if( f == czero ) then
-           c = zero
-           g1 = max( abs(real(g,KIND=sp)), abs(aimag(g)) )
-           if( g1 > rtmin .and. g1 < rtmax ) then
-              ! use unscaled algorithm
-              g2 = abssq( g )
-              d = sqrt( g2 )
-              s = conjg( g ) / d
-              r = d
-           else
-              ! use scaled algorithm
-              u = min( safmax, max( safmin, g1 ) )
-              uu = one / u
-              gs = g*uu
-              g2 = abssq( gs )
-              d = sqrt( g2 )
-              s = conjg( gs ) / d
-              r = d*u
-           end if
-        else
-           f1 = max( abs(real(f,KIND=sp)), abs(aimag(f)) )
-           g1 = max( abs(real(g,KIND=sp)), abs(aimag(g)) )
-     if( f1 > rtmin .and. f1 < rtmax .and.          g1 > rtmin .and. g1 < rtmax ) then
-              ! use unscaled algorithm
-              f2 = abssq( f )
-              g2 = abssq( g )
-              h2 = f2 + g2
-              if( f2 > rtmin .and. h2 < rtmax ) then
-                 d = sqrt( f2*h2 )
-              else
-                 d = sqrt( f2 )*sqrt( h2 )
-              end if
-              p = 1 / d
-              c = f2*p
-              s = conjg( g )*( f*p )
-              r = f*( h2*p )
-           else
-              ! use scaled algorithm
-              u = min( safmax, max( safmin, f1, g1 ) )
-              uu = one / u
-              gs = g*uu
-              g2 = abssq( gs )
-              if( f1*uu < rtmin ) then
-                 ! f is not well-scaled when scaled by g1.
-                 ! use a different scaling for f.
-                 v = min( safmax, max( safmin, f1 ) )
-                 vv = one / v
-                 w = v * uu
-                 fs = f*vv
-                 f2 = abssq( fs )
-                 h2 = f2*w**2 + g2
-              else
-                 ! otherwise use the same scaling for f and g.
-                 w = one
-                 fs = f*uu
-                 f2 = abssq( fs )
-                 h2 = f2 + g2
-              end if
-              if( f2 > rtmin .and. h2 < rtmax ) then
-                 d = sqrt( f2*h2 )
-              else
-                 d = sqrt( f2 )*sqrt( h2 )
-              end if
-              p = 1 / d
-              c = ( f2*p )*w
-              s = conjg( gs )*( fs*p )
-              r = ( fs*( h2*p ) )*u
-           end if
-        end if
-        return
-     end subroutine stdlib_clartg
-
-     pure subroutine stdlib_zlartg( f, g, c, s, r )
-     !! ZLARTG generates a plane rotation so that
-     !! [  C         S  ] . [ F ]  =  [ R ]
-     !! [ -conjg(S)  C  ]   [ G ]     [ 0 ]
-     !! where C is real and C**2 + |S|**2 = 1.
-     !! The mathematical formulas used for C and S are
-     !! sgn(x) = {  x / |x|,   x != 0
-     !! {  1,         x = 0
-     !! R = sgn(F) * sqrt(|F|**2 + |G|**2)
-     !! C = |F| / sqrt(|F|**2 + |G|**2)
-     !! S = sgn(F) * conjg(G) / sqrt(|F|**2 + |G|**2)
-     !! When F and G are real, the formulas simplify to C = F/R and
-     !! S = G/R, and the returned values of C, S, and R should be
-     !! identical to those returned by DLARTG.
-     !! The algorithm used to compute these quantities incorporates scaling
-     !! to avoid overflow or underflow in computing the square root of the
-     !! sum of squares.
-     !! This is a faster version of the BLAS1 routine ZROTG, except for
-     !! the following differences:
-     !! F and G are unchanged on return.
-     !! If G=0, then C=1 and S=0.
-     !! If F=0, then C=0 and S is chosen so that R is real.
-     !! Below, wp=>dp stands for double precision from LA_CONSTANTS module.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! february 2021
-           use stdlib_blas_constants_dp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
-        ! Scalar Arguments 
-        real(dp), intent(out) :: c
-        complex(dp), intent(in) :: f, g
-        complex(dp), intent(out) :: r, s
-        ! Local Scalars 
-        real(dp) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
-        complex(dp) :: fs, gs, t
-        ! Intrinsic Functions 
-        ! Statement Functions 
-        real(dp) :: abssq
-        ! Statement Function Definitions 
-        abssq( t ) = real( t,KIND=dp)**2 + aimag( t )**2
-        ! Executable Statements 
-        if( g == czero ) then
-           c = one
-           s = czero
-           r = f
-        else if( f == czero ) then
-           c = zero
-           g1 = max( abs(real(g,KIND=dp)), abs(aimag(g)) )
-           if( g1 > rtmin .and. g1 < rtmax ) then
-              ! use unscaled algorithm
-              g2 = abssq( g )
-              d = sqrt( g2 )
-              s = conjg( g ) / d
-              r = d
-           else
-              ! use scaled algorithm
-              u = min( safmax, max( safmin, g1 ) )
-              uu = one / u
-              gs = g*uu
-              g2 = abssq( gs )
-              d = sqrt( g2 )
-              s = conjg( gs ) / d
-              r = d*u
-           end if
-        else
-           f1 = max( abs(real(f,KIND=dp)), abs(aimag(f)) )
-           g1 = max( abs(real(g,KIND=dp)), abs(aimag(g)) )
-     if( f1 > rtmin .and. f1 < rtmax .and.          g1 > rtmin .and. g1 < rtmax ) then
-              ! use unscaled algorithm
-              f2 = abssq( f )
-              g2 = abssq( g )
-              h2 = f2 + g2
-              if( f2 > rtmin .and. h2 < rtmax ) then
-                 d = sqrt( f2*h2 )
-              else
-                 d = sqrt( f2 )*sqrt( h2 )
-              end if
-              p = 1 / d
-              c = f2*p
-              s = conjg( g )*( f*p )
-              r = f*( h2*p )
-           else
-              ! use scaled algorithm
-              u = min( safmax, max( safmin, f1, g1 ) )
-              uu = one / u
-              gs = g*uu
-              g2 = abssq( gs )
-              if( f1*uu < rtmin ) then
-                 ! f is not well-scaled when scaled by g1.
-                 ! use a different scaling for f.
-                 v = min( safmax, max( safmin, f1 ) )
-                 vv = one / v
-                 w = v * uu
-                 fs = f*vv
-                 f2 = abssq( fs )
-                 h2 = f2*w**2 + g2
-              else
-                 ! otherwise use the same scaling for f and g.
-                 w = one
-                 fs = f*uu
-                 f2 = abssq( fs )
-                 h2 = f2 + g2
-              end if
-              if( f2 > rtmin .and. h2 < rtmax ) then
-                 d = sqrt( f2*h2 )
-              else
-                 d = sqrt( f2 )*sqrt( h2 )
-              end if
-              p = 1 / d
-              c = ( f2*p )*w
-              s = conjg( gs )*( fs*p )
-              r = ( fs*( h2*p ) )*u
-           end if
-        end if
-        return
-     end subroutine stdlib_zlartg
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$lartg( f, g, c, s, r )
-     !! ZLARTG: generates a plane rotation so that
-     !! [  C         S  ] . [ F ]  =  [ R ]
-     !! [ -conjg(S)  C  ]   [ G ]     [ 0 ]
-     !! where C is real and C**2 + |S|**2 = 1.
-     !! The mathematical formulas used for C and S are
-     !! sgn(x) = {  x / |x|,   x != 0
-     !! {  1,         x = 0
-     !! R = sgn(F) * sqrt(|F|**2 + |G|**2)
-     !! C = |F| / sqrt(|F|**2 + |G|**2)
-     !! S = sgn(F) * conjg(G) / sqrt(|F|**2 + |G|**2)
-     !! When F and G are real, the formulas simplify to C = F/R and
-     !! S = G/R, and the returned values of C, S, and R should be
-     !! identical to those returned by DLARTG.
-     !! The algorithm used to compute these quantities incorporates scaling
-     !! to avoid overflow or underflow in computing the square root of the
-     !! sum of squares.
-     !! This is a faster version of the BLAS1 routine ZROTG, except for
-     !! the following differences:
-     !! F and G are unchanged on return.
-     !! If G=0, then C=1 and S=0.
-     !! If F=0, then C=0 and S is chosen so that R is real.
-     !! Below, wp=>dp stands for quad precision from LA_CONSTANTS module.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! february 2021
-           use stdlib_blas_constants_${ck}$, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
-        ! Scalar Arguments 
-        real(${ck}$), intent(out) :: c
-        complex(${ck}$), intent(in) :: f, g
-        complex(${ck}$), intent(out) :: r, s
-        ! Local Scalars 
-        real(${ck}$) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
-        complex(${ck}$) :: fs, gs, t
-        ! Intrinsic Functions 
-        ! Statement Functions 
-        real(${ck}$) :: abssq
-        ! Statement Function Definitions 
-        abssq( t ) = real( t,KIND=${ck}$)**2 + aimag( t )**2
-        ! Executable Statements 
-        if( g == czero ) then
-           c = one
-           s = czero
-           r = f
-        else if( f == czero ) then
-           c = zero
-           g1 = max( abs(real(g,KIND=${ck}$)), abs(aimag(g)) )
-           if( g1 > rtmin .and. g1 < rtmax ) then
-              ! use unscaled algorithm
-              g2 = abssq( g )
-              d = sqrt( g2 )
-              s = conjg( g ) / d
-              r = d
-           else
-              ! use scaled algorithm
-              u = min( safmax, max( safmin, g1 ) )
-              uu = one / u
-              gs = g*uu
-              g2 = abssq( gs )
-              d = sqrt( g2 )
-              s = conjg( gs ) / d
-              r = d*u
-           end if
-        else
-           f1 = max( abs(real(f,KIND=${ck}$)), abs(aimag(f)) )
-           g1 = max( abs(real(g,KIND=${ck}$)), abs(aimag(g)) )
-     if( f1 > rtmin .and. f1 < rtmax .and.          g1 > rtmin .and. g1 < rtmax ) then
-              ! use unscaled algorithm
-              f2 = abssq( f )
-              g2 = abssq( g )
-              h2 = f2 + g2
-              if( f2 > rtmin .and. h2 < rtmax ) then
-                 d = sqrt( f2*h2 )
-              else
-                 d = sqrt( f2 )*sqrt( h2 )
-              end if
-              p = 1 / d
-              c = f2*p
-              s = conjg( g )*( f*p )
-              r = f*( h2*p )
-           else
-              ! use scaled algorithm
-              u = min( safmax, max( safmin, f1, g1 ) )
-              uu = one / u
-              gs = g*uu
-              g2 = abssq( gs )
-              if( f1*uu < rtmin ) then
-                 ! f is not well-scaled when scaled by g1.
-                 ! use a different scaling for f.
-                 v = min( safmax, max( safmin, f1 ) )
-                 vv = one / v
-                 w = v * uu
-                 fs = f*vv
-                 f2 = abssq( fs )
-                 h2 = f2*w**2 + g2
-              else
-                 ! otherwise use the same scaling for f and g.
-                 w = one
-                 fs = f*uu
-                 f2 = abssq( fs )
-                 h2 = f2 + g2
-              end if
-              if( f2 > rtmin .and. h2 < rtmax ) then
-                 d = sqrt( f2*h2 )
-              else
-                 d = sqrt( f2 )*sqrt( h2 )
-              end if
-              p = 1 / d
-              c = ( f2*p )*w
-              s = conjg( gs )*( fs*p )
-              r = ( fs*( h2*p ) )*u
-           end if
-        end if
-        return
-     end subroutine stdlib_${ci}$lartg
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_clacrt( n, cx, incx, cy, incy, c, s )
-     !! CLACRT performs the operation
-     !! (  c  s )( x )  ==> ( x )
-     !! ( -s  c )( y )      ( y )
-     !! where c and s are complex and the vectors x and y are complex.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(sp), intent(in) :: c, s
-           ! Array Arguments 
-           complex(sp), intent(inout) :: cx(*), cy(*)
-       ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ix, iy
-           complex(sp) :: ctemp
-           ! Executable Statements 
-           if( n<=0 )return
-           if( incx==1 .and. incy==1 )go to 20
-           ! code for unequal increments or equal increments not equal to 1
-           ix = 1
-           iy = 1
-           if( incx<0 )ix = ( -n+1 )*incx + 1
-           if( incy<0 )iy = ( -n+1 )*incy + 1
-           do i = 1, n
-              ctemp = c*cx( ix ) + s*cy( iy )
-              cy( iy ) = c*cy( iy ) - s*cx( ix )
-              cx( ix ) = ctemp
-              ix = ix + incx
-              iy = iy + incy
-           end do
-           return
-           ! code for both increments equal to 1
-           20 continue
-           do i = 1, n
-              ctemp = c*cx( i ) + s*cy( i )
-              cy( i ) = c*cy( i ) - s*cx( i )
-              cx( i ) = ctemp
-           end do
-           return
-     end subroutine stdlib_clacrt
-
-     pure subroutine stdlib_zlacrt( n, cx, incx, cy, incy, c, s )
-     !! ZLACRT performs the operation
-     !! (  c  s )( x )  ==> ( x )
-     !! ( -s  c )( y )      ( y )
-     !! where c and s are complex and the vectors x and y are complex.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(dp), intent(in) :: c, s
-           ! Array Arguments 
-           complex(dp), intent(inout) :: cx(*), cy(*)
-       ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ix, iy
-           complex(dp) :: ctemp
-           ! Executable Statements 
-           if( n<=0 )return
-           if( incx==1 .and. incy==1 )go to 20
-           ! code for unequal increments or equal increments not equal to 1
-           ix = 1
-           iy = 1
-           if( incx<0 )ix = ( -n+1 )*incx + 1
-           if( incy<0 )iy = ( -n+1 )*incy + 1
-           do i = 1, n
-              ctemp = c*cx( ix ) + s*cy( iy )
-              cy( iy ) = c*cy( iy ) - s*cx( ix )
-              cx( ix ) = ctemp
-              ix = ix + incx
-              iy = iy + incy
-           end do
-           return
-           ! code for both increments equal to 1
-           20 continue
-           do i = 1, n
-              ctemp = c*cx( i ) + s*cy( i )
-              cy( i ) = c*cy( i ) - s*cx( i )
-              cx( i ) = ctemp
-           end do
-           return
-     end subroutine stdlib_zlacrt
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$lacrt( n, cx, incx, cy, incy, c, s )
-     !! ZLACRT: performs the operation
-     !! (  c  s )( x )  ==> ( x )
-     !! ( -s  c )( y )      ( y )
-     !! where c and s are complex and the vectors x and y are complex.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(${ck}$), intent(in) :: c, s
-           ! Array Arguments 
-           complex(${ck}$), intent(inout) :: cx(*), cy(*)
-       ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ix, iy
-           complex(${ck}$) :: ctemp
-           ! Executable Statements 
-           if( n<=0 )return
-           if( incx==1 .and. incy==1 )go to 20
-           ! code for unequal increments or equal increments not equal to 1
-           ix = 1
-           iy = 1
-           if( incx<0 )ix = ( -n+1 )*incx + 1
-           if( incy<0 )iy = ( -n+1 )*incy + 1
-           do i = 1, n
-              ctemp = c*cx( ix ) + s*cy( iy )
-              cy( iy ) = c*cy( iy ) - s*cx( ix )
-              cx( ix ) = ctemp
-              ix = ix + incx
-              iy = iy + incy
-           end do
-           return
-           ! code for both increments equal to 1
-           20 continue
-           do i = 1, n
-              ctemp = c*cx( i ) + s*cy( i )
-              cy( i ) = c*cy( i ) - s*cx( i )
-              cx( i ) = ctemp
-           end do
-           return
-     end subroutine stdlib_${ci}$lacrt
-
-#:endif
-#:endfor
-
-
-
      pure subroutine stdlib_slasr( side, pivot, direct, m, n, c, s, a, lda )
      !! SLASR applies a sequence of plane rotations to a real matrix A,
      !! from either the left or the right.
@@ -2572,6 +1572,567 @@ module stdlib_lapack_givens_jacobi_rot
 
 
 
+     pure subroutine stdlib_slartg( f, g, c, s, r )
+     !! SLARTG generates a plane rotation so that
+     !! [  C  S  ]  .  [ F ]  =  [ R ]
+     !! [ -S  C  ]     [ G ]     [ 0 ]
+     !! where C**2 + S**2 = 1.
+     !! The mathematical formulas used for C and S are
+     !! R = sign(F) * sqrt(F**2 + G**2)
+     !! C = F / R
+     !! S = G / R
+     !! Hence C >= 0. The algorithm used to compute these quantities
+     !! incorporates scaling to avoid overflow or underflow in computing the
+     !! square root of the sum of squares.
+     !! This version is discontinuous in R at F = 0 but it returns the same
+     !! C and S as SLARTG for complex inputs (F,0) and (G,0).
+     !! This is a more accurate version of the BLAS1 routine SROTG,
+     !! with the following other differences:
+     !! F and G are unchanged on return.
+     !! If G=0, then C=1 and S=0.
+     !! If F=0 and (G .ne. 0), then C=0 and S=sign(1,G) without doing any
+     !! floating point operations (saves work in SBDSQR when
+     !! there are zeros on the diagonal).
+     !! If F exceeds G in magnitude, C will be positive.
+     !! Below, wp=>sp stands for single precision from LA_CONSTANTS module.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! february 2021
+           use stdlib_blas_constants_sp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        ! Scalar Arguments 
+        real(sp), intent(out) :: c, r, s
+        real(sp), intent(in) :: f, g
+        ! Local Scalars 
+        real(sp) :: d, f1, fs, g1, gs, p, u, uu
+        ! Intrinsic Functions 
+        ! Executable Statements 
+        f1 = abs( f )
+        g1 = abs( g )
+        if( g == zero ) then
+           c = one
+           s = zero
+           r = f
+        else if( f == zero ) then
+           c = zero
+           s = sign( one, g )
+           r = g1
+     else if( f1 > rtmin .and. f1 < rtmax .and.            g1 > rtmin .and. g1 < rtmax ) &
+               then
+           d = sqrt( f*f + g*g )
+           p = one / d
+           c = f1*p
+           s = g*sign( p, f )
+           r = sign( d, f )
+        else
+           u = min( safmax, max( safmin, f1, g1 ) )
+           uu = one / u
+           fs = f*uu
+           gs = g*uu
+           d = sqrt( fs*fs + gs*gs )
+           p = one / d
+           c = abs( fs )*p
+           s = gs*sign( p, f )
+           r = sign( d, f )*u
+        end if
+        return
+     end subroutine stdlib_slartg
+
+     pure subroutine stdlib_dlartg( f, g, c, s, r )
+     !! DLARTG generates a plane rotation so that
+     !! [  C  S  ]  .  [ F ]  =  [ R ]
+     !! [ -S  C  ]     [ G ]     [ 0 ]
+     !! where C**2 + S**2 = 1.
+     !! The mathematical formulas used for C and S are
+     !! R = sign(F) * sqrt(F**2 + G**2)
+     !! C = F / R
+     !! S = G / R
+     !! Hence C >= 0. The algorithm used to compute these quantities
+     !! incorporates scaling to avoid overflow or underflow in computing the
+     !! square root of the sum of squares.
+     !! This version is discontinuous in R at F = 0 but it returns the same
+     !! C and S as ZLARTG for complex inputs (F,0) and (G,0).
+     !! This is a more accurate version of the BLAS1 routine DROTG,
+     !! with the following other differences:
+     !! F and G are unchanged on return.
+     !! If G=0, then C=1 and S=0.
+     !! If F=0 and (G .ne. 0), then C=0 and S=sign(1,G) without doing any
+     !! floating point operations (saves work in DBDSQR when
+     !! there are zeros on the diagonal).
+     !! If F exceeds G in magnitude, C will be positive.
+     !! Below, wp=>dp stands for double precision from LA_CONSTANTS module.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! february 2021
+           use stdlib_blas_constants_dp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        ! Scalar Arguments 
+        real(dp), intent(out) :: c, r, s
+        real(dp), intent(in) :: f, g
+        ! Local Scalars 
+        real(dp) :: d, f1, fs, g1, gs, p, u, uu
+        ! Intrinsic Functions 
+        ! Executable Statements 
+        f1 = abs( f )
+        g1 = abs( g )
+        if( g == zero ) then
+           c = one
+           s = zero
+           r = f
+        else if( f == zero ) then
+           c = zero
+           s = sign( one, g )
+           r = g1
+     else if( f1 > rtmin .and. f1 < rtmax .and.            g1 > rtmin .and. g1 < rtmax ) &
+               then
+           d = sqrt( f*f + g*g )
+           p = one / d
+           c = f1*p
+           s = g*sign( p, f )
+           r = sign( d, f )
+        else
+           u = min( safmax, max( safmin, f1, g1 ) )
+           uu = one / u
+           fs = f*uu
+           gs = g*uu
+           d = sqrt( fs*fs + gs*gs )
+           p = one / d
+           c = abs( fs )*p
+           s = gs*sign( p, f )
+           r = sign( d, f )*u
+        end if
+        return
+     end subroutine stdlib_dlartg
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$lartg( f, g, c, s, r )
+     !! DLARTG: generates a plane rotation so that
+     !! [  C  S  ]  .  [ F ]  =  [ R ]
+     !! [ -S  C  ]     [ G ]     [ 0 ]
+     !! where C**2 + S**2 = 1.
+     !! The mathematical formulas used for C and S are
+     !! R = sign(F) * sqrt(F**2 + G**2)
+     !! C = F / R
+     !! S = G / R
+     !! Hence C >= 0. The algorithm used to compute these quantities
+     !! incorporates scaling to avoid overflow or underflow in computing the
+     !! square root of the sum of squares.
+     !! This version is discontinuous in R at F = 0 but it returns the same
+     !! C and S as ZLARTG for complex inputs (F,0) and (G,0).
+     !! This is a more accurate version of the BLAS1 routine DROTG,
+     !! with the following other differences:
+     !! F and G are unchanged on return.
+     !! If G=0, then C=1 and S=0.
+     !! If F=0 and (G .ne. 0), then C=0 and S=sign(1,G) without doing any
+     !! floating point operations (saves work in DBDSQR when
+     !! there are zeros on the diagonal).
+     !! If F exceeds G in magnitude, C will be positive.
+     !! Below, wp=>dp stands for quad precision from LA_CONSTANTS module.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! february 2021
+           use stdlib_blas_constants_${rk}$, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        ! Scalar Arguments 
+        real(${rk}$), intent(out) :: c, r, s
+        real(${rk}$), intent(in) :: f, g
+        ! Local Scalars 
+        real(${rk}$) :: d, f1, fs, g1, gs, p, u, uu
+        ! Intrinsic Functions 
+        ! Executable Statements 
+        f1 = abs( f )
+        g1 = abs( g )
+        if( g == zero ) then
+           c = one
+           s = zero
+           r = f
+        else if( f == zero ) then
+           c = zero
+           s = sign( one, g )
+           r = g1
+     else if( f1 > rtmin .and. f1 < rtmax .and.            g1 > rtmin .and. g1 < rtmax ) &
+               then
+           d = sqrt( f*f + g*g )
+           p = one / d
+           c = f1*p
+           s = g*sign( p, f )
+           r = sign( d, f )
+        else
+           u = min( safmax, max( safmin, f1, g1 ) )
+           uu = one / u
+           fs = f*uu
+           gs = g*uu
+           d = sqrt( fs*fs + gs*gs )
+           p = one / d
+           c = abs( fs )*p
+           s = gs*sign( p, f )
+           r = sign( d, f )*u
+        end if
+        return
+     end subroutine stdlib_${ri}$lartg
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_clartg( f, g, c, s, r )
+     !! CLARTG generates a plane rotation so that
+     !! [  C         S  ] . [ F ]  =  [ R ]
+     !! [ -conjg(S)  C  ]   [ G ]     [ 0 ]
+     !! where C is real and C**2 + |S|**2 = 1.
+     !! The mathematical formulas used for C and S are
+     !! sgn(x) = {  x / |x|,   x != 0
+     !! {  1,         x = 0
+     !! R = sgn(F) * sqrt(|F|**2 + |G|**2)
+     !! C = |F| / sqrt(|F|**2 + |G|**2)
+     !! S = sgn(F) * conjg(G) / sqrt(|F|**2 + |G|**2)
+     !! When F and G are real, the formulas simplify to C = F/R and
+     !! S = G/R, and the returned values of C, S, and R should be
+     !! identical to those returned by CLARTG.
+     !! The algorithm used to compute these quantities incorporates scaling
+     !! to avoid overflow or underflow in computing the square root of the
+     !! sum of squares.
+     !! This is a faster version of the BLAS1 routine CROTG, except for
+     !! the following differences:
+     !! F and G are unchanged on return.
+     !! If G=0, then C=1 and S=0.
+     !! If F=0, then C=0 and S is chosen so that R is real.
+     !! Below, wp=>sp stands for single precision from LA_CONSTANTS module.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! february 2021
+           use stdlib_blas_constants_sp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        ! Scalar Arguments 
+        real(sp), intent(out) :: c
+        complex(sp), intent(in) :: f, g
+        complex(sp), intent(out) :: r, s
+        ! Local Scalars 
+        real(sp) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
+        complex(sp) :: fs, gs, t
+        ! Intrinsic Functions 
+        ! Statement Functions 
+        real(sp) :: abssq
+        ! Statement Function Definitions 
+        abssq( t ) = real( t,KIND=sp)**2 + aimag( t )**2
+        ! Executable Statements 
+        if( g == czero ) then
+           c = one
+           s = czero
+           r = f
+        else if( f == czero ) then
+           c = zero
+           g1 = max( abs(real(g,KIND=sp)), abs(aimag(g)) )
+           if( g1 > rtmin .and. g1 < rtmax ) then
+              ! use unscaled algorithm
+              g2 = abssq( g )
+              d = sqrt( g2 )
+              s = conjg( g ) / d
+              r = d
+           else
+              ! use scaled algorithm
+              u = min( safmax, max( safmin, g1 ) )
+              uu = one / u
+              gs = g*uu
+              g2 = abssq( gs )
+              d = sqrt( g2 )
+              s = conjg( gs ) / d
+              r = d*u
+           end if
+        else
+           f1 = max( abs(real(f,KIND=sp)), abs(aimag(f)) )
+           g1 = max( abs(real(g,KIND=sp)), abs(aimag(g)) )
+     if( f1 > rtmin .and. f1 < rtmax .and.          g1 > rtmin .and. g1 < rtmax ) then
+              ! use unscaled algorithm
+              f2 = abssq( f )
+              g2 = abssq( g )
+              h2 = f2 + g2
+              if( f2 > rtmin .and. h2 < rtmax ) then
+                 d = sqrt( f2*h2 )
+              else
+                 d = sqrt( f2 )*sqrt( h2 )
+              end if
+              p = 1 / d
+              c = f2*p
+              s = conjg( g )*( f*p )
+              r = f*( h2*p )
+           else
+              ! use scaled algorithm
+              u = min( safmax, max( safmin, f1, g1 ) )
+              uu = one / u
+              gs = g*uu
+              g2 = abssq( gs )
+              if( f1*uu < rtmin ) then
+                 ! f is not well-scaled when scaled by g1.
+                 ! use a different scaling for f.
+                 v = min( safmax, max( safmin, f1 ) )
+                 vv = one / v
+                 w = v * uu
+                 fs = f*vv
+                 f2 = abssq( fs )
+                 h2 = f2*w**2 + g2
+              else
+                 ! otherwise use the same scaling for f and g.
+                 w = one
+                 fs = f*uu
+                 f2 = abssq( fs )
+                 h2 = f2 + g2
+              end if
+              if( f2 > rtmin .and. h2 < rtmax ) then
+                 d = sqrt( f2*h2 )
+              else
+                 d = sqrt( f2 )*sqrt( h2 )
+              end if
+              p = 1 / d
+              c = ( f2*p )*w
+              s = conjg( gs )*( fs*p )
+              r = ( fs*( h2*p ) )*u
+           end if
+        end if
+        return
+     end subroutine stdlib_clartg
+
+     pure subroutine stdlib_zlartg( f, g, c, s, r )
+     !! ZLARTG generates a plane rotation so that
+     !! [  C         S  ] . [ F ]  =  [ R ]
+     !! [ -conjg(S)  C  ]   [ G ]     [ 0 ]
+     !! where C is real and C**2 + |S|**2 = 1.
+     !! The mathematical formulas used for C and S are
+     !! sgn(x) = {  x / |x|,   x != 0
+     !! {  1,         x = 0
+     !! R = sgn(F) * sqrt(|F|**2 + |G|**2)
+     !! C = |F| / sqrt(|F|**2 + |G|**2)
+     !! S = sgn(F) * conjg(G) / sqrt(|F|**2 + |G|**2)
+     !! When F and G are real, the formulas simplify to C = F/R and
+     !! S = G/R, and the returned values of C, S, and R should be
+     !! identical to those returned by DLARTG.
+     !! The algorithm used to compute these quantities incorporates scaling
+     !! to avoid overflow or underflow in computing the square root of the
+     !! sum of squares.
+     !! This is a faster version of the BLAS1 routine ZROTG, except for
+     !! the following differences:
+     !! F and G are unchanged on return.
+     !! If G=0, then C=1 and S=0.
+     !! If F=0, then C=0 and S is chosen so that R is real.
+     !! Below, wp=>dp stands for double precision from LA_CONSTANTS module.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! february 2021
+           use stdlib_blas_constants_dp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        ! Scalar Arguments 
+        real(dp), intent(out) :: c
+        complex(dp), intent(in) :: f, g
+        complex(dp), intent(out) :: r, s
+        ! Local Scalars 
+        real(dp) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
+        complex(dp) :: fs, gs, t
+        ! Intrinsic Functions 
+        ! Statement Functions 
+        real(dp) :: abssq
+        ! Statement Function Definitions 
+        abssq( t ) = real( t,KIND=dp)**2 + aimag( t )**2
+        ! Executable Statements 
+        if( g == czero ) then
+           c = one
+           s = czero
+           r = f
+        else if( f == czero ) then
+           c = zero
+           g1 = max( abs(real(g,KIND=dp)), abs(aimag(g)) )
+           if( g1 > rtmin .and. g1 < rtmax ) then
+              ! use unscaled algorithm
+              g2 = abssq( g )
+              d = sqrt( g2 )
+              s = conjg( g ) / d
+              r = d
+           else
+              ! use scaled algorithm
+              u = min( safmax, max( safmin, g1 ) )
+              uu = one / u
+              gs = g*uu
+              g2 = abssq( gs )
+              d = sqrt( g2 )
+              s = conjg( gs ) / d
+              r = d*u
+           end if
+        else
+           f1 = max( abs(real(f,KIND=dp)), abs(aimag(f)) )
+           g1 = max( abs(real(g,KIND=dp)), abs(aimag(g)) )
+     if( f1 > rtmin .and. f1 < rtmax .and.          g1 > rtmin .and. g1 < rtmax ) then
+              ! use unscaled algorithm
+              f2 = abssq( f )
+              g2 = abssq( g )
+              h2 = f2 + g2
+              if( f2 > rtmin .and. h2 < rtmax ) then
+                 d = sqrt( f2*h2 )
+              else
+                 d = sqrt( f2 )*sqrt( h2 )
+              end if
+              p = 1 / d
+              c = f2*p
+              s = conjg( g )*( f*p )
+              r = f*( h2*p )
+           else
+              ! use scaled algorithm
+              u = min( safmax, max( safmin, f1, g1 ) )
+              uu = one / u
+              gs = g*uu
+              g2 = abssq( gs )
+              if( f1*uu < rtmin ) then
+                 ! f is not well-scaled when scaled by g1.
+                 ! use a different scaling for f.
+                 v = min( safmax, max( safmin, f1 ) )
+                 vv = one / v
+                 w = v * uu
+                 fs = f*vv
+                 f2 = abssq( fs )
+                 h2 = f2*w**2 + g2
+              else
+                 ! otherwise use the same scaling for f and g.
+                 w = one
+                 fs = f*uu
+                 f2 = abssq( fs )
+                 h2 = f2 + g2
+              end if
+              if( f2 > rtmin .and. h2 < rtmax ) then
+                 d = sqrt( f2*h2 )
+              else
+                 d = sqrt( f2 )*sqrt( h2 )
+              end if
+              p = 1 / d
+              c = ( f2*p )*w
+              s = conjg( gs )*( fs*p )
+              r = ( fs*( h2*p ) )*u
+           end if
+        end if
+        return
+     end subroutine stdlib_zlartg
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$lartg( f, g, c, s, r )
+     !! ZLARTG: generates a plane rotation so that
+     !! [  C         S  ] . [ F ]  =  [ R ]
+     !! [ -conjg(S)  C  ]   [ G ]     [ 0 ]
+     !! where C is real and C**2 + |S|**2 = 1.
+     !! The mathematical formulas used for C and S are
+     !! sgn(x) = {  x / |x|,   x != 0
+     !! {  1,         x = 0
+     !! R = sgn(F) * sqrt(|F|**2 + |G|**2)
+     !! C = |F| / sqrt(|F|**2 + |G|**2)
+     !! S = sgn(F) * conjg(G) / sqrt(|F|**2 + |G|**2)
+     !! When F and G are real, the formulas simplify to C = F/R and
+     !! S = G/R, and the returned values of C, S, and R should be
+     !! identical to those returned by DLARTG.
+     !! The algorithm used to compute these quantities incorporates scaling
+     !! to avoid overflow or underflow in computing the square root of the
+     !! sum of squares.
+     !! This is a faster version of the BLAS1 routine ZROTG, except for
+     !! the following differences:
+     !! F and G are unchanged on return.
+     !! If G=0, then C=1 and S=0.
+     !! If F=0, then C=0 and S is chosen so that R is real.
+     !! Below, wp=>dp stands for quad precision from LA_CONSTANTS module.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! february 2021
+           use stdlib_blas_constants_${ck}$, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        ! Scalar Arguments 
+        real(${ck}$), intent(out) :: c
+        complex(${ck}$), intent(in) :: f, g
+        complex(${ck}$), intent(out) :: r, s
+        ! Local Scalars 
+        real(${ck}$) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
+        complex(${ck}$) :: fs, gs, t
+        ! Intrinsic Functions 
+        ! Statement Functions 
+        real(${ck}$) :: abssq
+        ! Statement Function Definitions 
+        abssq( t ) = real( t,KIND=${ck}$)**2 + aimag( t )**2
+        ! Executable Statements 
+        if( g == czero ) then
+           c = one
+           s = czero
+           r = f
+        else if( f == czero ) then
+           c = zero
+           g1 = max( abs(real(g,KIND=${ck}$)), abs(aimag(g)) )
+           if( g1 > rtmin .and. g1 < rtmax ) then
+              ! use unscaled algorithm
+              g2 = abssq( g )
+              d = sqrt( g2 )
+              s = conjg( g ) / d
+              r = d
+           else
+              ! use scaled algorithm
+              u = min( safmax, max( safmin, g1 ) )
+              uu = one / u
+              gs = g*uu
+              g2 = abssq( gs )
+              d = sqrt( g2 )
+              s = conjg( gs ) / d
+              r = d*u
+           end if
+        else
+           f1 = max( abs(real(f,KIND=${ck}$)), abs(aimag(f)) )
+           g1 = max( abs(real(g,KIND=${ck}$)), abs(aimag(g)) )
+     if( f1 > rtmin .and. f1 < rtmax .and.          g1 > rtmin .and. g1 < rtmax ) then
+              ! use unscaled algorithm
+              f2 = abssq( f )
+              g2 = abssq( g )
+              h2 = f2 + g2
+              if( f2 > rtmin .and. h2 < rtmax ) then
+                 d = sqrt( f2*h2 )
+              else
+                 d = sqrt( f2 )*sqrt( h2 )
+              end if
+              p = 1 / d
+              c = f2*p
+              s = conjg( g )*( f*p )
+              r = f*( h2*p )
+           else
+              ! use scaled algorithm
+              u = min( safmax, max( safmin, f1, g1 ) )
+              uu = one / u
+              gs = g*uu
+              g2 = abssq( gs )
+              if( f1*uu < rtmin ) then
+                 ! f is not well-scaled when scaled by g1.
+                 ! use a different scaling for f.
+                 v = min( safmax, max( safmin, f1 ) )
+                 vv = one / v
+                 w = v * uu
+                 fs = f*vv
+                 f2 = abssq( fs )
+                 h2 = f2*w**2 + g2
+              else
+                 ! otherwise use the same scaling for f and g.
+                 w = one
+                 fs = f*uu
+                 f2 = abssq( fs )
+                 h2 = f2 + g2
+              end if
+              if( f2 > rtmin .and. h2 < rtmax ) then
+                 d = sqrt( f2*h2 )
+              else
+                 d = sqrt( f2 )*sqrt( h2 )
+              end if
+              p = 1 / d
+              c = ( f2*p )*w
+              s = conjg( gs )*( fs*p )
+              r = ( fs*( h2*p ) )*u
+           end if
+        end if
+        return
+     end subroutine stdlib_${ci}$lartg
+
+#:endif
+#:endfor
+
+
+
      pure subroutine stdlib_slargv( n, x, incx, y, incy, c, incc )
      !! SLARGV generates a vector of real plane rotations, determined by
      !! elements of the real vectors x and y. For i = 1,2,...,n
@@ -3202,6 +2763,667 @@ module stdlib_lapack_givens_jacobi_rot
 
 
 
+     pure subroutine stdlib_slar2v( n, x, y, z, incx, c, s, incc )
+     !! SLAR2V applies a vector of real plane rotations from both sides to
+     !! a sequence of 2-by-2 real symmetric matrices, defined by the elements
+     !! of the vectors x, y and z. For i = 1,2,...,n
+     !! ( x(i)  z(i) ) := (  c(i)  s(i) ) ( x(i)  z(i) ) ( c(i) -s(i) )
+     !! ( z(i)  y(i) )    ( -s(i)  c(i) ) ( z(i)  y(i) ) ( s(i)  c(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, n
+           ! Array Arguments 
+           real(sp), intent(in) :: c(*), s(*)
+           real(sp), intent(inout) :: x(*), y(*), z(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix
+           real(sp) :: ci, si, t1, t2, t3, t4, t5, t6, xi, yi, zi
+           ! Executable Statements 
+           ix = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( ix )
+              zi = z( ix )
+              ci = c( ic )
+              si = s( ic )
+              t1 = si*zi
+              t2 = ci*zi
+              t3 = t2 - si*xi
+              t4 = t2 + si*yi
+              t5 = ci*xi + t1
+              t6 = ci*yi - t1
+              x( ix ) = ci*t5 + si*t4
+              y( ix ) = ci*t6 - si*t3
+              z( ix ) = ci*t4 - si*t5
+              ix = ix + incx
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_slar2v
+
+     pure subroutine stdlib_dlar2v( n, x, y, z, incx, c, s, incc )
+     !! DLAR2V applies a vector of real plane rotations from both sides to
+     !! a sequence of 2-by-2 real symmetric matrices, defined by the elements
+     !! of the vectors x, y and z. For i = 1,2,...,n
+     !! ( x(i)  z(i) ) := (  c(i)  s(i) ) ( x(i)  z(i) ) ( c(i) -s(i) )
+     !! ( z(i)  y(i) )    ( -s(i)  c(i) ) ( z(i)  y(i) ) ( s(i)  c(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, n
+           ! Array Arguments 
+           real(dp), intent(in) :: c(*), s(*)
+           real(dp), intent(inout) :: x(*), y(*), z(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix
+           real(dp) :: ci, si, t1, t2, t3, t4, t5, t6, xi, yi, zi
+           ! Executable Statements 
+           ix = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( ix )
+              zi = z( ix )
+              ci = c( ic )
+              si = s( ic )
+              t1 = si*zi
+              t2 = ci*zi
+              t3 = t2 - si*xi
+              t4 = t2 + si*yi
+              t5 = ci*xi + t1
+              t6 = ci*yi - t1
+              x( ix ) = ci*t5 + si*t4
+              y( ix ) = ci*t6 - si*t3
+              z( ix ) = ci*t4 - si*t5
+              ix = ix + incx
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_dlar2v
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$lar2v( n, x, y, z, incx, c, s, incc )
+     !! DLAR2V: applies a vector of real plane rotations from both sides to
+     !! a sequence of 2-by-2 real symmetric matrices, defined by the elements
+     !! of the vectors x, y and z. For i = 1,2,...,n
+     !! ( x(i)  z(i) ) := (  c(i)  s(i) ) ( x(i)  z(i) ) ( c(i) -s(i) )
+     !! ( z(i)  y(i) )    ( -s(i)  c(i) ) ( z(i)  y(i) ) ( s(i)  c(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: c(*), s(*)
+           real(${rk}$), intent(inout) :: x(*), y(*), z(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix
+           real(${rk}$) :: ci, si, t1, t2, t3, t4, t5, t6, xi, yi, zi
+           ! Executable Statements 
+           ix = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( ix )
+              zi = z( ix )
+              ci = c( ic )
+              si = s( ic )
+              t1 = si*zi
+              t2 = ci*zi
+              t3 = t2 - si*xi
+              t4 = t2 + si*yi
+              t5 = ci*xi + t1
+              t6 = ci*yi - t1
+              x( ix ) = ci*t5 + si*t4
+              y( ix ) = ci*t6 - si*t3
+              z( ix ) = ci*t4 - si*t5
+              ix = ix + incx
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_${ri}$lar2v
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_clar2v( n, x, y, z, incx, c, s, incc )
+     !! CLAR2V applies a vector of complex plane rotations with real cosines
+     !! from both sides to a sequence of 2-by-2 complex Hermitian matrices,
+     !! defined by the elements of the vectors x, y and z. For i = 1,2,...,n
+     !! (       x(i)  z(i) ) :=
+     !! ( conjg(z(i)) y(i) )
+     !! (  c(i) conjg(s(i)) ) (       x(i)  z(i) ) ( c(i) -conjg(s(i)) )
+     !! ( -s(i)       c(i)  ) ( conjg(z(i)) y(i) ) ( s(i)        c(i)  )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, n
+           ! Array Arguments 
+           real(sp), intent(in) :: c(*)
+           complex(sp), intent(in) :: s(*)
+           complex(sp), intent(inout) :: x(*), y(*), z(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix
+           real(sp) :: ci, sii, sir, t1i, t1r, t5, t6, xi, yi, zii, zir
+           complex(sp) :: si, t2, t3, t4, zi
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ix = 1
+           ic = 1
+           do i = 1, n
+              xi = real( x( ix ),KIND=sp)
+              yi = real( y( ix ),KIND=sp)
+              zi = z( ix )
+              zir = real( zi,KIND=sp)
+              zii = aimag( zi )
+              ci = c( ic )
+              si = s( ic )
+              sir = real( si,KIND=sp)
+              sii = aimag( si )
+              t1r = sir*zir - sii*zii
+              t1i = sir*zii + sii*zir
+              t2 = ci*zi
+              t3 = t2 - conjg( si )*xi
+              t4 = conjg( t2 ) + si*yi
+              t5 = ci*xi + t1r
+              t6 = ci*yi - t1r
+              x( ix ) = ci*t5 + ( sir*real( t4,KIND=sp)+sii*aimag( t4 ) )
+              y( ix ) = ci*t6 - ( sir*real( t3,KIND=sp)-sii*aimag( t3 ) )
+              z( ix ) = ci*t3 + conjg( si )*cmplx( t6, t1i,KIND=sp)
+              ix = ix + incx
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_clar2v
+
+     pure subroutine stdlib_zlar2v( n, x, y, z, incx, c, s, incc )
+     !! ZLAR2V applies a vector of complex plane rotations with real cosines
+     !! from both sides to a sequence of 2-by-2 complex Hermitian matrices,
+     !! defined by the elements of the vectors x, y and z. For i = 1,2,...,n
+     !! (       x(i)  z(i) ) :=
+     !! ( conjg(z(i)) y(i) )
+     !! (  c(i) conjg(s(i)) ) (       x(i)  z(i) ) ( c(i) -conjg(s(i)) )
+     !! ( -s(i)       c(i)  ) ( conjg(z(i)) y(i) ) ( s(i)        c(i)  )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, n
+           ! Array Arguments 
+           real(dp), intent(in) :: c(*)
+           complex(dp), intent(in) :: s(*)
+           complex(dp), intent(inout) :: x(*), y(*), z(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix
+           real(dp) :: ci, sii, sir, t1i, t1r, t5, t6, xi, yi, zii, zir
+           complex(dp) :: si, t2, t3, t4, zi
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ix = 1
+           ic = 1
+           do i = 1, n
+              xi = real( x( ix ),KIND=dp)
+              yi = real( y( ix ),KIND=dp)
+              zi = z( ix )
+              zir = real( zi,KIND=dp)
+              zii = aimag( zi )
+              ci = c( ic )
+              si = s( ic )
+              sir = real( si,KIND=dp)
+              sii = aimag( si )
+              t1r = sir*zir - sii*zii
+              t1i = sir*zii + sii*zir
+              t2 = ci*zi
+              t3 = t2 - conjg( si )*xi
+              t4 = conjg( t2 ) + si*yi
+              t5 = ci*xi + t1r
+              t6 = ci*yi - t1r
+              x( ix ) = ci*t5 + ( sir*real( t4,KIND=dp)+sii*aimag( t4 ) )
+              y( ix ) = ci*t6 - ( sir*real( t3,KIND=dp)-sii*aimag( t3 ) )
+              z( ix ) = ci*t3 + conjg( si )*cmplx( t6, t1i,KIND=dp)
+              ix = ix + incx
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_zlar2v
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$lar2v( n, x, y, z, incx, c, s, incc )
+     !! ZLAR2V: applies a vector of complex plane rotations with real cosines
+     !! from both sides to a sequence of 2-by-2 complex Hermitian matrices,
+     !! defined by the elements of the vectors x, y and z. For i = 1,2,...,n
+     !! (       x(i)  z(i) ) :=
+     !! ( conjg(z(i)) y(i) )
+     !! (  c(i) conjg(s(i)) ) (       x(i)  z(i) ) ( c(i) -conjg(s(i)) )
+     !! ( -s(i)       c(i)  ) ( conjg(z(i)) y(i) ) ( s(i)        c(i)  )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, n
+           ! Array Arguments 
+           real(${ck}$), intent(in) :: c(*)
+           complex(${ck}$), intent(in) :: s(*)
+           complex(${ck}$), intent(inout) :: x(*), y(*), z(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix
+           real(${ck}$) :: ci, sii, sir, t1i, t1r, t5, t6, xi, yi, zii, zir
+           complex(${ck}$) :: si, t2, t3, t4, zi
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ix = 1
+           ic = 1
+           do i = 1, n
+              xi = real( x( ix ),KIND=${ck}$)
+              yi = real( y( ix ),KIND=${ck}$)
+              zi = z( ix )
+              zir = real( zi,KIND=${ck}$)
+              zii = aimag( zi )
+              ci = c( ic )
+              si = s( ic )
+              sir = real( si,KIND=${ck}$)
+              sii = aimag( si )
+              t1r = sir*zir - sii*zii
+              t1i = sir*zii + sii*zir
+              t2 = ci*zi
+              t3 = t2 - conjg( si )*xi
+              t4 = conjg( t2 ) + si*yi
+              t5 = ci*xi + t1r
+              t6 = ci*yi - t1r
+              x( ix ) = ci*t5 + ( sir*real( t4,KIND=${ck}$)+sii*aimag( t4 ) )
+              y( ix ) = ci*t6 - ( sir*real( t3,KIND=${ck}$)-sii*aimag( t3 ) )
+              z( ix ) = ci*t3 + conjg( si )*cmplx( t6, t1i,KIND=${ck}$)
+              ix = ix + incx
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_${ci}$lar2v
+
+#:endif
+#:endfor
+
+
+
+     pure subroutine stdlib_slartv( n, x, incx, y, incy, c, s, incc )
+     !! SLARTV applies a vector of real plane rotations to elements of the
+     !! real vectors x and y. For i = 1,2,...,n
+     !! ( x(i) ) := (  c(i)  s(i) ) ( x(i) )
+     !! ( y(i) )    ( -s(i)  c(i) ) ( y(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: c(*), s(*)
+           real(sp), intent(inout) :: x(*), y(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix, iy
+           real(sp) :: xi, yi
+           ! Executable Statements 
+           ix = 1
+           iy = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( iy )
+              x( ix ) = c( ic )*xi + s( ic )*yi
+              y( iy ) = c( ic )*yi - s( ic )*xi
+              ix = ix + incx
+              iy = iy + incy
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_slartv
+
+     pure subroutine stdlib_dlartv( n, x, incx, y, incy, c, s, incc )
+     !! DLARTV applies a vector of real plane rotations to elements of the
+     !! real vectors x and y. For i = 1,2,...,n
+     !! ( x(i) ) := (  c(i)  s(i) ) ( x(i) )
+     !! ( y(i) )    ( -s(i)  c(i) ) ( y(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: c(*), s(*)
+           real(dp), intent(inout) :: x(*), y(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix, iy
+           real(dp) :: xi, yi
+           ! Executable Statements 
+           ix = 1
+           iy = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( iy )
+              x( ix ) = c( ic )*xi + s( ic )*yi
+              y( iy ) = c( ic )*yi - s( ic )*xi
+              ix = ix + incx
+              iy = iy + incy
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_dlartv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$lartv( n, x, incx, y, incy, c, s, incc )
+     !! DLARTV: applies a vector of real plane rotations to elements of the
+     !! real vectors x and y. For i = 1,2,...,n
+     !! ( x(i) ) := (  c(i)  s(i) ) ( x(i) )
+     !! ( y(i) )    ( -s(i)  c(i) ) ( y(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: c(*), s(*)
+           real(${rk}$), intent(inout) :: x(*), y(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix, iy
+           real(${rk}$) :: xi, yi
+           ! Executable Statements 
+           ix = 1
+           iy = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( iy )
+              x( ix ) = c( ic )*xi + s( ic )*yi
+              y( iy ) = c( ic )*yi - s( ic )*xi
+              ix = ix + incx
+              iy = iy + incy
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_${ri}$lartv
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_clartv( n, x, incx, y, incy, c, s, incc )
+     !! CLARTV applies a vector of complex plane rotations with real cosines
+     !! to elements of the complex vectors x and y. For i = 1,2,...,n
+     !! ( x(i) ) := (        c(i)   s(i) ) ( x(i) )
+     !! ( y(i) )    ( -conjg(s(i))  c(i) ) ( y(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: c(*)
+           complex(sp), intent(in) :: s(*)
+           complex(sp), intent(inout) :: x(*), y(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix, iy
+           complex(sp) :: xi, yi
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ix = 1
+           iy = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( iy )
+              x( ix ) = c( ic )*xi + s( ic )*yi
+              y( iy ) = c( ic )*yi - conjg( s( ic ) )*xi
+              ix = ix + incx
+              iy = iy + incy
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_clartv
+
+     pure subroutine stdlib_zlartv( n, x, incx, y, incy, c, s, incc )
+     !! ZLARTV applies a vector of complex plane rotations with real cosines
+     !! to elements of the complex vectors x and y. For i = 1,2,...,n
+     !! ( x(i) ) := (        c(i)   s(i) ) ( x(i) )
+     !! ( y(i) )    ( -conjg(s(i))  c(i) ) ( y(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: c(*)
+           complex(dp), intent(in) :: s(*)
+           complex(dp), intent(inout) :: x(*), y(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix, iy
+           complex(dp) :: xi, yi
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ix = 1
+           iy = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( iy )
+              x( ix ) = c( ic )*xi + s( ic )*yi
+              y( iy ) = c( ic )*yi - conjg( s( ic ) )*xi
+              ix = ix + incx
+              iy = iy + incy
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_zlartv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$lartv( n, x, incx, y, incy, c, s, incc )
+     !! ZLARTV: applies a vector of complex plane rotations with real cosines
+     !! to elements of the complex vectors x and y. For i = 1,2,...,n
+     !! ( x(i) ) := (        c(i)   s(i) ) ( x(i) )
+     !! ( y(i) )    ( -conjg(s(i))  c(i) ) ( y(i) )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           ! Array Arguments 
+           real(${ck}$), intent(in) :: c(*)
+           complex(${ck}$), intent(in) :: s(*)
+           complex(${ck}$), intent(inout) :: x(*), y(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ic, ix, iy
+           complex(${ck}$) :: xi, yi
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ix = 1
+           iy = 1
+           ic = 1
+           do i = 1, n
+              xi = x( ix )
+              yi = y( iy )
+              x( ix ) = c( ic )*xi + s( ic )*yi
+              y( iy ) = c( ic )*yi - conjg( s( ic ) )*xi
+              ix = ix + incx
+              iy = iy + incy
+              ic = ic + incc
+           end do
+           return
+     end subroutine stdlib_${ci}$lartv
+
+#:endif
+#:endfor
+
+
+
+     pure subroutine stdlib_clacrt( n, cx, incx, cy, incy, c, s )
+     !! CLACRT performs the operation
+     !! (  c  s )( x )  ==> ( x )
+     !! ( -s  c )( y )      ( y )
+     !! where c and s are complex and the vectors x and y are complex.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(sp), intent(in) :: c, s
+           ! Array Arguments 
+           complex(sp), intent(inout) :: cx(*), cy(*)
+       ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ix, iy
+           complex(sp) :: ctemp
+           ! Executable Statements 
+           if( n<=0 )return
+           if( incx==1 .and. incy==1 )go to 20
+           ! code for unequal increments or equal increments not equal to 1
+           ix = 1
+           iy = 1
+           if( incx<0 )ix = ( -n+1 )*incx + 1
+           if( incy<0 )iy = ( -n+1 )*incy + 1
+           do i = 1, n
+              ctemp = c*cx( ix ) + s*cy( iy )
+              cy( iy ) = c*cy( iy ) - s*cx( ix )
+              cx( ix ) = ctemp
+              ix = ix + incx
+              iy = iy + incy
+           end do
+           return
+           ! code for both increments equal to 1
+           20 continue
+           do i = 1, n
+              ctemp = c*cx( i ) + s*cy( i )
+              cy( i ) = c*cy( i ) - s*cx( i )
+              cx( i ) = ctemp
+           end do
+           return
+     end subroutine stdlib_clacrt
+
+     pure subroutine stdlib_zlacrt( n, cx, incx, cy, incy, c, s )
+     !! ZLACRT performs the operation
+     !! (  c  s )( x )  ==> ( x )
+     !! ( -s  c )( y )      ( y )
+     !! where c and s are complex and the vectors x and y are complex.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(dp), intent(in) :: c, s
+           ! Array Arguments 
+           complex(dp), intent(inout) :: cx(*), cy(*)
+       ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ix, iy
+           complex(dp) :: ctemp
+           ! Executable Statements 
+           if( n<=0 )return
+           if( incx==1 .and. incy==1 )go to 20
+           ! code for unequal increments or equal increments not equal to 1
+           ix = 1
+           iy = 1
+           if( incx<0 )ix = ( -n+1 )*incx + 1
+           if( incy<0 )iy = ( -n+1 )*incy + 1
+           do i = 1, n
+              ctemp = c*cx( ix ) + s*cy( iy )
+              cy( iy ) = c*cy( iy ) - s*cx( ix )
+              cx( ix ) = ctemp
+              ix = ix + incx
+              iy = iy + incy
+           end do
+           return
+           ! code for both increments equal to 1
+           20 continue
+           do i = 1, n
+              ctemp = c*cx( i ) + s*cy( i )
+              cy( i ) = c*cy( i ) - s*cx( i )
+              cx( i ) = ctemp
+           end do
+           return
+     end subroutine stdlib_zlacrt
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$lacrt( n, cx, incx, cy, incy, c, s )
+     !! ZLACRT: performs the operation
+     !! (  c  s )( x )  ==> ( x )
+     !! ( -s  c )( y )      ( y )
+     !! where c and s are complex and the vectors x and y are complex.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(${ck}$), intent(in) :: c, s
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: cx(*), cy(*)
+       ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, ix, iy
+           complex(${ck}$) :: ctemp
+           ! Executable Statements 
+           if( n<=0 )return
+           if( incx==1 .and. incy==1 )go to 20
+           ! code for unequal increments or equal increments not equal to 1
+           ix = 1
+           iy = 1
+           if( incx<0 )ix = ( -n+1 )*incx + 1
+           if( incy<0 )iy = ( -n+1 )*incy + 1
+           do i = 1, n
+              ctemp = c*cx( ix ) + s*cy( iy )
+              cy( iy ) = c*cy( iy ) - s*cx( ix )
+              cx( ix ) = ctemp
+              ix = ix + incx
+              iy = iy + incy
+           end do
+           return
+           ! code for both increments equal to 1
+           20 continue
+           do i = 1, n
+              ctemp = c*cx( i ) + s*cy( i )
+              cy( i ) = c*cy( i ) - s*cx( i )
+              cx( i ) = ctemp
+           end do
+           return
+     end subroutine stdlib_${ci}$lacrt
+
+#:endif
+#:endfor
+
+
+
      pure subroutine stdlib_slartgp( f, g, cs, sn, r )
      !! SLARTGP generates a plane rotation so that
      !! [  CS  SN  ]  .  [ F ]  =  [ R ]   where CS**2 + SN**2 = 1.
@@ -3482,228 +3704,6 @@ module stdlib_lapack_givens_jacobi_rot
            end if
            return
      end subroutine stdlib_${ri}$lartgp
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_slartv( n, x, incx, y, incy, c, s, incc )
-     !! SLARTV applies a vector of real plane rotations to elements of the
-     !! real vectors x and y. For i = 1,2,...,n
-     !! ( x(i) ) := (  c(i)  s(i) ) ( x(i) )
-     !! ( y(i) )    ( -s(i)  c(i) ) ( y(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, incy, n
-           ! Array Arguments 
-           real(sp), intent(in) :: c(*), s(*)
-           real(sp), intent(inout) :: x(*), y(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix, iy
-           real(sp) :: xi, yi
-           ! Executable Statements 
-           ix = 1
-           iy = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( iy )
-              x( ix ) = c( ic )*xi + s( ic )*yi
-              y( iy ) = c( ic )*yi - s( ic )*xi
-              ix = ix + incx
-              iy = iy + incy
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_slartv
-
-     pure subroutine stdlib_dlartv( n, x, incx, y, incy, c, s, incc )
-     !! DLARTV applies a vector of real plane rotations to elements of the
-     !! real vectors x and y. For i = 1,2,...,n
-     !! ( x(i) ) := (  c(i)  s(i) ) ( x(i) )
-     !! ( y(i) )    ( -s(i)  c(i) ) ( y(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, incy, n
-           ! Array Arguments 
-           real(dp), intent(in) :: c(*), s(*)
-           real(dp), intent(inout) :: x(*), y(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix, iy
-           real(dp) :: xi, yi
-           ! Executable Statements 
-           ix = 1
-           iy = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( iy )
-              x( ix ) = c( ic )*xi + s( ic )*yi
-              y( iy ) = c( ic )*yi - s( ic )*xi
-              ix = ix + incx
-              iy = iy + incy
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_dlartv
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lartv( n, x, incx, y, incy, c, s, incc )
-     !! DLARTV: applies a vector of real plane rotations to elements of the
-     !! real vectors x and y. For i = 1,2,...,n
-     !! ( x(i) ) := (  c(i)  s(i) ) ( x(i) )
-     !! ( y(i) )    ( -s(i)  c(i) ) ( y(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, incy, n
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: c(*), s(*)
-           real(${rk}$), intent(inout) :: x(*), y(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix, iy
-           real(${rk}$) :: xi, yi
-           ! Executable Statements 
-           ix = 1
-           iy = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( iy )
-              x( ix ) = c( ic )*xi + s( ic )*yi
-              y( iy ) = c( ic )*yi - s( ic )*xi
-              ix = ix + incx
-              iy = iy + incy
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_${ri}$lartv
-
-#:endif
-#:endfor
-
-     pure subroutine stdlib_clartv( n, x, incx, y, incy, c, s, incc )
-     !! CLARTV applies a vector of complex plane rotations with real cosines
-     !! to elements of the complex vectors x and y. For i = 1,2,...,n
-     !! ( x(i) ) := (        c(i)   s(i) ) ( x(i) )
-     !! ( y(i) )    ( -conjg(s(i))  c(i) ) ( y(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, incy, n
-           ! Array Arguments 
-           real(sp), intent(in) :: c(*)
-           complex(sp), intent(in) :: s(*)
-           complex(sp), intent(inout) :: x(*), y(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix, iy
-           complex(sp) :: xi, yi
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ix = 1
-           iy = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( iy )
-              x( ix ) = c( ic )*xi + s( ic )*yi
-              y( iy ) = c( ic )*yi - conjg( s( ic ) )*xi
-              ix = ix + incx
-              iy = iy + incy
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_clartv
-
-     pure subroutine stdlib_zlartv( n, x, incx, y, incy, c, s, incc )
-     !! ZLARTV applies a vector of complex plane rotations with real cosines
-     !! to elements of the complex vectors x and y. For i = 1,2,...,n
-     !! ( x(i) ) := (        c(i)   s(i) ) ( x(i) )
-     !! ( y(i) )    ( -conjg(s(i))  c(i) ) ( y(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, incy, n
-           ! Array Arguments 
-           real(dp), intent(in) :: c(*)
-           complex(dp), intent(in) :: s(*)
-           complex(dp), intent(inout) :: x(*), y(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix, iy
-           complex(dp) :: xi, yi
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ix = 1
-           iy = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( iy )
-              x( ix ) = c( ic )*xi + s( ic )*yi
-              y( iy ) = c( ic )*yi - conjg( s( ic ) )*xi
-              ix = ix + incx
-              iy = iy + incy
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_zlartv
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$lartv( n, x, incx, y, incy, c, s, incc )
-     !! ZLARTV: applies a vector of complex plane rotations with real cosines
-     !! to elements of the complex vectors x and y. For i = 1,2,...,n
-     !! ( x(i) ) := (        c(i)   s(i) ) ( x(i) )
-     !! ( y(i) )    ( -conjg(s(i))  c(i) ) ( y(i) )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incc, incx, incy, n
-           ! Array Arguments 
-           real(${ck}$), intent(in) :: c(*)
-           complex(${ck}$), intent(in) :: s(*)
-           complex(${ck}$), intent(inout) :: x(*), y(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, ic, ix, iy
-           complex(${ck}$) :: xi, yi
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ix = 1
-           iy = 1
-           ic = 1
-           do i = 1, n
-              xi = x( ix )
-              yi = y( iy )
-              x( ix ) = c( ic )*xi + s( ic )*yi
-              y( iy ) = c( ic )*yi - conjg( s( ic ) )*xi
-              ix = ix + incx
-              iy = iy + incy
-              ic = ic + incc
-           end do
-           return
-     end subroutine stdlib_${ci}$lartv
 
 #:endif
 #:endfor

@@ -11,8 +11,6 @@ module stdlib_lapack_solve_chol
 
   contains
 
-
-
      pure subroutine stdlib_sppsv( uplo, n, nrhs, ap, b, ldb, info )
      !! SPPSV computes the solution to a real system of linear equations
      !! A * X = B,
@@ -313,259 +311,330 @@ module stdlib_lapack_solve_chol
 
 
 
-
-
-
-
-     pure subroutine stdlib_sptsv( n, nrhs, d, e, b, ldb, info )
-     !! SPTSV computes the solution to a real system of linear equations
-     !! A*X = B, where A is an N-by-N symmetric positive definite tridiagonal
-     !! matrix, and X and B are N-by-NRHS matrices.
-     !! A is factored as A = L*D*L**T, and the factored form of A is then
-     !! used to solve the system of equations.
+     pure subroutine stdlib_spbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+     !! SPBSV computes the solution to a real system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N symmetric positive definite band matrix and X
+     !! and B are N-by-NRHS matrices.
+     !! The Cholesky decomposition is used to factor A as
+     !! A = U**T * U,  if UPLO = 'U', or
+     !! A = L * L**T,  if UPLO = 'L',
+     !! where U is an upper triangular band matrix, and L is a lower
+     !! triangular band matrix, with the same number of superdiagonals or
+     !! subdiagonals as A.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
+           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldb, n, nrhs
+           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
            ! Array Arguments 
-           real(sp), intent(inout) :: b(ldb,*), d(*), e(*)
+           real(sp), intent(inout) :: ab(ldab,*), b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( n<0 ) then
+           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
               info = -1
-           else if( nrhs<0 ) then
+           else if( n<0 ) then
               info = -2
-           else if( ldb<max( 1, n ) ) then
+           else if( kd<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<kd+1 ) then
               info = -6
+           else if( ldb<max( 1, n ) ) then
+              info = -8
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'SPTSV ', -info )
+              call stdlib_xerbla( 'SPBSV ', -info )
               return
            end if
-           ! compute the l*d*l**t (or u**t*d*u) factorization of a.
-           call stdlib_spttrf( n, d, e, info )
+           ! compute the cholesky factorization a = u**t*u or a = l*l**t.
+           call stdlib_spbtrf( uplo, n, kd, ab, ldab, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_spttrs( n, nrhs, d, e, b, ldb, info )
+              call stdlib_spbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
            end if
            return
-     end subroutine stdlib_sptsv
+     end subroutine stdlib_spbsv
 
-     pure subroutine stdlib_dptsv( n, nrhs, d, e, b, ldb, info )
-     !! DPTSV computes the solution to a real system of linear equations
-     !! A*X = B, where A is an N-by-N symmetric positive definite tridiagonal
-     !! matrix, and X and B are N-by-NRHS matrices.
-     !! A is factored as A = L*D*L**T, and the factored form of A is then
-     !! used to solve the system of equations.
+     pure subroutine stdlib_dpbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+     !! DPBSV computes the solution to a real system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N symmetric positive definite band matrix and X
+     !! and B are N-by-NRHS matrices.
+     !! The Cholesky decomposition is used to factor A as
+     !! A = U**T * U,  if UPLO = 'U', or
+     !! A = L * L**T,  if UPLO = 'L',
+     !! where U is an upper triangular band matrix, and L is a lower
+     !! triangular band matrix, with the same number of superdiagonals or
+     !! subdiagonals as A.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
+           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldb, n, nrhs
+           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
            ! Array Arguments 
-           real(dp), intent(inout) :: b(ldb,*), d(*), e(*)
+           real(dp), intent(inout) :: ab(ldab,*), b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( n<0 ) then
+           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
               info = -1
-           else if( nrhs<0 ) then
+           else if( n<0 ) then
               info = -2
-           else if( ldb<max( 1, n ) ) then
+           else if( kd<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<kd+1 ) then
               info = -6
+           else if( ldb<max( 1, n ) ) then
+              info = -8
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'DPTSV ', -info )
+              call stdlib_xerbla( 'DPBSV ', -info )
               return
            end if
-           ! compute the l*d*l**t (or u**t*d*u) factorization of a.
-           call stdlib_dpttrf( n, d, e, info )
+           ! compute the cholesky factorization a = u**t*u or a = l*l**t.
+           call stdlib_dpbtrf( uplo, n, kd, ab, ldab, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_dpttrs( n, nrhs, d, e, b, ldb, info )
+              call stdlib_dpbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
            end if
            return
-     end subroutine stdlib_dptsv
+     end subroutine stdlib_dpbsv
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$ptsv( n, nrhs, d, e, b, ldb, info )
-     !! DPTSV: computes the solution to a real system of linear equations
-     !! A*X = B, where A is an N-by-N symmetric positive definite tridiagonal
-     !! matrix, and X and B are N-by-NRHS matrices.
-     !! A is factored as A = L*D*L**T, and the factored form of A is then
-     !! used to solve the system of equations.
+     pure subroutine stdlib_${ri}$pbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+     !! DPBSV: computes the solution to a real system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N symmetric positive definite band matrix and X
+     !! and B are N-by-NRHS matrices.
+     !! The Cholesky decomposition is used to factor A as
+     !! A = U**T * U,  if UPLO = 'U', or
+     !! A = L * L**T,  if UPLO = 'L',
+     !! where U is an upper triangular band matrix, and L is a lower
+     !! triangular band matrix, with the same number of superdiagonals or
+     !! subdiagonals as A.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
+           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldb, n, nrhs
+           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: b(ldb,*), d(*), e(*)
+           real(${rk}$), intent(inout) :: ab(ldab,*), b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( n<0 ) then
+           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
               info = -1
-           else if( nrhs<0 ) then
+           else if( n<0 ) then
               info = -2
-           else if( ldb<max( 1, n ) ) then
+           else if( kd<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<kd+1 ) then
               info = -6
+           else if( ldb<max( 1, n ) ) then
+              info = -8
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'DPTSV ', -info )
+              call stdlib_xerbla( 'DPBSV ', -info )
               return
            end if
-           ! compute the l*d*l**t (or u**t*d*u) factorization of a.
-           call stdlib_${ri}$pttrf( n, d, e, info )
+           ! compute the cholesky factorization a = u**t*u or a = l*l**t.
+           call stdlib_${ri}$pbtrf( uplo, n, kd, ab, ldab, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_${ri}$pttrs( n, nrhs, d, e, b, ldb, info )
+              call stdlib_${ri}$pbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
            end if
            return
-     end subroutine stdlib_${ri}$ptsv
+     end subroutine stdlib_${ri}$pbsv
 
 #:endif
 #:endfor
 
-     pure subroutine stdlib_cptsv( n, nrhs, d, e, b, ldb, info )
-     !! CPTSV computes the solution to a complex system of linear equations
-     !! A*X = B, where A is an N-by-N Hermitian positive definite tridiagonal
-     !! matrix, and X and B are N-by-NRHS matrices.
-     !! A is factored as A = L*D*L**H, and the factored form of A is then
-     !! used to solve the system of equations.
+     pure subroutine stdlib_cpbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+     !! CPBSV computes the solution to a complex system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N Hermitian positive definite band matrix and X
+     !! and B are N-by-NRHS matrices.
+     !! The Cholesky decomposition is used to factor A as
+     !! A = U**H * U,  if UPLO = 'U', or
+     !! A = L * L**H,  if UPLO = 'L',
+     !! where U is an upper triangular band matrix, and L is a lower
+     !! triangular band matrix, with the same number of superdiagonals or
+     !! subdiagonals as A.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
+           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldb, n, nrhs
+           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
            ! Array Arguments 
-           real(sp), intent(inout) :: d(*)
-           complex(sp), intent(inout) :: b(ldb,*), e(*)
+           complex(sp), intent(inout) :: ab(ldab,*), b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( n<0 ) then
+           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
               info = -1
-           else if( nrhs<0 ) then
+           else if( n<0 ) then
               info = -2
-           else if( ldb<max( 1, n ) ) then
+           else if( kd<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<kd+1 ) then
               info = -6
+           else if( ldb<max( 1, n ) ) then
+              info = -8
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'CPTSV ', -info )
+              call stdlib_xerbla( 'CPBSV ', -info )
               return
            end if
-           ! compute the l*d*l**h (or u**h*d*u) factorization of a.
-           call stdlib_cpttrf( n, d, e, info )
+           ! compute the cholesky factorization a = u**h*u or a = l*l**h.
+           call stdlib_cpbtrf( uplo, n, kd, ab, ldab, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_cpttrs( 'LOWER', n, nrhs, d, e, b, ldb, info )
+              call stdlib_cpbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
            end if
            return
-     end subroutine stdlib_cptsv
+     end subroutine stdlib_cpbsv
 
-     pure subroutine stdlib_zptsv( n, nrhs, d, e, b, ldb, info )
-     !! ZPTSV computes the solution to a complex system of linear equations
-     !! A*X = B, where A is an N-by-N Hermitian positive definite tridiagonal
-     !! matrix, and X and B are N-by-NRHS matrices.
-     !! A is factored as A = L*D*L**H, and the factored form of A is then
-     !! used to solve the system of equations.
+     pure subroutine stdlib_zpbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+     !! ZPBSV computes the solution to a complex system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N Hermitian positive definite band matrix and X
+     !! and B are N-by-NRHS matrices.
+     !! The Cholesky decomposition is used to factor A as
+     !! A = U**H * U,  if UPLO = 'U', or
+     !! A = L * L**H,  if UPLO = 'L',
+     !! where U is an upper triangular band matrix, and L is a lower
+     !! triangular band matrix, with the same number of superdiagonals or
+     !! subdiagonals as A.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
+           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldb, n, nrhs
+           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
            ! Array Arguments 
-           real(dp), intent(inout) :: d(*)
-           complex(dp), intent(inout) :: b(ldb,*), e(*)
+           complex(dp), intent(inout) :: ab(ldab,*), b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( n<0 ) then
+           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
               info = -1
-           else if( nrhs<0 ) then
+           else if( n<0 ) then
               info = -2
-           else if( ldb<max( 1, n ) ) then
+           else if( kd<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<kd+1 ) then
               info = -6
+           else if( ldb<max( 1, n ) ) then
+              info = -8
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'ZPTSV ', -info )
+              call stdlib_xerbla( 'ZPBSV ', -info )
               return
            end if
-           ! compute the l*d*l**h (or u**h*d*u) factorization of a.
-           call stdlib_zpttrf( n, d, e, info )
+           ! compute the cholesky factorization a = u**h *u or a = l*l**h.
+           call stdlib_zpbtrf( uplo, n, kd, ab, ldab, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_zpttrs( 'LOWER', n, nrhs, d, e, b, ldb, info )
+              call stdlib_zpbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
            end if
            return
-     end subroutine stdlib_zptsv
+     end subroutine stdlib_zpbsv
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$ptsv( n, nrhs, d, e, b, ldb, info )
-     !! ZPTSV: computes the solution to a complex system of linear equations
-     !! A*X = B, where A is an N-by-N Hermitian positive definite tridiagonal
-     !! matrix, and X and B are N-by-NRHS matrices.
-     !! A is factored as A = L*D*L**H, and the factored form of A is then
-     !! used to solve the system of equations.
+     pure subroutine stdlib_${ci}$pbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+     !! ZPBSV: computes the solution to a complex system of linear equations
+     !! A * X = B,
+     !! where A is an N-by-N Hermitian positive definite band matrix and X
+     !! and B are N-by-NRHS matrices.
+     !! The Cholesky decomposition is used to factor A as
+     !! A = U**H * U,  if UPLO = 'U', or
+     !! A = L * L**H,  if UPLO = 'L',
+     !! where U is an upper triangular band matrix, and L is a lower
+     !! triangular band matrix, with the same number of superdiagonals or
+     !! subdiagonals as A.  The factored form of A is then used to solve the
+     !! system of equations A * X = B.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
+           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldb, n, nrhs
+           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
            ! Array Arguments 
-           real(${ck}$), intent(inout) :: d(*)
-           complex(${ck}$), intent(inout) :: b(ldb,*), e(*)
+           complex(${ck}$), intent(inout) :: ab(ldab,*), b(ldb,*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( n<0 ) then
+           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
               info = -1
-           else if( nrhs<0 ) then
+           else if( n<0 ) then
               info = -2
-           else if( ldb<max( 1, n ) ) then
+           else if( kd<0 ) then
+              info = -3
+           else if( nrhs<0 ) then
+              info = -4
+           else if( ldab<kd+1 ) then
               info = -6
+           else if( ldb<max( 1, n ) ) then
+              info = -8
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'ZPTSV ', -info )
+              call stdlib_xerbla( 'ZPBSV ', -info )
               return
            end if
-           ! compute the l*d*l**h (or u**h*d*u) factorization of a.
-           call stdlib_${ci}$pttrf( n, d, e, info )
+           ! compute the cholesky factorization a = u**h *u or a = l*l**h.
+           call stdlib_${ci}$pbtrf( uplo, n, kd, ab, ldab, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_${ci}$pttrs( 'LOWER', n, nrhs, d, e, b, ldb, info )
+              call stdlib_${ci}$pbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
            end if
            return
-     end subroutine stdlib_${ci}$ptsv
+     end subroutine stdlib_${ci}$pbsv
 
 #:endif
 #:endfor
@@ -881,6 +950,16 @@ module stdlib_lapack_solve_chol
 
 #:endif
 #:endfor
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1343,337 +1422,258 @@ module stdlib_lapack_solve_chol
 
 
 
-
-
-     pure subroutine stdlib_spbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
-     !! SPBSV computes the solution to a real system of linear equations
-     !! A * X = B,
-     !! where A is an N-by-N symmetric positive definite band matrix and X
-     !! and B are N-by-NRHS matrices.
-     !! The Cholesky decomposition is used to factor A as
-     !! A = U**T * U,  if UPLO = 'U', or
-     !! A = L * L**T,  if UPLO = 'L',
-     !! where U is an upper triangular band matrix, and L is a lower
-     !! triangular band matrix, with the same number of superdiagonals or
-     !! subdiagonals as A.  The factored form of A is then used to solve the
-     !! system of equations A * X = B.
+     pure subroutine stdlib_sptsv( n, nrhs, d, e, b, ldb, info )
+     !! SPTSV computes the solution to a real system of linear equations
+     !! A*X = B, where A is an N-by-N symmetric positive definite tridiagonal
+     !! matrix, and X and B are N-by-NRHS matrices.
+     !! A is factored as A = L*D*L**T, and the factored form of A is then
+     !! used to solve the system of equations.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
+           integer(ilp), intent(in) :: ldb, n, nrhs
            ! Array Arguments 
-           real(sp), intent(inout) :: ab(ldab,*), b(ldb,*)
+           real(sp), intent(inout) :: b(ldb,*), d(*), e(*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+           if( n<0 ) then
               info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kd<0 ) then
-              info = -3
            else if( nrhs<0 ) then
-              info = -4
-           else if( ldab<kd+1 ) then
-              info = -6
+              info = -2
            else if( ldb<max( 1, n ) ) then
-              info = -8
+              info = -6
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'SPBSV ', -info )
+              call stdlib_xerbla( 'SPTSV ', -info )
               return
            end if
-           ! compute the cholesky factorization a = u**t*u or a = l*l**t.
-           call stdlib_spbtrf( uplo, n, kd, ab, ldab, info )
+           ! compute the l*d*l**t (or u**t*d*u) factorization of a.
+           call stdlib_spttrf( n, d, e, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_spbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+              call stdlib_spttrs( n, nrhs, d, e, b, ldb, info )
            end if
            return
-     end subroutine stdlib_spbsv
+     end subroutine stdlib_sptsv
 
-     pure subroutine stdlib_dpbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
-     !! DPBSV computes the solution to a real system of linear equations
-     !! A * X = B,
-     !! where A is an N-by-N symmetric positive definite band matrix and X
-     !! and B are N-by-NRHS matrices.
-     !! The Cholesky decomposition is used to factor A as
-     !! A = U**T * U,  if UPLO = 'U', or
-     !! A = L * L**T,  if UPLO = 'L',
-     !! where U is an upper triangular band matrix, and L is a lower
-     !! triangular band matrix, with the same number of superdiagonals or
-     !! subdiagonals as A.  The factored form of A is then used to solve the
-     !! system of equations A * X = B.
+     pure subroutine stdlib_dptsv( n, nrhs, d, e, b, ldb, info )
+     !! DPTSV computes the solution to a real system of linear equations
+     !! A*X = B, where A is an N-by-N symmetric positive definite tridiagonal
+     !! matrix, and X and B are N-by-NRHS matrices.
+     !! A is factored as A = L*D*L**T, and the factored form of A is then
+     !! used to solve the system of equations.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
+           integer(ilp), intent(in) :: ldb, n, nrhs
            ! Array Arguments 
-           real(dp), intent(inout) :: ab(ldab,*), b(ldb,*)
+           real(dp), intent(inout) :: b(ldb,*), d(*), e(*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+           if( n<0 ) then
               info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kd<0 ) then
-              info = -3
            else if( nrhs<0 ) then
-              info = -4
-           else if( ldab<kd+1 ) then
-              info = -6
+              info = -2
            else if( ldb<max( 1, n ) ) then
-              info = -8
+              info = -6
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'DPBSV ', -info )
+              call stdlib_xerbla( 'DPTSV ', -info )
               return
            end if
-           ! compute the cholesky factorization a = u**t*u or a = l*l**t.
-           call stdlib_dpbtrf( uplo, n, kd, ab, ldab, info )
+           ! compute the l*d*l**t (or u**t*d*u) factorization of a.
+           call stdlib_dpttrf( n, d, e, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_dpbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+              call stdlib_dpttrs( n, nrhs, d, e, b, ldb, info )
            end if
            return
-     end subroutine stdlib_dpbsv
+     end subroutine stdlib_dptsv
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$pbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
-     !! DPBSV: computes the solution to a real system of linear equations
-     !! A * X = B,
-     !! where A is an N-by-N symmetric positive definite band matrix and X
-     !! and B are N-by-NRHS matrices.
-     !! The Cholesky decomposition is used to factor A as
-     !! A = U**T * U,  if UPLO = 'U', or
-     !! A = L * L**T,  if UPLO = 'L',
-     !! where U is an upper triangular band matrix, and L is a lower
-     !! triangular band matrix, with the same number of superdiagonals or
-     !! subdiagonals as A.  The factored form of A is then used to solve the
-     !! system of equations A * X = B.
+     pure subroutine stdlib_${ri}$ptsv( n, nrhs, d, e, b, ldb, info )
+     !! DPTSV: computes the solution to a real system of linear equations
+     !! A*X = B, where A is an N-by-N symmetric positive definite tridiagonal
+     !! matrix, and X and B are N-by-NRHS matrices.
+     !! A is factored as A = L*D*L**T, and the factored form of A is then
+     !! used to solve the system of equations.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
+           integer(ilp), intent(in) :: ldb, n, nrhs
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: ab(ldab,*), b(ldb,*)
+           real(${rk}$), intent(inout) :: b(ldb,*), d(*), e(*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+           if( n<0 ) then
               info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kd<0 ) then
-              info = -3
            else if( nrhs<0 ) then
-              info = -4
-           else if( ldab<kd+1 ) then
-              info = -6
+              info = -2
            else if( ldb<max( 1, n ) ) then
-              info = -8
+              info = -6
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'DPBSV ', -info )
+              call stdlib_xerbla( 'DPTSV ', -info )
               return
            end if
-           ! compute the cholesky factorization a = u**t*u or a = l*l**t.
-           call stdlib_${ri}$pbtrf( uplo, n, kd, ab, ldab, info )
+           ! compute the l*d*l**t (or u**t*d*u) factorization of a.
+           call stdlib_${ri}$pttrf( n, d, e, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_${ri}$pbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+              call stdlib_${ri}$pttrs( n, nrhs, d, e, b, ldb, info )
            end if
            return
-     end subroutine stdlib_${ri}$pbsv
+     end subroutine stdlib_${ri}$ptsv
 
 #:endif
 #:endfor
 
-     pure subroutine stdlib_cpbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
-     !! CPBSV computes the solution to a complex system of linear equations
-     !! A * X = B,
-     !! where A is an N-by-N Hermitian positive definite band matrix and X
-     !! and B are N-by-NRHS matrices.
-     !! The Cholesky decomposition is used to factor A as
-     !! A = U**H * U,  if UPLO = 'U', or
-     !! A = L * L**H,  if UPLO = 'L',
-     !! where U is an upper triangular band matrix, and L is a lower
-     !! triangular band matrix, with the same number of superdiagonals or
-     !! subdiagonals as A.  The factored form of A is then used to solve the
-     !! system of equations A * X = B.
+     pure subroutine stdlib_cptsv( n, nrhs, d, e, b, ldb, info )
+     !! CPTSV computes the solution to a complex system of linear equations
+     !! A*X = B, where A is an N-by-N Hermitian positive definite tridiagonal
+     !! matrix, and X and B are N-by-NRHS matrices.
+     !! A is factored as A = L*D*L**H, and the factored form of A is then
+     !! used to solve the system of equations.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
+           integer(ilp), intent(in) :: ldb, n, nrhs
            ! Array Arguments 
-           complex(sp), intent(inout) :: ab(ldab,*), b(ldb,*)
+           real(sp), intent(inout) :: d(*)
+           complex(sp), intent(inout) :: b(ldb,*), e(*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+           if( n<0 ) then
               info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kd<0 ) then
-              info = -3
            else if( nrhs<0 ) then
-              info = -4
-           else if( ldab<kd+1 ) then
-              info = -6
+              info = -2
            else if( ldb<max( 1, n ) ) then
-              info = -8
+              info = -6
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'CPBSV ', -info )
+              call stdlib_xerbla( 'CPTSV ', -info )
               return
            end if
-           ! compute the cholesky factorization a = u**h*u or a = l*l**h.
-           call stdlib_cpbtrf( uplo, n, kd, ab, ldab, info )
+           ! compute the l*d*l**h (or u**h*d*u) factorization of a.
+           call stdlib_cpttrf( n, d, e, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_cpbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+              call stdlib_cpttrs( 'LOWER', n, nrhs, d, e, b, ldb, info )
            end if
            return
-     end subroutine stdlib_cpbsv
+     end subroutine stdlib_cptsv
 
-     pure subroutine stdlib_zpbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
-     !! ZPBSV computes the solution to a complex system of linear equations
-     !! A * X = B,
-     !! where A is an N-by-N Hermitian positive definite band matrix and X
-     !! and B are N-by-NRHS matrices.
-     !! The Cholesky decomposition is used to factor A as
-     !! A = U**H * U,  if UPLO = 'U', or
-     !! A = L * L**H,  if UPLO = 'L',
-     !! where U is an upper triangular band matrix, and L is a lower
-     !! triangular band matrix, with the same number of superdiagonals or
-     !! subdiagonals as A.  The factored form of A is then used to solve the
-     !! system of equations A * X = B.
+     pure subroutine stdlib_zptsv( n, nrhs, d, e, b, ldb, info )
+     !! ZPTSV computes the solution to a complex system of linear equations
+     !! A*X = B, where A is an N-by-N Hermitian positive definite tridiagonal
+     !! matrix, and X and B are N-by-NRHS matrices.
+     !! A is factored as A = L*D*L**H, and the factored form of A is then
+     !! used to solve the system of equations.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
+           integer(ilp), intent(in) :: ldb, n, nrhs
            ! Array Arguments 
-           complex(dp), intent(inout) :: ab(ldab,*), b(ldb,*)
+           real(dp), intent(inout) :: d(*)
+           complex(dp), intent(inout) :: b(ldb,*), e(*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+           if( n<0 ) then
               info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kd<0 ) then
-              info = -3
            else if( nrhs<0 ) then
-              info = -4
-           else if( ldab<kd+1 ) then
-              info = -6
+              info = -2
            else if( ldb<max( 1, n ) ) then
-              info = -8
+              info = -6
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'ZPBSV ', -info )
+              call stdlib_xerbla( 'ZPTSV ', -info )
               return
            end if
-           ! compute the cholesky factorization a = u**h *u or a = l*l**h.
-           call stdlib_zpbtrf( uplo, n, kd, ab, ldab, info )
+           ! compute the l*d*l**h (or u**h*d*u) factorization of a.
+           call stdlib_zpttrf( n, d, e, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_zpbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+              call stdlib_zpttrs( 'LOWER', n, nrhs, d, e, b, ldb, info )
            end if
            return
-     end subroutine stdlib_zpbsv
+     end subroutine stdlib_zptsv
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$pbsv( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
-     !! ZPBSV: computes the solution to a complex system of linear equations
-     !! A * X = B,
-     !! where A is an N-by-N Hermitian positive definite band matrix and X
-     !! and B are N-by-NRHS matrices.
-     !! The Cholesky decomposition is used to factor A as
-     !! A = U**H * U,  if UPLO = 'U', or
-     !! A = L * L**H,  if UPLO = 'L',
-     !! where U is an upper triangular band matrix, and L is a lower
-     !! triangular band matrix, with the same number of superdiagonals or
-     !! subdiagonals as A.  The factored form of A is then used to solve the
-     !! system of equations A * X = B.
+     pure subroutine stdlib_${ci}$ptsv( n, nrhs, d, e, b, ldb, info )
+     !! ZPTSV: computes the solution to a complex system of linear equations
+     !! A*X = B, where A is an N-by-N Hermitian positive definite tridiagonal
+     !! matrix, and X and B are N-by-NRHS matrices.
+     !! A is factored as A = L*D*L**H, and the factored form of A is then
+     !! used to solve the system of equations.
         ! -- lapack driver routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: uplo
            integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: kd, ldab, ldb, n, nrhs
+           integer(ilp), intent(in) :: ldb, n, nrhs
            ! Array Arguments 
-           complex(${ck}$), intent(inout) :: ab(ldab,*), b(ldb,*)
+           real(${ck}$), intent(inout) :: d(*)
+           complex(${ck}$), intent(inout) :: b(ldb,*), e(*)
         ! =====================================================================
            ! Intrinsic Functions 
            ! Executable Statements 
            ! test the input parameters.
            info = 0
-           if( .not.stdlib_lsame( uplo, 'U' ) .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+           if( n<0 ) then
               info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kd<0 ) then
-              info = -3
            else if( nrhs<0 ) then
-              info = -4
-           else if( ldab<kd+1 ) then
-              info = -6
+              info = -2
            else if( ldb<max( 1, n ) ) then
-              info = -8
+              info = -6
            end if
            if( info/=0 ) then
-              call stdlib_xerbla( 'ZPBSV ', -info )
+              call stdlib_xerbla( 'ZPTSV ', -info )
               return
            end if
-           ! compute the cholesky factorization a = u**h *u or a = l*l**h.
-           call stdlib_${ci}$pbtrf( uplo, n, kd, ab, ldab, info )
+           ! compute the l*d*l**h (or u**h*d*u) factorization of a.
+           call stdlib_${ci}$pttrf( n, d, e, info )
            if( info==0 ) then
               ! solve the system a*x = b, overwriting b with x.
-              call stdlib_${ci}$pbtrs( uplo, n, kd, nrhs, ab, ldab, b, ldb, info )
+              call stdlib_${ci}$pttrs( 'LOWER', n, nrhs, d, e, b, ldb, info )
            end if
            return
-     end subroutine stdlib_${ci}$pbsv
+     end subroutine stdlib_${ci}$ptsv
 
 #:endif
 #:endfor
-
-
 
 
 end module stdlib_lapack_solve_chol
