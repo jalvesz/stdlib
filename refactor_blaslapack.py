@@ -47,7 +47,8 @@ lapack_groups = {
         "ppcon", "pptrf", "pptrs", "pptri", "pprfs", "ppequ", "laqhp",
         "pftrf", "pftrs", "pftri",
         "pbcon", "pbtrf", "pbtf2", "pbtrs", "pbrfs", "pbequ", "laqhb",
-        "ptcon", "pttrf", "pttrs", "ptts2", "ptrfs"
+        "ptcon", "pttrf", "pttrs", "ptts2", "ptrfs",
+        "laqsp"
     },
     "solve_ldl": {
         "sysv", "sysvx", "sysv_rk", "sysv_rook", "sysvxx", 
@@ -58,7 +59,19 @@ lapack_groups = {
         "hesv_aa", "hesv_aa_2stage"
     },
     "solve_ldl_comp": {
-        "sycon","sytrf","lasyf","sytf2","sytrs","sytri","syrfs","syrfsx","syequb","syconv","sycon_3","sytri2","sytri2x","sytri_3","sytri_3x","sytrs2","sytrs_3","syswapr","la_hercond","la_herfsx_extended","la_herpvgrw","spcon","sptrf","sptrs","sptri","sprfs","sycon_rook","sytrf_rook","lasyf_rook","sytf2_rook","sytrs_rook","sytri_rook","sytrf_rk","lasyf_rk","sytf2_rk","syconvf","syconvf_rook","sytrf_aa","lasyf_aa","sytrs_aa","sytrf_aa_2stage","sytrs_aa_2stage","hecon","hetrf","lahef","hetf2","hetrs","hetri","herfs","herfsx","heequb","syconv","hecon_3","hetri2","hetri2x","hetri_3","hetri_3x","hetrs2","hetrs_3","heswapr","la_hercond","la_herfsx_extended","la_herpvgrw","hpcon","hptrf","hptrs","hptri","hprfs","hecon_rook","hetrf_rook","lahef_rook","hetf2_rook","hetrs_rook","hetri_rook","hetrf_rk","lahef_rk","hetf2_rk","syconvf","syconvf_rook","hetrf_aa","lahef_aa","hetrs_aa","hetrf_aa_2stage","hetrs_aa_2stage",
+        "sycon","sytrf","lasyf","sytf2","sytrs","sytri","syrfs","syrfsx","syequb",
+        "syconv","sycon_3","sytri2","sytri2x","sytri_3","sytri_3x","sytrs2","sytrs_3",
+        "syswapr","la_hercond","la_herfsx_extended","la_herpvgrw","spcon","sptrf",
+        "sptrs","sptri","sprfs","sycon_rook","sytrf_rook","lasyf_rook","sytf2_rook",
+        "sytrs_rook","sytri_rook","sytrf_rk","lasyf_rk","sytf2_rk","syconvf","syconvf_rook",
+        "sytrf_aa","lasyf_aa","sytrs_aa","sytrf_aa_2stage","sytrs_aa_2stage","hecon",
+        "hetrf","lahef","hetf2","hetrs","hetri","herfs","herfsx","heequb","syconv",
+        "hecon_3","hetri2","hetri2x","hetri_3","hetri_3x","hetrs2","hetrs_3","heswapr",
+        "la_hercond","la_herfsx_extended","la_herpvgrw","hpcon","hptrf","hptrs","hptri",
+        "hprfs","hecon_rook","hetrf_rook","lahef_rook","hetf2_rook","hetrs_rook",
+        "hetri_rook","hetrf_rk","lahef_rk","hetf2_rk","syconvf","syconvf_rook","hetrf_aa",
+        "lahef_aa","hetrs_aa","hetrf_aa_2stage","hetrs_aa_2stage",
+        "laqsy"
     },
     "solve_tri_comp": {
         "trcon", "trtrs", 
@@ -73,6 +86,9 @@ lapack_groups = {
     },
     "solve_aux": {
         "lacn2", "lacon", "la_lin_berr"
+    },
+    "lsq": {
+        "gelss", "gelsy", "gels", "gelst", "gelsd", "getsls"
     },
     "lsq_constrained": {
         "gglse", "ggglm"
@@ -91,7 +107,7 @@ lapack_groups = {
     "orthogonal_factors_ql": {
         "gelq","gemlq","gelqf","gelq2","unglq","ungl2","unmlq","unml2","orglq","orgl2","ormlq","orml2",
         "gelqt","gelqt3","gemlqt","laswlq","lamswlq","tplqt","tplqt2","tpmlqt",
-        "geqlf","geql2","ungql","unmql","ung2l","unm2l","orgql","ormql","org2l","orm2l"
+        "geqlf","geql2","ungql","unmql","ung2l","unm2l","orgql","ormql","org2l","orm2l","unm22"
     },
     "orthogonal_factors_rz": {
         "tzrzf", "unmrz", "ormrz", "unmr3", "ormr3", "larz", "larzb", "larzt", "latrz"
@@ -107,29 +123,21 @@ lapack_groups = {
     "givens_jacobi_rot": {
         "lartg","lartgp","lasr","largv","lartv","lar2v","lacrt"
     },
-    "eigv_comp": {
-        "ggbal","gghrd","gghd3","hgeqz","ggbak","tgsen","tgsna","tgsyl","tgsy2",
-        "unm22","unm22","lagv2","tgevc","tgexc","tgex2"
-    },
     "eigv_gen": {
         "geev","geevx","gees","geesx","ggev3","ggev","ggevx","gges3","gges",
         "ggesx","cgedmd","cgedmdq","dgedmd","dgedmdq","sgedmd","sgedmdq","zgedmd",
         "zgedmdq","gebal","gehrd","gehd2","lahr2","unghr","unmhr","orghr","ormhr",
         "gebak","hseqr","hsein","trevc","trevc3","laln2","trsyl","trsyl3","lasy2",
         "trsna","laqtr","trexc","trsen","laexc","lanv2","laein","lahqr","laqr0",
-        "laqr1","laqr2","laqr3","laqr4","laqr5","iparmq","laqz0","laqz1","laqz2","laqz3","laqz4"
+        "laqr1","laqr2","laqr3","laqr4","laqr5","iparmq","laqz0","laqz1","laqz2","laqz3","laqz4",
+        # eigv_comp
+        "ggbal","gghrd","gghd3","hgeqz","ggbak","tgsen","tgsna","tgsyl","tgsy2",
+        "lagv2","tgevc","tgexc","tgex2",
     },
     "eigv_sym_comp": {
-        "sygst","sygs2","spgst","sbgst","hegst","hegs2","hpgst","hbgst","pbstf","lag2", "orm22", "unm22",
+        "sygst","sygs2","spgst","sbgst","hegst","hegs2","hpgst","hbgst","pbstf","lag2", "orm22", 
         "disna","latrd","lae2","laesy","laev2","lagtf","lagts","sptrd","opgtr","opmtr","sbtrd","hptrd",
         "upgtr","upmtr","hbtrd"
-    },
-    "eigv_std_driver" :{
-        "syev","syevd","syevr","syevx","syev_2stage","syevd_2stage","syevr_2stage",
-        "syevx_2stage","spev","spevd","spevx","sbev","sbevd","sbevx","sbev_2stage",
-        "sbevd_2stage","sbevx_2stage","heev","heevd","heevr","heevx","heev_2stage",
-        "heevd_2stage","heevr_2stage","heevx_2stage","hpev","hpevd","hpevx","hbev",
-        "hbevd","hbevx","hbev_2stage","hbevd_2stage","hbevx_2stage",
     },
     "eigv_sym": {
         "sygv","sygv_2stage","sygvd","sygvx","spgv","spgvd","spgvx","sbgv",
@@ -137,6 +145,7 @@ lapack_groups = {
         "sytrd_hb2st","sb2st_kernels","hegv","hegv_2stage","hegvd","hegvx","hpgv",
         "hpgvd","hpgvx","hbgv","hbgvd","hbgvx","hetrd","hetd2","ungtr","unmtr",
         "hetrd_2stage","hetrd_he2hb","hetrd_hb2st","hb2st_kernels",
+        "sytrd_sb2st", "sytrd_sy2sb",
         # tridiag
         "laebz","laneg","laed0","laed1","laed2","laed3","laed4",
         "laed5","laed6","lamrg","laed7","laed8","laed9","laeda","larra","larrb","larrc",
@@ -149,6 +158,12 @@ lapack_groups = {
         # svd_drivers
         "gesvd", "gesvdq", "gesdd", "gesvdx", "gejsv", "gesvj",
         "bdsqr", "bdsdc", "bdsvdx", "ggsvd3",
+        # eigv_std_driver
+        "syev","syevd","syevr","syevx","syev_2stage","syevd_2stage","syevr_2stage",
+        "syevx_2stage","spev","spevd","spevx","sbev","sbevd","sbevx","sbev_2stage",
+        "sbevd_2stage","sbevx_2stage","heev","heevd","heevr","heevx","heev_2stage",
+        "heevd_2stage","heevr_2stage","heevx_2stage","hpev","hpevd","hpevx","hbev",
+        "hbevd","hbevx","hbev_2stage","hbevd_2stage","hbevx_2stage",
         },
     "svd_comp": { # standard driver
         "gebrd", "gebd2", "labrd", "gbbrd", 
@@ -166,7 +181,8 @@ lapack_groups = {
     },
     "blas_like_mnorm": {
         "lange","langb","langt","lanhs","lanhf","lansf","lanhp","lansp",
-        "lanhb","lansb","lanht","lanst","lantr","lantp","lantb"
+        "lanhb","lansb","lanht","lanst","lantr","lantp","lantb","lansy",
+        "lanhe",
     },
     "blas_like_scalar": {
         "isnan","laisnan","ladiv","lapy2","lapy3","larmm"
@@ -176,16 +192,21 @@ lapack_groups = {
     },
     "blas_like_l2": {
         "lascl","la_geamv","la_gbamv","la_heamv","lascl2","larscl2","la_wwaddw",
-        "spmv", "spr", "symv", "syr"
+        "spmv", "spr", "symv", "syr", 
     },
     "blas_like_l3": {
-        "lagtm","lacrm","larcm","hfrk","tfsm"
+        "lagtm","lacrm","larcm","hfrk","tfsm", "sfrk"
     },
     "auxiliary_parameters": {
-        "lamch", "lamc1", "lamc2", "lamc3", "lamc4", "lamc5", "labad", "sum1", "csum1", "zsum1"
+        "lamch", "lamc1", "lamc2", "lamc3", "lamc4", "lamc5", "labad", "sum1", "csum1", "zsum1",
+        "laqsb"
     },
     "auxiliary_others": {
         "lsame","lsamen","roundup_lwork","scond","ladiv1","ladiv2", "rot"
+    },
+    "others" : {
+        "la_syrpvgrw", "la_gerpvgrw", "la_gbrcond_c", "la_gercond_c", "la_hercond_c", 
+        "la_syamv", "la_syrcond", "la_syrcond_c", "la_porcond_c"
     },
 }
 
@@ -200,42 +221,42 @@ lapack_dependencies = {
     "blas_like_mnorm"        : { "blas_like_scalar" , "blas_like_l1" },
 
     "solve_aux"              : { "auxiliary_parameters" },
-    "solve_tri_comp"         : { "solve_aux", "blas_like_scalar", "blas_like_l1" },
+    "solve_tri_comp"         : { "solve_aux", "blas_like_scalar", "blas_like_l1", "blas_like_mnorm" },
     "solve_lu_comp"          : { "solve_tri_comp", "blas_like_l3" },
     "solve_lu"               : { "solve_lu_comp", "blas_like_base", "blas_like_mnorm" },
     "solve_chol_comp"        : { "solve_aux", "solve_tri_comp", "blas_like_scalar", "blas_like_l3" },
-    "solve_chol"             : { "solve_chol_comp", "blas_like_base", "blas_like_mnorm" },
     "solve_ldl_comp"         : { "auxiliary_parameters", "solve_aux", "solve_lu",
                                  "blas_like_base", "blas_like_scalar", "blas_like_l1", "blas_like_l2" },
+    "solve_chol"             : { "solve_chol_comp", "blas_like_base", "blas_like_mnorm", "solve_ldl_comp" },
     "solve_ldl"              : { "solve_ldl_comp" },
     
     "givens_jacobi_rot"      : { "blas_like_scalar" },
     "householder_reflectors" : { "blas_like_scalar", "blas_like_l1" },
+
     "orthogonal_factors_rz"  : { "householder_reflectors" },
     "orthogonal_factors_qr"  : { "blas_like_base", "householder_reflectors" },
     "orthogonal_factors_ql"  : { "householder_reflectors", "orthogonal_factors_qr" },
 
     "svd_comp"               : { "blas_like_l2", "givens_jacobi_rot", "orthogonal_factors_ql" },
-    "eigv_gen"               : { "blas_like_base", "blas_like_l1", "orthogonal_factors_qr", "solve_tri_comp", 
-                                "givens_jacobi_rot" },
     "eigv_sym_comp"          : { "auxiliary_parameters", "blas_like_base", "blas_like_l1", "orthogonal_factors_qr", 
                                 "orthogonal_factors_ql" ,"givens_jacobi_rot", "householder_reflectors" },
-    "eigv_comp"              : { "blas_like_base", "blas_like_l1", "solve_aux", "solve_lu_comp", "givens_jacobi_rot", 
-                                "orthogonal_factors_qr", "eigv_gen", "eigv_sym_comp", "svd_comp" },
-    "eigv_std_driver"        : { "blas_like_base", "blas_like_l2", "blas_like_l3", "blas_like_mnorm", 
-                                "svd_comp", "eigv_sym_comp" },
+    "eigv_gen"               : { "blas_like_base", "blas_like_l1", "blas_like_l2", "solve_aux", "orthogonal_factors_qr", 
+                                "solve_tri_comp", "solve_lu_comp", "givens_jacobi_rot", "svd_comp", "eigv_sym_comp" },
+    
     "svd_bidiag_qr"          : { "blas_like_l1", "blas_like_l2", "svd_comp" },
 
     "cosine_sine"            : { "blas_like_l1", "givens_jacobi_rot", "svd_comp" },
 
-    "eigv_sym"               : { "eigv_gen", "eigv_sym_comp", "blas_like_base", "blas_like_scalar", "blas_like_l2", "blas_like_l3", "blas_like_mnorm", 
-                                "svd_comp", "givens_jacobi_rot", "svd_bidiag_qr", "solve_lu_comp", "solve_chol_comp",
-                                "householder_reflectors", "orthogonal_factors_ql", "eigv_std_driver", "cosine_sine" },
+    "eigv_sym"               : { "blas_like_base", "blas_like_scalar", "blas_like_l2", "blas_like_l3", "blas_like_mnorm", 
+                                "eigv_gen", "eigv_sym_comp", "svd_comp", "givens_jacobi_rot", "svd_bidiag_qr", "solve_lu_comp", "solve_chol_comp",
+                                "householder_reflectors", "orthogonal_factors_ql", "cosine_sine" },
     
     "lsq_aux"                : { "blas_like_base", "blas_like_l1", "blas_like_l2", "eigv_sym" },
+    "lsq"                    : { "blas_like_l2", "blas_like_mnorm", "orthogonal_factors_qr", "orthogonal_factors_rz", "svd_comp",
+                                "eigv_sym", "lsq_aux" },
     "lsq_constrained"        : { "orthogonal_factors_qr", "solve_tri_comp" },
 
-    
+    "others"                 : { "solve_lu_comp", "solve_ldl_comp", "solve_chol_comp" },
 }
 only = { 
     "lamch": ", only: zero, one, eps" ,
@@ -246,8 +267,11 @@ only = {
 }
 # Regular expression to match the subroutine definition with precision
 # Matches lines like "pure subroutine stdlib_sname" or "pure subroutine stdlib_dname"
-subroutine_pattern = re.compile(
+"""subroutine_pattern = re.compile(
     r"^\s*pure\s*(?:recursive\s*)?(?:subroutine|(?:integer|real|complex|logical)\(?\w*\)?\s+function|(?:integer|real|complex|logical)\s*\(\s*\$\{\w+\}\$\s*\)\s*function|function)\s+(stdlib_)([sdcz]|\${ri}\$|\${ci}\$)(\w+)"
+)"""
+subroutine_pattern = re.compile(
+    r"^\s*(?:pure\s*)?(?:recursive\s*)?(?:subroutine|(?:integer|real|complex|logical)\(?\w*\)?\s+function|(?:integer|real|complex|logical)\s*\(\s*\$\{\w+\}\$\s*\)\s*function|function)\s+(stdlib_)([sdcz]|\${ri}\$|\${ci}\$)(\w+)"
 )
 
 # Dictionary to store subroutine definitions by name

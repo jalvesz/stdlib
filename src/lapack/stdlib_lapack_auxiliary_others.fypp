@@ -9,8 +9,6 @@ module stdlib_lapack_auxiliary_others
 
   contains
 
-
-
      pure real(sp) function stdlib_sladiv2( a, b, c, d, r, t )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
@@ -166,10 +164,6 @@ module stdlib_lapack_auxiliary_others
 
 
 
-
-
-
-
      pure subroutine stdlib_crot( n, cx, incx, cy, incy, c, s )
      !! CROT applies a plane rotation, where the cos (C) is real and the
      !! sin (S) is complex, and the vectors CX and CY are complex.
@@ -306,6 +300,12 @@ module stdlib_lapack_auxiliary_others
 
 #:endif
 #:endfor
+
+
+
+
+
+
 
 
 

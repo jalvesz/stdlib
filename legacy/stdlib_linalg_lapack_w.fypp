@@ -22181,7 +22181,7 @@ module stdlib_linalg_lapack_${ci}$
      end subroutine stdlib_${ci}$gtts2
 
 
-     pure subroutine  stdlib_${ci}$hb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, lda, &
+     pure subroutine stdlib_${ci}$hb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, lda, &
      !! ZHB2ST_KERNELS: is an internal routine used by the ZHETRD_HB2ST
      !! subroutine.
                v, tau, ldvt, work)

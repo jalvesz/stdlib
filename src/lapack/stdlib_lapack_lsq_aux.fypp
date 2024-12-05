@@ -3,9 +3,9 @@ module stdlib_lapack_lsq_aux
   use stdlib_linalg_constants
   use stdlib_linalg_lapack_aux
   use stdlib_linalg_blas
-  use stdlib_lapack_blas_like_l2
   use stdlib_lapack_eigv_sym
   use stdlib_lapack_blas_like_base
+  use stdlib_lapack_blas_like_l2
   use stdlib_lapack_blas_like_l1
   implicit none(type,external)
 
@@ -1296,1338 +1296,6 @@ module stdlib_lapack_lsq_aux
            end if
            return
      end subroutine stdlib_${ci}$laic1
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_slals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
-     !! SLALS0 applies back the multiplying factors of either the left or the
-     !! right singular vector matrix of a diagonal matrix appended by a row
-     !! to the right hand side matrix B in solving the least squares problem
-     !! using the divide-and-conquer SVD approach.
-     !! For the left singular vector matrix, three types of orthogonal
-     !! matrices are involved:
-     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
-     !! pairs of columns/rows they were applied to are stored in GIVCOL;
-     !! and the C- and S-values of these rotations are stored in GIVNUM.
-     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
-     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
-     !! J-th row.
-     !! (3L) The left singular vector matrix of the remaining matrix.
-     !! For the right singular vector matrix, four types of orthogonal
-     !! matrices are involved:
-     !! (1R) The right singular vector matrix of the remaining matrix.
-     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
-     !! null space.
-     !! (3R) The inverse transformation of (2L).
-     !! (4R) The inverse transformation of (1L).
-               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, work, info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
-                      sqre
-           integer(ilp), intent(out) :: info
-           real(sp), intent(in) :: c, s
-           ! Array Arguments 
-           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
-           real(sp), intent(inout) :: b(ldb,*)
-           real(sp), intent(out) :: bx(ldbx,*), work(*)
-           real(sp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
-                     *)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, j, m, n, nlp1
-           real(sp) :: diflj, difrj, dj, dsigj, dsigjp, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           n = nl + nr + 1
-           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
-              info = -1
-           else if( nl<1 ) then
-              info = -2
-           else if( nr<1 ) then
-              info = -3
-           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
-              info = -4
-           else if( nrhs<1 ) then
-              info = -5
-           else if( ldb<n ) then
-              info = -7
-           else if( ldbx<n ) then
-              info = -9
-           else if( givptr<0 ) then
-              info = -11
-           else if( ldgcol<n ) then
-              info = -13
-           else if( ldgnum<n ) then
-              info = -15
-           else if( k<1 ) then
-              info = -20
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'SLALS0', -info )
-              return
-           end if
-           m = n + sqre
-           nlp1 = nl + 1
-           if( icompq==0 ) then
-              ! apply back orthogonal transformations from the left.
-              ! step (1l): apply back the givens rotations performed.
-              do i = 1, givptr
-                 call stdlib_srot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
-                           givnum( i, 2 ),givnum( i, 1 ) )
-              end do
-              ! step (2l): permute rows of b.
-              call stdlib_scopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
-              do i = 2, n
-                 call stdlib_scopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
-              end do
-              ! step (3l): apply the inverse of the left singular vector
-              ! matrix to bx.
-              if( k==1 ) then
-                 call stdlib_scopy( nrhs, bx, ldbx, b, ldb )
-                 if( z( 1 )<zero ) then
-                    call stdlib_sscal( nrhs, negone, b, ldb )
-                 end if
-              else
-                 loop_50: do j = 1, k
-                    diflj = difl( j )
-                    dj = poles( j, 1 )
-                    dsigj = -poles( j, 2 )
-                    if( j<k ) then
-                       difrj = -difr( j, 1 )
-                       dsigjp = -poles( j+1, 2 )
-                    end if
-                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
-                       work( j ) = zero
-                    else
-                       work( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
-                    end if
-                    do i = 1, j - 1
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), dsigj &
-                                    )-diflj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), &
-                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    work( 1 ) = negone
-                    temp = stdlib_snrm2( k, work, 1 )
-                    call stdlib_sgemv( 'T', k, nrhs, one, bx, ldbx, work, 1, zero,b( j, 1 ), ldb )
-                              
-                    call stdlib_slascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
-                              
-                 end do loop_50
-              end if
-              ! move the deflated rows of bx to b also.
-              if( k<max( m, n ) )call stdlib_slacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
-                        ), ldb )
-           else
-              ! apply back the right orthogonal transformations.
-              ! step (1r): apply back the new right singular vector matrix
-              ! to b.
-              if( k==1 ) then
-                 call stdlib_scopy( nrhs, b, ldb, bx, ldbx )
-              else
-                 do j = 1, k
-                    dsigj = poles( j, 2 )
-                    if( z( j )==zero ) then
-                       work( j ) = zero
-                    else
-                       work( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
-                                 
-                    end if
-                    do i = 1, j - 1
-                       if( z( j )==zero ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i+1,2 ) )-difr( i, &
-                                    1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( z( j )==zero ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i,2 ) )-difl( i ) )&
-                                     /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    call stdlib_sgemv( 'T', k, nrhs, one, b, ldb, work, 1, zero,bx( j, 1 ), ldbx )
-                              
-                 end do
-              end if
-              ! step (2r): if sqre = 1, apply back the rotation that is
-              ! related to the right null space of the subproblem.
-              if( sqre==1 ) then
-                 call stdlib_scopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
-                 call stdlib_srot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
-              end if
-              if( k<max( m, n ) )call stdlib_slacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
-                        ),ldbx )
-              ! step (3r): permute rows of b.
-              call stdlib_scopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
-              if( sqre==1 ) then
-                 call stdlib_scopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
-              end if
-              do i = 2, n
-                 call stdlib_scopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
-              end do
-              ! step (4r): apply back the givens rotations performed.
-              do i = givptr, 1, -1
-                 call stdlib_srot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
-                           givnum( i, 2 ),-givnum( i, 1 ) )
-              end do
-           end if
-           return
-     end subroutine stdlib_slals0
-
-     pure subroutine stdlib_dlals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
-     !! DLALS0 applies back the multiplying factors of either the left or the
-     !! right singular vector matrix of a diagonal matrix appended by a row
-     !! to the right hand side matrix B in solving the least squares problem
-     !! using the divide-and-conquer SVD approach.
-     !! For the left singular vector matrix, three types of orthogonal
-     !! matrices are involved:
-     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
-     !! pairs of columns/rows they were applied to are stored in GIVCOL;
-     !! and the C- and S-values of these rotations are stored in GIVNUM.
-     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
-     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
-     !! J-th row.
-     !! (3L) The left singular vector matrix of the remaining matrix.
-     !! For the right singular vector matrix, four types of orthogonal
-     !! matrices are involved:
-     !! (1R) The right singular vector matrix of the remaining matrix.
-     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
-     !! null space.
-     !! (3R) The inverse transformation of (2L).
-     !! (4R) The inverse transformation of (1L).
-               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, work, info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
-                      sqre
-           integer(ilp), intent(out) :: info
-           real(dp), intent(in) :: c, s
-           ! Array Arguments 
-           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
-           real(dp), intent(inout) :: b(ldb,*)
-           real(dp), intent(out) :: bx(ldbx,*), work(*)
-           real(dp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
-                     *)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, j, m, n, nlp1
-           real(dp) :: diflj, difrj, dj, dsigj, dsigjp, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           n = nl + nr + 1
-           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
-              info = -1
-           else if( nl<1 ) then
-              info = -2
-           else if( nr<1 ) then
-              info = -3
-           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
-              info = -4
-           else if( nrhs<1 ) then
-              info = -5
-           else if( ldb<n ) then
-              info = -7
-           else if( ldbx<n ) then
-              info = -9
-           else if( givptr<0 ) then
-              info = -11
-           else if( ldgcol<n ) then
-              info = -13
-           else if( ldgnum<n ) then
-              info = -15
-           else if( k<1 ) then
-              info = -20
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DLALS0', -info )
-              return
-           end if
-           m = n + sqre
-           nlp1 = nl + 1
-           if( icompq==0 ) then
-              ! apply back orthogonal transformations from the left.
-              ! step (1l): apply back the givens rotations performed.
-              do i = 1, givptr
-                 call stdlib_drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
-                           givnum( i, 2 ),givnum( i, 1 ) )
-              end do
-              ! step (2l): permute rows of b.
-              call stdlib_dcopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
-              do i = 2, n
-                 call stdlib_dcopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
-              end do
-              ! step (3l): apply the inverse of the left singular vector
-              ! matrix to bx.
-              if( k==1 ) then
-                 call stdlib_dcopy( nrhs, bx, ldbx, b, ldb )
-                 if( z( 1 )<zero ) then
-                    call stdlib_dscal( nrhs, negone, b, ldb )
-                 end if
-              else
-                 loop_50: do j = 1, k
-                    diflj = difl( j )
-                    dj = poles( j, 1 )
-                    dsigj = -poles( j, 2 )
-                    if( j<k ) then
-                       difrj = -difr( j, 1 )
-                       dsigjp = -poles( j+1, 2 )
-                    end if
-                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
-                       work( j ) = zero
-                    else
-                       work( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
-                    end if
-                    do i = 1, j - 1
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), dsigj &
-                                    )-diflj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), &
-                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    work( 1 ) = negone
-                    temp = stdlib_dnrm2( k, work, 1 )
-                    call stdlib_dgemv( 'T', k, nrhs, one, bx, ldbx, work, 1, zero,b( j, 1 ), ldb )
-                              
-                    call stdlib_dlascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
-                              
-                 end do loop_50
-              end if
-              ! move the deflated rows of bx to b also.
-              if( k<max( m, n ) )call stdlib_dlacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
-                        ), ldb )
-           else
-              ! apply back the right orthogonal transformations.
-              ! step (1r): apply back the new right singular vector matrix
-              ! to b.
-              if( k==1 ) then
-                 call stdlib_dcopy( nrhs, b, ldb, bx, ldbx )
-              else
-                 do j = 1, k
-                    dsigj = poles( j, 2 )
-                    if( z( j )==zero ) then
-                       work( j ) = zero
-                    else
-                       work( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
-                                 
-                    end if
-                    do i = 1, j - 1
-                       if( z( j )==zero ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i+1,2 ) )-difr( i, &
-                                    1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( z( j )==zero ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i,2 ) )-difl( i ) )&
-                                     /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    call stdlib_dgemv( 'T', k, nrhs, one, b, ldb, work, 1, zero,bx( j, 1 ), ldbx )
-                              
-                 end do
-              end if
-              ! step (2r): if sqre = 1, apply back the rotation that is
-              ! related to the right null space of the subproblem.
-              if( sqre==1 ) then
-                 call stdlib_dcopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
-                 call stdlib_drot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
-              end if
-              if( k<max( m, n ) )call stdlib_dlacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
-                        ),ldbx )
-              ! step (3r): permute rows of b.
-              call stdlib_dcopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
-              if( sqre==1 ) then
-                 call stdlib_dcopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
-              end if
-              do i = 2, n
-                 call stdlib_dcopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
-              end do
-              ! step (4r): apply back the givens rotations performed.
-              do i = givptr, 1, -1
-                 call stdlib_drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
-                           givnum( i, 2 ),-givnum( i, 1 ) )
-              end do
-           end if
-           return
-     end subroutine stdlib_dlals0
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
-     !! DLALS0: applies back the multiplying factors of either the left or the
-     !! right singular vector matrix of a diagonal matrix appended by a row
-     !! to the right hand side matrix B in solving the least squares problem
-     !! using the divide-and-conquer SVD approach.
-     !! For the left singular vector matrix, three types of orthogonal
-     !! matrices are involved:
-     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
-     !! pairs of columns/rows they were applied to are stored in GIVCOL;
-     !! and the C- and S-values of these rotations are stored in GIVNUM.
-     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
-     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
-     !! J-th row.
-     !! (3L) The left singular vector matrix of the remaining matrix.
-     !! For the right singular vector matrix, four types of orthogonal
-     !! matrices are involved:
-     !! (1R) The right singular vector matrix of the remaining matrix.
-     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
-     !! null space.
-     !! (3R) The inverse transformation of (2L).
-     !! (4R) The inverse transformation of (1L).
-               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, work, info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
-                      sqre
-           integer(ilp), intent(out) :: info
-           real(${rk}$), intent(in) :: c, s
-           ! Array Arguments 
-           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
-           real(${rk}$), intent(inout) :: b(ldb,*)
-           real(${rk}$), intent(out) :: bx(ldbx,*), work(*)
-           real(${rk}$), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
-                     *)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, j, m, n, nlp1
-           real(${rk}$) :: diflj, difrj, dj, dsigj, dsigjp, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           n = nl + nr + 1
-           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
-              info = -1
-           else if( nl<1 ) then
-              info = -2
-           else if( nr<1 ) then
-              info = -3
-           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
-              info = -4
-           else if( nrhs<1 ) then
-              info = -5
-           else if( ldb<n ) then
-              info = -7
-           else if( ldbx<n ) then
-              info = -9
-           else if( givptr<0 ) then
-              info = -11
-           else if( ldgcol<n ) then
-              info = -13
-           else if( ldgnum<n ) then
-              info = -15
-           else if( k<1 ) then
-              info = -20
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DLALS0', -info )
-              return
-           end if
-           m = n + sqre
-           nlp1 = nl + 1
-           if( icompq==0 ) then
-              ! apply back orthogonal transformations from the left.
-              ! step (1l): apply back the givens rotations performed.
-              do i = 1, givptr
-                 call stdlib_${ri}$rot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
-                           givnum( i, 2 ),givnum( i, 1 ) )
-              end do
-              ! step (2l): permute rows of b.
-              call stdlib_${ri}$copy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
-              do i = 2, n
-                 call stdlib_${ri}$copy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
-              end do
-              ! step (3l): apply the inverse of the left singular vector
-              ! matrix to bx.
-              if( k==1 ) then
-                 call stdlib_${ri}$copy( nrhs, bx, ldbx, b, ldb )
-                 if( z( 1 )<zero ) then
-                    call stdlib_${ri}$scal( nrhs, negone, b, ldb )
-                 end if
-              else
-                 loop_50: do j = 1, k
-                    diflj = difl( j )
-                    dj = poles( j, 1 )
-                    dsigj = -poles( j, 2 )
-                    if( j<k ) then
-                       difrj = -difr( j, 1 )
-                       dsigjp = -poles( j+1, 2 )
-                    end if
-                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
-                       work( j ) = zero
-                    else
-                       work( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
-                    end if
-                    do i = 1, j - 1
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_${ri}$lamc3( poles( i, 2 ), dsigj &
-                                    )-diflj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_${ri}$lamc3( poles( i, 2 ), &
-                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    work( 1 ) = negone
-                    temp = stdlib_${ri}$nrm2( k, work, 1 )
-                    call stdlib_${ri}$gemv( 'T', k, nrhs, one, bx, ldbx, work, 1, zero,b( j, 1 ), ldb )
-                              
-                    call stdlib_${ri}$lascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
-                              
-                 end do loop_50
-              end if
-              ! move the deflated rows of bx to b also.
-              if( k<max( m, n ) )call stdlib_${ri}$lacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
-                        ), ldb )
-           else
-              ! apply back the right orthogonal transformations.
-              ! step (1r): apply back the new right singular vector matrix
-              ! to b.
-              if( k==1 ) then
-                 call stdlib_${ri}$copy( nrhs, b, ldb, bx, ldbx )
-              else
-                 do j = 1, k
-                    dsigj = poles( j, 2 )
-                    if( z( j )==zero ) then
-                       work( j ) = zero
-                    else
-                       work( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
-                                 
-                    end if
-                    do i = 1, j - 1
-                       if( z( j )==zero ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = z( j ) / ( stdlib_${ri}$lamc3( dsigj, -poles( i+1,2 ) )-difr( i, &
-                                    1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( z( j )==zero ) then
-                          work( i ) = zero
-                       else
-                          work( i ) = z( j ) / ( stdlib_${ri}$lamc3( dsigj, -poles( i,2 ) )-difl( i ) )&
-                                     /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    call stdlib_${ri}$gemv( 'T', k, nrhs, one, b, ldb, work, 1, zero,bx( j, 1 ), ldbx )
-                              
-                 end do
-              end if
-              ! step (2r): if sqre = 1, apply back the rotation that is
-              ! related to the right null space of the subproblem.
-              if( sqre==1 ) then
-                 call stdlib_${ri}$copy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
-                 call stdlib_${ri}$rot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
-              end if
-              if( k<max( m, n ) )call stdlib_${ri}$lacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
-                        ),ldbx )
-              ! step (3r): permute rows of b.
-              call stdlib_${ri}$copy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
-              if( sqre==1 ) then
-                 call stdlib_${ri}$copy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
-              end if
-              do i = 2, n
-                 call stdlib_${ri}$copy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
-              end do
-              ! step (4r): apply back the givens rotations performed.
-              do i = givptr, 1, -1
-                 call stdlib_${ri}$rot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
-                           givnum( i, 2 ),-givnum( i, 1 ) )
-              end do
-           end if
-           return
-     end subroutine stdlib_${ri}$lals0
-
-#:endif
-#:endfor
-
-     pure subroutine stdlib_clals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
-     !! CLALS0 applies back the multiplying factors of either the left or the
-     !! right singular vector matrix of a diagonal matrix appended by a row
-     !! to the right hand side matrix B in solving the least squares problem
-     !! using the divide-and-conquer SVD approach.
-     !! For the left singular vector matrix, three types of orthogonal
-     !! matrices are involved:
-     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
-     !! pairs of columns/rows they were applied to are stored in GIVCOL;
-     !! and the C- and S-values of these rotations are stored in GIVNUM.
-     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
-     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
-     !! J-th row.
-     !! (3L) The left singular vector matrix of the remaining matrix.
-     !! For the right singular vector matrix, four types of orthogonal
-     !! matrices are involved:
-     !! (1R) The right singular vector matrix of the remaining matrix.
-     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
-     !! null space.
-     !! (3R) The inverse transformation of (2L).
-     !! (4R) The inverse transformation of (1L).
-               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, rwork, info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
-                      sqre
-           integer(ilp), intent(out) :: info
-           real(sp), intent(in) :: c, s
-           ! Array Arguments 
-           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
-           real(sp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
-                     *)
-           real(sp), intent(out) :: rwork(*)
-           complex(sp), intent(inout) :: b(ldb,*)
-           complex(sp), intent(out) :: bx(ldbx,*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, j, jcol, jrow, m, n, nlp1
-           real(sp) :: diflj, difrj, dj, dsigj, dsigjp, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           n = nl + nr + 1
-           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
-              info = -1
-           else if( nl<1 ) then
-              info = -2
-           else if( nr<1 ) then
-              info = -3
-           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
-              info = -4
-           else if( nrhs<1 ) then
-              info = -5
-           else if( ldb<n ) then
-              info = -7
-           else if( ldbx<n ) then
-              info = -9
-           else if( givptr<0 ) then
-              info = -11
-           else if( ldgcol<n ) then
-              info = -13
-           else if( ldgnum<n ) then
-              info = -15
-           else if( k<1 ) then
-              info = -20
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'CLALS0', -info )
-              return
-           end if
-           m = n + sqre
-           nlp1 = nl + 1
-           if( icompq==0 ) then
-              ! apply back orthogonal transformations from the left.
-              ! step (1l): apply back the givens rotations performed.
-              do i = 1, givptr
-                 call stdlib_csrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
-                            givnum( i, 2 ),givnum( i, 1 ) )
-              end do
-              ! step (2l): permute rows of b.
-              call stdlib_ccopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
-              do i = 2, n
-                 call stdlib_ccopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
-              end do
-              ! step (3l): apply the inverse of the left singular vector
-              ! matrix to bx.
-              if( k==1 ) then
-                 call stdlib_ccopy( nrhs, bx, ldbx, b, ldb )
-                 if( z( 1 )<zero ) then
-                    call stdlib_csscal( nrhs, negone, b, ldb )
-                 end if
-              else
-                 loop_100: do j = 1, k
-                    diflj = difl( j )
-                    dj = poles( j, 1 )
-                    dsigj = -poles( j, 2 )
-                    if( j<k ) then
-                       difrj = -difr( j, 1 )
-                       dsigjp = -poles( j+1, 2 )
-                    end if
-                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
-                       rwork( j ) = zero
-                    else
-                       rwork( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
-                    end if
-                    do i = 1, j - 1
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), &
-                                    dsigj )-diflj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), &
-                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    rwork( 1 ) = negone
-                    temp = stdlib_snrm2( k, rwork, 1 )
-                    ! since b and bx are complex, the following call to stdlib_sgemv
-                    ! is performed in two steps (real and imaginary parts).
-                    ! call stdlib_sgemv( 't', k, nrhs, one, bx, ldbx, work, 1, zero,
-          ! $                     b( j, 1 ), ldb )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = real( bx( jrow, jcol ),KIND=sp)
-                       end do
-                    end do
-                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k ), 1 )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = aimag( bx( jrow, jcol ) )
-                       end do
-                    end do
-                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k+nrhs ), 1 )
-                    do jcol = 1, nrhs
-                       b( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=sp)
-                    end do
-                    call stdlib_clascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
-                              
-                 end do loop_100
-              end if
-              ! move the deflated rows of bx to b also.
-              if( k<max( m, n ) )call stdlib_clacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
-                        ), ldb )
-           else
-              ! apply back the right orthogonal transformations.
-              ! step (1r): apply back the new right singular vector matrix
-              ! to b.
-              if( k==1 ) then
-                 call stdlib_ccopy( nrhs, b, ldb, bx, ldbx )
-              else
-                 loop_180: do j = 1, k
-                    dsigj = poles( j, 2 )
-                    if( z( j )==zero ) then
-                       rwork( j ) = zero
-                    else
-                       rwork( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
-                                 
-                    end if
-                    do i = 1, j - 1
-                       if( z( j )==zero ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i+1,2 ) )-difr( i,&
-                                     1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( z( j )==zero ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i,2 ) )-difl( i ) &
-                                    ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    ! since b and bx are complex, the following call to stdlib_sgemv
-                    ! is performed in two steps (real and imaginary parts).
-                    ! call stdlib_sgemv( 't', k, nrhs, one, b, ldb, work, 1, zero,
-          ! $                     bx( j, 1 ), ldbx )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = real( b( jrow, jcol ),KIND=sp)
-                       end do
-                    end do
-                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k ), 1 )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = aimag( b( jrow, jcol ) )
-                       end do
-                    end do
-                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k+nrhs ), 1 )
-                    do jcol = 1, nrhs
-                       bx( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=sp)
-                                 
-                    end do
-                 end do loop_180
-              end if
-              ! step (2r): if sqre = 1, apply back the rotation that is
-              ! related to the right null space of the subproblem.
-              if( sqre==1 ) then
-                 call stdlib_ccopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
-                 call stdlib_csrot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
-              end if
-              if( k<max( m, n ) )call stdlib_clacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb,bx( k+1, 1 )&
-                        , ldbx )
-              ! step (3r): permute rows of b.
-              call stdlib_ccopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
-              if( sqre==1 ) then
-                 call stdlib_ccopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
-              end if
-              do i = 2, n
-                 call stdlib_ccopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
-              end do
-              ! step (4r): apply back the givens rotations performed.
-              do i = givptr, 1, -1
-                 call stdlib_csrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
-                            givnum( i, 2 ),-givnum( i, 1 ) )
-              end do
-           end if
-           return
-     end subroutine stdlib_clals0
-
-     pure subroutine stdlib_zlals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
-     !! ZLALS0 applies back the multiplying factors of either the left or the
-     !! right singular vector matrix of a diagonal matrix appended by a row
-     !! to the right hand side matrix B in solving the least squares problem
-     !! using the divide-and-conquer SVD approach.
-     !! For the left singular vector matrix, three types of orthogonal
-     !! matrices are involved:
-     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
-     !! pairs of columns/rows they were applied to are stored in GIVCOL;
-     !! and the C- and S-values of these rotations are stored in GIVNUM.
-     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
-     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
-     !! J-th row.
-     !! (3L) The left singular vector matrix of the remaining matrix.
-     !! For the right singular vector matrix, four types of orthogonal
-     !! matrices are involved:
-     !! (1R) The right singular vector matrix of the remaining matrix.
-     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
-     !! null space.
-     !! (3R) The inverse transformation of (2L).
-     !! (4R) The inverse transformation of (1L).
-               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, rwork, info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
-                      sqre
-           integer(ilp), intent(out) :: info
-           real(dp), intent(in) :: c, s
-           ! Array Arguments 
-           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
-           real(dp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
-                     *)
-           real(dp), intent(out) :: rwork(*)
-           complex(dp), intent(inout) :: b(ldb,*)
-           complex(dp), intent(out) :: bx(ldbx,*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, j, jcol, jrow, m, n, nlp1
-           real(dp) :: diflj, difrj, dj, dsigj, dsigjp, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           n = nl + nr + 1
-           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
-              info = -1
-           else if( nl<1 ) then
-              info = -2
-           else if( nr<1 ) then
-              info = -3
-           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
-              info = -4
-           else if( nrhs<1 ) then
-              info = -5
-           else if( ldb<n ) then
-              info = -7
-           else if( ldbx<n ) then
-              info = -9
-           else if( givptr<0 ) then
-              info = -11
-           else if( ldgcol<n ) then
-              info = -13
-           else if( ldgnum<n ) then
-              info = -15
-           else if( k<1 ) then
-              info = -20
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLALS0', -info )
-              return
-           end if
-           m = n + sqre
-           nlp1 = nl + 1
-           if( icompq==0 ) then
-              ! apply back orthogonal transformations from the left.
-              ! step (1l): apply back the givens rotations performed.
-              do i = 1, givptr
-                 call stdlib_zdrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
-                            givnum( i, 2 ),givnum( i, 1 ) )
-              end do
-              ! step (2l): permute rows of b.
-              call stdlib_zcopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
-              do i = 2, n
-                 call stdlib_zcopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
-              end do
-              ! step (3l): apply the inverse of the left singular vector
-              ! matrix to bx.
-              if( k==1 ) then
-                 call stdlib_zcopy( nrhs, bx, ldbx, b, ldb )
-                 if( z( 1 )<zero ) then
-                    call stdlib_zdscal( nrhs, negone, b, ldb )
-                 end if
-              else
-                 loop_100: do j = 1, k
-                    diflj = difl( j )
-                    dj = poles( j, 1 )
-                    dsigj = -poles( j, 2 )
-                    if( j<k ) then
-                       difrj = -difr( j, 1 )
-                       dsigjp = -poles( j+1, 2 )
-                    end if
-                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
-                       rwork( j ) = zero
-                    else
-                       rwork( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
-                    end if
-                    do i = 1, j - 1
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), &
-                                    dsigj )-diflj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), &
-                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    rwork( 1 ) = negone
-                    temp = stdlib_dnrm2( k, rwork, 1 )
-                    ! since b and bx are complex, the following call to stdlib_dgemv
-                    ! is performed in two steps (real and imaginary parts).
-                    ! call stdlib_dgemv( 't', k, nrhs, one, bx, ldbx, work, 1, zero,
-          ! $                     b( j, 1 ), ldb )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = real( bx( jrow, jcol ),KIND=dp)
-                       end do
-                    end do
-                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k ), 1 )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = aimag( bx( jrow, jcol ) )
-                       end do
-                    end do
-                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k+nrhs ), 1 )
-                    do jcol = 1, nrhs
-                       b( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=dp)
-                    end do
-                    call stdlib_zlascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
-                              
-                 end do loop_100
-              end if
-              ! move the deflated rows of bx to b also.
-              if( k<max( m, n ) )call stdlib_zlacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
-                        ), ldb )
-           else
-              ! apply back the right orthogonal transformations.
-              ! step (1r): apply back the new right singular vector matrix
-              ! to b.
-              if( k==1 ) then
-                 call stdlib_zcopy( nrhs, b, ldb, bx, ldbx )
-              else
-                 loop_180: do j = 1, k
-                    dsigj = poles( j, 2 )
-                    if( z( j )==zero ) then
-                       rwork( j ) = zero
-                    else
-                       rwork( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
-                                 
-                    end if
-                    do i = 1, j - 1
-                       if( z( j )==zero ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i+1,2 ) )-difr( i,&
-                                     1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( z( j )==zero ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i,2 ) )-difl( i ) &
-                                    ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    ! since b and bx are complex, the following call to stdlib_dgemv
-                    ! is performed in two steps (real and imaginary parts).
-                    ! call stdlib_dgemv( 't', k, nrhs, one, b, ldb, work, 1, zero,
-          ! $                     bx( j, 1 ), ldbx )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = real( b( jrow, jcol ),KIND=dp)
-                       end do
-                    end do
-                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k ), 1 )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = aimag( b( jrow, jcol ) )
-                       end do
-                    end do
-                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k+nrhs ), 1 )
-                    do jcol = 1, nrhs
-                       bx( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=dp)
-                                 
-                    end do
-                 end do loop_180
-              end if
-              ! step (2r): if sqre = 1, apply back the rotation that is
-              ! related to the right null space of the subproblem.
-              if( sqre==1 ) then
-                 call stdlib_zcopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
-                 call stdlib_zdrot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
-              end if
-              if( k<max( m, n ) )call stdlib_zlacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
-                        ),ldbx )
-              ! step (3r): permute rows of b.
-              call stdlib_zcopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
-              if( sqre==1 ) then
-                 call stdlib_zcopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
-              end if
-              do i = 2, n
-                 call stdlib_zcopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
-              end do
-              ! step (4r): apply back the givens rotations performed.
-              do i = givptr, 1, -1
-                 call stdlib_zdrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
-                            givnum( i, 2 ),-givnum( i, 1 ) )
-              end do
-           end if
-           return
-     end subroutine stdlib_zlals0
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$lals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
-     !! ZLALS0: applies back the multiplying factors of either the left or the
-     !! right singular vector matrix of a diagonal matrix appended by a row
-     !! to the right hand side matrix B in solving the least squares problem
-     !! using the divide-and-conquer SVD approach.
-     !! For the left singular vector matrix, three types of orthogonal
-     !! matrices are involved:
-     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
-     !! pairs of columns/rows they were applied to are stored in GIVCOL;
-     !! and the C- and S-values of these rotations are stored in GIVNUM.
-     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
-     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
-     !! J-th row.
-     !! (3L) The left singular vector matrix of the remaining matrix.
-     !! For the right singular vector matrix, four types of orthogonal
-     !! matrices are involved:
-     !! (1R) The right singular vector matrix of the remaining matrix.
-     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
-     !! null space.
-     !! (3R) The inverse transformation of (2L).
-     !! (4R) The inverse transformation of (1L).
-               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, rwork, info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
-                      sqre
-           integer(ilp), intent(out) :: info
-           real(${ck}$), intent(in) :: c, s
-           ! Array Arguments 
-           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
-           real(${ck}$), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
-                     *)
-           real(${ck}$), intent(out) :: rwork(*)
-           complex(${ck}$), intent(inout) :: b(ldb,*)
-           complex(${ck}$), intent(out) :: bx(ldbx,*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, j, jcol, jrow, m, n, nlp1
-           real(${ck}$) :: diflj, difrj, dj, dsigj, dsigjp, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           n = nl + nr + 1
-           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
-              info = -1
-           else if( nl<1 ) then
-              info = -2
-           else if( nr<1 ) then
-              info = -3
-           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
-              info = -4
-           else if( nrhs<1 ) then
-              info = -5
-           else if( ldb<n ) then
-              info = -7
-           else if( ldbx<n ) then
-              info = -9
-           else if( givptr<0 ) then
-              info = -11
-           else if( ldgcol<n ) then
-              info = -13
-           else if( ldgnum<n ) then
-              info = -15
-           else if( k<1 ) then
-              info = -20
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLALS0', -info )
-              return
-           end if
-           m = n + sqre
-           nlp1 = nl + 1
-           if( icompq==0 ) then
-              ! apply back orthogonal transformations from the left.
-              ! step (1l): apply back the givens rotations performed.
-              do i = 1, givptr
-                 call stdlib_${ci}$drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
-                            givnum( i, 2 ),givnum( i, 1 ) )
-              end do
-              ! step (2l): permute rows of b.
-              call stdlib_${ci}$copy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
-              do i = 2, n
-                 call stdlib_${ci}$copy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
-              end do
-              ! step (3l): apply the inverse of the left singular vector
-              ! matrix to bx.
-              if( k==1 ) then
-                 call stdlib_${ci}$copy( nrhs, bx, ldbx, b, ldb )
-                 if( z( 1 )<zero ) then
-                    call stdlib_${ci}$dscal( nrhs, negone, b, ldb )
-                 end if
-              else
-                 loop_100: do j = 1, k
-                    diflj = difl( j )
-                    dj = poles( j, 1 )
-                    dsigj = -poles( j, 2 )
-                    if( j<k ) then
-                       difrj = -difr( j, 1 )
-                       dsigjp = -poles( j+1, 2 )
-                    end if
-                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
-                       rwork( j ) = zero
-                    else
-                       rwork( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
-                    end if
-                    do i = 1, j - 1
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_${c2ri(ci)}$lamc3( poles( i, 2 ), &
-                                    dsigj )-diflj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_${c2ri(ci)}$lamc3( poles( i, 2 ), &
-                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
-                       end if
-                    end do
-                    rwork( 1 ) = negone
-                    temp = stdlib_${c2ri(ci)}$nrm2( k, rwork, 1 )
-                    ! since b and bx are complex, the following call to stdlib_${c2ri(ci)}$gemv
-                    ! is performed in two steps (real and imaginary parts).
-                    ! call stdlib_${c2ri(ci)}$gemv( 't', k, nrhs, one, bx, ldbx, work, 1, zero,
-          ! $                     b( j, 1 ), ldb )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = real( bx( jrow, jcol ),KIND=${ck}$)
-                       end do
-                    end do
-                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k ), 1 )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = aimag( bx( jrow, jcol ) )
-                       end do
-                    end do
-                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k+nrhs ), 1 )
-                    do jcol = 1, nrhs
-                       b( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=${ck}$)
-                    end do
-                    call stdlib_${ci}$lascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
-                              
-                 end do loop_100
-              end if
-              ! move the deflated rows of bx to b also.
-              if( k<max( m, n ) )call stdlib_${ci}$lacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
-                        ), ldb )
-           else
-              ! apply back the right orthogonal transformations.
-              ! step (1r): apply back the new right singular vector matrix
-              ! to b.
-              if( k==1 ) then
-                 call stdlib_${ci}$copy( nrhs, b, ldb, bx, ldbx )
-              else
-                 loop_180: do j = 1, k
-                    dsigj = poles( j, 2 )
-                    if( z( j )==zero ) then
-                       rwork( j ) = zero
-                    else
-                       rwork( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
-                                 
-                    end if
-                    do i = 1, j - 1
-                       if( z( j )==zero ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = z( j ) / ( stdlib_${c2ri(ci)}$lamc3( dsigj, -poles( i+1,2 ) )-difr( i,&
-                                     1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    do i = j + 1, k
-                       if( z( j )==zero ) then
-                          rwork( i ) = zero
-                       else
-                          rwork( i ) = z( j ) / ( stdlib_${c2ri(ci)}$lamc3( dsigj, -poles( i,2 ) )-difl( i ) &
-                                    ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
-                       end if
-                    end do
-                    ! since b and bx are complex, the following call to stdlib_${c2ri(ci)}$gemv
-                    ! is performed in two steps (real and imaginary parts).
-                    ! call stdlib_${c2ri(ci)}$gemv( 't', k, nrhs, one, b, ldb, work, 1, zero,
-          ! $                     bx( j, 1 ), ldbx )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = real( b( jrow, jcol ),KIND=${ck}$)
-                       end do
-                    end do
-                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k ), 1 )
-                    i = k + nrhs*2
-                    do jcol = 1, nrhs
-                       do jrow = 1, k
-                          i = i + 1
-                          rwork( i ) = aimag( b( jrow, jcol ) )
-                       end do
-                    end do
-                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
-                              zero, rwork( 1+k+nrhs ), 1 )
-                    do jcol = 1, nrhs
-                       bx( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=${ck}$)
-                                 
-                    end do
-                 end do loop_180
-              end if
-              ! step (2r): if sqre = 1, apply back the rotation that is
-              ! related to the right null space of the subproblem.
-              if( sqre==1 ) then
-                 call stdlib_${ci}$copy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
-                 call stdlib_${ci}$drot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
-              end if
-              if( k<max( m, n ) )call stdlib_${ci}$lacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
-                        ),ldbx )
-              ! step (3r): permute rows of b.
-              call stdlib_${ci}$copy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
-              if( sqre==1 ) then
-                 call stdlib_${ci}$copy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
-              end if
-              do i = 2, n
-                 call stdlib_${ci}$copy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
-              end do
-              ! step (4r): apply back the givens rotations performed.
-              do i = givptr, 1, -1
-                 call stdlib_${ci}$drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
-                            givnum( i, 2 ),-givnum( i, 1 ) )
-              end do
-           end if
-           return
-     end subroutine stdlib_${ci}$lals0
 
 #:endif
 #:endfor
@@ -6156,6 +4824,1338 @@ module stdlib_lapack_lsq_aux
            call stdlib_${ci}$lascl( 'G', 0, 0, orgnrm, one, n, nrhs, b, ldb, info )
            return
      end subroutine stdlib_${ci}$lalsd
+
+#:endif
+#:endfor
+
+
+
+     pure subroutine stdlib_slals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
+     !! SLALS0 applies back the multiplying factors of either the left or the
+     !! right singular vector matrix of a diagonal matrix appended by a row
+     !! to the right hand side matrix B in solving the least squares problem
+     !! using the divide-and-conquer SVD approach.
+     !! For the left singular vector matrix, three types of orthogonal
+     !! matrices are involved:
+     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
+     !! pairs of columns/rows they were applied to are stored in GIVCOL;
+     !! and the C- and S-values of these rotations are stored in GIVNUM.
+     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
+     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
+     !! J-th row.
+     !! (3L) The left singular vector matrix of the remaining matrix.
+     !! For the right singular vector matrix, four types of orthogonal
+     !! matrices are involved:
+     !! (1R) The right singular vector matrix of the remaining matrix.
+     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
+     !! null space.
+     !! (3R) The inverse transformation of (2L).
+     !! (4R) The inverse transformation of (1L).
+               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, work, info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
+                      sqre
+           integer(ilp), intent(out) :: info
+           real(sp), intent(in) :: c, s
+           ! Array Arguments 
+           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
+           real(sp), intent(inout) :: b(ldb,*)
+           real(sp), intent(out) :: bx(ldbx,*), work(*)
+           real(sp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
+                     *)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j, m, n, nlp1
+           real(sp) :: diflj, difrj, dj, dsigj, dsigjp, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           n = nl + nr + 1
+           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
+              info = -1
+           else if( nl<1 ) then
+              info = -2
+           else if( nr<1 ) then
+              info = -3
+           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
+              info = -4
+           else if( nrhs<1 ) then
+              info = -5
+           else if( ldb<n ) then
+              info = -7
+           else if( ldbx<n ) then
+              info = -9
+           else if( givptr<0 ) then
+              info = -11
+           else if( ldgcol<n ) then
+              info = -13
+           else if( ldgnum<n ) then
+              info = -15
+           else if( k<1 ) then
+              info = -20
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SLALS0', -info )
+              return
+           end if
+           m = n + sqre
+           nlp1 = nl + 1
+           if( icompq==0 ) then
+              ! apply back orthogonal transformations from the left.
+              ! step (1l): apply back the givens rotations performed.
+              do i = 1, givptr
+                 call stdlib_srot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
+                           givnum( i, 2 ),givnum( i, 1 ) )
+              end do
+              ! step (2l): permute rows of b.
+              call stdlib_scopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
+              do i = 2, n
+                 call stdlib_scopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
+              end do
+              ! step (3l): apply the inverse of the left singular vector
+              ! matrix to bx.
+              if( k==1 ) then
+                 call stdlib_scopy( nrhs, bx, ldbx, b, ldb )
+                 if( z( 1 )<zero ) then
+                    call stdlib_sscal( nrhs, negone, b, ldb )
+                 end if
+              else
+                 loop_50: do j = 1, k
+                    diflj = difl( j )
+                    dj = poles( j, 1 )
+                    dsigj = -poles( j, 2 )
+                    if( j<k ) then
+                       difrj = -difr( j, 1 )
+                       dsigjp = -poles( j+1, 2 )
+                    end if
+                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
+                       work( j ) = zero
+                    else
+                       work( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
+                    end if
+                    do i = 1, j - 1
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), dsigj &
+                                    )-diflj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), &
+                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    work( 1 ) = negone
+                    temp = stdlib_snrm2( k, work, 1 )
+                    call stdlib_sgemv( 'T', k, nrhs, one, bx, ldbx, work, 1, zero,b( j, 1 ), ldb )
+                              
+                    call stdlib_slascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
+                              
+                 end do loop_50
+              end if
+              ! move the deflated rows of bx to b also.
+              if( k<max( m, n ) )call stdlib_slacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
+                        ), ldb )
+           else
+              ! apply back the right orthogonal transformations.
+              ! step (1r): apply back the new right singular vector matrix
+              ! to b.
+              if( k==1 ) then
+                 call stdlib_scopy( nrhs, b, ldb, bx, ldbx )
+              else
+                 do j = 1, k
+                    dsigj = poles( j, 2 )
+                    if( z( j )==zero ) then
+                       work( j ) = zero
+                    else
+                       work( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
+                                 
+                    end if
+                    do i = 1, j - 1
+                       if( z( j )==zero ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i+1,2 ) )-difr( i, &
+                                    1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( z( j )==zero ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i,2 ) )-difl( i ) )&
+                                     /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    call stdlib_sgemv( 'T', k, nrhs, one, b, ldb, work, 1, zero,bx( j, 1 ), ldbx )
+                              
+                 end do
+              end if
+              ! step (2r): if sqre = 1, apply back the rotation that is
+              ! related to the right null space of the subproblem.
+              if( sqre==1 ) then
+                 call stdlib_scopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
+                 call stdlib_srot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
+              end if
+              if( k<max( m, n ) )call stdlib_slacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
+                        ),ldbx )
+              ! step (3r): permute rows of b.
+              call stdlib_scopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
+              if( sqre==1 ) then
+                 call stdlib_scopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
+              end if
+              do i = 2, n
+                 call stdlib_scopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
+              end do
+              ! step (4r): apply back the givens rotations performed.
+              do i = givptr, 1, -1
+                 call stdlib_srot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
+                           givnum( i, 2 ),-givnum( i, 1 ) )
+              end do
+           end if
+           return
+     end subroutine stdlib_slals0
+
+     pure subroutine stdlib_dlals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
+     !! DLALS0 applies back the multiplying factors of either the left or the
+     !! right singular vector matrix of a diagonal matrix appended by a row
+     !! to the right hand side matrix B in solving the least squares problem
+     !! using the divide-and-conquer SVD approach.
+     !! For the left singular vector matrix, three types of orthogonal
+     !! matrices are involved:
+     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
+     !! pairs of columns/rows they were applied to are stored in GIVCOL;
+     !! and the C- and S-values of these rotations are stored in GIVNUM.
+     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
+     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
+     !! J-th row.
+     !! (3L) The left singular vector matrix of the remaining matrix.
+     !! For the right singular vector matrix, four types of orthogonal
+     !! matrices are involved:
+     !! (1R) The right singular vector matrix of the remaining matrix.
+     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
+     !! null space.
+     !! (3R) The inverse transformation of (2L).
+     !! (4R) The inverse transformation of (1L).
+               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, work, info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
+                      sqre
+           integer(ilp), intent(out) :: info
+           real(dp), intent(in) :: c, s
+           ! Array Arguments 
+           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
+           real(dp), intent(inout) :: b(ldb,*)
+           real(dp), intent(out) :: bx(ldbx,*), work(*)
+           real(dp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
+                     *)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j, m, n, nlp1
+           real(dp) :: diflj, difrj, dj, dsigj, dsigjp, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           n = nl + nr + 1
+           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
+              info = -1
+           else if( nl<1 ) then
+              info = -2
+           else if( nr<1 ) then
+              info = -3
+           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
+              info = -4
+           else if( nrhs<1 ) then
+              info = -5
+           else if( ldb<n ) then
+              info = -7
+           else if( ldbx<n ) then
+              info = -9
+           else if( givptr<0 ) then
+              info = -11
+           else if( ldgcol<n ) then
+              info = -13
+           else if( ldgnum<n ) then
+              info = -15
+           else if( k<1 ) then
+              info = -20
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DLALS0', -info )
+              return
+           end if
+           m = n + sqre
+           nlp1 = nl + 1
+           if( icompq==0 ) then
+              ! apply back orthogonal transformations from the left.
+              ! step (1l): apply back the givens rotations performed.
+              do i = 1, givptr
+                 call stdlib_drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
+                           givnum( i, 2 ),givnum( i, 1 ) )
+              end do
+              ! step (2l): permute rows of b.
+              call stdlib_dcopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
+              do i = 2, n
+                 call stdlib_dcopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
+              end do
+              ! step (3l): apply the inverse of the left singular vector
+              ! matrix to bx.
+              if( k==1 ) then
+                 call stdlib_dcopy( nrhs, bx, ldbx, b, ldb )
+                 if( z( 1 )<zero ) then
+                    call stdlib_dscal( nrhs, negone, b, ldb )
+                 end if
+              else
+                 loop_50: do j = 1, k
+                    diflj = difl( j )
+                    dj = poles( j, 1 )
+                    dsigj = -poles( j, 2 )
+                    if( j<k ) then
+                       difrj = -difr( j, 1 )
+                       dsigjp = -poles( j+1, 2 )
+                    end if
+                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
+                       work( j ) = zero
+                    else
+                       work( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
+                    end if
+                    do i = 1, j - 1
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), dsigj &
+                                    )-diflj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), &
+                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    work( 1 ) = negone
+                    temp = stdlib_dnrm2( k, work, 1 )
+                    call stdlib_dgemv( 'T', k, nrhs, one, bx, ldbx, work, 1, zero,b( j, 1 ), ldb )
+                              
+                    call stdlib_dlascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
+                              
+                 end do loop_50
+              end if
+              ! move the deflated rows of bx to b also.
+              if( k<max( m, n ) )call stdlib_dlacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
+                        ), ldb )
+           else
+              ! apply back the right orthogonal transformations.
+              ! step (1r): apply back the new right singular vector matrix
+              ! to b.
+              if( k==1 ) then
+                 call stdlib_dcopy( nrhs, b, ldb, bx, ldbx )
+              else
+                 do j = 1, k
+                    dsigj = poles( j, 2 )
+                    if( z( j )==zero ) then
+                       work( j ) = zero
+                    else
+                       work( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
+                                 
+                    end if
+                    do i = 1, j - 1
+                       if( z( j )==zero ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i+1,2 ) )-difr( i, &
+                                    1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( z( j )==zero ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i,2 ) )-difl( i ) )&
+                                     /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    call stdlib_dgemv( 'T', k, nrhs, one, b, ldb, work, 1, zero,bx( j, 1 ), ldbx )
+                              
+                 end do
+              end if
+              ! step (2r): if sqre = 1, apply back the rotation that is
+              ! related to the right null space of the subproblem.
+              if( sqre==1 ) then
+                 call stdlib_dcopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
+                 call stdlib_drot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
+              end if
+              if( k<max( m, n ) )call stdlib_dlacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
+                        ),ldbx )
+              ! step (3r): permute rows of b.
+              call stdlib_dcopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
+              if( sqre==1 ) then
+                 call stdlib_dcopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
+              end if
+              do i = 2, n
+                 call stdlib_dcopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
+              end do
+              ! step (4r): apply back the givens rotations performed.
+              do i = givptr, 1, -1
+                 call stdlib_drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
+                           givnum( i, 2 ),-givnum( i, 1 ) )
+              end do
+           end if
+           return
+     end subroutine stdlib_dlals0
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$lals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
+     !! DLALS0: applies back the multiplying factors of either the left or the
+     !! right singular vector matrix of a diagonal matrix appended by a row
+     !! to the right hand side matrix B in solving the least squares problem
+     !! using the divide-and-conquer SVD approach.
+     !! For the left singular vector matrix, three types of orthogonal
+     !! matrices are involved:
+     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
+     !! pairs of columns/rows they were applied to are stored in GIVCOL;
+     !! and the C- and S-values of these rotations are stored in GIVNUM.
+     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
+     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
+     !! J-th row.
+     !! (3L) The left singular vector matrix of the remaining matrix.
+     !! For the right singular vector matrix, four types of orthogonal
+     !! matrices are involved:
+     !! (1R) The right singular vector matrix of the remaining matrix.
+     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
+     !! null space.
+     !! (3R) The inverse transformation of (2L).
+     !! (4R) The inverse transformation of (1L).
+               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, work, info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
+                      sqre
+           integer(ilp), intent(out) :: info
+           real(${rk}$), intent(in) :: c, s
+           ! Array Arguments 
+           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
+           real(${rk}$), intent(inout) :: b(ldb,*)
+           real(${rk}$), intent(out) :: bx(ldbx,*), work(*)
+           real(${rk}$), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
+                     *)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j, m, n, nlp1
+           real(${rk}$) :: diflj, difrj, dj, dsigj, dsigjp, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           n = nl + nr + 1
+           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
+              info = -1
+           else if( nl<1 ) then
+              info = -2
+           else if( nr<1 ) then
+              info = -3
+           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
+              info = -4
+           else if( nrhs<1 ) then
+              info = -5
+           else if( ldb<n ) then
+              info = -7
+           else if( ldbx<n ) then
+              info = -9
+           else if( givptr<0 ) then
+              info = -11
+           else if( ldgcol<n ) then
+              info = -13
+           else if( ldgnum<n ) then
+              info = -15
+           else if( k<1 ) then
+              info = -20
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DLALS0', -info )
+              return
+           end if
+           m = n + sqre
+           nlp1 = nl + 1
+           if( icompq==0 ) then
+              ! apply back orthogonal transformations from the left.
+              ! step (1l): apply back the givens rotations performed.
+              do i = 1, givptr
+                 call stdlib_${ri}$rot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
+                           givnum( i, 2 ),givnum( i, 1 ) )
+              end do
+              ! step (2l): permute rows of b.
+              call stdlib_${ri}$copy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
+              do i = 2, n
+                 call stdlib_${ri}$copy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
+              end do
+              ! step (3l): apply the inverse of the left singular vector
+              ! matrix to bx.
+              if( k==1 ) then
+                 call stdlib_${ri}$copy( nrhs, bx, ldbx, b, ldb )
+                 if( z( 1 )<zero ) then
+                    call stdlib_${ri}$scal( nrhs, negone, b, ldb )
+                 end if
+              else
+                 loop_50: do j = 1, k
+                    diflj = difl( j )
+                    dj = poles( j, 1 )
+                    dsigj = -poles( j, 2 )
+                    if( j<k ) then
+                       difrj = -difr( j, 1 )
+                       dsigjp = -poles( j+1, 2 )
+                    end if
+                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
+                       work( j ) = zero
+                    else
+                       work( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
+                    end if
+                    do i = 1, j - 1
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_${ri}$lamc3( poles( i, 2 ), dsigj &
+                                    )-diflj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = poles( i, 2 )*z( i ) /( stdlib_${ri}$lamc3( poles( i, 2 ), &
+                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    work( 1 ) = negone
+                    temp = stdlib_${ri}$nrm2( k, work, 1 )
+                    call stdlib_${ri}$gemv( 'T', k, nrhs, one, bx, ldbx, work, 1, zero,b( j, 1 ), ldb )
+                              
+                    call stdlib_${ri}$lascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
+                              
+                 end do loop_50
+              end if
+              ! move the deflated rows of bx to b also.
+              if( k<max( m, n ) )call stdlib_${ri}$lacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
+                        ), ldb )
+           else
+              ! apply back the right orthogonal transformations.
+              ! step (1r): apply back the new right singular vector matrix
+              ! to b.
+              if( k==1 ) then
+                 call stdlib_${ri}$copy( nrhs, b, ldb, bx, ldbx )
+              else
+                 do j = 1, k
+                    dsigj = poles( j, 2 )
+                    if( z( j )==zero ) then
+                       work( j ) = zero
+                    else
+                       work( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
+                                 
+                    end if
+                    do i = 1, j - 1
+                       if( z( j )==zero ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = z( j ) / ( stdlib_${ri}$lamc3( dsigj, -poles( i+1,2 ) )-difr( i, &
+                                    1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( z( j )==zero ) then
+                          work( i ) = zero
+                       else
+                          work( i ) = z( j ) / ( stdlib_${ri}$lamc3( dsigj, -poles( i,2 ) )-difl( i ) )&
+                                     /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    call stdlib_${ri}$gemv( 'T', k, nrhs, one, b, ldb, work, 1, zero,bx( j, 1 ), ldbx )
+                              
+                 end do
+              end if
+              ! step (2r): if sqre = 1, apply back the rotation that is
+              ! related to the right null space of the subproblem.
+              if( sqre==1 ) then
+                 call stdlib_${ri}$copy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
+                 call stdlib_${ri}$rot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
+              end if
+              if( k<max( m, n ) )call stdlib_${ri}$lacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
+                        ),ldbx )
+              ! step (3r): permute rows of b.
+              call stdlib_${ri}$copy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
+              if( sqre==1 ) then
+                 call stdlib_${ri}$copy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
+              end if
+              do i = 2, n
+                 call stdlib_${ri}$copy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
+              end do
+              ! step (4r): apply back the givens rotations performed.
+              do i = givptr, 1, -1
+                 call stdlib_${ri}$rot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb, &
+                           givnum( i, 2 ),-givnum( i, 1 ) )
+              end do
+           end if
+           return
+     end subroutine stdlib_${ri}$lals0
+
+#:endif
+#:endfor
+
+     pure subroutine stdlib_clals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
+     !! CLALS0 applies back the multiplying factors of either the left or the
+     !! right singular vector matrix of a diagonal matrix appended by a row
+     !! to the right hand side matrix B in solving the least squares problem
+     !! using the divide-and-conquer SVD approach.
+     !! For the left singular vector matrix, three types of orthogonal
+     !! matrices are involved:
+     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
+     !! pairs of columns/rows they were applied to are stored in GIVCOL;
+     !! and the C- and S-values of these rotations are stored in GIVNUM.
+     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
+     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
+     !! J-th row.
+     !! (3L) The left singular vector matrix of the remaining matrix.
+     !! For the right singular vector matrix, four types of orthogonal
+     !! matrices are involved:
+     !! (1R) The right singular vector matrix of the remaining matrix.
+     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
+     !! null space.
+     !! (3R) The inverse transformation of (2L).
+     !! (4R) The inverse transformation of (1L).
+               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, rwork, info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
+                      sqre
+           integer(ilp), intent(out) :: info
+           real(sp), intent(in) :: c, s
+           ! Array Arguments 
+           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
+           real(sp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
+                     *)
+           real(sp), intent(out) :: rwork(*)
+           complex(sp), intent(inout) :: b(ldb,*)
+           complex(sp), intent(out) :: bx(ldbx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j, jcol, jrow, m, n, nlp1
+           real(sp) :: diflj, difrj, dj, dsigj, dsigjp, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           n = nl + nr + 1
+           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
+              info = -1
+           else if( nl<1 ) then
+              info = -2
+           else if( nr<1 ) then
+              info = -3
+           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
+              info = -4
+           else if( nrhs<1 ) then
+              info = -5
+           else if( ldb<n ) then
+              info = -7
+           else if( ldbx<n ) then
+              info = -9
+           else if( givptr<0 ) then
+              info = -11
+           else if( ldgcol<n ) then
+              info = -13
+           else if( ldgnum<n ) then
+              info = -15
+           else if( k<1 ) then
+              info = -20
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CLALS0', -info )
+              return
+           end if
+           m = n + sqre
+           nlp1 = nl + 1
+           if( icompq==0 ) then
+              ! apply back orthogonal transformations from the left.
+              ! step (1l): apply back the givens rotations performed.
+              do i = 1, givptr
+                 call stdlib_csrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
+                            givnum( i, 2 ),givnum( i, 1 ) )
+              end do
+              ! step (2l): permute rows of b.
+              call stdlib_ccopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
+              do i = 2, n
+                 call stdlib_ccopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
+              end do
+              ! step (3l): apply the inverse of the left singular vector
+              ! matrix to bx.
+              if( k==1 ) then
+                 call stdlib_ccopy( nrhs, bx, ldbx, b, ldb )
+                 if( z( 1 )<zero ) then
+                    call stdlib_csscal( nrhs, negone, b, ldb )
+                 end if
+              else
+                 loop_100: do j = 1, k
+                    diflj = difl( j )
+                    dj = poles( j, 1 )
+                    dsigj = -poles( j, 2 )
+                    if( j<k ) then
+                       difrj = -difr( j, 1 )
+                       dsigjp = -poles( j+1, 2 )
+                    end if
+                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
+                       rwork( j ) = zero
+                    else
+                       rwork( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
+                    end if
+                    do i = 1, j - 1
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), &
+                                    dsigj )-diflj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_slamc3( poles( i, 2 ), &
+                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    rwork( 1 ) = negone
+                    temp = stdlib_snrm2( k, rwork, 1 )
+                    ! since b and bx are complex, the following call to stdlib_sgemv
+                    ! is performed in two steps (real and imaginary parts).
+                    ! call stdlib_sgemv( 't', k, nrhs, one, bx, ldbx, work, 1, zero,
+          ! $                     b( j, 1 ), ldb )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = real( bx( jrow, jcol ),KIND=sp)
+                       end do
+                    end do
+                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k ), 1 )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = aimag( bx( jrow, jcol ) )
+                       end do
+                    end do
+                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k+nrhs ), 1 )
+                    do jcol = 1, nrhs
+                       b( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=sp)
+                    end do
+                    call stdlib_clascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
+                              
+                 end do loop_100
+              end if
+              ! move the deflated rows of bx to b also.
+              if( k<max( m, n ) )call stdlib_clacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
+                        ), ldb )
+           else
+              ! apply back the right orthogonal transformations.
+              ! step (1r): apply back the new right singular vector matrix
+              ! to b.
+              if( k==1 ) then
+                 call stdlib_ccopy( nrhs, b, ldb, bx, ldbx )
+              else
+                 loop_180: do j = 1, k
+                    dsigj = poles( j, 2 )
+                    if( z( j )==zero ) then
+                       rwork( j ) = zero
+                    else
+                       rwork( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
+                                 
+                    end if
+                    do i = 1, j - 1
+                       if( z( j )==zero ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i+1,2 ) )-difr( i,&
+                                     1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( z( j )==zero ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = z( j ) / ( stdlib_slamc3( dsigj, -poles( i,2 ) )-difl( i ) &
+                                    ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    ! since b and bx are complex, the following call to stdlib_sgemv
+                    ! is performed in two steps (real and imaginary parts).
+                    ! call stdlib_sgemv( 't', k, nrhs, one, b, ldb, work, 1, zero,
+          ! $                     bx( j, 1 ), ldbx )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = real( b( jrow, jcol ),KIND=sp)
+                       end do
+                    end do
+                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k ), 1 )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = aimag( b( jrow, jcol ) )
+                       end do
+                    end do
+                    call stdlib_sgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k+nrhs ), 1 )
+                    do jcol = 1, nrhs
+                       bx( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=sp)
+                                 
+                    end do
+                 end do loop_180
+              end if
+              ! step (2r): if sqre = 1, apply back the rotation that is
+              ! related to the right null space of the subproblem.
+              if( sqre==1 ) then
+                 call stdlib_ccopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
+                 call stdlib_csrot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
+              end if
+              if( k<max( m, n ) )call stdlib_clacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb,bx( k+1, 1 )&
+                        , ldbx )
+              ! step (3r): permute rows of b.
+              call stdlib_ccopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
+              if( sqre==1 ) then
+                 call stdlib_ccopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
+              end if
+              do i = 2, n
+                 call stdlib_ccopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
+              end do
+              ! step (4r): apply back the givens rotations performed.
+              do i = givptr, 1, -1
+                 call stdlib_csrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
+                            givnum( i, 2 ),-givnum( i, 1 ) )
+              end do
+           end if
+           return
+     end subroutine stdlib_clals0
+
+     pure subroutine stdlib_zlals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
+     !! ZLALS0 applies back the multiplying factors of either the left or the
+     !! right singular vector matrix of a diagonal matrix appended by a row
+     !! to the right hand side matrix B in solving the least squares problem
+     !! using the divide-and-conquer SVD approach.
+     !! For the left singular vector matrix, three types of orthogonal
+     !! matrices are involved:
+     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
+     !! pairs of columns/rows they were applied to are stored in GIVCOL;
+     !! and the C- and S-values of these rotations are stored in GIVNUM.
+     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
+     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
+     !! J-th row.
+     !! (3L) The left singular vector matrix of the remaining matrix.
+     !! For the right singular vector matrix, four types of orthogonal
+     !! matrices are involved:
+     !! (1R) The right singular vector matrix of the remaining matrix.
+     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
+     !! null space.
+     !! (3R) The inverse transformation of (2L).
+     !! (4R) The inverse transformation of (1L).
+               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, rwork, info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
+                      sqre
+           integer(ilp), intent(out) :: info
+           real(dp), intent(in) :: c, s
+           ! Array Arguments 
+           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
+           real(dp), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
+                     *)
+           real(dp), intent(out) :: rwork(*)
+           complex(dp), intent(inout) :: b(ldb,*)
+           complex(dp), intent(out) :: bx(ldbx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j, jcol, jrow, m, n, nlp1
+           real(dp) :: diflj, difrj, dj, dsigj, dsigjp, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           n = nl + nr + 1
+           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
+              info = -1
+           else if( nl<1 ) then
+              info = -2
+           else if( nr<1 ) then
+              info = -3
+           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
+              info = -4
+           else if( nrhs<1 ) then
+              info = -5
+           else if( ldb<n ) then
+              info = -7
+           else if( ldbx<n ) then
+              info = -9
+           else if( givptr<0 ) then
+              info = -11
+           else if( ldgcol<n ) then
+              info = -13
+           else if( ldgnum<n ) then
+              info = -15
+           else if( k<1 ) then
+              info = -20
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLALS0', -info )
+              return
+           end if
+           m = n + sqre
+           nlp1 = nl + 1
+           if( icompq==0 ) then
+              ! apply back orthogonal transformations from the left.
+              ! step (1l): apply back the givens rotations performed.
+              do i = 1, givptr
+                 call stdlib_zdrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
+                            givnum( i, 2 ),givnum( i, 1 ) )
+              end do
+              ! step (2l): permute rows of b.
+              call stdlib_zcopy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
+              do i = 2, n
+                 call stdlib_zcopy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
+              end do
+              ! step (3l): apply the inverse of the left singular vector
+              ! matrix to bx.
+              if( k==1 ) then
+                 call stdlib_zcopy( nrhs, bx, ldbx, b, ldb )
+                 if( z( 1 )<zero ) then
+                    call stdlib_zdscal( nrhs, negone, b, ldb )
+                 end if
+              else
+                 loop_100: do j = 1, k
+                    diflj = difl( j )
+                    dj = poles( j, 1 )
+                    dsigj = -poles( j, 2 )
+                    if( j<k ) then
+                       difrj = -difr( j, 1 )
+                       dsigjp = -poles( j+1, 2 )
+                    end if
+                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
+                       rwork( j ) = zero
+                    else
+                       rwork( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
+                    end if
+                    do i = 1, j - 1
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), &
+                                    dsigj )-diflj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_dlamc3( poles( i, 2 ), &
+                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    rwork( 1 ) = negone
+                    temp = stdlib_dnrm2( k, rwork, 1 )
+                    ! since b and bx are complex, the following call to stdlib_dgemv
+                    ! is performed in two steps (real and imaginary parts).
+                    ! call stdlib_dgemv( 't', k, nrhs, one, bx, ldbx, work, 1, zero,
+          ! $                     b( j, 1 ), ldb )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = real( bx( jrow, jcol ),KIND=dp)
+                       end do
+                    end do
+                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k ), 1 )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = aimag( bx( jrow, jcol ) )
+                       end do
+                    end do
+                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k+nrhs ), 1 )
+                    do jcol = 1, nrhs
+                       b( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=dp)
+                    end do
+                    call stdlib_zlascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
+                              
+                 end do loop_100
+              end if
+              ! move the deflated rows of bx to b also.
+              if( k<max( m, n ) )call stdlib_zlacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
+                        ), ldb )
+           else
+              ! apply back the right orthogonal transformations.
+              ! step (1r): apply back the new right singular vector matrix
+              ! to b.
+              if( k==1 ) then
+                 call stdlib_zcopy( nrhs, b, ldb, bx, ldbx )
+              else
+                 loop_180: do j = 1, k
+                    dsigj = poles( j, 2 )
+                    if( z( j )==zero ) then
+                       rwork( j ) = zero
+                    else
+                       rwork( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
+                                 
+                    end if
+                    do i = 1, j - 1
+                       if( z( j )==zero ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i+1,2 ) )-difr( i,&
+                                     1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( z( j )==zero ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = z( j ) / ( stdlib_dlamc3( dsigj, -poles( i,2 ) )-difl( i ) &
+                                    ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    ! since b and bx are complex, the following call to stdlib_dgemv
+                    ! is performed in two steps (real and imaginary parts).
+                    ! call stdlib_dgemv( 't', k, nrhs, one, b, ldb, work, 1, zero,
+          ! $                     bx( j, 1 ), ldbx )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = real( b( jrow, jcol ),KIND=dp)
+                       end do
+                    end do
+                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k ), 1 )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = aimag( b( jrow, jcol ) )
+                       end do
+                    end do
+                    call stdlib_dgemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k+nrhs ), 1 )
+                    do jcol = 1, nrhs
+                       bx( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=dp)
+                                 
+                    end do
+                 end do loop_180
+              end if
+              ! step (2r): if sqre = 1, apply back the rotation that is
+              ! related to the right null space of the subproblem.
+              if( sqre==1 ) then
+                 call stdlib_zcopy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
+                 call stdlib_zdrot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
+              end if
+              if( k<max( m, n ) )call stdlib_zlacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
+                        ),ldbx )
+              ! step (3r): permute rows of b.
+              call stdlib_zcopy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
+              if( sqre==1 ) then
+                 call stdlib_zcopy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
+              end if
+              do i = 2, n
+                 call stdlib_zcopy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
+              end do
+              ! step (4r): apply back the givens rotations performed.
+              do i = givptr, 1, -1
+                 call stdlib_zdrot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
+                            givnum( i, 2 ),-givnum( i, 1 ) )
+              end do
+           end if
+           return
+     end subroutine stdlib_zlals0
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure subroutine stdlib_${ci}$lals0( icompq, nl, nr, sqre, nrhs, b, ldb, bx, ldbx,perm, givptr, &
+     !! ZLALS0: applies back the multiplying factors of either the left or the
+     !! right singular vector matrix of a diagonal matrix appended by a row
+     !! to the right hand side matrix B in solving the least squares problem
+     !! using the divide-and-conquer SVD approach.
+     !! For the left singular vector matrix, three types of orthogonal
+     !! matrices are involved:
+     !! (1L) Givens rotations: the number of such rotations is GIVPTR; the
+     !! pairs of columns/rows they were applied to are stored in GIVCOL;
+     !! and the C- and S-values of these rotations are stored in GIVNUM.
+     !! (2L) Permutation. The (NL+1)-st row of B is to be moved to the first
+     !! row, and for J=2:N, PERM(J)-th row of B is to be moved to the
+     !! J-th row.
+     !! (3L) The left singular vector matrix of the remaining matrix.
+     !! For the right singular vector matrix, four types of orthogonal
+     !! matrices are involved:
+     !! (1R) The right singular vector matrix of the remaining matrix.
+     !! (2R) If SQRE = 1, one extra Givens rotation to generate the right
+     !! null space.
+     !! (3R) The inverse transformation of (2L).
+     !! (4R) The inverse transformation of (1L).
+               givcol, ldgcol, givnum, ldgnum,poles, difl, difr, z, k, c, s, rwork, info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: givptr, icompq, k, ldb, ldbx, ldgcol, ldgnum, nl, nr, nrhs,&
+                      sqre
+           integer(ilp), intent(out) :: info
+           real(${ck}$), intent(in) :: c, s
+           ! Array Arguments 
+           integer(ilp), intent(in) :: givcol(ldgcol,*), perm(*)
+           real(${ck}$), intent(in) :: difl(*), difr(ldgnum,*), givnum(ldgnum,*), poles(ldgnum,*), z(&
+                     *)
+           real(${ck}$), intent(out) :: rwork(*)
+           complex(${ck}$), intent(inout) :: b(ldb,*)
+           complex(${ck}$), intent(out) :: bx(ldbx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j, jcol, jrow, m, n, nlp1
+           real(${ck}$) :: diflj, difrj, dj, dsigj, dsigjp, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           n = nl + nr + 1
+           if( ( icompq<0 ) .or. ( icompq>1 ) ) then
+              info = -1
+           else if( nl<1 ) then
+              info = -2
+           else if( nr<1 ) then
+              info = -3
+           else if( ( sqre<0 ) .or. ( sqre>1 ) ) then
+              info = -4
+           else if( nrhs<1 ) then
+              info = -5
+           else if( ldb<n ) then
+              info = -7
+           else if( ldbx<n ) then
+              info = -9
+           else if( givptr<0 ) then
+              info = -11
+           else if( ldgcol<n ) then
+              info = -13
+           else if( ldgnum<n ) then
+              info = -15
+           else if( k<1 ) then
+              info = -20
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLALS0', -info )
+              return
+           end if
+           m = n + sqre
+           nlp1 = nl + 1
+           if( icompq==0 ) then
+              ! apply back orthogonal transformations from the left.
+              ! step (1l): apply back the givens rotations performed.
+              do i = 1, givptr
+                 call stdlib_${ci}$drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
+                            givnum( i, 2 ),givnum( i, 1 ) )
+              end do
+              ! step (2l): permute rows of b.
+              call stdlib_${ci}$copy( nrhs, b( nlp1, 1 ), ldb, bx( 1, 1 ), ldbx )
+              do i = 2, n
+                 call stdlib_${ci}$copy( nrhs, b( perm( i ), 1 ), ldb, bx( i, 1 ), ldbx )
+              end do
+              ! step (3l): apply the inverse of the left singular vector
+              ! matrix to bx.
+              if( k==1 ) then
+                 call stdlib_${ci}$copy( nrhs, bx, ldbx, b, ldb )
+                 if( z( 1 )<zero ) then
+                    call stdlib_${ci}$dscal( nrhs, negone, b, ldb )
+                 end if
+              else
+                 loop_100: do j = 1, k
+                    diflj = difl( j )
+                    dj = poles( j, 1 )
+                    dsigj = -poles( j, 2 )
+                    if( j<k ) then
+                       difrj = -difr( j, 1 )
+                       dsigjp = -poles( j+1, 2 )
+                    end if
+                    if( ( z( j )==zero ) .or. ( poles( j, 2 )==zero ) )then
+                       rwork( j ) = zero
+                    else
+                       rwork( j ) = -poles( j, 2 )*z( j ) / diflj /( poles( j, 2 )+dj )
+                    end if
+                    do i = 1, j - 1
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_${c2ri(ci)}$lamc3( poles( i, 2 ), &
+                                    dsigj )-diflj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( ( z( i )==zero ) .or.( poles( i, 2 )==zero ) ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = poles( i, 2 )*z( i ) /( stdlib_${c2ri(ci)}$lamc3( poles( i, 2 ), &
+                                    dsigjp )+difrj ) / ( poles( i, 2 )+dj )
+                       end if
+                    end do
+                    rwork( 1 ) = negone
+                    temp = stdlib_${c2ri(ci)}$nrm2( k, rwork, 1 )
+                    ! since b and bx are complex, the following call to stdlib_${c2ri(ci)}$gemv
+                    ! is performed in two steps (real and imaginary parts).
+                    ! call stdlib_${c2ri(ci)}$gemv( 't', k, nrhs, one, bx, ldbx, work, 1, zero,
+          ! $                     b( j, 1 ), ldb )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = real( bx( jrow, jcol ),KIND=${ck}$)
+                       end do
+                    end do
+                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k ), 1 )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = aimag( bx( jrow, jcol ) )
+                       end do
+                    end do
+                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k+nrhs ), 1 )
+                    do jcol = 1, nrhs
+                       b( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=${ck}$)
+                    end do
+                    call stdlib_${ci}$lascl( 'G', 0, 0, temp, one, 1, nrhs, b( j, 1 ),ldb, info )
+                              
+                 end do loop_100
+              end if
+              ! move the deflated rows of bx to b also.
+              if( k<max( m, n ) )call stdlib_${ci}$lacpy( 'A', n-k, nrhs, bx( k+1, 1 ), ldbx,b( k+1, 1 &
+                        ), ldb )
+           else
+              ! apply back the right orthogonal transformations.
+              ! step (1r): apply back the new right singular vector matrix
+              ! to b.
+              if( k==1 ) then
+                 call stdlib_${ci}$copy( nrhs, b, ldb, bx, ldbx )
+              else
+                 loop_180: do j = 1, k
+                    dsigj = poles( j, 2 )
+                    if( z( j )==zero ) then
+                       rwork( j ) = zero
+                    else
+                       rwork( j ) = -z( j ) / difl( j ) /( dsigj+poles( j, 1 ) ) / difr( j, 2 )
+                                 
+                    end if
+                    do i = 1, j - 1
+                       if( z( j )==zero ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = z( j ) / ( stdlib_${c2ri(ci)}$lamc3( dsigj, -poles( i+1,2 ) )-difr( i,&
+                                     1 ) ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    do i = j + 1, k
+                       if( z( j )==zero ) then
+                          rwork( i ) = zero
+                       else
+                          rwork( i ) = z( j ) / ( stdlib_${c2ri(ci)}$lamc3( dsigj, -poles( i,2 ) )-difl( i ) &
+                                    ) /( dsigj+poles( i, 1 ) ) / difr( i, 2 )
+                       end if
+                    end do
+                    ! since b and bx are complex, the following call to stdlib_${c2ri(ci)}$gemv
+                    ! is performed in two steps (real and imaginary parts).
+                    ! call stdlib_${c2ri(ci)}$gemv( 't', k, nrhs, one, b, ldb, work, 1, zero,
+          ! $                     bx( j, 1 ), ldbx )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = real( b( jrow, jcol ),KIND=${ck}$)
+                       end do
+                    end do
+                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k ), 1 )
+                    i = k + nrhs*2
+                    do jcol = 1, nrhs
+                       do jrow = 1, k
+                          i = i + 1
+                          rwork( i ) = aimag( b( jrow, jcol ) )
+                       end do
+                    end do
+                    call stdlib_${c2ri(ci)}$gemv( 'T', k, nrhs, one, rwork( 1+k+nrhs*2 ), k,rwork( 1 ), 1, &
+                              zero, rwork( 1+k+nrhs ), 1 )
+                    do jcol = 1, nrhs
+                       bx( j, jcol ) = cmplx( rwork( jcol+k ),rwork( jcol+k+nrhs ),KIND=${ck}$)
+                                 
+                    end do
+                 end do loop_180
+              end if
+              ! step (2r): if sqre = 1, apply back the rotation that is
+              ! related to the right null space of the subproblem.
+              if( sqre==1 ) then
+                 call stdlib_${ci}$copy( nrhs, b( m, 1 ), ldb, bx( m, 1 ), ldbx )
+                 call stdlib_${ci}$drot( nrhs, bx( 1, 1 ), ldbx, bx( m, 1 ), ldbx, c, s )
+              end if
+              if( k<max( m, n ) )call stdlib_${ci}$lacpy( 'A', n-k, nrhs, b( k+1, 1 ), ldb, bx( k+1, 1 &
+                        ),ldbx )
+              ! step (3r): permute rows of b.
+              call stdlib_${ci}$copy( nrhs, bx( 1, 1 ), ldbx, b( nlp1, 1 ), ldb )
+              if( sqre==1 ) then
+                 call stdlib_${ci}$copy( nrhs, bx( m, 1 ), ldbx, b( m, 1 ), ldb )
+              end if
+              do i = 2, n
+                 call stdlib_${ci}$copy( nrhs, bx( i, 1 ), ldbx, b( perm( i ), 1 ), ldb )
+              end do
+              ! step (4r): apply back the givens rotations performed.
+              do i = givptr, 1, -1
+                 call stdlib_${ci}$drot( nrhs, b( givcol( i, 2 ), 1 ), ldb,b( givcol( i, 1 ), 1 ), ldb,&
+                            givnum( i, 2 ),-givnum( i, 1 ) )
+              end do
+           end if
+           return
+     end subroutine stdlib_${ci}$lals0
 
 #:endif
 #:endfor

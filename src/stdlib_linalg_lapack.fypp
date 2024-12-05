@@ -5,12 +5,10 @@ module stdlib_linalg_lapack
      use stdlib_linalg_blas
      use stdlib_linalg_lapack_aux
 
-     use stdlib_lapack_auxiliary_error
      use stdlib_lapack_auxiliary_others
      use stdlib_lapack_auxiliary_parameters
 
      use stdlib_lapack_blas_like_base
-     
      use stdlib_lapack_blas_like_l1
      use stdlib_lapack_blas_like_l2
      use stdlib_lapack_blas_like_l3
@@ -18,7 +16,6 @@ module stdlib_linalg_lapack
      use stdlib_lapack_blas_like_scalar
      use stdlib_lapack_cosine_sine
 
-     use stdlib_lapack_eigv_comp
      use stdlib_lapack_eigv_gen
      use stdlib_lapack_eigv_sym_comp
      use stdlib_lapack_eigv_sym
@@ -26,16 +23,16 @@ module stdlib_linalg_lapack
      use stdlib_lapack_givens_jacobi_rot
      use stdlib_lapack_householder_reflectors
 
+     use stdlib_lapack_lsq
      use stdlib_lapack_lsq_aux
      use stdlib_lapack_lsq_constrained
-     use stdlib_lapack_lsq_std
 
-     use stdlib_lapack_orthogonal_factors_lq
      use stdlib_lapack_orthogonal_factors_ql
      use stdlib_lapack_orthogonal_factors_qr
-     use stdlib_lapack_orthogonal_factors_rq
      use stdlib_lapack_orthogonal_factors_rz
      
+     use stdlib_lapack_others
+
      use stdlib_lapack_solve_aux
      use stdlib_lapack_solve_chol_comp
      use stdlib_lapack_solve_chol
@@ -45,10 +42,8 @@ module stdlib_linalg_lapack
      use stdlib_lapack_solve_lu
      use stdlib_lapack_solve_tri_comp
 
-     use stdlib_lapack_svd_bidiag_dc
      use stdlib_lapack_svd_bidiag_qr
      use stdlib_lapack_svd_comp
-     use stdlib_lapack_svd_drivers
      
      implicit none(type,external)
      public
@@ -5738,7 +5733,7 @@ module stdlib_linalg_lapack
 #:endif
 #:endfor
 #ifdef STDLIB_EXTERNAL_LAPACK
-               pure subroutine  zhb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, &
+               pure subroutine zhb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, &
                          lda, v, tau, ldvt, work)
                     import sp,dp,qp,ilp,lk 
                     implicit none(type,external) 
@@ -22668,7 +22663,7 @@ module stdlib_linalg_lapack
           !! SB2ST_KERNELS is an internal routine used by the DSYTRD_SB2ST
           !! subroutine.
 #ifdef STDLIB_EXTERNAL_LAPACK
-               pure subroutine  dsb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, &
+               pure subroutine dsb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, &
                          lda, v, tau, ldvt, work)
                     import sp,dp,qp,ilp,lk 
                     implicit none(type,external) 
@@ -22688,7 +22683,7 @@ module stdlib_linalg_lapack
 #:endif
 #:endfor
 #ifdef STDLIB_EXTERNAL_LAPACK
-               pure subroutine  ssb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, &
+               pure subroutine ssb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, &
                          lda, v, tau, ldvt, work)
                     import sp,dp,qp,ilp,lk 
                     implicit none(type,external) 

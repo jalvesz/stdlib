@@ -60709,7 +60709,7 @@ module stdlib_linalg_lapack_${ri}$
      end subroutine stdlib_${ri}$rscl
 
 
-     pure subroutine  stdlib_${ri}$sb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, lda, &
+     pure subroutine stdlib_${ri}$sb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, lda, &
      !! DSB2ST_KERNELS: is an internal routine used by the DSYTRD_SB2ST
      !! subroutine.
                v, tau, ldvt, work)

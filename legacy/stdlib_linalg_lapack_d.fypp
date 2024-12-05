@@ -38560,7 +38560,7 @@ module stdlib_linalg_lapack_d
      end subroutine stdlib_dpttrs
 
 
-     pure subroutine  stdlib_dsb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, lda, &
+     pure subroutine stdlib_dsb2st_kernels( uplo, wantz, ttype,st, ed, sweep, n, nb, ib,a, lda, &
      !! DSB2ST_KERNELS is an internal routine used by the DSYTRD_SB2ST
      !! subroutine.
                v, tau, ldvt, work)

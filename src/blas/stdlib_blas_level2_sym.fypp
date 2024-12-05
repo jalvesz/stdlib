@@ -7,6 +7,469 @@ module stdlib_blas_level2_sym
 
   contains
 
+     pure subroutine stdlib_ssymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! SSYMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(sp) :: temp1, temp2
+           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           ! Intrinsic Functions 
+           intrinsic :: max
+           ! test the input parameters.
+           info = 0
+           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (lda<max(1,n)) then
+               info = 5
+           else if (incx==0) then
+               info = 7
+           else if (incy==0) then
+               info = 10
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('SSYMV ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. ((alpha==zero).and. (beta==one))) return
+           ! set up the start points in  x  and  y.
+           if (incx>0) then
+               kx = 1
+           else
+               kx = 1 - (n-1)*incx
+           end if
+           if (incy>0) then
+               ky = 1
+           else
+               ky = 1 - (n-1)*incy
+           end if
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with one pass through the triangular part
+           ! of a.
+           ! first form  y := beta*y.
+           if (beta/=one) then
+               if (incy==1) then
+                   if (beta==zero) then
+                       do i = 1,n
+                           y(i) = zero
+                       end do
+                   else
+                       do i = 1,n
+                           y(i) = beta*y(i)
+                       end do
+                   end if
+               else
+                   iy = ky
+                   if (beta==zero) then
+                       do i = 1,n
+                           y(iy) = zero
+                           iy = iy + incy
+                       end do
+                   else
+                       do i = 1,n
+                           y(iy) = beta*y(iy)
+                           iy = iy + incy
+                       end do
+                   end if
+               end if
+           end if
+           if (alpha==zero) return
+           if (stdlib_lsame(uplo,'U')) then
+              ! form  y  when a is stored in upper triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       temp1 = alpha*x(j)
+                       temp2 = zero
+                       do i = 1,j - 1
+                           y(i) = y(i) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(i)
+                       end do
+                       y(j) = y(j) + temp1*a(j,j) + alpha*temp2
+                   end do
+               else
+                   jx = kx
+                   jy = ky
+                   do j = 1,n
+                       temp1 = alpha*x(jx)
+                       temp2 = zero
+                       ix = kx
+                       iy = ky
+                       do i = 1,j - 1
+                           y(iy) = y(iy) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(ix)
+                           ix = ix + incx
+                           iy = iy + incy
+                       end do
+                       y(jy) = y(jy) + temp1*a(j,j) + alpha*temp2
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           else
+              ! form  y  when a is stored in lower triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       temp1 = alpha*x(j)
+                       temp2 = zero
+                       y(j) = y(j) + temp1*a(j,j)
+                       do i = j + 1,n
+                           y(i) = y(i) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(i)
+                       end do
+                       y(j) = y(j) + alpha*temp2
+                   end do
+               else
+                   jx = kx
+                   jy = ky
+                   do j = 1,n
+                       temp1 = alpha*x(jx)
+                       temp2 = zero
+                       y(jy) = y(jy) + temp1*a(j,j)
+                       ix = jx
+                       iy = jy
+                       do i = j + 1,n
+                           ix = ix + incx
+                           iy = iy + incy
+                           y(iy) = y(iy) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(ix)
+                       end do
+                       y(jy) = y(jy) + alpha*temp2
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_ssymv
+
+     pure subroutine stdlib_dsymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! DSYMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(dp) :: temp1, temp2
+           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           ! Intrinsic Functions 
+           intrinsic :: max
+           ! test the input parameters.
+           info = 0
+           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (lda<max(1,n)) then
+               info = 5
+           else if (incx==0) then
+               info = 7
+           else if (incy==0) then
+               info = 10
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('DSYMV ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. ((alpha==zero).and. (beta==one))) return
+           ! set up the start points in  x  and  y.
+           if (incx>0) then
+               kx = 1
+           else
+               kx = 1 - (n-1)*incx
+           end if
+           if (incy>0) then
+               ky = 1
+           else
+               ky = 1 - (n-1)*incy
+           end if
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with one pass through the triangular part
+           ! of a.
+           ! first form  y := beta*y.
+           if (beta/=one) then
+               if (incy==1) then
+                   if (beta==zero) then
+                       do i = 1,n
+                           y(i) = zero
+                       end do
+                   else
+                       do i = 1,n
+                           y(i) = beta*y(i)
+                       end do
+                   end if
+               else
+                   iy = ky
+                   if (beta==zero) then
+                       do i = 1,n
+                           y(iy) = zero
+                           iy = iy + incy
+                       end do
+                   else
+                       do i = 1,n
+                           y(iy) = beta*y(iy)
+                           iy = iy + incy
+                       end do
+                   end if
+               end if
+           end if
+           if (alpha==zero) return
+           if (stdlib_lsame(uplo,'U')) then
+              ! form  y  when a is stored in upper triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       temp1 = alpha*x(j)
+                       temp2 = zero
+                       do i = 1,j - 1
+                           y(i) = y(i) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(i)
+                       end do
+                       y(j) = y(j) + temp1*a(j,j) + alpha*temp2
+                   end do
+               else
+                   jx = kx
+                   jy = ky
+                   do j = 1,n
+                       temp1 = alpha*x(jx)
+                       temp2 = zero
+                       ix = kx
+                       iy = ky
+                       do i = 1,j - 1
+                           y(iy) = y(iy) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(ix)
+                           ix = ix + incx
+                           iy = iy + incy
+                       end do
+                       y(jy) = y(jy) + temp1*a(j,j) + alpha*temp2
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           else
+              ! form  y  when a is stored in lower triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       temp1 = alpha*x(j)
+                       temp2 = zero
+                       y(j) = y(j) + temp1*a(j,j)
+                       do i = j + 1,n
+                           y(i) = y(i) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(i)
+                       end do
+                       y(j) = y(j) + alpha*temp2
+                   end do
+               else
+                   jx = kx
+                   jy = ky
+                   do j = 1,n
+                       temp1 = alpha*x(jx)
+                       temp2 = zero
+                       y(jy) = y(jy) + temp1*a(j,j)
+                       ix = jx
+                       iy = jy
+                       do i = j + 1,n
+                           ix = ix + incx
+                           iy = iy + incy
+                           y(iy) = y(iy) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(ix)
+                       end do
+                       y(jy) = y(jy) + alpha*temp2
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_dsymv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure subroutine stdlib_${ri}$symv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DSYMV:  performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: temp1, temp2
+           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           ! Intrinsic Functions 
+           intrinsic :: max
+           ! test the input parameters.
+           info = 0
+           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (lda<max(1,n)) then
+               info = 5
+           else if (incx==0) then
+               info = 7
+           else if (incy==0) then
+               info = 10
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('DSYMV ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. ((alpha==zero).and. (beta==one))) return
+           ! set up the start points in  x  and  y.
+           if (incx>0) then
+               kx = 1
+           else
+               kx = 1 - (n-1)*incx
+           end if
+           if (incy>0) then
+               ky = 1
+           else
+               ky = 1 - (n-1)*incy
+           end if
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with one pass through the triangular part
+           ! of a.
+           ! first form  y := beta*y.
+           if (beta/=one) then
+               if (incy==1) then
+                   if (beta==zero) then
+                       do i = 1,n
+                           y(i) = zero
+                       end do
+                   else
+                       do i = 1,n
+                           y(i) = beta*y(i)
+                       end do
+                   end if
+               else
+                   iy = ky
+                   if (beta==zero) then
+                       do i = 1,n
+                           y(iy) = zero
+                           iy = iy + incy
+                       end do
+                   else
+                       do i = 1,n
+                           y(iy) = beta*y(iy)
+                           iy = iy + incy
+                       end do
+                   end if
+               end if
+           end if
+           if (alpha==zero) return
+           if (stdlib_lsame(uplo,'U')) then
+              ! form  y  when a is stored in upper triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       temp1 = alpha*x(j)
+                       temp2 = zero
+                       do i = 1,j - 1
+                           y(i) = y(i) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(i)
+                       end do
+                       y(j) = y(j) + temp1*a(j,j) + alpha*temp2
+                   end do
+               else
+                   jx = kx
+                   jy = ky
+                   do j = 1,n
+                       temp1 = alpha*x(jx)
+                       temp2 = zero
+                       ix = kx
+                       iy = ky
+                       do i = 1,j - 1
+                           y(iy) = y(iy) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(ix)
+                           ix = ix + incx
+                           iy = iy + incy
+                       end do
+                       y(jy) = y(jy) + temp1*a(j,j) + alpha*temp2
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           else
+              ! form  y  when a is stored in lower triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       temp1 = alpha*x(j)
+                       temp2 = zero
+                       y(j) = y(j) + temp1*a(j,j)
+                       do i = j + 1,n
+                           y(i) = y(i) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(i)
+                       end do
+                       y(j) = y(j) + alpha*temp2
+                   end do
+               else
+                   jx = kx
+                   jy = ky
+                   do j = 1,n
+                       temp1 = alpha*x(jx)
+                       temp2 = zero
+                       y(jy) = y(jy) + temp1*a(j,j)
+                       ix = jx
+                       iy = jy
+                       do i = j + 1,n
+                           ix = ix + incx
+                           iy = iy + incy
+                           y(iy) = y(iy) + temp1*a(i,j)
+                           temp2 = temp2 + a(i,j)*x(ix)
+                       end do
+                       y(jy) = y(jy) + alpha*temp2
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_${ri}$symv
+
+#:endif
+#:endfor
+
+
+
      pure subroutine stdlib_ssyr(uplo,n,alpha,x,incx,a,lda)
      use stdlib_blas_constants_sp
      !! SSYR performs the symmetric rank 1 operation
@@ -693,469 +1156,6 @@ module stdlib_blas_level2_sym
            end if
            return
      end subroutine stdlib_${ri}$syr2
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_ssymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
-     use stdlib_blas_constants_sp
-     !! SSYMV performs the matrix-vector  operation
-     !! y := alpha*A*x + beta*y,
-     !! where alpha and beta are scalars, x and y are n element vectors and
-     !! A is an n by n symmetric matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
-           ! Array Arguments 
-           real(sp), intent(in) :: a(lda,*), x(*)
-           real(sp), intent(inout) :: y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(sp) :: temp1, temp2
-           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (lda<max(1,n)) then
-               info = 5
-           else if (incx==0) then
-               info = 7
-           else if (incy==0) then
-               info = 10
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('SSYMV ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((n==0) .or. ((alpha==zero).and. (beta==one))) return
-           ! set up the start points in  x  and  y.
-           if (incx>0) then
-               kx = 1
-           else
-               kx = 1 - (n-1)*incx
-           end if
-           if (incy>0) then
-               ky = 1
-           else
-               ky = 1 - (n-1)*incy
-           end if
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with one pass through the triangular part
-           ! of a.
-           ! first form  y := beta*y.
-           if (beta/=one) then
-               if (incy==1) then
-                   if (beta==zero) then
-                       do i = 1,n
-                           y(i) = zero
-                       end do
-                   else
-                       do i = 1,n
-                           y(i) = beta*y(i)
-                       end do
-                   end if
-               else
-                   iy = ky
-                   if (beta==zero) then
-                       do i = 1,n
-                           y(iy) = zero
-                           iy = iy + incy
-                       end do
-                   else
-                       do i = 1,n
-                           y(iy) = beta*y(iy)
-                           iy = iy + incy
-                       end do
-                   end if
-               end if
-           end if
-           if (alpha==zero) return
-           if (stdlib_lsame(uplo,'U')) then
-              ! form  y  when a is stored in upper triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       temp1 = alpha*x(j)
-                       temp2 = zero
-                       do i = 1,j - 1
-                           y(i) = y(i) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(i)
-                       end do
-                       y(j) = y(j) + temp1*a(j,j) + alpha*temp2
-                   end do
-               else
-                   jx = kx
-                   jy = ky
-                   do j = 1,n
-                       temp1 = alpha*x(jx)
-                       temp2 = zero
-                       ix = kx
-                       iy = ky
-                       do i = 1,j - 1
-                           y(iy) = y(iy) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(ix)
-                           ix = ix + incx
-                           iy = iy + incy
-                       end do
-                       y(jy) = y(jy) + temp1*a(j,j) + alpha*temp2
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           else
-              ! form  y  when a is stored in lower triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       temp1 = alpha*x(j)
-                       temp2 = zero
-                       y(j) = y(j) + temp1*a(j,j)
-                       do i = j + 1,n
-                           y(i) = y(i) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(i)
-                       end do
-                       y(j) = y(j) + alpha*temp2
-                   end do
-               else
-                   jx = kx
-                   jy = ky
-                   do j = 1,n
-                       temp1 = alpha*x(jx)
-                       temp2 = zero
-                       y(jy) = y(jy) + temp1*a(j,j)
-                       ix = jx
-                       iy = jy
-                       do i = j + 1,n
-                           ix = ix + incx
-                           iy = iy + incy
-                           y(iy) = y(iy) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(ix)
-                       end do
-                       y(jy) = y(jy) + alpha*temp2
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           end if
-           return
-     end subroutine stdlib_ssymv
-
-     pure subroutine stdlib_dsymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
-     use stdlib_blas_constants_dp
-     !! DSYMV performs the matrix-vector  operation
-     !! y := alpha*A*x + beta*y,
-     !! where alpha and beta are scalars, x and y are n element vectors and
-     !! A is an n by n symmetric matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
-           ! Array Arguments 
-           real(dp), intent(in) :: a(lda,*), x(*)
-           real(dp), intent(inout) :: y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(dp) :: temp1, temp2
-           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (lda<max(1,n)) then
-               info = 5
-           else if (incx==0) then
-               info = 7
-           else if (incy==0) then
-               info = 10
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('DSYMV ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((n==0) .or. ((alpha==zero).and. (beta==one))) return
-           ! set up the start points in  x  and  y.
-           if (incx>0) then
-               kx = 1
-           else
-               kx = 1 - (n-1)*incx
-           end if
-           if (incy>0) then
-               ky = 1
-           else
-               ky = 1 - (n-1)*incy
-           end if
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with one pass through the triangular part
-           ! of a.
-           ! first form  y := beta*y.
-           if (beta/=one) then
-               if (incy==1) then
-                   if (beta==zero) then
-                       do i = 1,n
-                           y(i) = zero
-                       end do
-                   else
-                       do i = 1,n
-                           y(i) = beta*y(i)
-                       end do
-                   end if
-               else
-                   iy = ky
-                   if (beta==zero) then
-                       do i = 1,n
-                           y(iy) = zero
-                           iy = iy + incy
-                       end do
-                   else
-                       do i = 1,n
-                           y(iy) = beta*y(iy)
-                           iy = iy + incy
-                       end do
-                   end if
-               end if
-           end if
-           if (alpha==zero) return
-           if (stdlib_lsame(uplo,'U')) then
-              ! form  y  when a is stored in upper triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       temp1 = alpha*x(j)
-                       temp2 = zero
-                       do i = 1,j - 1
-                           y(i) = y(i) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(i)
-                       end do
-                       y(j) = y(j) + temp1*a(j,j) + alpha*temp2
-                   end do
-               else
-                   jx = kx
-                   jy = ky
-                   do j = 1,n
-                       temp1 = alpha*x(jx)
-                       temp2 = zero
-                       ix = kx
-                       iy = ky
-                       do i = 1,j - 1
-                           y(iy) = y(iy) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(ix)
-                           ix = ix + incx
-                           iy = iy + incy
-                       end do
-                       y(jy) = y(jy) + temp1*a(j,j) + alpha*temp2
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           else
-              ! form  y  when a is stored in lower triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       temp1 = alpha*x(j)
-                       temp2 = zero
-                       y(j) = y(j) + temp1*a(j,j)
-                       do i = j + 1,n
-                           y(i) = y(i) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(i)
-                       end do
-                       y(j) = y(j) + alpha*temp2
-                   end do
-               else
-                   jx = kx
-                   jy = ky
-                   do j = 1,n
-                       temp1 = alpha*x(jx)
-                       temp2 = zero
-                       y(jy) = y(jy) + temp1*a(j,j)
-                       ix = jx
-                       iy = jy
-                       do i = j + 1,n
-                           ix = ix + incx
-                           iy = iy + incy
-                           y(iy) = y(iy) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(ix)
-                       end do
-                       y(jy) = y(jy) + alpha*temp2
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           end if
-           return
-     end subroutine stdlib_dsymv
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$symv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
-     use stdlib_blas_constants_${rk}$
-     !! DSYMV:  performs the matrix-vector  operation
-     !! y := alpha*A*x + beta*y,
-     !! where alpha and beta are scalars, x and y are n element vectors and
-     !! A is an n by n symmetric matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: temp1, temp2
-           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (lda<max(1,n)) then
-               info = 5
-           else if (incx==0) then
-               info = 7
-           else if (incy==0) then
-               info = 10
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('DSYMV ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((n==0) .or. ((alpha==zero).and. (beta==one))) return
-           ! set up the start points in  x  and  y.
-           if (incx>0) then
-               kx = 1
-           else
-               kx = 1 - (n-1)*incx
-           end if
-           if (incy>0) then
-               ky = 1
-           else
-               ky = 1 - (n-1)*incy
-           end if
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with one pass through the triangular part
-           ! of a.
-           ! first form  y := beta*y.
-           if (beta/=one) then
-               if (incy==1) then
-                   if (beta==zero) then
-                       do i = 1,n
-                           y(i) = zero
-                       end do
-                   else
-                       do i = 1,n
-                           y(i) = beta*y(i)
-                       end do
-                   end if
-               else
-                   iy = ky
-                   if (beta==zero) then
-                       do i = 1,n
-                           y(iy) = zero
-                           iy = iy + incy
-                       end do
-                   else
-                       do i = 1,n
-                           y(iy) = beta*y(iy)
-                           iy = iy + incy
-                       end do
-                   end if
-               end if
-           end if
-           if (alpha==zero) return
-           if (stdlib_lsame(uplo,'U')) then
-              ! form  y  when a is stored in upper triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       temp1 = alpha*x(j)
-                       temp2 = zero
-                       do i = 1,j - 1
-                           y(i) = y(i) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(i)
-                       end do
-                       y(j) = y(j) + temp1*a(j,j) + alpha*temp2
-                   end do
-               else
-                   jx = kx
-                   jy = ky
-                   do j = 1,n
-                       temp1 = alpha*x(jx)
-                       temp2 = zero
-                       ix = kx
-                       iy = ky
-                       do i = 1,j - 1
-                           y(iy) = y(iy) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(ix)
-                           ix = ix + incx
-                           iy = iy + incy
-                       end do
-                       y(jy) = y(jy) + temp1*a(j,j) + alpha*temp2
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           else
-              ! form  y  when a is stored in lower triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       temp1 = alpha*x(j)
-                       temp2 = zero
-                       y(j) = y(j) + temp1*a(j,j)
-                       do i = j + 1,n
-                           y(i) = y(i) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(i)
-                       end do
-                       y(j) = y(j) + alpha*temp2
-                   end do
-               else
-                   jx = kx
-                   jy = ky
-                   do j = 1,n
-                       temp1 = alpha*x(jx)
-                       temp2 = zero
-                       y(jy) = y(jy) + temp1*a(j,j)
-                       ix = jx
-                       iy = jy
-                       do i = j + 1,n
-                           ix = ix + incx
-                           iy = iy + incy
-                           y(iy) = y(iy) + temp1*a(i,j)
-                           temp2 = temp2 + a(i,j)*x(ix)
-                       end do
-                       y(jy) = y(jy) + alpha*temp2
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           end if
-           return
-     end subroutine stdlib_${ri}$symv
 
 #:endif
 #:endfor

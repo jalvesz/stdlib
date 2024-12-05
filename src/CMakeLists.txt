@@ -105,18 +105,18 @@ set(cppFiles
     lapack/stdlib_lapack_blas_like_mnorm.fypp
     lapack/stdlib_lapack_blas_like_scalar.fypp
     lapack/stdlib_lapack_cosine_sine.fypp
-    lapack/stdlib_lapack_eigv_comp.fypp
     lapack/stdlib_lapack_eigv_gen.fypp
     lapack/stdlib_lapack_eigv_sym_comp.fypp
     lapack/stdlib_lapack_eigv_sym.fypp
-    lapack/stdlib_lapack_eigv_std_driver.fypp
     lapack/stdlib_lapack_givens_jacobi_rot.fypp
     lapack/stdlib_lapack_householder_reflectors.fypp
+    lapack/stdlib_lapack_lsq.fypp
     lapack/stdlib_lapack_lsq_aux.fypp
     lapack/stdlib_lapack_lsq_constrained.fypp
     lapack/stdlib_lapack_orthogonal_factors_ql.fypp
     lapack/stdlib_lapack_orthogonal_factors_qr.fypp
     lapack/stdlib_lapack_orthogonal_factors_rz.fypp
+    lapack/stdlib_lapack_others.fypp
     lapack/stdlib_lapack_solve_aux.fypp
     lapack/stdlib_lapack_solve_chol_comp.fypp
     lapack/stdlib_lapack_solve_chol.fypp
