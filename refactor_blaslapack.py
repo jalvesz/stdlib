@@ -267,9 +267,6 @@ only = {
 }
 # Regular expression to match the subroutine definition with precision
 # Matches lines like "pure subroutine stdlib_sname" or "pure subroutine stdlib_dname"
-"""subroutine_pattern = re.compile(
-    r"^\s*pure\s*(?:recursive\s*)?(?:subroutine|(?:integer|real|complex|logical)\(?\w*\)?\s+function|(?:integer|real|complex|logical)\s*\(\s*\$\{\w+\}\$\s*\)\s*function|function)\s+(stdlib_)([sdcz]|\${ri}\$|\${ci}\$)(\w+)"
-)"""
 subroutine_pattern = re.compile(
     r"^\s*(?:pure\s*)?(?:recursive\s*)?(?:subroutine|(?:integer|real|complex|logical)\(?\w*\)?\s+function|(?:integer|real|complex|logical)\s*\(\s*\$\{\w+\}\$\s*\)\s*function|function)\s+(stdlib_)([sdcz]|\${ri}\$|\${ci}\$)(\w+)"
 )
