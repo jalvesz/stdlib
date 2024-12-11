@@ -992,6 +992,7 @@ module stdlib_linalg_blas_${ri}$
         ! Scalar Arguments 
         real(${rk}$), intent(inout) :: a, b
         real(${rk}$), intent(out) :: c, s
+        ! =====================================================================
         ! Local Scalars 
         real(${rk}$) :: anorm, bnorm, scl, sigma, r, z
         anorm = abs(a)
