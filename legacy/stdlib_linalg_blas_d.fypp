@@ -838,22 +838,22 @@ module stdlib_linalg_blas_d
      end subroutine stdlib_dger
 
 
-     pure function stdlib_dnrm2( n, x, incx )
+     pure real(dp) function stdlib_dnrm2( n, x, incx )
      !! DNRM2 returns the euclidean norm of a vector via the function
      !! name, so that
      !! DNRM2 := sqrt( x'*x )
-        real(dp) :: stdlib_dnrm2
         ! -- reference blas level1 routine (version 3.9.1_dp) --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        real(dp), intent(in) :: x(*)
+        ! =====================================================================
         ! Constants 
         real(dp), parameter :: maxn = huge(0.0_dp)
         ! .. blue's scaling constants ..
-        ! Scalar Arguments 
-     integer(ilp), intent(in) :: incx, n
-        ! Array Arguments 
-        real(dp), intent(in) :: x(*)
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
@@ -988,6 +988,7 @@ module stdlib_linalg_blas_d
         ! Scalar Arguments 
         real(dp), intent(inout) :: a, b
         real(dp), intent(out) :: c, s
+        ! =====================================================================
         ! Local Scalars 
         real(dp) :: anorm, bnorm, scl, sigma, r, z
         anorm = abs(a)
@@ -4404,22 +4405,22 @@ module stdlib_linalg_blas_d
      end function stdlib_dzasum
 
 
-     pure function stdlib_dznrm2( n, x, incx )
+     pure real(dp) function stdlib_dznrm2( n, x, incx )
      !! DZNRM2 returns the euclidean norm of a vector via the function
      !! name, so that
      !! DZNRM2 := sqrt( x**H*x )
-        real(dp) :: stdlib_dznrm2
         ! -- reference blas level1 routine (version 3.9.1_dp) --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        complex(dp), intent(in) :: x(*)
+        ! =====================================================================
         ! Constants 
         real(dp), parameter :: maxn = huge(0.0_dp)
         ! .. blue's scaling constants ..
-        ! Scalar Arguments 
-     integer(ilp), intent(in) :: incx, n
-        ! Array Arguments 
-        complex(dp), intent(in) :: x(*)
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig

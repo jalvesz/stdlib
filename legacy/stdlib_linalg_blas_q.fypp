@@ -842,22 +842,22 @@ module stdlib_linalg_blas_${ri}$
      end subroutine stdlib_${ri}$ger
 
 
-     pure function stdlib_${ri}$nrm2( n, x, incx )
+     pure real(${rk}$) function stdlib_${ri}$nrm2( n, x, incx )
      !! DNRM2: returns the euclidean norm of a vector via the function
      !! name, so that
      !! DNRM2 := sqrt( x'*x )
-        real(${rk}$) :: stdlib_${ri}$nrm2
         ! -- reference blas level1 routine (version 3.9.1_${rk}$) --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        real(${rk}$), intent(in) :: x(*)
+        ! =====================================================================
         ! Constants 
         real(${rk}$), parameter :: maxn = huge(0.0_${rk}$)
         ! .. blue's scaling constants ..
-        ! Scalar Arguments 
-     integer(ilp), intent(in) :: incx, n
-        ! Array Arguments 
-        real(${rk}$), intent(in) :: x(*)
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
@@ -4408,22 +4408,22 @@ module stdlib_linalg_blas_${ri}$
      end function stdlib_${ri}$zasum
 
 
-     pure function stdlib_${ri}$znrm2( n, x, incx )
+     pure real(${rk}$) function stdlib_${ri}$znrm2( n, x, incx )
      !! DZNRM2: returns the euclidean norm of a vector via the function
      !! name, so that
      !! DZNRM2 := sqrt( x**H*x )
-        real(${rk}$) :: stdlib_${ri}$znrm2
         ! -- reference blas level1 routine (version 3.9.1_${rk}$) --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        complex(${rk}$), intent(in) :: x(*)
+        ! =====================================================================
         ! Constants 
         real(${rk}$), parameter :: maxn = huge(0.0_${rk}$)
         ! .. blue's scaling constants ..
-        ! Scalar Arguments 
-     integer(ilp), intent(in) :: incx, n
-        ! Array Arguments 
-        complex(${rk}$), intent(in) :: x(*)
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
