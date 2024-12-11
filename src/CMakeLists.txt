@@ -84,7 +84,7 @@ set(fppFiles
 # Preprocessed files to contain preprocessor directives -> .F90
 set(cppFiles
     stdlib_linalg_constants.fypp
-    stdlib_linalg_blas_aux.fypp
+    blas/stdlib_linalg_blas_aux.fypp
     blas/stdlib_blas_level1.fypp
     blas/stdlib_blas_level2_gen.fypp
     blas/stdlib_blas_level2_ban.fypp
@@ -95,7 +95,7 @@ set(cppFiles
     blas/stdlib_blas_level3_sym.fypp
     blas/stdlib_blas_level3_tri.fypp
 
-    stdlib_linalg_lapack_aux.fypp
+    lapack/stdlib_linalg_lapack_aux.fypp
     lapack/stdlib_lapack_auxiliary_others.fypp
     lapack/stdlib_lapack_auxiliary_parameters.fypp
     lapack/stdlib_lapack_blas_like_base.fypp
