@@ -1,0 +1,4352 @@
+#:include "common.fypp" 
+module stdlib_blas
+  use stdlib_linalg_constants
+  use stdlib_linalg_blas_aux
+  implicit none(type,external)
+
+interface 
+     module pure subroutine stdlib_zdrot( n, zx, incx, zy, incy, c, s )
+     use stdlib_blas_constants_dp
+     !! Applies a plane rotation, where the cos and sin (c and s) are real
+     !! and the vectors cx and cy are complex.
+     !! jack dongarra, linpack, 3/11/78.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(in) :: c, s
+           ! Array Arguments 
+           complex(dp), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_zdrot
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$drot( n, zx, incx, zy, incy, c, s )
+     use stdlib_blas_constants_${ck}$
+     !! Applies a plane rotation, where the cos and sin (c and s) are real
+     !! and the vectors cx and cy are complex.
+     !! jack dongarra, linpack, 3/11/78.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${ck}$), intent(in) :: c, s
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_${ci}$drot
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure real(sp) function stdlib_sdot(n,sx,incx,sy,incy)
+     use stdlib_blas_constants_sp
+     !! SDOT forms the dot product of two vectors.
+     !! uses unrolled loops for increments equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: sx(*), sy(*)
+     end function stdlib_sdot
+
+     module pure real(dp) function stdlib_ddot(n,dx,incx,dy,incy)
+     use stdlib_blas_constants_dp
+     !! DDOT forms the dot product of two vectors.
+     !! uses unrolled loops for increments equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: dx(*), dy(*)
+     end function stdlib_ddot
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$dot(n,dx,incx,dy,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DDOT: forms the dot product of two vectors.
+     !! uses unrolled loops for increments equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: dx(*), dy(*)
+     end function stdlib_${ri}$dot
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_srotmg(sd1,sd2,sx1,sy1,sparam)
+     use stdlib_blas_constants_sp
+     !! SROTMG Constructs the modified Givens transformation matrix \(H\) which zeros the 
+     !! second component of the 2-vector 
+     !! $$ \left[ {\sqrt{SD_1}\cdot SX_1,\sqrt{SD_2}\cdot SY_2} \right]^T. $$
+     !! With SPARAM(1)=SFLAG, \(H\) has one of the following forms:          
+     !! $$ H=\underbrace{\begin{bmatrix}SH_{11} & SD_{12}\\SH_{21} & SH_{22}\end{bmatrix}}_{SFLAG=-1},
+     !!      \underbrace{\begin{bmatrix}1 & SH_{12}\\SH_{21} & 1\end{bmatrix}}_{SFLAG=0}, 
+     !!      \underbrace{\begin{bmatrix}SH_{11} & 1\\-1 & SH_{22}\end{bmatrix}}_{SFLAG=1},  
+     !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{SFLAG=2}. $$
+     !! Locations 2-4 of SPARAM contain SH11, SH21, SH12 and SH22 respectively.
+     !! (Values of 1.0, -1.0, or 0.0 implied by the value of SPARAM(1) are not stored in SPARAM.)
+     !! The values of parameters GAMSQ and RGAMSQ may be inexact. This is OK as they are only 
+     !! used for testing the size of DD1 and DD2. All actual scaling of data is done using GAM.     
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(inout) :: sd1, sd2, sx1
+           real(sp), intent(in) :: sy1
+           ! Array Arguments 
+           real(sp), intent(out) :: sparam(5)
+     end subroutine stdlib_srotmg
+
+     module pure subroutine stdlib_drotmg(dd1,dd2,dx1,dy1,dparam)
+     use stdlib_blas_constants_dp
+     !! DROTMG Constructs the modified Givens transformation matrix \(H\) which zeros the 
+     !! second component of the 2-vector 
+     !! $$ \left[ {\sqrt{DD_1}\cdot DX_1,\sqrt{DD_2}\cdot DY_2} \right]^T. $$
+     !! With DPARAM(1)=DFLAG, \(H\) has one of the following forms:          
+     !! $$ H=\underbrace{\begin{bmatrix}DH_{11} & DH_{12}\\DH_{21} & DH_{22}\end{bmatrix}}_{DFLAG=-1},
+     !!      \underbrace{\begin{bmatrix}1 & DH_{12}\\DH_{21} & 1\end{bmatrix}}_{DFLAG=0}, 
+     !!      \underbrace{\begin{bmatrix}DH_{11} & 1\\-1 & DH_{22}\end{bmatrix}}_{DFLAG=1},  
+     !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{DFLAG=-2}. $$
+     !! Locations 2-4 of DPARAM contain DH11, DH21, DH12 and DH22 respectively.
+     !! (Values of 1.0, -1.0, or 0.0 implied by the value of DPARAM(1) are not stored in DPARAM.)
+     !! The values of parameters GAMSQ and RGAMSQ may be inexact. This is OK as they are only 
+     !! used for testing the size of DD1 and DD2. All actual scaling of data is done using GAM.          
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(inout) :: dd1, dd2, dx1
+           real(dp), intent(in) :: dy1
+           ! Array Arguments 
+           real(dp), intent(out) :: dparam(5)
+     end subroutine stdlib_drotmg
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$rotmg(dd1,dd2,dx1,dy1,dparam)
+     use stdlib_blas_constants_${rk}$
+     !! QROTMG Constructs the modified Givens transformation matrix \(H\) which zeros the 
+     !! second component of the 2-vector 
+     !! $$ \left[ {\sqrt{DD_1}\cdot DX_1,\sqrt{DD_2}\cdot DY_2} \right]^T. $$
+     !! With DPARAM(1)=DFLAG, \(H\) has one of the following forms:          
+     !! $$ H=\underbrace{\begin{bmatrix}DH_{11} & DH_{12}\\DH_{21} & DH_{22}\end{bmatrix}}_{DFLAG=-1},
+     !!      \underbrace{\begin{bmatrix}1 & DH_{12}\\DH_{21} & 1\end{bmatrix}}_{DFLAG=0}, 
+     !!      \underbrace{\begin{bmatrix}DH_{11} & 1\\-1 & DH_{22}\end{bmatrix}}_{DFLAG=1},  
+     !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{DFLAG=-2}. $$
+     !! Locations 2-4 of DPARAM contain DH11, DH21, DH12 and DH22 respectively.
+     !! (Values of 1.0, -1.0, or 0.0 implied by the value of DPARAM(1) are not stored in DPARAM.)
+     !! The values of parameters GAMSQ and RGAMSQ may be inexact. This is OK as they are only 
+     !! used for testing the size of DD1 and DD2. All actual scaling of data is done using GAM.       
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(inout) :: dd1, dd2, dx1
+           real(${rk}$), intent(in) :: dy1
+           ! Array Arguments 
+           real(${rk}$), intent(out) :: dparam(5)
+     end subroutine stdlib_${ri}$rotmg
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure real(dp) function stdlib_dsdot(n,sx,incx,sy,incy)
+     use stdlib_blas_constants_dp
+     !! Compute the inner product of two vectors with extended
+     !! precision accumulation and result.
+     !! Returns D.P. dot product accumulated in D.P., for S.P. SX and SY
+     !! DSDOT = sum for I = 0 to N-1 of  SX(LX+I*INCX) * SY(LY+I*INCY),
+     !! where LX = 1 if INCX >= 0, else LX = 1+(1-N)*INCX, and LY is
+     !! defined in a similar way using INCY.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: sx(*), sy(*)
+        ! authors:
+        ! ========
+        ! lawson, c. l., (jpl), hanson, r. j., (snla),
+        ! kincaid, d. r., (u. of texas), krogh, f. t., (jpl)
+     end function stdlib_dsdot
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$sdot(n,sx,incx,sy,incy)
+     use stdlib_blas_constants_${rk}$
+     !! Compute the inner product of two vectors with extended
+     !! precision accumulation and result.
+     !! Returns D.P. dot product accumulated in D.P., for S.P. SX and SY
+     !! DSDOT: = sum for I = 0 to N-1 of  SX(LX+I*INCX) * SY(LY+I*INCY),
+     !! where LX = 1 if INCX >= 0, else LX = 1+(1-N)*INCX, and LY is
+     !! defined in a similar way using INCY.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: sx(*), sy(*)
+        ! authors:
+        ! ========
+        ! lawson, c. l., (jpl), hanson, r. j., (snla),
+        ! kincaid, d. r., (u. of texas), krogh, f. t., (jpl)
+     end function stdlib_${ri}$sdot
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_saxpy(n,sa,sx,incx,sy,incy)
+     use stdlib_blas_constants_sp
+     !! SAXPY constant times a vector plus a vector.
+     !! uses unrolled loops for increments equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: sa
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: sx(*)
+           real(sp), intent(inout) :: sy(*)
+     end subroutine stdlib_saxpy
+
+     module pure subroutine stdlib_daxpy(n,da,dx,incx,dy,incy)
+     use stdlib_blas_constants_dp
+     !! DAXPY constant times a vector plus a vector.
+     !! uses unrolled loops for increments equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: da
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: dx(*)
+           real(dp), intent(inout) :: dy(*)
+     end subroutine stdlib_daxpy
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$axpy(n,da,dx,incx,dy,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DAXPY: constant times a vector plus a vector.
+     !! uses unrolled loops for increments equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: da
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: dx(*)
+           real(${rk}$), intent(inout) :: dy(*)
+     end subroutine stdlib_${ri}$axpy
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_caxpy(n,ca,cx,incx,cy,incy)
+     use stdlib_blas_constants_sp
+     !! CAXPY constant times a vector plus a vector.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: ca
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(sp), intent(in) :: cx(*)
+           complex(sp), intent(inout) :: cy(*)
+     end subroutine stdlib_caxpy
+
+     module pure subroutine stdlib_zaxpy(n,za,zx,incx,zy,incy)
+     use stdlib_blas_constants_dp
+     !! ZAXPY constant times a vector plus a vector.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: za
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(dp), intent(in) :: zx(*)
+           complex(dp), intent(inout) :: zy(*)
+     end subroutine stdlib_zaxpy
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$axpy(n,za,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZAXPY: constant times a vector plus a vector.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: za
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: zx(*)
+           complex(${ck}$), intent(inout) :: zy(*)
+     end subroutine stdlib_${ci}$axpy
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure real(sp) function stdlib_snrm2( n, x, incx )
+     use stdlib_blas_constants_sp
+     !! SNRM2 returns the euclidean norm of a vector via the function
+     !! name, so that
+     !! SNRM2 := sqrt( x'*x ).
+        ! -- reference blas level1 routine (version 3.9.1_sp) --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        real(sp), intent(in) :: x(*)
+     end function stdlib_snrm2
+
+     module pure real(dp) function stdlib_dnrm2( n, x, incx )
+     use stdlib_blas_constants_dp
+     !! DNRM2 returns the euclidean norm of a vector via the function
+     !! name, so that
+     !! DNRM2 := sqrt( x'*x )
+        ! -- reference blas level1 routine (version 3.9.1_dp) --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        real(dp), intent(in) :: x(*)
+     end function stdlib_dnrm2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$nrm2( n, x, incx )
+     use stdlib_blas_constants_${rk}$
+     !! DNRM2: returns the euclidean norm of a vector via the function
+     !! name, so that
+     !! DNRM2 := sqrt( x'*x )
+        ! -- reference blas level1 routine (version 3.9.1_${rk}$) --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        real(${rk}$), intent(in) :: x(*)
+     end function stdlib_${ri}$nrm2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure complex(sp) function stdlib_cdotu(n,cx,incx,cy,incy)
+     use stdlib_blas_constants_sp
+     !! CDOTU forms the dot product of two complex vectors
+     !! CDOTU = X^T * Y
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(sp), intent(in) :: cx(*), cy(*)
+     end function stdlib_cdotu
+
+     module pure complex(dp) function stdlib_zdotu(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_dp
+     !! ZDOTU forms the dot product of two complex vectors
+     !! ZDOTU = X^T * Y
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(dp), intent(in) :: zx(*), zy(*)
+     end function stdlib_zdotu
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure complex(${ck}$) function stdlib_${ci}$dotu(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZDOTU: forms the dot product of two complex vectors
+     !! ZDOTU = X^T * Y
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: zx(*), zy(*)
+     end function stdlib_${ci}$dotu
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_srotm(n,sx,incx,sy,incy,sparam)
+     use stdlib_blas_constants_sp
+     !! SROTM applies the modified Givens transformation, \(H\), to the 2-by-N matrix 
+     !! $$ \left[ \begin{array}{c}SX^T\\SY^T\\ \end{array} \right], $$ 
+     !! where \(^T\) indicates transpose. The elements of \(SX\) are in 
+     !! SX(LX+I*INCX), I = 0:N-1, where LX = 1 if INCX >= 0, else LX = (-INCX)*N, 
+     !! and similarly for SY using LY and INCY. 
+     !! With SPARAM(1)=SFLAG, \(H\) has one of the following forms: 
+     !! $$ H=\underbrace{\begin{bmatrix}SH_{11} & SH_{12}\\SH_{21} & SH_{22}\end{bmatrix}}_{SFLAG=-1},
+     !!      \underbrace{\begin{bmatrix}1 & SH_{12}\\SH_{21} & 1\end{bmatrix}}_{SFLAG=0}, 
+     !!      \underbrace{\begin{bmatrix}SH_{11} & 1\\-1 & SH_{22}\end{bmatrix}}_{SFLAG=1},  
+     !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{SFLAG=-2}. $$     
+     !! See SROTMG for a description of data storage in SPARAM. 
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: sparam(5)
+           real(sp), intent(inout) :: sx(*), sy(*)
+     end subroutine stdlib_srotm
+
+     module pure subroutine stdlib_drotm(n,dx,incx,dy,incy,dparam)
+     use stdlib_blas_constants_dp
+     !! DROTM applies the modified Givens transformation, \(H\), to the 2-by-N matrix 
+     !! $$ \left[ \begin{array}{c}DX^T\\DY^T\\ \end{array} \right], $$ 
+     !! where \(^T\) indicates transpose. The elements of \(DX\) are in 
+     !! DX(LX+I*INCX), I = 0:N-1, where LX = 1 if INCX >= 0, else LX = (-INCX)*N, 
+     !! and similarly for DY using LY and INCY. 
+     !! With DPARAM(1)=DFLAG, \(H\) has one of the following forms: 
+     !! $$ H=\underbrace{\begin{bmatrix}DH_{11} & DH_{12}\\DH_{21} & DH_{22}\end{bmatrix}}_{DFLAG=-1},
+     !!      \underbrace{\begin{bmatrix}1 & DH_{12}\\DH_{21} & 1\end{bmatrix}}_{DFLAG=0}, 
+     !!      \underbrace{\begin{bmatrix}DH_{11} & 1\\-1 & DH_{22}\end{bmatrix}}_{DFLAG=1},  
+     !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{DFLAG=-2}. $$     
+     !! See DROTMG for a description of data storage in DPARAM.   
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: dparam(5)
+           real(dp), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_drotm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$rotm(n,dx,incx,dy,incy,dparam)
+     use stdlib_blas_constants_${rk}$
+     !! QROTM applies the modified Givens transformation, \(H\), to the 2-by-N matrix 
+     !! $$ \left[ \begin{array}{c}DX^T\\DY^T\\ \end{array} \right], $$ 
+     !! where \(^T\) indicates transpose. The elements of \(DX\) are in 
+     !! DX(LX+I*INCX), I = 0:N-1, where LX = 1 if INCX >= 0, else LX = (-INCX)*N, 
+     !! and similarly for DY using LY and INCY. 
+     !! With DPARAM(1)=DFLAG, \(H\) has one of the following forms: 
+     !! $$ H=\underbrace{\begin{bmatrix}DH_{11} & DH_{12}\\DH_{21} & DH_{22}\end{bmatrix}}_{DFLAG=-1},
+     !!      \underbrace{\begin{bmatrix}1 & DH_{12}\\DH_{21} & 1\end{bmatrix}}_{DFLAG=0}, 
+     !!      \underbrace{\begin{bmatrix}DH_{11} & 1\\-1 & DH_{22}\end{bmatrix}}_{DFLAG=1},  
+     !!      \underbrace{\begin{bmatrix}1 & 0\\0 & 1\end{bmatrix}}_{DFLAG=-2}. $$     
+     !! See QROTMG for a description of data storage in DPARAM.   
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: dparam(5)
+           real(${rk}$), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_${ri}$rotm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure real(sp) function stdlib_sasum(n,sx,incx)
+     use stdlib_blas_constants_sp
+     !! SASUM takes the sum of the absolute values.
+     !! uses unrolled loops for increment equal to one.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           real(sp), intent(in) :: sx(*)
+     end function stdlib_sasum
+
+     module pure real(dp) function stdlib_dasum(n,dx,incx)
+     use stdlib_blas_constants_dp
+     !! DASUM takes the sum of the absolute values.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           real(dp), intent(in) :: dx(*)
+     end function stdlib_dasum
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$asum(n,dx,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DASUM: takes the sum of the absolute values.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: dx(*)
+     end function stdlib_${ri}$asum
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure complex(sp) function stdlib_cdotc(n,cx,incx,cy,incy)
+     use stdlib_blas_constants_sp
+     !! CDOTC forms the dot product of two complex vectors
+     !! CDOTC = X^H * Y
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(sp), intent(in) :: cx(*), cy(*)
+     end function stdlib_cdotc
+
+     module pure complex(dp) function stdlib_zdotc(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_dp
+     !! ZDOTC forms the dot product of two complex vectors
+     !! ZDOTC = X^H * Y
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(dp), intent(in) :: zx(*), zy(*)
+     end function stdlib_zdotc
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure complex(${ck}$) function stdlib_${ci}$dotc(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZDOTC: forms the dot product of two complex vectors
+     !! ZDOTC = X^H * Y
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: zx(*), zy(*)
+     end function stdlib_${ci}$dotc
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sswap(n,sx,incx,sy,incy)
+     use stdlib_blas_constants_sp
+     !! SSWAP interchanges two vectors.
+     !! uses unrolled loops for increments equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(inout) :: sx(*), sy(*)
+     end subroutine stdlib_sswap
+
+     module pure subroutine stdlib_dswap(n,dx,incx,dy,incy)
+     use stdlib_blas_constants_dp
+     !! DSWAP interchanges two vectors.
+     !! uses unrolled loops for increments equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_dswap
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$swap(n,dx,incx,dy,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DSWAP: interchanges two vectors.
+     !! uses unrolled loops for increments equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_${ri}$swap
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_cswap(n,cx,incx,cy,incy)
+     use stdlib_blas_constants_sp
+     !! CSWAP interchanges two vectors.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_cswap
+
+     module pure subroutine stdlib_zswap(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_dp
+     !! ZSWAP interchanges two vectors.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_zswap
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$swap(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZSWAP: interchanges two vectors.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_${ci}$swap
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_csscal(n,sa,cx,incx)
+     use stdlib_blas_constants_sp
+     !! CSSCAL scales a complex vector by a real constant.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: sa
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: cx(*)
+     end subroutine stdlib_csscal
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_zdscal(n,da,zx,incx)
+     use stdlib_blas_constants_dp
+     !! ZDSCAL scales a vector by a constant.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: zx(*)
+     end subroutine stdlib_zdscal
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$dscal(n,da,zx,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZDSCAL: scales a vector by a constant.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${ck}$), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: zx(*)
+     end subroutine stdlib_${ci}$dscal
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_srotg( a, b, c, s )
+     use stdlib_blas_constants_sp
+     !! The computation uses the formulas
+     !! sigma = sgn(a)    if |a| >  |b|
+     !! = sgn(b)    if |b| >= |a|
+     !! r = sigma*sqrt( a**2 + b**2 )
+     !! c = 1; s = 0      if r = 0
+     !! c = a/r; s = b/r  if r != 0
+     !! The subroutine also computes
+     !! z = s    if |a| > |b|,
+     !! = 1/c  if |b| >= |a| and c != 0
+     !! = 1    if c = 0
+     !! This allows c and s to be reconstructed from z as follows:
+     !! If z = 1, set c = 0, s = 1.
+     !! If |z| < 1, set c = sqrt(1 - z**2) and s = z.
+     !! If |z| > 1, set c = 1/z and s = sqrt( 1 - c**2).
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+        ! Constants 
+        ! Scaling Constants 
+        ! Scalar Arguments 
+        real(sp), intent(inout) :: a, b
+        real(sp), intent(out) :: c, s
+     end subroutine stdlib_srotg
+
+     module pure subroutine stdlib_drotg( a, b, c, s )
+     use stdlib_blas_constants_dp
+     !! The computation uses the formulas
+     !! sigma = sgn(a)    if |a| >  |b|
+     !! = sgn(b)    if |b| >= |a|
+     !! r = sigma*sqrt( a**2 + b**2 )
+     !! c = 1; s = 0      if r = 0
+     !! c = a/r; s = b/r  if r != 0
+     !! The subroutine also computes
+     !! z = s    if |a| > |b|,
+     !! = 1/c  if |b| >= |a| and c != 0
+     !! = 1    if c = 0
+     !! This allows c and s to be reconstructed from z as follows:
+     !! If z = 1, set c = 0, s = 1.
+     !! If |z| < 1, set c = sqrt(1 - z**2) and s = z.
+     !! If |z| > 1, set c = 1/z and s = sqrt( 1 - c**2).
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+        ! Scaling Constants 
+        ! Scalar Arguments 
+        real(dp), intent(inout) :: a, b
+        real(dp), intent(out) :: c, s
+     end subroutine stdlib_drotg
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$rotg( a, b, c, s )
+     use stdlib_blas_constants_${rk}$
+     !! The computation uses the formulas
+     !! sigma = sgn(a)    if |a| >  |b|
+     !! = sgn(b)    if |b| >= |a|
+     !! r = sigma*sqrt( a**2 + b**2 )
+     !! c = 1; s = 0      if r = 0
+     !! c = a/r; s = b/r  if r != 0
+     !! The subroutine also computes
+     !! z = s    if |a| > |b|,
+     !! = 1/c  if |b| >= |a| and c != 0
+     !! = 1    if c = 0
+     !! This allows c and s to be reconstructed from z as follows:
+     !! If z = 1, set c = 0, s = 1.
+     !! If |z| < 1, set c = sqrt(1 - z**2) and s = z.
+     !! If |z| > 1, set c = 1/z and s = sqrt( 1 - c**2).
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+        ! Scaling Constants 
+        ! Scalar Arguments 
+        real(${rk}$), intent(inout) :: a, b
+        real(${rk}$), intent(out) :: c, s
+     end subroutine stdlib_${ri}$rotg
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_crotg( a, b, c, s )
+     use stdlib_blas_constants_sp
+     !! The computation uses the formulas
+     !! |x| = sqrt( Re(x)**2 + Im(x)**2 )
+     !! sgn(x) = x / |x|  if x /= 0
+     !! = 1        if x  = 0
+     !! c = |a| / sqrt(|a|**2 + |b|**2)
+     !! s = sgn(a) * conjg(b) / sqrt(|a|**2 + |b|**2)
+     !! When a and b are real and r /= 0, the formulas simplify to
+     !! r = sgn(a)*sqrt(|a|**2 + |b|**2)
+     !! c = a / r
+     !! s = b / r
+     !! the same as in SROTG when |a| > |b|.  When |b| >= |a|, the
+     !! sign of c and s will be different from those computed by SROTG
+     !! if the signs of a and b are not the same.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+        ! Scaling Constants 
+        ! Scalar Arguments 
+        real(sp), intent(out) :: c
+        complex(sp), intent(inout) :: a
+        complex(sp), intent(in) :: b
+        complex(sp), intent(out) :: s
+     end subroutine stdlib_crotg
+
+     module pure subroutine stdlib_zrotg( a, b, c, s )
+     use stdlib_blas_constants_dp
+     !! The computation uses the formulas
+     !! |x| = sqrt( Re(x)**2 + Im(x)**2 )
+     !! sgn(x) = x / |x|  if x /= 0
+     !! = 1        if x  = 0
+     !! c = |a| / sqrt(|a|**2 + |b|**2)
+     !! s = sgn(a) * conjg(b) / sqrt(|a|**2 + |b|**2)
+     !! When a and b are real and r /= 0, the formulas simplify to
+     !! r = sgn(a)*sqrt(|a|**2 + |b|**2)
+     !! c = a / r
+     !! s = b / r
+     !! the same as in DROTG when |a| > |b|.  When |b| >= |a|, the
+     !! sign of c and s will be different from those computed by DROTG
+     !! if the signs of a and b are not the same.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+        ! Scaling Constants 
+        ! Scalar Arguments 
+        real(dp), intent(out) :: c
+        complex(dp), intent(inout) :: a
+        complex(dp), intent(in) :: b
+        complex(dp), intent(out) :: s
+     end subroutine stdlib_zrotg
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$rotg( a, b, c, s )
+     use stdlib_blas_constants_${ck}$
+     !! The computation uses the formulas
+     !! |x| = sqrt( Re(x)**2 + Im(x)**2 )
+     !! sgn(x) = x / |x|  if x /= 0
+     !! = 1        if x  = 0
+     !! c = |a| / sqrt(|a|**2 + |b|**2)
+     !! s = sgn(a) * conjg(b) / sqrt(|a|**2 + |b|**2)
+     !! When a and b are real and r /= 0, the formulas simplify to
+     !! r = sgn(a)*sqrt(|a|**2 + |b|**2)
+     !! c = a / r
+     !! s = b / r
+     !! the same as in DROTG when |a| > |b|.  When |b| >= |a|, the
+     !! sign of c and s will be different from those computed by DROTG
+     !! if the signs of a and b are not the same.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+        ! Scaling Constants 
+        ! Scalar Arguments 
+        real(${ck}$), intent(out) :: c
+        complex(${ck}$), intent(inout) :: a
+        complex(${ck}$), intent(in) :: b
+        complex(${ck}$), intent(out) :: s
+     end subroutine stdlib_${ci}$rotg
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure real(dp) function stdlib_dznrm2( n, x, incx )
+     use stdlib_blas_constants_dp
+     !! DZNRM2 returns the euclidean norm of a vector via the function
+     !! name, so that
+     !! DZNRM2 := sqrt( x**H*x )
+        ! -- reference blas level1 routine (version 3.9.1_dp) --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        complex(dp), intent(in) :: x(*)
+     end function stdlib_dznrm2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$znrm2( n, x, incx )
+     use stdlib_blas_constants_${rk}$
+     !! DZNRM2: returns the euclidean norm of a vector via the function
+     !! name, so that
+     !! DZNRM2 := sqrt( x**H*x )
+        ! -- reference blas level1 routine (version 3.9.1_${rk}$) --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        complex(${rk}$), intent(in) :: x(*)
+     end function stdlib_${ri}$znrm2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sscal(n,sa,sx,incx)
+     use stdlib_blas_constants_sp
+     !! SSCAL scales a vector by a constant.
+     !! uses unrolled loops for increment equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: sa
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           real(sp), intent(inout) :: sx(*)
+     end subroutine stdlib_sscal
+
+     module pure subroutine stdlib_dscal(n,da,dx,incx)
+     use stdlib_blas_constants_dp
+     !! DSCAL scales a vector by a constant.
+     !! uses unrolled loops for increment equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           real(dp), intent(inout) :: dx(*)
+     end subroutine stdlib_dscal
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$scal(n,da,dx,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DSCAL: scales a vector by a constant.
+     !! uses unrolled loops for increment equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: dx(*)
+     end subroutine stdlib_${ri}$scal
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_cscal(n,ca,cx,incx)
+     use stdlib_blas_constants_sp
+     !! CSCAL scales a vector by a constant.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: ca
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: cx(*)
+     end subroutine stdlib_cscal
+
+     module pure subroutine stdlib_zscal(n,za,zx,incx)
+     use stdlib_blas_constants_dp
+     !! ZSCAL scales a vector by a constant.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: za
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: zx(*)
+     end subroutine stdlib_zscal
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$scal(n,za,zx,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZSCAL: scales a vector by a constant.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: za
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: zx(*)
+     end subroutine stdlib_${ci}$scal
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_srot(n,sx,incx,sy,incy,c,s)
+     use stdlib_blas_constants_sp
+     !! applies a plane rotation.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: c, s
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(inout) :: sx(*), sy(*)
+     end subroutine stdlib_srot
+
+     module pure subroutine stdlib_drot(n,dx,incx,dy,incy,c,s)
+     use stdlib_blas_constants_dp
+     !! DROT applies a plane rotation.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: c, s
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_drot
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$rot(n,dx,incx,dy,incy,c,s)
+     use stdlib_blas_constants_${rk}$
+     !! DROT: applies a plane rotation.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: c, s
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_${ri}$rot
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure real(sp) function stdlib_scasum(n,cx,incx)
+     use stdlib_blas_constants_sp
+     !! SCASUM takes the sum of the (|Re(.)| + |Im(.)|)'s of a complex vector and
+     !! returns a single precision result.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(sp), intent(in) :: cx(*)
+     end function stdlib_scasum
+
+end interface 
+
+
+interface 
+     module pure real(sp) function stdlib_scnrm2( n, x, incx )
+     use stdlib_blas_constants_sp
+     !! SCNRM2 returns the euclidean norm of a vector via the function
+     !! name, so that
+     !! SCNRM2 := sqrt( x**H*x )
+        ! -- reference blas level1 routine (version 3.9.1_sp) --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! march 2021
+        ! Scalar Arguments 
+        integer(ilp), intent(in) :: incx, n
+        ! Array Arguments 
+        complex(sp), intent(in) :: x(*)
+     end function stdlib_scnrm2
+
+end interface 
+
+
+interface 
+     module pure real(dp) function stdlib_dzasum(n,zx,incx)
+     use stdlib_blas_constants_dp
+     !! DZASUM takes the sum of the (|Re(.)| + |Im(.)|)'s of a complex vector and
+     !! returns a double precision result.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(dp), intent(in) :: zx(*)
+     end function stdlib_dzasum
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$zasum(n,zx,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DZASUM: takes the sum of the (|Re(.)| + |Im(.)|)'s of a complex vector and
+     !! returns a quad precision result.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(${rk}$), intent(in) :: zx(*)
+     end function stdlib_${ri}$zasum
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_csrot( n, cx, incx, cy, incy, c, s )
+     use stdlib_blas_constants_sp
+     !! CSROT applies a plane rotation, where the cos and sin (c and s) are real
+     !! and the vectors cx and cy are complex.
+     !! jack dongarra, linpack, 3/11/78.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(in) :: c, s
+           ! Array Arguments 
+           complex(sp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_csrot
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_scopy(n,sx,incx,sy,incy)
+     use stdlib_blas_constants_sp
+     !! SCOPY copies a vector, x, to a vector, y.
+     !! uses unrolled loops for increments equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(sp), intent(in) :: sx(*)
+           real(sp), intent(out) :: sy(*)
+     end subroutine stdlib_scopy
+
+     module pure subroutine stdlib_dcopy(n,dx,incx,dy,incy)
+     use stdlib_blas_constants_dp
+     !! DCOPY copies a vector, x, to a vector, y.
+     !! uses unrolled loops for increments equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(dp), intent(in) :: dx(*)
+           real(dp), intent(out) :: dy(*)
+     end subroutine stdlib_dcopy
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$copy(n,dx,incx,dy,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DCOPY: copies a vector, x, to a vector, y.
+     !! uses unrolled loops for increments equal to 1.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: dx(*)
+           real(${rk}$), intent(out) :: dy(*)
+     end subroutine stdlib_${ri}$copy
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ccopy(n,cx,incx,cy,incy)
+     use stdlib_blas_constants_sp
+     !! CCOPY copies a vector x to a vector y.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(sp), intent(in) :: cx(*)
+           complex(sp), intent(out) :: cy(*)
+     end subroutine stdlib_ccopy
+
+     module pure subroutine stdlib_zcopy(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_dp
+     !! ZCOPY copies a vector, x, to a vector, y.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(dp), intent(in) :: zx(*)
+           complex(dp), intent(out) :: zy(*)
+     end subroutine stdlib_zcopy
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$copy(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZCOPY: copies a vector, x, to a vector, y.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, incy, n
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: zx(*)
+           complex(${ck}$), intent(out) :: zy(*)
+     end subroutine stdlib_${ci}$copy
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! SGER performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_sger
+
+     module pure subroutine stdlib_dger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! DGER performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_dger
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$ger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${rk}$
+     !! DGER:   performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ri}$ger
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! SGEMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_sgemv
+
+     module pure subroutine stdlib_dgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! DGEMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dgemv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$gemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DGEMV:  performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$gemv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_cgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! CGEMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
+     !! y := alpha*A**H*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_cgemv
+
+     module pure subroutine stdlib_zgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! ZGEMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
+     !! y := alpha*A**H*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zgemv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$gemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZGEMV:  performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
+     !! y := alpha*A**H*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$gemv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_cher(uplo,n,alpha,x,incx,a,lda)
+     use stdlib_blas_constants_sp
+     !! CHER performs the hermitian rank 1 operation
+     !! A := alpha*x*x**H + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*)
+     end subroutine stdlib_cher
+
+     module pure subroutine stdlib_zher(uplo,n,alpha,x,incx,a,lda)
+     use stdlib_blas_constants_dp
+     !! ZHER performs the hermitian rank 1 operation
+     !! A := alpha*x*x**H + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*)
+     end subroutine stdlib_zher
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$her(uplo,n,alpha,x,incx,a,lda)
+     use stdlib_blas_constants_${ck}$
+     !! ZHER:   performs the hermitian rank 1 operation
+     !! A := alpha*x*x**H + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*)
+     end subroutine stdlib_${ci}$her
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_cgerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! CGERC performs the rank 1 operation
+     !! A := alpha*x*y**H + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_cgerc
+
+     module pure subroutine stdlib_zgerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! ZGERC performs the rank 1 operation
+     !! A := alpha*x*y**H + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_zgerc
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$gerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+     !! ZGERC:  performs the rank 1 operation
+     !! A := alpha*x*y**H + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ci}$gerc
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_cgeru(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! CGERU performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_cgeru
+
+     module pure subroutine stdlib_zgeru(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! ZGERU performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_zgeru
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$geru(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+     !! ZGERU:  performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ci}$geru
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_chemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! CHEMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_chemv
+
+     module pure subroutine stdlib_zhemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! ZHEMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zhemv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$hemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZHEMV:  performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$hemv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_cher2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! CHER2 performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_cher2
+
+     module pure subroutine stdlib_zher2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! ZHER2 performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_zher2
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$her2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+     !! ZHER2:  performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ci}$her2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! SGBMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_sgbmv
+
+     module pure subroutine stdlib_dgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! DGBMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dgbmv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DGBMV:  performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$gbmv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_cgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! CGBMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
+     !! y := alpha*A**H*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_cgbmv
+
+     module pure subroutine stdlib_zgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! ZGBMV performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
+     !! y := alpha*A**H*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zgbmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZGBMV:  performs one of the matrix-vector operations
+     !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
+     !! y := alpha*A**H*x + beta*y,
+     !! where alpha and beta are scalars, x and y are vectors and A is an
+     !! m by n band matrix, with kl sub-diagonals and ku super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, kl, ku, lda, m, n
+           character, intent(in) :: trans
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$gbmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_chbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! CHBMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian band matrix, with k super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, k, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_chbmv
+
+     module pure subroutine stdlib_zhbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! ZHBMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian band matrix, with k super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, k, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zhbmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$hbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZHBMV:  performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian band matrix, with k super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, k, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$hbmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssyr(uplo,n,alpha,x,incx,a,lda)
+     use stdlib_blas_constants_sp
+     !! SSYR performs the symmetric rank 1 operation
+     !! A := alpha*x*x**T + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(in) :: x(*)
+     end subroutine stdlib_ssyr
+
+     module pure subroutine stdlib_dsyr(uplo,n,alpha,x,incx,a,lda)
+     use stdlib_blas_constants_dp
+     !! DSYR performs the symmetric rank 1 operation
+     !! A := alpha*x*x**T + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*)
+     end subroutine stdlib_dsyr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$syr(uplo,n,alpha,x,incx,a,lda)
+     use stdlib_blas_constants_${rk}$
+     !! DSYR:   performs the symmetric rank 1 operation
+     !! A := alpha*x*x**T + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(in) :: x(*)
+     end subroutine stdlib_${ri}$syr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! SSYMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_ssymv
+
+     module pure subroutine stdlib_dsymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! DSYMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dsymv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$symv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DSYMV:  performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$symv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssyr2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! SSYR2 performs the symmetric rank 2 operation
+     !! A := alpha*x*y**T + alpha*y*x**T + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_ssyr2
+
+     module pure subroutine stdlib_dsyr2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! DSYR2 performs the symmetric rank 2 operation
+     !! A := alpha*x*y**T + alpha*y*x**T + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_dsyr2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$syr2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${rk}$
+     !! DSYR2:  performs the symmetric rank 2 operation
+     !! A := alpha*x*y**T + alpha*y*x**T + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n symmetric matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ri}$syr2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sspr(uplo,n,alpha,x,incx,ap)
+     use stdlib_blas_constants_sp
+     !! SSPR performs the symmetric rank 1 operation
+     !! A := alpha*x*x**T + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(inout) :: ap(*)
+           real(sp), intent(in) :: x(*)
+     end subroutine stdlib_sspr
+
+     module pure subroutine stdlib_dspr(uplo,n,alpha,x,incx,ap)
+     use stdlib_blas_constants_dp
+     !! DSPR performs the symmetric rank 1 operation
+     !! A := alpha*x*x**T + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(inout) :: ap(*)
+           real(dp), intent(in) :: x(*)
+     end subroutine stdlib_dspr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$spr(uplo,n,alpha,x,incx,ap)
+     use stdlib_blas_constants_${rk}$
+     !! DSPR:    performs the symmetric rank 1 operation
+     !! A := alpha*x*x**T + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: ap(*)
+           real(${rk}$), intent(in) :: x(*)
+     end subroutine stdlib_${ri}$spr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_chpr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_sp
+     !! CHPR2 performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an
+     !! n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(inout) :: ap(*)
+           complex(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_chpr2
+
+     module pure subroutine stdlib_zhpr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_dp
+     !! ZHPR2 performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an
+     !! n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(inout) :: ap(*)
+           complex(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_zhpr2
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$hpr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_${ck}$
+     !! ZHPR2:  performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an
+     !! n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: ap(*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ci}$hpr2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! SSBMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric band matrix, with k super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, k, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_ssbmv
+
+     module pure subroutine stdlib_dsbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! DSBMV performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric band matrix, with k super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, k, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dsbmv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$sbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DSBMV:  performs the matrix-vector  operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric band matrix, with k super-diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, k, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$sbmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_chpr(uplo,n,alpha,x,incx,ap)
+     use stdlib_blas_constants_sp
+     !! CHPR performs the hermitian rank 1 operation
+     !! A := alpha*x*x**H + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(inout) :: ap(*)
+           complex(sp), intent(in) :: x(*)
+     end subroutine stdlib_chpr
+
+     module pure subroutine stdlib_zhpr(uplo,n,alpha,x,incx,ap)
+     use stdlib_blas_constants_dp
+     !! ZHPR performs the hermitian rank 1 operation
+     !! A := alpha*x*x**H + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(inout) :: ap(*)
+           complex(dp), intent(in) :: x(*)
+     end subroutine stdlib_zhpr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$hpr(uplo,n,alpha,x,incx,ap)
+     use stdlib_blas_constants_${ck}$
+     !! ZHPR:    performs the hermitian rank 1 operation
+     !! A := alpha*x*x**H + A,
+     !! where alpha is a real scalar, x is an n element vector and A is an
+     !! n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: ap(*)
+           complex(${ck}$), intent(in) :: x(*)
+     end subroutine stdlib_${ci}$hpr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! SSPMV performs the matrix-vector operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: ap(*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_sspmv
+
+     module pure subroutine stdlib_dspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! DSPMV performs the matrix-vector operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: ap(*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dspmv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$spmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+     !! DSPMV:  performs the matrix-vector operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: ap(*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$spmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_chpmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+     !! CHPMV performs the matrix-vector operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: ap(*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_chpmv
+
+     module pure subroutine stdlib_zhpmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+     !! ZHPMV performs the matrix-vector operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: ap(*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zhpmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$hpmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${ck}$
+     !! ZHPMV:  performs the matrix-vector operation
+     !! y := alpha*A*x + beta*y,
+     !! where alpha and beta are scalars, x and y are n element vectors and
+     !! A is an n by n hermitian matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: ap(*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$hpmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sspr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_sp
+     !! SSPR2 performs the symmetric rank 2 operation
+     !! A := alpha*x*y**T + alpha*y*x**T + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an
+     !! n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(sp), intent(inout) :: ap(*)
+           real(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_sspr2
+
+     module pure subroutine stdlib_dspr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_dp
+     !! DSPR2 performs the symmetric rank 2 operation
+     !! A := alpha*x*y**T + alpha*y*x**T + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an
+     !! n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(dp), intent(inout) :: ap(*)
+           real(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_dspr2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$spr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_${rk}$
+     !! DSPR2:  performs the symmetric rank 2 operation
+     !! A := alpha*x*y**T + alpha*y*x**T + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an
+     !! n by n symmetric matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: ap(*)
+           real(${rk}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ri}$spr2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_stbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! STBSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
+     !! diagonals.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_stbsv
+
+     module pure subroutine stdlib_dtbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! DTBSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
+     !! diagonals.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtbsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DTBSV:  solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
+     !! diagonals.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$tbsv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! CTBSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
+     !! diagonals.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctbsv
+
+     module pure subroutine stdlib_ztbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! ZTBSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
+     !! diagonals.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztbsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZTBSV:  solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular band matrix, with ( k + 1 )
+     !! diagonals.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$tbsv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_strmv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! STRMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_strmv
+
+     module pure subroutine stdlib_dtrmv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! DTRMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtrmv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$trmv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DTRMV:  performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$trmv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctrmv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! CTRMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctrmv
+
+     module pure subroutine stdlib_ztrmv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! ZTRMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztrmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$trmv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZTRMV:  performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$trmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_stbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! STBMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_stbmv
+
+     module pure subroutine stdlib_dtbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! DTBMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtbmv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$tbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DTBMV:  performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$tbmv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! CTBMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctbmv
+
+     module pure subroutine stdlib_ztbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! ZTBMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztbmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$tbmv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZTBMV:  performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular band matrix, with ( k + 1 ) diagonals.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$tbmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_stpmv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_sp
+     !! STPMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: ap(*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_stpmv
+
+     module pure subroutine stdlib_dtpmv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_dp
+     !! DTPMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtpmv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$tpmv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DTPMV:  performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: ap(*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$tpmv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctpmv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_sp
+     !! CTPMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: ap(*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctpmv
+
+     module pure subroutine stdlib_ztpmv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_dp
+     !! ZTPMV performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: ap(*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztpmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$tpmv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZTPMV:  performs one of the matrix-vector operations
+     !! x := A*x,   or   x := A**T*x,   or   x := A**H*x,
+     !! where x is an n element vector and  A is an n by n unit, or non-unit,
+     !! upper or lower triangular matrix, supplied in packed form.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: ap(*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$tpmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_strsv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! STRSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_strsv
+
+     module pure subroutine stdlib_dtrsv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! DTRSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtrsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$trsv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DTRSV:  solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level1 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$trsv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctrsv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+     !! CTRSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctrsv
+
+     module pure subroutine stdlib_ztrsv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+     !! ZTRSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztrsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$trsv(uplo,trans,diag,n,a,lda,x,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZTRSV:  solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, lda, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$trsv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_stpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_sp
+     !! STPSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix, supplied in packed form.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: ap(*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_stpsv
+
+     module pure subroutine stdlib_dtpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_dp
+     !! DTPSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix, supplied in packed form.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtpsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$tpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_${rk}$
+     !! DTPSV:  solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix, supplied in packed form.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: ap(*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$tpsv
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_sp
+     !! CTPSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix, supplied in packed form.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: ap(*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctpsv
+
+     module pure subroutine stdlib_ztpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_dp
+     !! ZTPSV solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix, supplied in packed form.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: ap(*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztpsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$tpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_${ck}$
+     !! ZTPSV:  solves one of the systems of equations
+     !! A*x = b,   or   A**T*x = b,   or   A**H*x = b,
+     !! where b and x are n element vectors and A is an n by n unit, or
+     !! non-unit, upper or lower triangular matrix, supplied in packed form.
+     !! No test for singularity or near-singularity is included in this
+     !! routine. Such tests must be performed before calling this routine.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: ap(*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$tpsv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_cher2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CHER2K performs one of the hermitian rank 2k operations
+     !! C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
+     !! where  alpha and beta  are scalars with  beta  real,  C is an  n by n
+     !! hermitian matrix and  A and B  are  n by k matrices in the first case
+     !! and  k by n  matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           real(sp), intent(in) :: beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_cher2k
+
+     module pure subroutine stdlib_zher2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZHER2K performs one of the hermitian rank 2k operations
+     !! C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
+     !! where  alpha and beta  are scalars with  beta  real,  C is an  n by n
+     !! hermitian matrix and  A and B  are  n by k matrices in the first case
+     !! and  k by n  matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           real(dp), intent(in) :: beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zher2k
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$her2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZHER2K:  performs one of the hermitian rank 2k operations
+     !! C := alpha*A*B**H + conjg( alpha )*B*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*B + conjg( alpha )*B**H*A + beta*C,
+     !! where  alpha and beta  are scalars with  beta  real,  C is an  n by n
+     !! hermitian matrix and  A and B  are  n by k matrices in the first case
+     !! and  k by n  matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           real(${ck}$), intent(in) :: beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$her2k
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_sgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! SGEMM performs one of the matrix-matrix operations
+     !! C := alpha*op( A )*op( B ) + beta*C,
+     !! where  op( X ) is one of
+     !! op( X ) = X   or   op( X ) = X**T,
+     !! alpha and beta are scalars, and A, B and C are matrices, with op( A )
+     !! an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
+           character, intent(in) :: transa, transb
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), b(ldb,*)
+           real(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_sgemm
+
+     module pure subroutine stdlib_dgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! DGEMM performs one of the matrix-matrix operations
+     !! C := alpha*op( A )*op( B ) + beta*C,
+     !! where  op( X ) is one of
+     !! op( X ) = X   or   op( X ) = X**T,
+     !! alpha and beta are scalars, and A, B and C are matrices, with op( A )
+     !! an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
+           character, intent(in) :: transa, transb
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), b(ldb,*)
+           real(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_dgemm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$gemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${rk}$
+     !! DGEMM:  performs one of the matrix-matrix operations
+     !! C := alpha*op( A )*op( B ) + beta*C,
+     !! where  op( X ) is one of
+     !! op( X ) = X   or   op( X ) = X**T,
+     !! alpha and beta are scalars, and A, B and C are matrices, with op( A )
+     !! an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
+           character, intent(in) :: transa, transb
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), b(ldb,*)
+           real(${rk}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ri}$gemm
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_cgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CGEMM performs one of the matrix-matrix operations
+     !! C := alpha*op( A )*op( B ) + beta*C,
+     !! where  op( X ) is one of
+     !! op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**H,
+     !! alpha and beta are scalars, and A, B and C are matrices, with op( A )
+     !! an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
+           character, intent(in) :: transa, transb
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_cgemm
+
+     module pure subroutine stdlib_zgemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZGEMM performs one of the matrix-matrix operations
+     !! C := alpha*op( A )*op( B ) + beta*C,
+     !! where  op( X ) is one of
+     !! op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**H,
+     !! alpha and beta are scalars, and A, B and C are matrices, with op( A )
+     !! an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
+           character, intent(in) :: transa, transb
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zgemm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$gemm(transa,transb,m,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZGEMM:  performs one of the matrix-matrix operations
+     !! C := alpha*op( A )*op( B ) + beta*C,
+     !! where  op( X ) is one of
+     !! op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**H,
+     !! alpha and beta are scalars, and A, B and C are matrices, with op( A )
+     !! an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, m, n
+           character, intent(in) :: transa, transb
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$gemm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_cherk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CHERK performs one of the hermitian rank k operations
+     !! C := alpha*A*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*A + beta*C,
+     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
+     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
+     !! matrix in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_cherk
+
+     module pure subroutine stdlib_zherk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZHERK performs one of the hermitian rank k operations
+     !! C := alpha*A*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*A + beta*C,
+     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
+     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
+     !! matrix in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zherk
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$herk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZHERK:  performs one of the hermitian rank k operations
+     !! C := alpha*A*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*A + beta*C,
+     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
+     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
+     !! matrix in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$herk
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_chemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CHEMM performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where alpha and beta are scalars, A is an hermitian matrix and  B and
+     !! C are m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_chemm
+
+     module pure subroutine stdlib_zhemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZHEMM performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where alpha and beta are scalars, A is an hermitian matrix and  B and
+     !! C are m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zhemm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$hemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZHEMM:  performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where alpha and beta are scalars, A is an hermitian matrix and  B and
+     !! C are m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$hemm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! SSYRK performs one of the symmetric rank k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+     !! and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+     !! in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_ssyrk
+
+     module pure subroutine stdlib_dsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! DSYRK performs one of the symmetric rank k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+     !! and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+     !! in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_dsyrk
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_${rk}$
+     !! DSYRK:  performs one of the symmetric rank k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+     !! and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+     !! in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ri}$syrk
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_csyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CSYRK performs one of the symmetric rank k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where  alpha and beta  are scalars,  C is an  n by n symmetric matrix
+     !! and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+     !! in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_csyrk
+
+     module pure subroutine stdlib_zsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZSYRK performs one of the symmetric rank k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where  alpha and beta  are scalars,  C is an  n by n symmetric matrix
+     !! and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+     !! in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zsyrk
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZSYRK:  performs one of the symmetric rank k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where  alpha and beta  are scalars,  C is an  n by n symmetric matrix
+     !! and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+     !! in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$syrk
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! SSYR2K performs one of the symmetric rank 2k operations
+     !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
+     !! where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+     !! and  A and B  are  n by k  matrices  in the  first  case  and  k by n
+     !! matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), b(ldb,*)
+           real(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_ssyr2k
+
+     module pure subroutine stdlib_dsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! DSYR2K performs one of the symmetric rank 2k operations
+     !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
+     !! where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+     !! and  A and B  are  n by k  matrices  in the  first  case  and  k by n
+     !! matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), b(ldb,*)
+           real(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_dsyr2k
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${rk}$
+     !! DSYR2K:  performs one of the symmetric rank 2k operations
+     !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
+     !! where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+     !! and  A and B  are  n by k  matrices  in the  first  case  and  k by n
+     !! matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), b(ldb,*)
+           real(${rk}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ri}$syr2k
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_csyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CSYR2K performs one of the symmetric rank 2k operations
+     !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
+     !! where  alpha and beta  are scalars,  C is an  n by n symmetric matrix
+     !! and  A and B  are  n by k  matrices  in the  first  case  and  k by n
+     !! matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_csyr2k
+
+     module pure subroutine stdlib_zsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZSYR2K performs one of the symmetric rank 2k operations
+     !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
+     !! where  alpha and beta  are scalars,  C is an  n by n symmetric matrix
+     !! and  A and B  are  n by k  matrices  in the  first  case  and  k by n
+     !! matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zsyr2k
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZSYR2K:  performs one of the symmetric rank 2k operations
+     !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*B + alpha*B**T*A + beta*C,
+     !! where  alpha and beta  are scalars,  C is an  n by n symmetric matrix
+     !! and  A and B  are  n by k  matrices  in the  first  case  and  k by n
+     !! matrices in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$syr2k
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_ssymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! SSYMM performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where alpha and beta are scalars,  A is a symmetric matrix and  B and
+     !! C are  m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), b(ldb,*)
+           real(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_ssymm
+
+     module pure subroutine stdlib_dsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! DSYMM performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where alpha and beta are scalars,  A is a symmetric matrix and  B and
+     !! C are  m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), b(ldb,*)
+           real(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_dsymm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${rk}$
+     !! DSYMM:  performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where alpha and beta are scalars,  A is a symmetric matrix and  B and
+     !! C are  m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), b(ldb,*)
+           real(${rk}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ri}$symm
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_csymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CSYMM performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where  alpha and beta are scalars, A is a symmetric matrix and  B and
+     !! C are m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_csymm
+
+     module pure subroutine stdlib_zsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZSYMM performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where  alpha and beta are scalars, A is a symmetric matrix and  B and
+     !! C are m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), b(ldb,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_zsymm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZSYMM:  performs one of the matrix-matrix operations
+     !! C := alpha*A*B + beta*C,
+     !! or
+     !! C := alpha*B*A + beta*C,
+     !! where  alpha and beta are scalars, A is a symmetric matrix and  B and
+     !! C are m by n matrices.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+     end subroutine stdlib_${ci}$symm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_strsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_sp
+     !! STRSM solves one of the matrix equations
+     !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T.
+     !! The matrix X is overwritten on B.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_strsm
+
+     module pure subroutine stdlib_dtrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_dp
+     !! DTRSM solves one of the matrix equations
+     !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T.
+     !! The matrix X is overwritten on B.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_dtrsm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_${rk}$
+     !! DTRSM:  solves one of the matrix equations
+     !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T.
+     !! The matrix X is overwritten on B.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_${ri}$trsm
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_sp
+     !! CTRSM solves one of the matrix equations
+     !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T   or   op( A ) = A**H.
+     !! The matrix X is overwritten on B.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_ctrsm
+
+     module pure subroutine stdlib_ztrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_dp
+     !! ZTRSM solves one of the matrix equations
+     !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T   or   op( A ) = A**H.
+     !! The matrix X is overwritten on B.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_ztrsm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_${ck}$
+     !! ZTRSM:  solves one of the matrix equations
+     !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+     !! where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T   or   op( A ) = A**H.
+     !! The matrix X is overwritten on B.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_${ci}$trsm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module pure subroutine stdlib_strmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_sp
+     !! STRMM performs one of the matrix-matrix operations
+     !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
+     !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_strmm
+
+     module pure subroutine stdlib_dtrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_dp
+     !! DTRMM performs one of the matrix-matrix operations
+     !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
+     !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_dtrmm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_${rk}$
+     !! DTRMM:  performs one of the matrix-matrix operations
+     !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
+     !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_${ri}$trmm
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_ctrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_sp
+     !! CTRMM performs one of the matrix-matrix operations
+     !! B := alpha*op( A )*B,   or   B := alpha*B*op( A )
+     !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T   or   op( A ) = A**H.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_ctrmm
+
+     module pure subroutine stdlib_ztrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_dp
+     !! ZTRMM performs one of the matrix-matrix operations
+     !! B := alpha*op( A )*B,   or   B := alpha*B*op( A )
+     !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T   or   op( A ) = A**H.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_ztrmm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     use stdlib_blas_constants_${ck}$
+     !! ZTRMM:  performs one of the matrix-matrix operations
+     !! B := alpha*op( A )*B,   or   B := alpha*B*op( A )
+     !! where  alpha  is a scalar,  B  is an m by n matrix,  A  is a unit, or
+     !! non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+     !! op( A ) = A   or   op( A ) = A**T   or   op( A ) = A**H.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           character, intent(in) :: diag, side, transa, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: b(ldb,*)
+     end subroutine stdlib_${ci}$trmm
+
+#:endif
+#:endfor
+
+end interface 
+
+end module stdlib_blas

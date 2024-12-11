@@ -3,20 +3,10 @@
 module stdlib_linalg_blas
      use stdlib_linalg_constants
      use stdlib_linalg_blas_aux
-     
-     use stdlib_blas_level1
-
-     use stdlib_blas_level2_gen
-     use stdlib_blas_level2_ban
-     use stdlib_blas_level2_pac
-     use stdlib_blas_level2_sym
-     use stdlib_blas_level2_tri
-
-     use stdlib_blas_level3_gen
-     use stdlib_blas_level3_sym
-     use stdlib_blas_level3_tri
+     use stdlib_blas
 
      implicit none(type,external)
+
      public
 
           interface asum

@@ -1,13 +1,11 @@
 #:include "common.fypp" 
-module stdlib_blas_level3_sym
-  use stdlib_linalg_constants
-  use stdlib_linalg_blas_aux
+submodule(stdlib_blas) stdlib_blas_level3_sym
   implicit none(type,external)
 
 
   contains
 
-     pure subroutine stdlib_ssyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     module pure subroutine stdlib_ssyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! SSYRK performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
@@ -174,7 +172,7 @@ module stdlib_blas_level3_sym
            return
      end subroutine stdlib_ssyrk
 
-     pure subroutine stdlib_dsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     module pure subroutine stdlib_dsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
      use stdlib_blas_constants_dp
      !! DSYRK performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
@@ -343,7 +341,7 @@ module stdlib_blas_level3_sym
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     module pure subroutine stdlib_${ri}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
      use stdlib_blas_constants_${rk}$
      !! DSYRK:  performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
@@ -513,7 +511,7 @@ module stdlib_blas_level3_sym
 #:endif
 #:endfor
 
-     pure subroutine stdlib_csyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     module pure subroutine stdlib_csyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! CSYRK performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
@@ -681,7 +679,7 @@ module stdlib_blas_level3_sym
            return
      end subroutine stdlib_csyrk
 
-     pure subroutine stdlib_zsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     module pure subroutine stdlib_zsyrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
      use stdlib_blas_constants_dp
      !! ZSYRK performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
@@ -851,7 +849,7 @@ module stdlib_blas_level3_sym
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     module pure subroutine stdlib_${ci}$syrk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
      use stdlib_blas_constants_${ck}$
      !! ZSYRK:  performs one of the symmetric rank k operations
      !! C := alpha*A*A**T + beta*C,
@@ -1024,7 +1022,7 @@ module stdlib_blas_level3_sym
 
 
 
-     pure subroutine stdlib_ssyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_ssyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! SSYR2K performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
@@ -1199,7 +1197,7 @@ module stdlib_blas_level3_sym
            return
      end subroutine stdlib_ssyr2k
 
-     pure subroutine stdlib_dsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_dsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_dp
      !! DSYR2K performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
@@ -1376,7 +1374,7 @@ module stdlib_blas_level3_sym
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_${ri}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_${rk}$
      !! DSYR2K:  performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
@@ -1554,7 +1552,7 @@ module stdlib_blas_level3_sym
 #:endif
 #:endfor
 
-     pure subroutine stdlib_csyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_csyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! CSYR2K performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
@@ -1730,7 +1728,7 @@ module stdlib_blas_level3_sym
            return
      end subroutine stdlib_csyr2k
 
-     pure subroutine stdlib_zsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_zsyr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_dp
      !! ZSYR2K performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
@@ -1908,7 +1906,7 @@ module stdlib_blas_level3_sym
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_${ci}$syr2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_${ck}$
      !! ZSYR2K:  performs one of the symmetric rank 2k operations
      !! C := alpha*A*B**T + alpha*B*A**T + beta*C,
@@ -2089,7 +2087,7 @@ module stdlib_blas_level3_sym
 
 
 
-     pure subroutine stdlib_ssymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_ssymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! SSYMM performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
@@ -2236,7 +2234,7 @@ module stdlib_blas_level3_sym
            return
      end subroutine stdlib_ssymm
 
-     pure subroutine stdlib_dsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_dsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_dp
      !! DSYMM performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
@@ -2385,7 +2383,7 @@ module stdlib_blas_level3_sym
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_${ri}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_${rk}$
      !! DSYMM:  performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
@@ -2535,7 +2533,7 @@ module stdlib_blas_level3_sym
 #:endif
 #:endfor
 
-     pure subroutine stdlib_csymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_csymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! CSYMM performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
@@ -2683,7 +2681,7 @@ module stdlib_blas_level3_sym
            return
      end subroutine stdlib_csymm
 
-     pure subroutine stdlib_zsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_zsymm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_dp
      !! ZSYMM performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
@@ -2833,7 +2831,7 @@ module stdlib_blas_level3_sym
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure subroutine stdlib_${ci}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     module pure subroutine stdlib_${ci}$symm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_${ck}$
      !! ZSYMM:  performs one of the matrix-matrix operations
      !! C := alpha*A*B + beta*C,
@@ -2985,4 +2983,4 @@ module stdlib_blas_level3_sym
 #:endfor
 
 
-end module stdlib_blas_level3_sym
+end submodule stdlib_blas_level3_sym
