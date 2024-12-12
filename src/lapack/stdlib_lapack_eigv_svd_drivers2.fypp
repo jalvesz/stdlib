@@ -2800,6 +2800,8 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers2
 
 
 
+
+
      module pure subroutine stdlib_sgesvj( joba, jobu, jobv, m, n, a, lda, sva, mv, v,ldv, work, lwork, &
      !! SGESVJ computes the singular value decomposition (SVD) of a real
      !! M-by-N matrix A, where M >= N. The SVD of A is written as
@@ -9075,8 +9077,6 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers2
 
 #:endif
 #:endfor
-
-
 
 
 end submodule stdlib_lapack_eigv_svd_drivers2

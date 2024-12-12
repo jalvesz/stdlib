@@ -5,1296 +5,6 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_aux
 
   contains
 
-     module pure subroutine stdlib_slaic1( job, j, x, sest, w, gamma, sestpr, s, c )
-     !! SLAIC1 applies one step of incremental condition estimation in
-     !! its simplest version:
-     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
-     !! lower triangular matrix L, such that
-     !! twonorm(L*x) = sest
-     !! Then SLAIC1 computes sestpr, s, c such that
-     !! the vector
-     !! [ s*x ]
-     !! xhat = [  c  ]
-     !! is an approximate singular vector of
-     !! [ L      0  ]
-     !! Lhat = [ w**T gamma ]
-     !! in the sense that
-     !! twonorm(Lhat*xhat) = sestpr.
-     !! Depending on JOB, an estimate for the largest or smallest singular
-     !! value is computed.
-     !! Note that [s c]**T and sestpr**2 is an eigenpair of the system
-     !! diag(sest*sest, 0) + [alpha  gamma] * [ alpha ]
-     !! [ gamma ]
-     !! where  alpha =  x**T*w.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: j, job
-           real(sp), intent(out) :: c, s, sestpr
-           real(sp), intent(in) :: gamma, sest
-           ! Array Arguments 
-           real(sp), intent(in) :: w(j), x(j)
-        ! =====================================================================
-           
-           
-           ! Local Scalars 
-           real(sp) :: absalp, absest, absgam, alpha, b, cosine, eps, norma, s1, s2, sine, t, &
-                     test, tmp, zeta1, zeta2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           eps = stdlib_slamch( 'EPSILON' )
-           alpha = stdlib_sdot( j, x, 1, w, 1 )
-           absalp = abs( alpha )
-           absgam = abs( gamma )
-           absest = abs( sest )
-           if( job==1 ) then
-              ! estimating largest singular value
-              ! special cases
-              if( sest==zero ) then
-                 s1 = max( absgam, absalp )
-                 if( s1==zero ) then
-                    s = zero
-                    c = one
-                    sestpr = zero
-                 else
-                    s = alpha / s1
-                    c = gamma / s1
-                    tmp = sqrt( s*s+c*c )
-                    s = s / tmp
-                    c = c / tmp
-                    sestpr = s1*tmp
-                 end if
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = one
-                 c = zero
-                 tmp = max( absest, absalp )
-                 s1 = absest / tmp
-                 s2 = absalp / tmp
-                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 else
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    s = sqrt( one+tmp*tmp )
-                    sestpr = s2*s
-                    c = ( gamma / s2 ) / s
-                    s = sign( one, alpha ) / s
-                 else
-                    tmp = s2 / s1
-                    c = sqrt( one+tmp*tmp )
-                    sestpr = s1*c
-                    s = ( alpha / s1 ) / c
-                    c = sign( one, gamma ) / c
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = alpha / absest
-                 zeta2 = gamma / absest
-                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
-                 c = zeta1*zeta1
-                 if( b>zero ) then
-                    t = c / ( b+sqrt( b*b+c ) )
-                 else
-                    t = sqrt( b*b+c ) - b
-                 end if
-                 sine = -zeta1 / t
-                 cosine = -zeta2 / ( one+t )
-                 tmp = sqrt( sine*sine+cosine*cosine )
-                 s = sine / tmp
-                 c = cosine / tmp
-                 sestpr = sqrt( t+one )*absest
-                 return
-              end if
-           else if( job==2 ) then
-              ! estimating smallest singular value
-              ! special cases
-              if( sest==zero ) then
-                 sestpr = zero
-                 if( max( absgam, absalp )==zero ) then
-                    sine = one
-                    cosine = zero
-                 else
-                    sine = -gamma
-                    cosine = alpha
-                 end if
-                 s1 = max( abs( sine ), abs( cosine ) )
-                 s = sine / s1
-                 c = cosine / s1
-                 tmp = sqrt( s*s+c*c )
-                 s = s / tmp
-                 c = c / tmp
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = zero
-                 c = one
-                 sestpr = absgam
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 else
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    c = sqrt( one+tmp*tmp )
-                    sestpr = absest*( tmp / c )
-                    s = -( gamma / s2 ) / c
-                    c = sign( one, alpha ) / c
-                 else
-                    tmp = s2 / s1
-                    s = sqrt( one+tmp*tmp )
-                    sestpr = absest / s
-                    c = ( alpha / s1 ) / s
-                    s = -sign( one, gamma ) / s
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = alpha / absest
-                 zeta2 = gamma / absest
-                 norma = max( one+zeta1*zeta1+abs( zeta1*zeta2 ),abs( zeta1*zeta2 )+zeta2*zeta2 )
-                           
-                 ! see if root is closer to zero or to one
-                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
-                 if( test>=zero ) then
-                    ! root is close to zero, compute directly
-                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
-                    c = zeta2*zeta2
-                    t = c / ( b+sqrt( abs( b*b-c ) ) )
-                    sine = zeta1 / ( one-t )
-                    cosine = -zeta2 / t
-                    sestpr = sqrt( t+four*eps*eps*norma )*absest
-                 else
-                    ! root is closer to one, shift by that amount
-                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
-                    c = zeta1*zeta1
-                    if( b>=zero ) then
-                       t = -c / ( b+sqrt( b*b+c ) )
-                    else
-                       t = b - sqrt( b*b+c )
-                    end if
-                    sine = -zeta1 / t
-                    cosine = -zeta2 / ( one+t )
-                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
-                 end if
-                 tmp = sqrt( sine*sine+cosine*cosine )
-                 s = sine / tmp
-                 c = cosine / tmp
-                 return
-              end if
-           end if
-           return
-     end subroutine stdlib_slaic1
-
-     module pure subroutine stdlib_dlaic1( job, j, x, sest, w, gamma, sestpr, s, c )
-     !! DLAIC1 applies one step of incremental condition estimation in
-     !! its simplest version:
-     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
-     !! lower triangular matrix L, such that
-     !! twonorm(L*x) = sest
-     !! Then DLAIC1 computes sestpr, s, c such that
-     !! the vector
-     !! [ s*x ]
-     !! xhat = [  c  ]
-     !! is an approximate singular vector of
-     !! [ L       0  ]
-     !! Lhat = [ w**T gamma ]
-     !! in the sense that
-     !! twonorm(Lhat*xhat) = sestpr.
-     !! Depending on JOB, an estimate for the largest or smallest singular
-     !! value is computed.
-     !! Note that [s c]**T and sestpr**2 is an eigenpair of the system
-     !! diag(sest*sest, 0) + [alpha  gamma] * [ alpha ]
-     !! [ gamma ]
-     !! where  alpha =  x**T*w.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: j, job
-           real(dp), intent(out) :: c, s, sestpr
-           real(dp), intent(in) :: gamma, sest
-           ! Array Arguments 
-           real(dp), intent(in) :: w(j), x(j)
-        ! =====================================================================
-           
-           
-           ! Local Scalars 
-           real(dp) :: absalp, absest, absgam, alpha, b, cosine, eps, norma, s1, s2, sine, t, &
-                     test, tmp, zeta1, zeta2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           eps = stdlib_dlamch( 'EPSILON' )
-           alpha = stdlib_ddot( j, x, 1, w, 1 )
-           absalp = abs( alpha )
-           absgam = abs( gamma )
-           absest = abs( sest )
-           if( job==1 ) then
-              ! estimating largest singular value
-              ! special cases
-              if( sest==zero ) then
-                 s1 = max( absgam, absalp )
-                 if( s1==zero ) then
-                    s = zero
-                    c = one
-                    sestpr = zero
-                 else
-                    s = alpha / s1
-                    c = gamma / s1
-                    tmp = sqrt( s*s+c*c )
-                    s = s / tmp
-                    c = c / tmp
-                    sestpr = s1*tmp
-                 end if
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = one
-                 c = zero
-                 tmp = max( absest, absalp )
-                 s1 = absest / tmp
-                 s2 = absalp / tmp
-                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 else
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    s = sqrt( one+tmp*tmp )
-                    sestpr = s2*s
-                    c = ( gamma / s2 ) / s
-                    s = sign( one, alpha ) / s
-                 else
-                    tmp = s2 / s1
-                    c = sqrt( one+tmp*tmp )
-                    sestpr = s1*c
-                    s = ( alpha / s1 ) / c
-                    c = sign( one, gamma ) / c
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = alpha / absest
-                 zeta2 = gamma / absest
-                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
-                 c = zeta1*zeta1
-                 if( b>zero ) then
-                    t = c / ( b+sqrt( b*b+c ) )
-                 else
-                    t = sqrt( b*b+c ) - b
-                 end if
-                 sine = -zeta1 / t
-                 cosine = -zeta2 / ( one+t )
-                 tmp = sqrt( sine*sine+cosine*cosine )
-                 s = sine / tmp
-                 c = cosine / tmp
-                 sestpr = sqrt( t+one )*absest
-                 return
-              end if
-           else if( job==2 ) then
-              ! estimating smallest singular value
-              ! special cases
-              if( sest==zero ) then
-                 sestpr = zero
-                 if( max( absgam, absalp )==zero ) then
-                    sine = one
-                    cosine = zero
-                 else
-                    sine = -gamma
-                    cosine = alpha
-                 end if
-                 s1 = max( abs( sine ), abs( cosine ) )
-                 s = sine / s1
-                 c = cosine / s1
-                 tmp = sqrt( s*s+c*c )
-                 s = s / tmp
-                 c = c / tmp
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = zero
-                 c = one
-                 sestpr = absgam
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 else
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    c = sqrt( one+tmp*tmp )
-                    sestpr = absest*( tmp / c )
-                    s = -( gamma / s2 ) / c
-                    c = sign( one, alpha ) / c
-                 else
-                    tmp = s2 / s1
-                    s = sqrt( one+tmp*tmp )
-                    sestpr = absest / s
-                    c = ( alpha / s1 ) / s
-                    s = -sign( one, gamma ) / s
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = alpha / absest
-                 zeta2 = gamma / absest
-                 norma = max( one+zeta1*zeta1+abs( zeta1*zeta2 ),abs( zeta1*zeta2 )+zeta2*zeta2 )
-                           
-                 ! see if root is closer to zero or to one
-                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
-                 if( test>=zero ) then
-                    ! root is close to zero, compute directly
-                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
-                    c = zeta2*zeta2
-                    t = c / ( b+sqrt( abs( b*b-c ) ) )
-                    sine = zeta1 / ( one-t )
-                    cosine = -zeta2 / t
-                    sestpr = sqrt( t+four*eps*eps*norma )*absest
-                 else
-                    ! root is closer to one, shift by that amount
-                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
-                    c = zeta1*zeta1
-                    if( b>=zero ) then
-                       t = -c / ( b+sqrt( b*b+c ) )
-                    else
-                       t = b - sqrt( b*b+c )
-                    end if
-                    sine = -zeta1 / t
-                    cosine = -zeta2 / ( one+t )
-                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
-                 end if
-                 tmp = sqrt( sine*sine+cosine*cosine )
-                 s = sine / tmp
-                 c = cosine / tmp
-                 return
-              end if
-           end if
-           return
-     end subroutine stdlib_dlaic1
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$laic1( job, j, x, sest, w, gamma, sestpr, s, c )
-     !! DLAIC1: applies one step of incremental condition estimation in
-     !! its simplest version:
-     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
-     !! lower triangular matrix L, such that
-     !! twonorm(L*x) = sest
-     !! Then DLAIC1 computes sestpr, s, c such that
-     !! the vector
-     !! [ s*x ]
-     !! xhat = [  c  ]
-     !! is an approximate singular vector of
-     !! [ L       0  ]
-     !! Lhat = [ w**T gamma ]
-     !! in the sense that
-     !! twonorm(Lhat*xhat) = sestpr.
-     !! Depending on JOB, an estimate for the largest or smallest singular
-     !! value is computed.
-     !! Note that [s c]**T and sestpr**2 is an eigenpair of the system
-     !! diag(sest*sest, 0) + [alpha  gamma] * [ alpha ]
-     !! [ gamma ]
-     !! where  alpha =  x**T*w.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: j, job
-           real(${rk}$), intent(out) :: c, s, sestpr
-           real(${rk}$), intent(in) :: gamma, sest
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: w(j), x(j)
-        ! =====================================================================
-           
-           
-           ! Local Scalars 
-           real(${rk}$) :: absalp, absest, absgam, alpha, b, cosine, eps, norma, s1, s2, sine, t, &
-                     test, tmp, zeta1, zeta2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           eps = stdlib_${ri}$lamch( 'EPSILON' )
-           alpha = stdlib_${ri}$dot( j, x, 1, w, 1 )
-           absalp = abs( alpha )
-           absgam = abs( gamma )
-           absest = abs( sest )
-           if( job==1 ) then
-              ! estimating largest singular value
-              ! special cases
-              if( sest==zero ) then
-                 s1 = max( absgam, absalp )
-                 if( s1==zero ) then
-                    s = zero
-                    c = one
-                    sestpr = zero
-                 else
-                    s = alpha / s1
-                    c = gamma / s1
-                    tmp = sqrt( s*s+c*c )
-                    s = s / tmp
-                    c = c / tmp
-                    sestpr = s1*tmp
-                 end if
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = one
-                 c = zero
-                 tmp = max( absest, absalp )
-                 s1 = absest / tmp
-                 s2 = absalp / tmp
-                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 else
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    s = sqrt( one+tmp*tmp )
-                    sestpr = s2*s
-                    c = ( gamma / s2 ) / s
-                    s = sign( one, alpha ) / s
-                 else
-                    tmp = s2 / s1
-                    c = sqrt( one+tmp*tmp )
-                    sestpr = s1*c
-                    s = ( alpha / s1 ) / c
-                    c = sign( one, gamma ) / c
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = alpha / absest
-                 zeta2 = gamma / absest
-                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
-                 c = zeta1*zeta1
-                 if( b>zero ) then
-                    t = c / ( b+sqrt( b*b+c ) )
-                 else
-                    t = sqrt( b*b+c ) - b
-                 end if
-                 sine = -zeta1 / t
-                 cosine = -zeta2 / ( one+t )
-                 tmp = sqrt( sine*sine+cosine*cosine )
-                 s = sine / tmp
-                 c = cosine / tmp
-                 sestpr = sqrt( t+one )*absest
-                 return
-              end if
-           else if( job==2 ) then
-              ! estimating smallest singular value
-              ! special cases
-              if( sest==zero ) then
-                 sestpr = zero
-                 if( max( absgam, absalp )==zero ) then
-                    sine = one
-                    cosine = zero
-                 else
-                    sine = -gamma
-                    cosine = alpha
-                 end if
-                 s1 = max( abs( sine ), abs( cosine ) )
-                 s = sine / s1
-                 c = cosine / s1
-                 tmp = sqrt( s*s+c*c )
-                 s = s / tmp
-                 c = c / tmp
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = zero
-                 c = one
-                 sestpr = absgam
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 else
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    c = sqrt( one+tmp*tmp )
-                    sestpr = absest*( tmp / c )
-                    s = -( gamma / s2 ) / c
-                    c = sign( one, alpha ) / c
-                 else
-                    tmp = s2 / s1
-                    s = sqrt( one+tmp*tmp )
-                    sestpr = absest / s
-                    c = ( alpha / s1 ) / s
-                    s = -sign( one, gamma ) / s
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = alpha / absest
-                 zeta2 = gamma / absest
-                 norma = max( one+zeta1*zeta1+abs( zeta1*zeta2 ),abs( zeta1*zeta2 )+zeta2*zeta2 )
-                           
-                 ! see if root is closer to zero or to one
-                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
-                 if( test>=zero ) then
-                    ! root is close to zero, compute directly
-                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
-                    c = zeta2*zeta2
-                    t = c / ( b+sqrt( abs( b*b-c ) ) )
-                    sine = zeta1 / ( one-t )
-                    cosine = -zeta2 / t
-                    sestpr = sqrt( t+four*eps*eps*norma )*absest
-                 else
-                    ! root is closer to one, shift by that amount
-                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
-                    c = zeta1*zeta1
-                    if( b>=zero ) then
-                       t = -c / ( b+sqrt( b*b+c ) )
-                    else
-                       t = b - sqrt( b*b+c )
-                    end if
-                    sine = -zeta1 / t
-                    cosine = -zeta2 / ( one+t )
-                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
-                 end if
-                 tmp = sqrt( sine*sine+cosine*cosine )
-                 s = sine / tmp
-                 c = cosine / tmp
-                 return
-              end if
-           end if
-           return
-     end subroutine stdlib_${ri}$laic1
-
-#:endif
-#:endfor
-
-     module pure subroutine stdlib_claic1( job, j, x, sest, w, gamma, sestpr, s, c )
-     !! CLAIC1 applies one step of incremental condition estimation in
-     !! its simplest version:
-     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
-     !! lower triangular matrix L, such that
-     !! twonorm(L*x) = sest
-     !! Then CLAIC1 computes sestpr, s, c such that
-     !! the vector
-     !! [ s*x ]
-     !! xhat = [  c  ]
-     !! is an approximate singular vector of
-     !! [ L      0  ]
-     !! Lhat = [ w**H gamma ]
-     !! in the sense that
-     !! twonorm(Lhat*xhat) = sestpr.
-     !! Depending on JOB, an estimate for the largest or smallest singular
-     !! value is computed.
-     !! Note that [s c]**H and sestpr**2 is an eigenpair of the system
-     !! diag(sest*sest, 0) + [alpha  gamma] * [ conjg(alpha) ]
-     !! [ conjg(gamma) ]
-     !! where  alpha =  x**H*w.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: j, job
-           real(sp), intent(in) :: sest
-           real(sp), intent(out) :: sestpr
-           complex(sp), intent(out) :: c, s
-           complex(sp), intent(in) :: gamma
-           ! Array Arguments 
-           complex(sp), intent(in) :: w(j), x(j)
-        ! =====================================================================
-           
-           
-           ! Local Scalars 
-           real(sp) :: absalp, absest, absgam, b, eps, norma, s1, s2, scl, t, test, tmp, zeta1, &
-                     zeta2
-           complex(sp) :: alpha, cosine, sine
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           eps = stdlib_slamch( 'EPSILON' )
-           alpha = stdlib_cdotc( j, x, 1, w, 1 )
-           absalp = abs( alpha )
-           absgam = abs( gamma )
-           absest = abs( sest )
-           if( job==1 ) then
-              ! estimating largest singular value
-              ! special cases
-              if( sest==zero ) then
-                 s1 = max( absgam, absalp )
-                 if( s1==zero ) then
-                    s = zero
-                    c = one
-                    sestpr = zero
-                 else
-                    s = alpha / s1
-                    c = gamma / s1
-                    tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=sp)
-                    s = s / tmp
-                    c = c / tmp
-                    sestpr = s1*tmp
-                 end if
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = one
-                 c = zero
-                 tmp = max( absest, absalp )
-                 s1 = absest / tmp
-                 s2 = absalp / tmp
-                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 else
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = s2*scl
-                    s = ( alpha / s2 ) / scl
-                    c = ( gamma / s2 ) / scl
-                 else
-                    tmp = s2 / s1
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = s1*scl
-                    s = ( alpha / s1 ) / scl
-                    c = ( gamma / s1 ) / scl
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = absalp / absest
-                 zeta2 = absgam / absest
-                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
-                 c = zeta1*zeta1
-                 if( b>zero ) then
-                    t = real( c / ( b+sqrt( b*b+c ) ),KIND=sp)
-                 else
-                    t = real( sqrt( b*b+c ) - b,KIND=sp)
-                 end if
-                 sine = -( alpha / absest ) / t
-                 cosine = -( gamma / absest ) / ( one+t )
-                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=sp)
-                           
-                 s = sine / tmp
-                 c = cosine / tmp
-                 sestpr = sqrt( t+one )*absest
-                 return
-              end if
-           else if( job==2 ) then
-              ! estimating smallest singular value
-              ! special cases
-              if( sest==zero ) then
-                 sestpr = zero
-                 if( max( absgam, absalp )==zero ) then
-                    sine = one
-                    cosine = zero
-                 else
-                    sine = -conjg( gamma )
-                    cosine = conjg( alpha )
-                 end if
-                 s1 = max( abs( sine ), abs( cosine ) )
-                 s = sine / s1
-                 c = cosine / s1
-                 tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=sp)
-                 s = s / tmp
-                 c = c / tmp
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = zero
-                 c = one
-                 sestpr = absgam
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 else
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = absest*( tmp / scl )
-                    s = -( conjg( gamma ) / s2 ) / scl
-                    c = ( conjg( alpha ) / s2 ) / scl
-                 else
-                    tmp = s2 / s1
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = absest / scl
-                    s = -( conjg( gamma ) / s1 ) / scl
-                    c = ( conjg( alpha ) / s1 ) / scl
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = absalp / absest
-                 zeta2 = absgam / absest
-                 norma = max( one+zeta1*zeta1+zeta1*zeta2,zeta1*zeta2+zeta2*zeta2 )
-                 ! see if root is closer to zero or to one
-                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
-                 if( test>=zero ) then
-                    ! root is close to zero, compute directly
-                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
-                    c = zeta2*zeta2
-                    t = real( c / ( b+sqrt( abs( b*b-c ) ) ),KIND=sp)
-                    sine = ( alpha / absest ) / ( one-t )
-                    cosine = -( gamma / absest ) / t
-                    sestpr = sqrt( t+four*eps*eps*norma )*absest
-                 else
-                    ! root is closer to one, shift by that amount
-                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
-                    c = zeta1*zeta1
-                    if( b>=zero ) then
-                       t = real( -c / ( b+sqrt( b*b+c ) ),KIND=sp)
-                    else
-                       t = real( b - sqrt( b*b+c ),KIND=sp)
-                    end if
-                    sine = -( alpha / absest ) / t
-                    cosine = -( gamma / absest ) / ( one+t )
-                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
-                 end if
-                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=sp)
-                           
-                 s = sine / tmp
-                 c = cosine / tmp
-                 return
-              end if
-           end if
-           return
-     end subroutine stdlib_claic1
-
-     module pure subroutine stdlib_zlaic1( job, j, x, sest, w, gamma, sestpr, s, c )
-     !! ZLAIC1 applies one step of incremental condition estimation in
-     !! its simplest version:
-     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
-     !! lower triangular matrix L, such that
-     !! twonorm(L*x) = sest
-     !! Then ZLAIC1 computes sestpr, s, c such that
-     !! the vector
-     !! [ s*x ]
-     !! xhat = [  c  ]
-     !! is an approximate singular vector of
-     !! [ L       0  ]
-     !! Lhat = [ w**H gamma ]
-     !! in the sense that
-     !! twonorm(Lhat*xhat) = sestpr.
-     !! Depending on JOB, an estimate for the largest or smallest singular
-     !! value is computed.
-     !! Note that [s c]**H and sestpr**2 is an eigenpair of the system
-     !! diag(sest*sest, 0) + [alpha  gamma] * [ conjg(alpha) ]
-     !! [ conjg(gamma) ]
-     !! where  alpha =  x**H * w.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: j, job
-           real(dp), intent(in) :: sest
-           real(dp), intent(out) :: sestpr
-           complex(dp), intent(out) :: c, s
-           complex(dp), intent(in) :: gamma
-           ! Array Arguments 
-           complex(dp), intent(in) :: w(j), x(j)
-        ! =====================================================================
-           
-           
-           ! Local Scalars 
-           real(dp) :: absalp, absest, absgam, b, eps, norma, s1, s2, scl, t, test, tmp, zeta1, &
-                     zeta2
-           complex(dp) :: alpha, cosine, sine
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           eps = stdlib_dlamch( 'EPSILON' )
-           alpha = stdlib_zdotc( j, x, 1, w, 1 )
-           absalp = abs( alpha )
-           absgam = abs( gamma )
-           absest = abs( sest )
-           if( job==1 ) then
-              ! estimating largest singular value
-              ! special cases
-              if( sest==zero ) then
-                 s1 = max( absgam, absalp )
-                 if( s1==zero ) then
-                    s = zero
-                    c = one
-                    sestpr = zero
-                 else
-                    s = alpha / s1
-                    c = gamma / s1
-                    tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=dp)
-                    s = s / tmp
-                    c = c / tmp
-                    sestpr = s1*tmp
-                 end if
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = one
-                 c = zero
-                 tmp = max( absest, absalp )
-                 s1 = absest / tmp
-                 s2 = absalp / tmp
-                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 else
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = s2*scl
-                    s = ( alpha / s2 ) / scl
-                    c = ( gamma / s2 ) / scl
-                 else
-                    tmp = s2 / s1
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = s1*scl
-                    s = ( alpha / s1 ) / scl
-                    c = ( gamma / s1 ) / scl
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = absalp / absest
-                 zeta2 = absgam / absest
-                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
-                 c = zeta1*zeta1
-                 if( b>zero ) then
-                    t = real( c / ( b+sqrt( b*b+c ) ),KIND=dp)
-                 else
-                    t = real( sqrt( b*b+c ) - b,KIND=dp)
-                 end if
-                 sine = -( alpha / absest ) / t
-                 cosine = -( gamma / absest ) / ( one+t )
-                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=dp)
-                           
-                 s = sine / tmp
-                 c = cosine / tmp
-                 sestpr = sqrt( t+one )*absest
-                 return
-              end if
-           else if( job==2 ) then
-              ! estimating smallest singular value
-              ! special cases
-              if( sest==zero ) then
-                 sestpr = zero
-                 if( max( absgam, absalp )==zero ) then
-                    sine = one
-                    cosine = zero
-                 else
-                    sine = -conjg( gamma )
-                    cosine = conjg( alpha )
-                 end if
-                 s1 = max( abs( sine ), abs( cosine ) )
-                 s = sine / s1
-                 c = cosine / s1
-                 tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=dp)
-                 s = s / tmp
-                 c = c / tmp
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = zero
-                 c = one
-                 sestpr = absgam
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 else
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = absest*( tmp / scl )
-                    s = -( conjg( gamma ) / s2 ) / scl
-                    c = ( conjg( alpha ) / s2 ) / scl
-                 else
-                    tmp = s2 / s1
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = absest / scl
-                    s = -( conjg( gamma ) / s1 ) / scl
-                    c = ( conjg( alpha ) / s1 ) / scl
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = absalp / absest
-                 zeta2 = absgam / absest
-                 norma = max( one+zeta1*zeta1+zeta1*zeta2,zeta1*zeta2+zeta2*zeta2 )
-                 ! see if root is closer to zero or to one
-                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
-                 if( test>=zero ) then
-                    ! root is close to zero, compute directly
-                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
-                    c = zeta2*zeta2
-                    t = real( c / ( b+sqrt( abs( b*b-c ) ) ),KIND=dp)
-                    sine = ( alpha / absest ) / ( one-t )
-                    cosine = -( gamma / absest ) / t
-                    sestpr = sqrt( t+four*eps*eps*norma )*absest
-                 else
-                    ! root is closer to one, shift by that amount
-                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
-                    c = zeta1*zeta1
-                    if( b>=zero ) then
-                       t = -c / ( b+sqrt( b*b+c ) )
-                    else
-                       t = b - sqrt( b*b+c )
-                    end if
-                    sine = -( alpha / absest ) / t
-                    cosine = -( gamma / absest ) / ( one+t )
-                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
-                 end if
-                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=dp)
-                           
-                 s = sine / tmp
-                 c = cosine / tmp
-                 return
-              end if
-           end if
-           return
-     end subroutine stdlib_zlaic1
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$laic1( job, j, x, sest, w, gamma, sestpr, s, c )
-     !! ZLAIC1: applies one step of incremental condition estimation in
-     !! its simplest version:
-     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
-     !! lower triangular matrix L, such that
-     !! twonorm(L*x) = sest
-     !! Then ZLAIC1 computes sestpr, s, c such that
-     !! the vector
-     !! [ s*x ]
-     !! xhat = [  c  ]
-     !! is an approximate singular vector of
-     !! [ L       0  ]
-     !! Lhat = [ w**H gamma ]
-     !! in the sense that
-     !! twonorm(Lhat*xhat) = sestpr.
-     !! Depending on JOB, an estimate for the largest or smallest singular
-     !! value is computed.
-     !! Note that [s c]**H and sestpr**2 is an eigenpair of the system
-     !! diag(sest*sest, 0) + [alpha  gamma] * [ conjg(alpha) ]
-     !! [ conjg(gamma) ]
-     !! where  alpha =  x**H * w.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: j, job
-           real(${ck}$), intent(in) :: sest
-           real(${ck}$), intent(out) :: sestpr
-           complex(${ck}$), intent(out) :: c, s
-           complex(${ck}$), intent(in) :: gamma
-           ! Array Arguments 
-           complex(${ck}$), intent(in) :: w(j), x(j)
-        ! =====================================================================
-           
-           
-           ! Local Scalars 
-           real(${ck}$) :: absalp, absest, absgam, b, eps, norma, s1, s2, scl, t, test, tmp, zeta1, &
-                     zeta2
-           complex(${ck}$) :: alpha, cosine, sine
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           eps = stdlib_${c2ri(ci)}$lamch( 'EPSILON' )
-           alpha = stdlib_${ci}$dotc( j, x, 1, w, 1 )
-           absalp = abs( alpha )
-           absgam = abs( gamma )
-           absest = abs( sest )
-           if( job==1 ) then
-              ! estimating largest singular value
-              ! special cases
-              if( sest==zero ) then
-                 s1 = max( absgam, absalp )
-                 if( s1==zero ) then
-                    s = zero
-                    c = one
-                    sestpr = zero
-                 else
-                    s = alpha / s1
-                    c = gamma / s1
-                    tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=${ck}$)
-                    s = s / tmp
-                    c = c / tmp
-                    sestpr = s1*tmp
-                 end if
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = one
-                 c = zero
-                 tmp = max( absest, absalp )
-                 s1 = absest / tmp
-                 s2 = absalp / tmp
-                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 else
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = s2*scl
-                    s = ( alpha / s2 ) / scl
-                    c = ( gamma / s2 ) / scl
-                 else
-                    tmp = s2 / s1
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = s1*scl
-                    s = ( alpha / s1 ) / scl
-                    c = ( gamma / s1 ) / scl
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = absalp / absest
-                 zeta2 = absgam / absest
-                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
-                 c = zeta1*zeta1
-                 if( b>zero ) then
-                    t = real( c / ( b+sqrt( b*b+c ) ),KIND=${ck}$)
-                 else
-                    t = real( sqrt( b*b+c ) - b,KIND=${ck}$)
-                 end if
-                 sine = -( alpha / absest ) / t
-                 cosine = -( gamma / absest ) / ( one+t )
-                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=${ck}$)
-                           
-                 s = sine / tmp
-                 c = cosine / tmp
-                 sestpr = sqrt( t+one )*absest
-                 return
-              end if
-           else if( job==2 ) then
-              ! estimating smallest singular value
-              ! special cases
-              if( sest==zero ) then
-                 sestpr = zero
-                 if( max( absgam, absalp )==zero ) then
-                    sine = one
-                    cosine = zero
-                 else
-                    sine = -conjg( gamma )
-                    cosine = conjg( alpha )
-                 end if
-                 s1 = max( abs( sine ), abs( cosine ) )
-                 s = sine / s1
-                 c = cosine / s1
-                 tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=${ck}$)
-                 s = s / tmp
-                 c = c / tmp
-                 return
-              else if( absgam<=eps*absest ) then
-                 s = zero
-                 c = one
-                 sestpr = absgam
-                 return
-              else if( absalp<=eps*absest ) then
-                 s1 = absgam
-                 s2 = absest
-                 if( s1<=s2 ) then
-                    s = zero
-                    c = one
-                    sestpr = s1
-                 else
-                    s = one
-                    c = zero
-                    sestpr = s2
-                 end if
-                 return
-              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
-                 s1 = absgam
-                 s2 = absalp
-                 if( s1<=s2 ) then
-                    tmp = s1 / s2
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = absest*( tmp / scl )
-                    s = -( conjg( gamma ) / s2 ) / scl
-                    c = ( conjg( alpha ) / s2 ) / scl
-                 else
-                    tmp = s2 / s1
-                    scl = sqrt( one+tmp*tmp )
-                    sestpr = absest / scl
-                    s = -( conjg( gamma ) / s1 ) / scl
-                    c = ( conjg( alpha ) / s1 ) / scl
-                 end if
-                 return
-              else
-                 ! normal case
-                 zeta1 = absalp / absest
-                 zeta2 = absgam / absest
-                 norma = max( one+zeta1*zeta1+zeta1*zeta2,zeta1*zeta2+zeta2*zeta2 )
-                 ! see if root is closer to zero or to one
-                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
-                 if( test>=zero ) then
-                    ! root is close to zero, compute directly
-                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
-                    c = zeta2*zeta2
-                    t = real( c / ( b+sqrt( abs( b*b-c ) ) ),KIND=${ck}$)
-                    sine = ( alpha / absest ) / ( one-t )
-                    cosine = -( gamma / absest ) / t
-                    sestpr = sqrt( t+four*eps*eps*norma )*absest
-                 else
-                    ! root is closer to one, shift by that amount
-                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
-                    c = zeta1*zeta1
-                    if( b>=zero ) then
-                       t = -c / ( b+sqrt( b*b+c ) )
-                    else
-                       t = b - sqrt( b*b+c )
-                    end if
-                    sine = -( alpha / absest ) / t
-                    cosine = -( gamma / absest ) / ( one+t )
-                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
-                 end if
-                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=${ck}$)
-                           
-                 s = sine / tmp
-                 c = cosine / tmp
-                 return
-              end if
-           end if
-           return
-     end subroutine stdlib_${ci}$laic1
-
-#:endif
-#:endfor
-
-
-
      module pure subroutine stdlib_slalsa( icompq, smlsiz, n, nrhs, b, ldb, bx, ldbx, u,ldu, vt, k, difl,&
      !! SLALSA is an itermediate step in solving the least squares problem
      !! by computing the SVD of the coefficient matrix in compact form (The
@@ -6149,6 +4859,1296 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_aux
            end if
            return
      end subroutine stdlib_${ci}$lals0
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_slaic1( job, j, x, sest, w, gamma, sestpr, s, c )
+     !! SLAIC1 applies one step of incremental condition estimation in
+     !! its simplest version:
+     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
+     !! lower triangular matrix L, such that
+     !! twonorm(L*x) = sest
+     !! Then SLAIC1 computes sestpr, s, c such that
+     !! the vector
+     !! [ s*x ]
+     !! xhat = [  c  ]
+     !! is an approximate singular vector of
+     !! [ L      0  ]
+     !! Lhat = [ w**T gamma ]
+     !! in the sense that
+     !! twonorm(Lhat*xhat) = sestpr.
+     !! Depending on JOB, an estimate for the largest or smallest singular
+     !! value is computed.
+     !! Note that [s c]**T and sestpr**2 is an eigenpair of the system
+     !! diag(sest*sest, 0) + [alpha  gamma] * [ alpha ]
+     !! [ gamma ]
+     !! where  alpha =  x**T*w.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: j, job
+           real(sp), intent(out) :: c, s, sestpr
+           real(sp), intent(in) :: gamma, sest
+           ! Array Arguments 
+           real(sp), intent(in) :: w(j), x(j)
+        ! =====================================================================
+           
+           
+           ! Local Scalars 
+           real(sp) :: absalp, absest, absgam, alpha, b, cosine, eps, norma, s1, s2, sine, t, &
+                     test, tmp, zeta1, zeta2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           eps = stdlib_slamch( 'EPSILON' )
+           alpha = stdlib_sdot( j, x, 1, w, 1 )
+           absalp = abs( alpha )
+           absgam = abs( gamma )
+           absest = abs( sest )
+           if( job==1 ) then
+              ! estimating largest singular value
+              ! special cases
+              if( sest==zero ) then
+                 s1 = max( absgam, absalp )
+                 if( s1==zero ) then
+                    s = zero
+                    c = one
+                    sestpr = zero
+                 else
+                    s = alpha / s1
+                    c = gamma / s1
+                    tmp = sqrt( s*s+c*c )
+                    s = s / tmp
+                    c = c / tmp
+                    sestpr = s1*tmp
+                 end if
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = one
+                 c = zero
+                 tmp = max( absest, absalp )
+                 s1 = absest / tmp
+                 s2 = absalp / tmp
+                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 else
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    s = sqrt( one+tmp*tmp )
+                    sestpr = s2*s
+                    c = ( gamma / s2 ) / s
+                    s = sign( one, alpha ) / s
+                 else
+                    tmp = s2 / s1
+                    c = sqrt( one+tmp*tmp )
+                    sestpr = s1*c
+                    s = ( alpha / s1 ) / c
+                    c = sign( one, gamma ) / c
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = alpha / absest
+                 zeta2 = gamma / absest
+                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
+                 c = zeta1*zeta1
+                 if( b>zero ) then
+                    t = c / ( b+sqrt( b*b+c ) )
+                 else
+                    t = sqrt( b*b+c ) - b
+                 end if
+                 sine = -zeta1 / t
+                 cosine = -zeta2 / ( one+t )
+                 tmp = sqrt( sine*sine+cosine*cosine )
+                 s = sine / tmp
+                 c = cosine / tmp
+                 sestpr = sqrt( t+one )*absest
+                 return
+              end if
+           else if( job==2 ) then
+              ! estimating smallest singular value
+              ! special cases
+              if( sest==zero ) then
+                 sestpr = zero
+                 if( max( absgam, absalp )==zero ) then
+                    sine = one
+                    cosine = zero
+                 else
+                    sine = -gamma
+                    cosine = alpha
+                 end if
+                 s1 = max( abs( sine ), abs( cosine ) )
+                 s = sine / s1
+                 c = cosine / s1
+                 tmp = sqrt( s*s+c*c )
+                 s = s / tmp
+                 c = c / tmp
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = zero
+                 c = one
+                 sestpr = absgam
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 else
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    c = sqrt( one+tmp*tmp )
+                    sestpr = absest*( tmp / c )
+                    s = -( gamma / s2 ) / c
+                    c = sign( one, alpha ) / c
+                 else
+                    tmp = s2 / s1
+                    s = sqrt( one+tmp*tmp )
+                    sestpr = absest / s
+                    c = ( alpha / s1 ) / s
+                    s = -sign( one, gamma ) / s
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = alpha / absest
+                 zeta2 = gamma / absest
+                 norma = max( one+zeta1*zeta1+abs( zeta1*zeta2 ),abs( zeta1*zeta2 )+zeta2*zeta2 )
+                           
+                 ! see if root is closer to zero or to one
+                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
+                 if( test>=zero ) then
+                    ! root is close to zero, compute directly
+                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
+                    c = zeta2*zeta2
+                    t = c / ( b+sqrt( abs( b*b-c ) ) )
+                    sine = zeta1 / ( one-t )
+                    cosine = -zeta2 / t
+                    sestpr = sqrt( t+four*eps*eps*norma )*absest
+                 else
+                    ! root is closer to one, shift by that amount
+                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
+                    c = zeta1*zeta1
+                    if( b>=zero ) then
+                       t = -c / ( b+sqrt( b*b+c ) )
+                    else
+                       t = b - sqrt( b*b+c )
+                    end if
+                    sine = -zeta1 / t
+                    cosine = -zeta2 / ( one+t )
+                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
+                 end if
+                 tmp = sqrt( sine*sine+cosine*cosine )
+                 s = sine / tmp
+                 c = cosine / tmp
+                 return
+              end if
+           end if
+           return
+     end subroutine stdlib_slaic1
+
+     module pure subroutine stdlib_dlaic1( job, j, x, sest, w, gamma, sestpr, s, c )
+     !! DLAIC1 applies one step of incremental condition estimation in
+     !! its simplest version:
+     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
+     !! lower triangular matrix L, such that
+     !! twonorm(L*x) = sest
+     !! Then DLAIC1 computes sestpr, s, c such that
+     !! the vector
+     !! [ s*x ]
+     !! xhat = [  c  ]
+     !! is an approximate singular vector of
+     !! [ L       0  ]
+     !! Lhat = [ w**T gamma ]
+     !! in the sense that
+     !! twonorm(Lhat*xhat) = sestpr.
+     !! Depending on JOB, an estimate for the largest or smallest singular
+     !! value is computed.
+     !! Note that [s c]**T and sestpr**2 is an eigenpair of the system
+     !! diag(sest*sest, 0) + [alpha  gamma] * [ alpha ]
+     !! [ gamma ]
+     !! where  alpha =  x**T*w.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: j, job
+           real(dp), intent(out) :: c, s, sestpr
+           real(dp), intent(in) :: gamma, sest
+           ! Array Arguments 
+           real(dp), intent(in) :: w(j), x(j)
+        ! =====================================================================
+           
+           
+           ! Local Scalars 
+           real(dp) :: absalp, absest, absgam, alpha, b, cosine, eps, norma, s1, s2, sine, t, &
+                     test, tmp, zeta1, zeta2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           eps = stdlib_dlamch( 'EPSILON' )
+           alpha = stdlib_ddot( j, x, 1, w, 1 )
+           absalp = abs( alpha )
+           absgam = abs( gamma )
+           absest = abs( sest )
+           if( job==1 ) then
+              ! estimating largest singular value
+              ! special cases
+              if( sest==zero ) then
+                 s1 = max( absgam, absalp )
+                 if( s1==zero ) then
+                    s = zero
+                    c = one
+                    sestpr = zero
+                 else
+                    s = alpha / s1
+                    c = gamma / s1
+                    tmp = sqrt( s*s+c*c )
+                    s = s / tmp
+                    c = c / tmp
+                    sestpr = s1*tmp
+                 end if
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = one
+                 c = zero
+                 tmp = max( absest, absalp )
+                 s1 = absest / tmp
+                 s2 = absalp / tmp
+                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 else
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    s = sqrt( one+tmp*tmp )
+                    sestpr = s2*s
+                    c = ( gamma / s2 ) / s
+                    s = sign( one, alpha ) / s
+                 else
+                    tmp = s2 / s1
+                    c = sqrt( one+tmp*tmp )
+                    sestpr = s1*c
+                    s = ( alpha / s1 ) / c
+                    c = sign( one, gamma ) / c
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = alpha / absest
+                 zeta2 = gamma / absest
+                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
+                 c = zeta1*zeta1
+                 if( b>zero ) then
+                    t = c / ( b+sqrt( b*b+c ) )
+                 else
+                    t = sqrt( b*b+c ) - b
+                 end if
+                 sine = -zeta1 / t
+                 cosine = -zeta2 / ( one+t )
+                 tmp = sqrt( sine*sine+cosine*cosine )
+                 s = sine / tmp
+                 c = cosine / tmp
+                 sestpr = sqrt( t+one )*absest
+                 return
+              end if
+           else if( job==2 ) then
+              ! estimating smallest singular value
+              ! special cases
+              if( sest==zero ) then
+                 sestpr = zero
+                 if( max( absgam, absalp )==zero ) then
+                    sine = one
+                    cosine = zero
+                 else
+                    sine = -gamma
+                    cosine = alpha
+                 end if
+                 s1 = max( abs( sine ), abs( cosine ) )
+                 s = sine / s1
+                 c = cosine / s1
+                 tmp = sqrt( s*s+c*c )
+                 s = s / tmp
+                 c = c / tmp
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = zero
+                 c = one
+                 sestpr = absgam
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 else
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    c = sqrt( one+tmp*tmp )
+                    sestpr = absest*( tmp / c )
+                    s = -( gamma / s2 ) / c
+                    c = sign( one, alpha ) / c
+                 else
+                    tmp = s2 / s1
+                    s = sqrt( one+tmp*tmp )
+                    sestpr = absest / s
+                    c = ( alpha / s1 ) / s
+                    s = -sign( one, gamma ) / s
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = alpha / absest
+                 zeta2 = gamma / absest
+                 norma = max( one+zeta1*zeta1+abs( zeta1*zeta2 ),abs( zeta1*zeta2 )+zeta2*zeta2 )
+                           
+                 ! see if root is closer to zero or to one
+                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
+                 if( test>=zero ) then
+                    ! root is close to zero, compute directly
+                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
+                    c = zeta2*zeta2
+                    t = c / ( b+sqrt( abs( b*b-c ) ) )
+                    sine = zeta1 / ( one-t )
+                    cosine = -zeta2 / t
+                    sestpr = sqrt( t+four*eps*eps*norma )*absest
+                 else
+                    ! root is closer to one, shift by that amount
+                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
+                    c = zeta1*zeta1
+                    if( b>=zero ) then
+                       t = -c / ( b+sqrt( b*b+c ) )
+                    else
+                       t = b - sqrt( b*b+c )
+                    end if
+                    sine = -zeta1 / t
+                    cosine = -zeta2 / ( one+t )
+                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
+                 end if
+                 tmp = sqrt( sine*sine+cosine*cosine )
+                 s = sine / tmp
+                 c = cosine / tmp
+                 return
+              end if
+           end if
+           return
+     end subroutine stdlib_dlaic1
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$laic1( job, j, x, sest, w, gamma, sestpr, s, c )
+     !! DLAIC1: applies one step of incremental condition estimation in
+     !! its simplest version:
+     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
+     !! lower triangular matrix L, such that
+     !! twonorm(L*x) = sest
+     !! Then DLAIC1 computes sestpr, s, c such that
+     !! the vector
+     !! [ s*x ]
+     !! xhat = [  c  ]
+     !! is an approximate singular vector of
+     !! [ L       0  ]
+     !! Lhat = [ w**T gamma ]
+     !! in the sense that
+     !! twonorm(Lhat*xhat) = sestpr.
+     !! Depending on JOB, an estimate for the largest or smallest singular
+     !! value is computed.
+     !! Note that [s c]**T and sestpr**2 is an eigenpair of the system
+     !! diag(sest*sest, 0) + [alpha  gamma] * [ alpha ]
+     !! [ gamma ]
+     !! where  alpha =  x**T*w.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: j, job
+           real(${rk}$), intent(out) :: c, s, sestpr
+           real(${rk}$), intent(in) :: gamma, sest
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: w(j), x(j)
+        ! =====================================================================
+           
+           
+           ! Local Scalars 
+           real(${rk}$) :: absalp, absest, absgam, alpha, b, cosine, eps, norma, s1, s2, sine, t, &
+                     test, tmp, zeta1, zeta2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           eps = stdlib_${ri}$lamch( 'EPSILON' )
+           alpha = stdlib_${ri}$dot( j, x, 1, w, 1 )
+           absalp = abs( alpha )
+           absgam = abs( gamma )
+           absest = abs( sest )
+           if( job==1 ) then
+              ! estimating largest singular value
+              ! special cases
+              if( sest==zero ) then
+                 s1 = max( absgam, absalp )
+                 if( s1==zero ) then
+                    s = zero
+                    c = one
+                    sestpr = zero
+                 else
+                    s = alpha / s1
+                    c = gamma / s1
+                    tmp = sqrt( s*s+c*c )
+                    s = s / tmp
+                    c = c / tmp
+                    sestpr = s1*tmp
+                 end if
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = one
+                 c = zero
+                 tmp = max( absest, absalp )
+                 s1 = absest / tmp
+                 s2 = absalp / tmp
+                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 else
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    s = sqrt( one+tmp*tmp )
+                    sestpr = s2*s
+                    c = ( gamma / s2 ) / s
+                    s = sign( one, alpha ) / s
+                 else
+                    tmp = s2 / s1
+                    c = sqrt( one+tmp*tmp )
+                    sestpr = s1*c
+                    s = ( alpha / s1 ) / c
+                    c = sign( one, gamma ) / c
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = alpha / absest
+                 zeta2 = gamma / absest
+                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
+                 c = zeta1*zeta1
+                 if( b>zero ) then
+                    t = c / ( b+sqrt( b*b+c ) )
+                 else
+                    t = sqrt( b*b+c ) - b
+                 end if
+                 sine = -zeta1 / t
+                 cosine = -zeta2 / ( one+t )
+                 tmp = sqrt( sine*sine+cosine*cosine )
+                 s = sine / tmp
+                 c = cosine / tmp
+                 sestpr = sqrt( t+one )*absest
+                 return
+              end if
+           else if( job==2 ) then
+              ! estimating smallest singular value
+              ! special cases
+              if( sest==zero ) then
+                 sestpr = zero
+                 if( max( absgam, absalp )==zero ) then
+                    sine = one
+                    cosine = zero
+                 else
+                    sine = -gamma
+                    cosine = alpha
+                 end if
+                 s1 = max( abs( sine ), abs( cosine ) )
+                 s = sine / s1
+                 c = cosine / s1
+                 tmp = sqrt( s*s+c*c )
+                 s = s / tmp
+                 c = c / tmp
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = zero
+                 c = one
+                 sestpr = absgam
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 else
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    c = sqrt( one+tmp*tmp )
+                    sestpr = absest*( tmp / c )
+                    s = -( gamma / s2 ) / c
+                    c = sign( one, alpha ) / c
+                 else
+                    tmp = s2 / s1
+                    s = sqrt( one+tmp*tmp )
+                    sestpr = absest / s
+                    c = ( alpha / s1 ) / s
+                    s = -sign( one, gamma ) / s
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = alpha / absest
+                 zeta2 = gamma / absest
+                 norma = max( one+zeta1*zeta1+abs( zeta1*zeta2 ),abs( zeta1*zeta2 )+zeta2*zeta2 )
+                           
+                 ! see if root is closer to zero or to one
+                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
+                 if( test>=zero ) then
+                    ! root is close to zero, compute directly
+                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
+                    c = zeta2*zeta2
+                    t = c / ( b+sqrt( abs( b*b-c ) ) )
+                    sine = zeta1 / ( one-t )
+                    cosine = -zeta2 / t
+                    sestpr = sqrt( t+four*eps*eps*norma )*absest
+                 else
+                    ! root is closer to one, shift by that amount
+                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
+                    c = zeta1*zeta1
+                    if( b>=zero ) then
+                       t = -c / ( b+sqrt( b*b+c ) )
+                    else
+                       t = b - sqrt( b*b+c )
+                    end if
+                    sine = -zeta1 / t
+                    cosine = -zeta2 / ( one+t )
+                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
+                 end if
+                 tmp = sqrt( sine*sine+cosine*cosine )
+                 s = sine / tmp
+                 c = cosine / tmp
+                 return
+              end if
+           end if
+           return
+     end subroutine stdlib_${ri}$laic1
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_claic1( job, j, x, sest, w, gamma, sestpr, s, c )
+     !! CLAIC1 applies one step of incremental condition estimation in
+     !! its simplest version:
+     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
+     !! lower triangular matrix L, such that
+     !! twonorm(L*x) = sest
+     !! Then CLAIC1 computes sestpr, s, c such that
+     !! the vector
+     !! [ s*x ]
+     !! xhat = [  c  ]
+     !! is an approximate singular vector of
+     !! [ L      0  ]
+     !! Lhat = [ w**H gamma ]
+     !! in the sense that
+     !! twonorm(Lhat*xhat) = sestpr.
+     !! Depending on JOB, an estimate for the largest or smallest singular
+     !! value is computed.
+     !! Note that [s c]**H and sestpr**2 is an eigenpair of the system
+     !! diag(sest*sest, 0) + [alpha  gamma] * [ conjg(alpha) ]
+     !! [ conjg(gamma) ]
+     !! where  alpha =  x**H*w.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: j, job
+           real(sp), intent(in) :: sest
+           real(sp), intent(out) :: sestpr
+           complex(sp), intent(out) :: c, s
+           complex(sp), intent(in) :: gamma
+           ! Array Arguments 
+           complex(sp), intent(in) :: w(j), x(j)
+        ! =====================================================================
+           
+           
+           ! Local Scalars 
+           real(sp) :: absalp, absest, absgam, b, eps, norma, s1, s2, scl, t, test, tmp, zeta1, &
+                     zeta2
+           complex(sp) :: alpha, cosine, sine
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           eps = stdlib_slamch( 'EPSILON' )
+           alpha = stdlib_cdotc( j, x, 1, w, 1 )
+           absalp = abs( alpha )
+           absgam = abs( gamma )
+           absest = abs( sest )
+           if( job==1 ) then
+              ! estimating largest singular value
+              ! special cases
+              if( sest==zero ) then
+                 s1 = max( absgam, absalp )
+                 if( s1==zero ) then
+                    s = zero
+                    c = one
+                    sestpr = zero
+                 else
+                    s = alpha / s1
+                    c = gamma / s1
+                    tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=sp)
+                    s = s / tmp
+                    c = c / tmp
+                    sestpr = s1*tmp
+                 end if
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = one
+                 c = zero
+                 tmp = max( absest, absalp )
+                 s1 = absest / tmp
+                 s2 = absalp / tmp
+                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 else
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = s2*scl
+                    s = ( alpha / s2 ) / scl
+                    c = ( gamma / s2 ) / scl
+                 else
+                    tmp = s2 / s1
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = s1*scl
+                    s = ( alpha / s1 ) / scl
+                    c = ( gamma / s1 ) / scl
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = absalp / absest
+                 zeta2 = absgam / absest
+                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
+                 c = zeta1*zeta1
+                 if( b>zero ) then
+                    t = real( c / ( b+sqrt( b*b+c ) ),KIND=sp)
+                 else
+                    t = real( sqrt( b*b+c ) - b,KIND=sp)
+                 end if
+                 sine = -( alpha / absest ) / t
+                 cosine = -( gamma / absest ) / ( one+t )
+                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=sp)
+                           
+                 s = sine / tmp
+                 c = cosine / tmp
+                 sestpr = sqrt( t+one )*absest
+                 return
+              end if
+           else if( job==2 ) then
+              ! estimating smallest singular value
+              ! special cases
+              if( sest==zero ) then
+                 sestpr = zero
+                 if( max( absgam, absalp )==zero ) then
+                    sine = one
+                    cosine = zero
+                 else
+                    sine = -conjg( gamma )
+                    cosine = conjg( alpha )
+                 end if
+                 s1 = max( abs( sine ), abs( cosine ) )
+                 s = sine / s1
+                 c = cosine / s1
+                 tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=sp)
+                 s = s / tmp
+                 c = c / tmp
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = zero
+                 c = one
+                 sestpr = absgam
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 else
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = absest*( tmp / scl )
+                    s = -( conjg( gamma ) / s2 ) / scl
+                    c = ( conjg( alpha ) / s2 ) / scl
+                 else
+                    tmp = s2 / s1
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = absest / scl
+                    s = -( conjg( gamma ) / s1 ) / scl
+                    c = ( conjg( alpha ) / s1 ) / scl
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = absalp / absest
+                 zeta2 = absgam / absest
+                 norma = max( one+zeta1*zeta1+zeta1*zeta2,zeta1*zeta2+zeta2*zeta2 )
+                 ! see if root is closer to zero or to one
+                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
+                 if( test>=zero ) then
+                    ! root is close to zero, compute directly
+                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
+                    c = zeta2*zeta2
+                    t = real( c / ( b+sqrt( abs( b*b-c ) ) ),KIND=sp)
+                    sine = ( alpha / absest ) / ( one-t )
+                    cosine = -( gamma / absest ) / t
+                    sestpr = sqrt( t+four*eps*eps*norma )*absest
+                 else
+                    ! root is closer to one, shift by that amount
+                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
+                    c = zeta1*zeta1
+                    if( b>=zero ) then
+                       t = real( -c / ( b+sqrt( b*b+c ) ),KIND=sp)
+                    else
+                       t = real( b - sqrt( b*b+c ),KIND=sp)
+                    end if
+                    sine = -( alpha / absest ) / t
+                    cosine = -( gamma / absest ) / ( one+t )
+                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
+                 end if
+                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=sp)
+                           
+                 s = sine / tmp
+                 c = cosine / tmp
+                 return
+              end if
+           end if
+           return
+     end subroutine stdlib_claic1
+
+     module pure subroutine stdlib_zlaic1( job, j, x, sest, w, gamma, sestpr, s, c )
+     !! ZLAIC1 applies one step of incremental condition estimation in
+     !! its simplest version:
+     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
+     !! lower triangular matrix L, such that
+     !! twonorm(L*x) = sest
+     !! Then ZLAIC1 computes sestpr, s, c such that
+     !! the vector
+     !! [ s*x ]
+     !! xhat = [  c  ]
+     !! is an approximate singular vector of
+     !! [ L       0  ]
+     !! Lhat = [ w**H gamma ]
+     !! in the sense that
+     !! twonorm(Lhat*xhat) = sestpr.
+     !! Depending on JOB, an estimate for the largest or smallest singular
+     !! value is computed.
+     !! Note that [s c]**H and sestpr**2 is an eigenpair of the system
+     !! diag(sest*sest, 0) + [alpha  gamma] * [ conjg(alpha) ]
+     !! [ conjg(gamma) ]
+     !! where  alpha =  x**H * w.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: j, job
+           real(dp), intent(in) :: sest
+           real(dp), intent(out) :: sestpr
+           complex(dp), intent(out) :: c, s
+           complex(dp), intent(in) :: gamma
+           ! Array Arguments 
+           complex(dp), intent(in) :: w(j), x(j)
+        ! =====================================================================
+           
+           
+           ! Local Scalars 
+           real(dp) :: absalp, absest, absgam, b, eps, norma, s1, s2, scl, t, test, tmp, zeta1, &
+                     zeta2
+           complex(dp) :: alpha, cosine, sine
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           eps = stdlib_dlamch( 'EPSILON' )
+           alpha = stdlib_zdotc( j, x, 1, w, 1 )
+           absalp = abs( alpha )
+           absgam = abs( gamma )
+           absest = abs( sest )
+           if( job==1 ) then
+              ! estimating largest singular value
+              ! special cases
+              if( sest==zero ) then
+                 s1 = max( absgam, absalp )
+                 if( s1==zero ) then
+                    s = zero
+                    c = one
+                    sestpr = zero
+                 else
+                    s = alpha / s1
+                    c = gamma / s1
+                    tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=dp)
+                    s = s / tmp
+                    c = c / tmp
+                    sestpr = s1*tmp
+                 end if
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = one
+                 c = zero
+                 tmp = max( absest, absalp )
+                 s1 = absest / tmp
+                 s2 = absalp / tmp
+                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 else
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = s2*scl
+                    s = ( alpha / s2 ) / scl
+                    c = ( gamma / s2 ) / scl
+                 else
+                    tmp = s2 / s1
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = s1*scl
+                    s = ( alpha / s1 ) / scl
+                    c = ( gamma / s1 ) / scl
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = absalp / absest
+                 zeta2 = absgam / absest
+                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
+                 c = zeta1*zeta1
+                 if( b>zero ) then
+                    t = real( c / ( b+sqrt( b*b+c ) ),KIND=dp)
+                 else
+                    t = real( sqrt( b*b+c ) - b,KIND=dp)
+                 end if
+                 sine = -( alpha / absest ) / t
+                 cosine = -( gamma / absest ) / ( one+t )
+                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=dp)
+                           
+                 s = sine / tmp
+                 c = cosine / tmp
+                 sestpr = sqrt( t+one )*absest
+                 return
+              end if
+           else if( job==2 ) then
+              ! estimating smallest singular value
+              ! special cases
+              if( sest==zero ) then
+                 sestpr = zero
+                 if( max( absgam, absalp )==zero ) then
+                    sine = one
+                    cosine = zero
+                 else
+                    sine = -conjg( gamma )
+                    cosine = conjg( alpha )
+                 end if
+                 s1 = max( abs( sine ), abs( cosine ) )
+                 s = sine / s1
+                 c = cosine / s1
+                 tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=dp)
+                 s = s / tmp
+                 c = c / tmp
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = zero
+                 c = one
+                 sestpr = absgam
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 else
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = absest*( tmp / scl )
+                    s = -( conjg( gamma ) / s2 ) / scl
+                    c = ( conjg( alpha ) / s2 ) / scl
+                 else
+                    tmp = s2 / s1
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = absest / scl
+                    s = -( conjg( gamma ) / s1 ) / scl
+                    c = ( conjg( alpha ) / s1 ) / scl
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = absalp / absest
+                 zeta2 = absgam / absest
+                 norma = max( one+zeta1*zeta1+zeta1*zeta2,zeta1*zeta2+zeta2*zeta2 )
+                 ! see if root is closer to zero or to one
+                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
+                 if( test>=zero ) then
+                    ! root is close to zero, compute directly
+                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
+                    c = zeta2*zeta2
+                    t = real( c / ( b+sqrt( abs( b*b-c ) ) ),KIND=dp)
+                    sine = ( alpha / absest ) / ( one-t )
+                    cosine = -( gamma / absest ) / t
+                    sestpr = sqrt( t+four*eps*eps*norma )*absest
+                 else
+                    ! root is closer to one, shift by that amount
+                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
+                    c = zeta1*zeta1
+                    if( b>=zero ) then
+                       t = -c / ( b+sqrt( b*b+c ) )
+                    else
+                       t = b - sqrt( b*b+c )
+                    end if
+                    sine = -( alpha / absest ) / t
+                    cosine = -( gamma / absest ) / ( one+t )
+                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
+                 end if
+                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=dp)
+                           
+                 s = sine / tmp
+                 c = cosine / tmp
+                 return
+              end if
+           end if
+           return
+     end subroutine stdlib_zlaic1
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$laic1( job, j, x, sest, w, gamma, sestpr, s, c )
+     !! ZLAIC1: applies one step of incremental condition estimation in
+     !! its simplest version:
+     !! Let x, twonorm(x) = 1, be an approximate singular vector of an j-by-j
+     !! lower triangular matrix L, such that
+     !! twonorm(L*x) = sest
+     !! Then ZLAIC1 computes sestpr, s, c such that
+     !! the vector
+     !! [ s*x ]
+     !! xhat = [  c  ]
+     !! is an approximate singular vector of
+     !! [ L       0  ]
+     !! Lhat = [ w**H gamma ]
+     !! in the sense that
+     !! twonorm(Lhat*xhat) = sestpr.
+     !! Depending on JOB, an estimate for the largest or smallest singular
+     !! value is computed.
+     !! Note that [s c]**H and sestpr**2 is an eigenpair of the system
+     !! diag(sest*sest, 0) + [alpha  gamma] * [ conjg(alpha) ]
+     !! [ conjg(gamma) ]
+     !! where  alpha =  x**H * w.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: j, job
+           real(${ck}$), intent(in) :: sest
+           real(${ck}$), intent(out) :: sestpr
+           complex(${ck}$), intent(out) :: c, s
+           complex(${ck}$), intent(in) :: gamma
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: w(j), x(j)
+        ! =====================================================================
+           
+           
+           ! Local Scalars 
+           real(${ck}$) :: absalp, absest, absgam, b, eps, norma, s1, s2, scl, t, test, tmp, zeta1, &
+                     zeta2
+           complex(${ck}$) :: alpha, cosine, sine
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           eps = stdlib_${c2ri(ci)}$lamch( 'EPSILON' )
+           alpha = stdlib_${ci}$dotc( j, x, 1, w, 1 )
+           absalp = abs( alpha )
+           absgam = abs( gamma )
+           absest = abs( sest )
+           if( job==1 ) then
+              ! estimating largest singular value
+              ! special cases
+              if( sest==zero ) then
+                 s1 = max( absgam, absalp )
+                 if( s1==zero ) then
+                    s = zero
+                    c = one
+                    sestpr = zero
+                 else
+                    s = alpha / s1
+                    c = gamma / s1
+                    tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=${ck}$)
+                    s = s / tmp
+                    c = c / tmp
+                    sestpr = s1*tmp
+                 end if
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = one
+                 c = zero
+                 tmp = max( absest, absalp )
+                 s1 = absest / tmp
+                 s2 = absalp / tmp
+                 sestpr = tmp*sqrt( s1*s1+s2*s2 )
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 else
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = s2*scl
+                    s = ( alpha / s2 ) / scl
+                    c = ( gamma / s2 ) / scl
+                 else
+                    tmp = s2 / s1
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = s1*scl
+                    s = ( alpha / s1 ) / scl
+                    c = ( gamma / s1 ) / scl
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = absalp / absest
+                 zeta2 = absgam / absest
+                 b = ( one-zeta1*zeta1-zeta2*zeta2 )*half
+                 c = zeta1*zeta1
+                 if( b>zero ) then
+                    t = real( c / ( b+sqrt( b*b+c ) ),KIND=${ck}$)
+                 else
+                    t = real( sqrt( b*b+c ) - b,KIND=${ck}$)
+                 end if
+                 sine = -( alpha / absest ) / t
+                 cosine = -( gamma / absest ) / ( one+t )
+                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=${ck}$)
+                           
+                 s = sine / tmp
+                 c = cosine / tmp
+                 sestpr = sqrt( t+one )*absest
+                 return
+              end if
+           else if( job==2 ) then
+              ! estimating smallest singular value
+              ! special cases
+              if( sest==zero ) then
+                 sestpr = zero
+                 if( max( absgam, absalp )==zero ) then
+                    sine = one
+                    cosine = zero
+                 else
+                    sine = -conjg( gamma )
+                    cosine = conjg( alpha )
+                 end if
+                 s1 = max( abs( sine ), abs( cosine ) )
+                 s = sine / s1
+                 c = cosine / s1
+                 tmp = real( sqrt( s*conjg( s )+c*conjg( c ) ),KIND=${ck}$)
+                 s = s / tmp
+                 c = c / tmp
+                 return
+              else if( absgam<=eps*absest ) then
+                 s = zero
+                 c = one
+                 sestpr = absgam
+                 return
+              else if( absalp<=eps*absest ) then
+                 s1 = absgam
+                 s2 = absest
+                 if( s1<=s2 ) then
+                    s = zero
+                    c = one
+                    sestpr = s1
+                 else
+                    s = one
+                    c = zero
+                    sestpr = s2
+                 end if
+                 return
+              else if( absest<=eps*absalp .or. absest<=eps*absgam ) then
+                 s1 = absgam
+                 s2 = absalp
+                 if( s1<=s2 ) then
+                    tmp = s1 / s2
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = absest*( tmp / scl )
+                    s = -( conjg( gamma ) / s2 ) / scl
+                    c = ( conjg( alpha ) / s2 ) / scl
+                 else
+                    tmp = s2 / s1
+                    scl = sqrt( one+tmp*tmp )
+                    sestpr = absest / scl
+                    s = -( conjg( gamma ) / s1 ) / scl
+                    c = ( conjg( alpha ) / s1 ) / scl
+                 end if
+                 return
+              else
+                 ! normal case
+                 zeta1 = absalp / absest
+                 zeta2 = absgam / absest
+                 norma = max( one+zeta1*zeta1+zeta1*zeta2,zeta1*zeta2+zeta2*zeta2 )
+                 ! see if root is closer to zero or to one
+                 test = one + two*( zeta1-zeta2 )*( zeta1+zeta2 )
+                 if( test>=zero ) then
+                    ! root is close to zero, compute directly
+                    b = ( zeta1*zeta1+zeta2*zeta2+one )*half
+                    c = zeta2*zeta2
+                    t = real( c / ( b+sqrt( abs( b*b-c ) ) ),KIND=${ck}$)
+                    sine = ( alpha / absest ) / ( one-t )
+                    cosine = -( gamma / absest ) / t
+                    sestpr = sqrt( t+four*eps*eps*norma )*absest
+                 else
+                    ! root is closer to one, shift by that amount
+                    b = ( zeta2*zeta2+zeta1*zeta1-one )*half
+                    c = zeta1*zeta1
+                    if( b>=zero ) then
+                       t = -c / ( b+sqrt( b*b+c ) )
+                    else
+                       t = b - sqrt( b*b+c )
+                    end if
+                    sine = -( alpha / absest ) / t
+                    cosine = -( gamma / absest ) / ( one+t )
+                    sestpr = sqrt( one+t+four*eps*eps*norma )*absest
+                 end if
+                 tmp = real( sqrt( sine * conjg( sine )+ cosine * conjg( cosine ) ),KIND=${ck}$)
+                           
+                 s = sine / tmp
+                 c = cosine / tmp
+                 return
+              end if
+           end if
+           return
+     end subroutine stdlib_${ci}$laic1
 
 #:endif
 #:endfor

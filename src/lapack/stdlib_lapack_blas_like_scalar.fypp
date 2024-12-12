@@ -5,6 +5,61 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_scalar
 
   contains
 
+     module pure logical(lk) function stdlib_sisnan( sin )
+     !! SISNAN returns .TRUE. if its argument is NaN, and .FALSE.
+     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+     !! future.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: sin
+        ! =====================================================================
+        ! Executable Statements 
+           stdlib_sisnan = stdlib_slaisnan(sin,sin)
+           return
+     end function stdlib_sisnan
+
+     module pure logical(lk) function stdlib_disnan( din )
+     !! DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
+     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+     !! future.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: din
+        ! =====================================================================
+        ! Executable Statements 
+           stdlib_disnan = stdlib_dlaisnan(din,din)
+           return
+     end function stdlib_disnan
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure logical(lk) function stdlib_${ri}$isnan( din )
+     !! DISNAN: returns .TRUE. if its argument is NaN, and .FALSE.
+     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+     !! future.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: din
+        ! =====================================================================
+        ! Executable Statements 
+           stdlib_${ri}$isnan = stdlib_${ri}$laisnan(din,din)
+           return
+     end function stdlib_${ri}$isnan
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_sladiv( a, b, c, d, p, q )
      !! SLADIV performs complex division in  real arithmetic
      !! a + i*b
@@ -281,88 +336,6 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_scalar
 
 
 
-     module pure logical(lk) function stdlib_slaisnan( sin1, sin2 )
-     !! This routine is not for general use.  It exists solely to avoid
-     !! over-optimization in SISNAN.
-     !! SLAISNAN checks for NaNs by comparing its two arguments for
-     !! inequality.  NaN is the only floating-point value where NaN != NaN
-     !! returns .TRUE.  To check for NaNs, pass the same variable as both
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-     !! arguments.
-     !! A compiler must assume that the two arguments are
-     !! not the same variable, and the test will not be optimized away.
-     !! Interprocedural or whole-program optimization may delete this
-     !! test.  The ISNAN functions will be replaced by the correct
-     !! Fortran 03 intrinsic once the intrinsic is widely available.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: sin1, sin2
-        ! =====================================================================
-        ! Executable Statements 
-           stdlib_slaisnan = (sin1/=sin2)
-           return
-     end function stdlib_slaisnan
-
-     module pure logical(lk) function stdlib_dlaisnan( din1, din2 )
-     !! This routine is not for general use.  It exists solely to avoid
-     !! over-optimization in DISNAN.
-     !! DLAISNAN checks for NaNs by comparing its two arguments for
-     !! inequality.  NaN is the only floating-point value where NaN != NaN
-     !! returns .TRUE.  To check for NaNs, pass the same variable as both
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-     !! arguments.
-     !! A compiler must assume that the two arguments are
-     !! not the same variable, and the test will not be optimized away.
-     !! Interprocedural or whole-program optimization may delete this
-     !! test.  The ISNAN functions will be replaced by the correct
-     !! Fortran 03 intrinsic once the intrinsic is widely available.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: din1, din2
-        ! =====================================================================
-        ! Executable Statements 
-           stdlib_dlaisnan = (din1/=din2)
-           return
-     end function stdlib_dlaisnan
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure logical(lk) function stdlib_${ri}$laisnan( din1, din2 )
-     !! This routine is not for general use.  It exists solely to avoid
-     !! over-optimization in DISNAN.
-     !! DLAISNAN: checks for NaNs by comparing its two arguments for
-     !! inequality.  NaN is the only floating-point value where NaN != NaN
-     !! returns .TRUE.  To check for NaNs, pass the same variable as both
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-     !! arguments.
-     !! A compiler must assume that the two arguments are
-     !! not the same variable, and the test will not be optimized away.
-     !! Interprocedural or whole-program optimization may delete this
-     !! test.  The ISNAN functions will be replaced by the correct
-     !! Fortran 03 intrinsic once the intrinsic is widely available.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: din1, din2
-        ! =====================================================================
-        ! Executable Statements 
-           stdlib_${ri}$laisnan = (din1/=din2)
-           return
-     end function stdlib_${ri}$laisnan
-
-#:endif
-#:endfor
-
-
-
      module pure real(sp) function stdlib_slapy3( x, y, z )
      !! SLAPY3 returns sqrt(x**2+y**2+z**2), taking care not to cause
      !! unnecessary overflow and unnecessary underflow.
@@ -457,6 +430,90 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_scalar
            end if
            return
      end function stdlib_${ri}$lapy3
+
+#:endif
+#:endfor
+
+
+
+
+
+     module pure logical(lk) function stdlib_slaisnan( sin1, sin2 )
+     !! This routine is not for general use.  It exists solely to avoid
+     !! over-optimization in SISNAN.
+     !! SLAISNAN checks for NaNs by comparing its two arguments for
+     !! inequality.  NaN is the only floating-point value where NaN != NaN
+     !! returns .TRUE.  To check for NaNs, pass the same variable as both
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+     !! arguments.
+     !! A compiler must assume that the two arguments are
+     !! not the same variable, and the test will not be optimized away.
+     !! Interprocedural or whole-program optimization may delete this
+     !! test.  The ISNAN functions will be replaced by the correct
+     !! Fortran 03 intrinsic once the intrinsic is widely available.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: sin1, sin2
+        ! =====================================================================
+        ! Executable Statements 
+           stdlib_slaisnan = (sin1/=sin2)
+           return
+     end function stdlib_slaisnan
+
+     module pure logical(lk) function stdlib_dlaisnan( din1, din2 )
+     !! This routine is not for general use.  It exists solely to avoid
+     !! over-optimization in DISNAN.
+     !! DLAISNAN checks for NaNs by comparing its two arguments for
+     !! inequality.  NaN is the only floating-point value where NaN != NaN
+     !! returns .TRUE.  To check for NaNs, pass the same variable as both
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+     !! arguments.
+     !! A compiler must assume that the two arguments are
+     !! not the same variable, and the test will not be optimized away.
+     !! Interprocedural or whole-program optimization may delete this
+     !! test.  The ISNAN functions will be replaced by the correct
+     !! Fortran 03 intrinsic once the intrinsic is widely available.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: din1, din2
+        ! =====================================================================
+        ! Executable Statements 
+           stdlib_dlaisnan = (din1/=din2)
+           return
+     end function stdlib_dlaisnan
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure logical(lk) function stdlib_${ri}$laisnan( din1, din2 )
+     !! This routine is not for general use.  It exists solely to avoid
+     !! over-optimization in DISNAN.
+     !! DLAISNAN: checks for NaNs by comparing its two arguments for
+     !! inequality.  NaN is the only floating-point value where NaN != NaN
+     !! returns .TRUE.  To check for NaNs, pass the same variable as both
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+     !! arguments.
+     !! A compiler must assume that the two arguments are
+     !! not the same variable, and the test will not be optimized away.
+     !! Interprocedural or whole-program optimization may delete this
+     !! test.  The ISNAN functions will be replaced by the correct
+     !! Fortran 03 intrinsic once the intrinsic is widely available.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: din1, din2
+        ! =====================================================================
+        ! Executable Statements 
+           stdlib_${ri}$laisnan = (din1/=din2)
+           return
+     end function stdlib_${ri}$laisnan
 
 #:endif
 #:endfor
@@ -572,63 +629,6 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_scalar
            end if
            return
      end function stdlib_${ri}$lapy2
-
-#:endif
-#:endfor
-
-
-
-
-
-     module pure logical(lk) function stdlib_sisnan( sin )
-     !! SISNAN returns .TRUE. if its argument is NaN, and .FALSE.
-     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-     !! future.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: sin
-        ! =====================================================================
-        ! Executable Statements 
-           stdlib_sisnan = stdlib_slaisnan(sin,sin)
-           return
-     end function stdlib_sisnan
-
-     module pure logical(lk) function stdlib_disnan( din )
-     !! DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
-     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-     !! future.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: din
-        ! =====================================================================
-        ! Executable Statements 
-           stdlib_disnan = stdlib_dlaisnan(din,din)
-           return
-     end function stdlib_disnan
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure logical(lk) function stdlib_${ri}$isnan( din )
-     !! DISNAN: returns .TRUE. if its argument is NaN, and .FALSE.
-     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-     !! future.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: din
-        ! =====================================================================
-        ! Executable Statements 
-           stdlib_${ri}$isnan = stdlib_${ri}$laisnan(din,din)
-           return
-     end function stdlib_${ri}$isnan
 
 #:endif
 #:endfor
