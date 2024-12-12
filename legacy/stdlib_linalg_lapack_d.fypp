@@ -35289,6 +35289,7 @@ module stdlib_linalg_lapack_d
            integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
            real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
            real(dp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
            ! Array Arguments 
            real(dp), intent(inout) :: z(*)
         ! =====================================================================
@@ -35300,7 +35301,6 @@ module stdlib_linalg_lapack_d
            
            ! Local Scalars 
            integer(ilp) :: ipn4, j4, n0in, nn
-           integer(ilp), intent(inout) :: ttype
            real(dp) :: eps, s, t, temp, tol, tol2
            ! Intrinsic Functions 
            intrinsic :: abs,max,min,sqrt
