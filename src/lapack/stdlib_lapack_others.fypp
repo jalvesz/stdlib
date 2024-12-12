@@ -5,6 +5,460 @@ submodule(stdlib_lapack) stdlib_lapack_others
 
   contains
 
+     module real(sp) function stdlib_cla_hercond_c( uplo, n, a, lda, af, ldaf, ipiv, c,capply, info, &
+     !! CLA_HERCOND_C computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a REAL vector.
+               work, rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: uplo
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, lda, ldaf
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(sp), intent(in) :: a(lda,*), af(ldaf,*)
+           complex(sp), intent(out) :: work(*)
+           real(sp), intent(in) :: c(*)
+           real(sp), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: kase, i, j
+           real(sp) :: ainvnm, anorm, tmp
+           logical(lk) :: up, upper
+           complex(sp) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_cla_hercond_c = zero
+           info = 0
+           upper = stdlib_lsame( uplo, 'U' )
+           if( .not.upper .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CLA_HERCOND_C', -info )
+              return
+           end if
+           up = .false.
+           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           if ( up ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_cla_hercond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_clacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if ( up ) then
+                    call stdlib_chetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
+                 else
+                    call stdlib_chetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( up ) then
+                    call stdlib_chetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
+                 else
+                    call stdlib_chetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_cla_hercond_c = one / ainvnm
+           return
+     end function stdlib_cla_hercond_c
+
+     module real(dp) function stdlib_zla_hercond_c( uplo, n, a, lda, af,ldaf, ipiv, c, capply,info, work,&
+     !! ZLA_HERCOND_C computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
+                rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: uplo
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, lda, ldaf
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(dp), intent(in) :: a(lda,*), af(ldaf,*)
+           complex(dp), intent(out) :: work(*)
+           real(dp), intent(in) :: c(*)
+           real(dp), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: kase, i, j
+           real(dp) :: ainvnm, anorm, tmp
+           logical(lk) :: up, upper
+           complex(dp) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_zla_hercond_c = zero
+           info = 0
+           upper = stdlib_lsame( uplo, 'U' )
+           if( .not.upper .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLA_HERCOND_C', -info )
+              return
+           end if
+           up = .false.
+           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           if ( up ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_zla_hercond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_zlacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if ( up ) then
+                    call stdlib_zhetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
+                 else
+                    call stdlib_zhetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( up ) then
+                    call stdlib_zhetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
+                 else
+                    call stdlib_zhetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_zla_hercond_c = one / ainvnm
+           return
+     end function stdlib_zla_hercond_c
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module real(${ck}$) function stdlib_${ci}$la_hercond_c( uplo, n, a, lda, af,ldaf, ipiv, c, capply,info, work,&
+     !! ZLA_HERCOND_C: computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
+                rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: uplo
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, lda, ldaf
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(${ck}$), intent(in) :: a(lda,*), af(ldaf,*)
+           complex(${ck}$), intent(out) :: work(*)
+           real(${ck}$), intent(in) :: c(*)
+           real(${ck}$), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: kase, i, j
+           real(${ck}$) :: ainvnm, anorm, tmp
+           logical(lk) :: up, upper
+           complex(${ck}$) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_${ci}$la_hercond_c = zero
+           info = 0
+           upper = stdlib_lsame( uplo, 'U' )
+           if( .not.upper .and. .not.stdlib_lsame( uplo, 'L' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLA_HERCOND_C', -info )
+              return
+           end if
+           up = .false.
+           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           if ( up ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_${ci}$la_hercond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_${ci}$lacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if ( up ) then
+                    call stdlib_${ci}$hetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
+                 else
+                    call stdlib_${ci}$hetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( up ) then
+                    call stdlib_${ci}$hetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
+                 else
+                    call stdlib_${ci}$hetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_${ci}$la_hercond_c = one / ainvnm
+           return
+     end function stdlib_${ci}$la_hercond_c
+
+#:endif
+#:endfor
+
+
+
      module real(sp) function stdlib_sla_syrpvgrw( uplo, n, info, a, lda, af, ldaf, ipiv,work )
      !! SLA_SYRPVGRW computes the reciprocal pivot growth factor
      !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
@@ -1130,887 +1584,6 @@ submodule(stdlib_lapack) stdlib_lapack_others
 
 
 
-     module real(sp) function stdlib_cla_hercond_c( uplo, n, a, lda, af, ldaf, ipiv, c,capply, info, &
-     !! CLA_HERCOND_C computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a REAL vector.
-               work, rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: uplo
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, lda, ldaf
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(sp), intent(in) :: a(lda,*), af(ldaf,*)
-           complex(sp), intent(out) :: work(*)
-           real(sp), intent(in) :: c(*)
-           real(sp), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: kase, i, j
-           real(sp) :: ainvnm, anorm, tmp
-           logical(lk) :: up, upper
-           complex(sp) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_cla_hercond_c = zero
-           info = 0
-           upper = stdlib_lsame( uplo, 'U' )
-           if( .not.upper .and. .not.stdlib_lsame( uplo, 'L' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'CLA_HERCOND_C', -info )
-              return
-           end if
-           up = .false.
-           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           if ( up ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_cla_hercond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_clacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if ( up ) then
-                    call stdlib_chetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
-                 else
-                    call stdlib_chetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( up ) then
-                    call stdlib_chetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
-                 else
-                    call stdlib_chetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_cla_hercond_c = one / ainvnm
-           return
-     end function stdlib_cla_hercond_c
-
-     module real(dp) function stdlib_zla_hercond_c( uplo, n, a, lda, af,ldaf, ipiv, c, capply,info, work,&
-     !! ZLA_HERCOND_C computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
-                rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: uplo
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, lda, ldaf
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(dp), intent(in) :: a(lda,*), af(ldaf,*)
-           complex(dp), intent(out) :: work(*)
-           real(dp), intent(in) :: c(*)
-           real(dp), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: kase, i, j
-           real(dp) :: ainvnm, anorm, tmp
-           logical(lk) :: up, upper
-           complex(dp) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_zla_hercond_c = zero
-           info = 0
-           upper = stdlib_lsame( uplo, 'U' )
-           if( .not.upper .and. .not.stdlib_lsame( uplo, 'L' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLA_HERCOND_C', -info )
-              return
-           end if
-           up = .false.
-           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           if ( up ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_zla_hercond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_zlacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if ( up ) then
-                    call stdlib_zhetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
-                 else
-                    call stdlib_zhetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( up ) then
-                    call stdlib_zhetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
-                 else
-                    call stdlib_zhetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_zla_hercond_c = one / ainvnm
-           return
-     end function stdlib_zla_hercond_c
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module real(${ck}$) function stdlib_${ci}$la_hercond_c( uplo, n, a, lda, af,ldaf, ipiv, c, capply,info, work,&
-     !! ZLA_HERCOND_C: computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
-                rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: uplo
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, lda, ldaf
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(${ck}$), intent(in) :: a(lda,*), af(ldaf,*)
-           complex(${ck}$), intent(out) :: work(*)
-           real(${ck}$), intent(in) :: c(*)
-           real(${ck}$), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: kase, i, j
-           real(${ck}$) :: ainvnm, anorm, tmp
-           logical(lk) :: up, upper
-           complex(${ck}$) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_${ci}$la_hercond_c = zero
-           info = 0
-           upper = stdlib_lsame( uplo, 'U' )
-           if( .not.upper .and. .not.stdlib_lsame( uplo, 'L' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLA_HERCOND_C', -info )
-              return
-           end if
-           up = .false.
-           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           if ( up ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_${ci}$la_hercond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_${ci}$lacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if ( up ) then
-                    call stdlib_${ci}$hetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
-                 else
-                    call stdlib_${ci}$hetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( up ) then
-                    call stdlib_${ci}$hetrs( 'U', n, 1, af, ldaf, ipiv,work, n, info )
-                 else
-                    call stdlib_${ci}$hetrs( 'L', n, 1, af, ldaf, ipiv,work, n, info )
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_${ci}$la_hercond_c = one / ainvnm
-           return
-     end function stdlib_${ci}$la_hercond_c
-
-#:endif
-#:endfor
-
-
-
-     module real(sp) function stdlib_cla_gercond_c( trans, n, a, lda, af, ldaf, ipiv, c,capply, info, &
-     !! CLA_GERCOND_C computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a REAL vector.
-               work, rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: trans
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, lda, ldaf
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(sp), intent(in) :: a(lda,*), af(ldaf,*)
-           complex(sp), intent(out) :: work(*)
-           real(sp), intent(in) :: c(*)
-           real(sp), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           logical(lk) :: notrans
-           integer(ilp) :: kase, i, j
-           real(sp) :: ainvnm, anorm, tmp
-           complex(sp) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_cla_gercond_c = zero
-           info = 0
-           notrans = stdlib_lsame( trans, 'N' )
-           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
-                     trans, 'C' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'CLA_GERCOND_C', -info )
-              return
-           end if
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           if ( notrans ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_cla_gercond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_clacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if (notrans) then
-                    call stdlib_cgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
-                              
-                 else
-                    call stdlib_cgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
-                              )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( notrans ) then
-                    call stdlib_cgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
-                              )
-                 else
-                    call stdlib_cgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
-                              
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_cla_gercond_c = one / ainvnm
-           return
-     end function stdlib_cla_gercond_c
-
-     module real(dp) function stdlib_zla_gercond_c( trans, n, a, lda, af,ldaf, ipiv, c, capply,info, &
-     !! ZLA_GERCOND_C computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
-               work, rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: trans
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, lda, ldaf
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(dp), intent(in) :: a(lda,*), af(ldaf,*)
-           complex(dp), intent(out) :: work(*)
-           real(dp), intent(in) :: c(*)
-           real(dp), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           logical(lk) :: notrans
-           integer(ilp) :: kase, i, j
-           real(dp) :: ainvnm, anorm, tmp
-           complex(dp) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_zla_gercond_c = zero
-           info = 0
-           notrans = stdlib_lsame( trans, 'N' )
-           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
-                     trans, 'C' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLA_GERCOND_C', -info )
-              return
-           end if
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           if ( notrans ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_zla_gercond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_zlacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if (notrans) then
-                    call stdlib_zgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
-                              
-                 else
-                    call stdlib_zgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
-                              )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( notrans ) then
-                    call stdlib_zgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
-                              )
-                 else
-                    call stdlib_zgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
-                              
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_zla_gercond_c = one / ainvnm
-           return
-     end function stdlib_zla_gercond_c
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module real(${ck}$) function stdlib_${ci}$la_gercond_c( trans, n, a, lda, af,ldaf, ipiv, c, capply,info, &
-     !! ZLA_GERCOND_C: computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
-               work, rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: trans
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, lda, ldaf
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(${ck}$), intent(in) :: a(lda,*), af(ldaf,*)
-           complex(${ck}$), intent(out) :: work(*)
-           real(${ck}$), intent(in) :: c(*)
-           real(${ck}$), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           logical(lk) :: notrans
-           integer(ilp) :: kase, i, j
-           real(${ck}$) :: ainvnm, anorm, tmp
-           complex(${ck}$) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_${ci}$la_gercond_c = zero
-           info = 0
-           notrans = stdlib_lsame( trans, 'N' )
-           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
-                     trans, 'C' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLA_GERCOND_C', -info )
-              return
-           end if
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           if ( notrans ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( i, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = 1, n
-                       tmp = tmp + cabs1( a( j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_${ci}$la_gercond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_${ci}$lacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if (notrans) then
-                    call stdlib_${ci}$getrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
-                              
-                 else
-                    call stdlib_${ci}$getrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
-                              )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( notrans ) then
-                    call stdlib_${ci}$getrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
-                              )
-                 else
-                    call stdlib_${ci}$getrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
-                              
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_${ci}$la_gercond_c = one / ainvnm
-           return
-     end function stdlib_${ci}$la_gercond_c
-
-#:endif
-#:endfor
-
-
-
      module real(sp) function stdlib_cla_porcond_c( uplo, n, a, lda, af, ldaf, c, capply,info, work, &
      !! CLA_PORCOND_C Computes the infinity norm condition number of
      !! op(A) * inv(diag(C)) where C is a REAL vector
@@ -2459,1214 +2032,6 @@ submodule(stdlib_lapack) stdlib_lapack_others
            if( ainvnm /= zero )stdlib_${ci}$la_porcond_c = one / ainvnm
            return
      end function stdlib_${ci}$la_porcond_c
-
-#:endif
-#:endfor
-
-
-
-     module pure real(sp) function stdlib_sla_gerpvgrw( n, ncols, a, lda, af, ldaf )
-     !! SLA_GERPVGRW computes the reciprocal pivot growth factor
-     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
-     !! much less than 1, the stability of the LU factorization of the
-     !! (equilibrated) matrix A could be poor. This also means that the
-     !! solution X, estimated condition numbers, and error bounds could be
-     !! unreliable.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, ncols, lda, ldaf
-           ! Array Arguments 
-           real(sp), intent(in) :: a(lda,*), af(ldaf,*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, j
-           real(sp) :: amax, umax, rpvgrw
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           rpvgrw = one
-           do j = 1, ncols
-              amax = zero
-              umax = zero
-              do i = 1, n
-                 amax = max( abs( a( i, j ) ), amax )
-              end do
-              do i = 1, j
-                 umax = max( abs( af( i, j ) ), umax )
-              end do
-              if ( umax /= 0.0_sp ) then
-                 rpvgrw = min( amax / umax, rpvgrw )
-              end if
-           end do
-           stdlib_sla_gerpvgrw = rpvgrw
-     end function stdlib_sla_gerpvgrw
-
-     module pure real(dp) function stdlib_dla_gerpvgrw( n, ncols, a, lda, af,ldaf )
-     !! DLA_GERPVGRW computes the reciprocal pivot growth factor
-     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
-     !! much less than 1, the stability of the LU factorization of the
-     !! (equilibrated) matrix A could be poor. This also means that the
-     !! solution X, estimated condition numbers, and error bounds could be
-     !! unreliable.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, ncols, lda, ldaf
-           ! Array Arguments 
-           real(dp), intent(in) :: a(lda,*), af(ldaf,*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, j
-           real(dp) :: amax, umax, rpvgrw
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           rpvgrw = one
-           do j = 1, ncols
-              amax = zero
-              umax = zero
-              do i = 1, n
-                 amax = max( abs( a( i, j ) ), amax )
-              end do
-              do i = 1, j
-                 umax = max( abs( af( i, j ) ), umax )
-              end do
-              if ( umax /= zero ) then
-                 rpvgrw = min( amax / umax, rpvgrw )
-              end if
-           end do
-           stdlib_dla_gerpvgrw = rpvgrw
-     end function stdlib_dla_gerpvgrw
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure real(${rk}$) function stdlib_${ri}$la_gerpvgrw( n, ncols, a, lda, af,ldaf )
-     !! DLA_GERPVGRW: computes the reciprocal pivot growth factor
-     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
-     !! much less than 1, the stability of the LU factorization of the
-     !! (equilibrated) matrix A could be poor. This also means that the
-     !! solution X, estimated condition numbers, and error bounds could be
-     !! unreliable.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, ncols, lda, ldaf
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*), af(ldaf,*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, j
-           real(${rk}$) :: amax, umax, rpvgrw
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           rpvgrw = one
-           do j = 1, ncols
-              amax = zero
-              umax = zero
-              do i = 1, n
-                 amax = max( abs( a( i, j ) ), amax )
-              end do
-              do i = 1, j
-                 umax = max( abs( af( i, j ) ), umax )
-              end do
-              if ( umax /= zero ) then
-                 rpvgrw = min( amax / umax, rpvgrw )
-              end if
-           end do
-           stdlib_${ri}$la_gerpvgrw = rpvgrw
-     end function stdlib_${ri}$la_gerpvgrw
-
-#:endif
-#:endfor
-
-     module pure real(sp) function stdlib_cla_gerpvgrw( n, ncols, a, lda, af, ldaf )
-     !! CLA_GERPVGRW computes the reciprocal pivot growth factor
-     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
-     !! much less than 1, the stability of the LU factorization of the
-     !! (equilibrated) matrix A could be poor. This also means that the
-     !! solution X, estimated condition numbers, and error bounds could be
-     !! unreliable.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, ncols, lda, ldaf
-           ! Array Arguments 
-           complex(sp), intent(in) :: a(lda,*), af(ldaf,*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, j
-           real(sp) :: amax, umax, rpvgrw
-           complex(sp) :: zdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           rpvgrw = one
-           do j = 1, ncols
-              amax = zero
-              umax = zero
-              do i = 1, n
-                 amax = max( cabs1( a( i, j ) ), amax )
-              end do
-              do i = 1, j
-                 umax = max( cabs1( af( i, j ) ), umax )
-              end do
-              if ( umax /= 0.0_sp ) then
-                 rpvgrw = min( amax / umax, rpvgrw )
-              end if
-           end do
-           stdlib_cla_gerpvgrw = rpvgrw
-     end function stdlib_cla_gerpvgrw
-
-     module pure real(dp) function stdlib_zla_gerpvgrw( n, ncols, a, lda, af,ldaf )
-     !! ZLA_GERPVGRW computes the reciprocal pivot growth factor
-     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
-     !! much less than 1, the stability of the LU factorization of the
-     !! (equilibrated) matrix A could be poor. This also means that the
-     !! solution X, estimated condition numbers, and error bounds could be
-     !! unreliable.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, ncols, lda, ldaf
-           ! Array Arguments 
-           complex(dp), intent(in) :: a(lda,*), af(ldaf,*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, j
-           real(dp) :: amax, umax, rpvgrw
-           complex(dp) :: zdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           rpvgrw = one
-           do j = 1, ncols
-              amax = zero
-              umax = zero
-              do i = 1, n
-                 amax = max( cabs1( a( i, j ) ), amax )
-              end do
-              do i = 1, j
-                 umax = max( cabs1( af( i, j ) ), umax )
-              end do
-              if ( umax /= zero ) then
-                 rpvgrw = min( amax / umax, rpvgrw )
-              end if
-           end do
-           stdlib_zla_gerpvgrw = rpvgrw
-     end function stdlib_zla_gerpvgrw
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure real(${ck}$) function stdlib_${ci}$la_gerpvgrw( n, ncols, a, lda, af,ldaf )
-     !! ZLA_GERPVGRW: computes the reciprocal pivot growth factor
-     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
-     !! much less than 1, the stability of the LU factorization of the
-     !! (equilibrated) matrix A could be poor. This also means that the
-     !! solution X, estimated condition numbers, and error bounds could be
-     !! unreliable.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, ncols, lda, ldaf
-           ! Array Arguments 
-           complex(${ck}$), intent(in) :: a(lda,*), af(ldaf,*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, j
-           real(${ck}$) :: amax, umax, rpvgrw
-           complex(${ck}$) :: zdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           rpvgrw = one
-           do j = 1, ncols
-              amax = zero
-              umax = zero
-              do i = 1, n
-                 amax = max( cabs1( a( i, j ) ), amax )
-              end do
-              do i = 1, j
-                 umax = max( cabs1( af( i, j ) ), umax )
-              end do
-              if ( umax /= zero ) then
-                 rpvgrw = min( amax / umax, rpvgrw )
-              end if
-           end do
-           stdlib_${ci}$la_gerpvgrw = rpvgrw
-     end function stdlib_${ci}$la_gerpvgrw
-
-#:endif
-#:endfor
-
-
-
-     module real(sp) function stdlib_cla_gbrcond_c( trans, n, kl, ku, ab, ldab, afb,ldafb, ipiv, c, &
-     !! CLA_GBRCOND_C Computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a REAL vector.
-               capply, info, work,rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: trans
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, kl, ku, ldab, ldafb
-           integer(ilp) :: kd, ke
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(sp), intent(in) :: ab(ldab,*), afb(ldafb,*)
-           complex(sp), intent(out) :: work(*)
-           real(sp), intent(in) :: c(*)
-           real(sp), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           logical(lk) :: notrans
-           integer(ilp) :: kase, i, j
-           real(sp) :: ainvnm, anorm, tmp
-           complex(sp) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_cla_gbrcond_c = zero
-           info = 0
-           notrans = stdlib_lsame( trans, 'N' )
-           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
-                     trans, 'C' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kl<0 .or. kl>n-1 ) then
-              info = -3
-           else if( ku<0 .or. ku>n-1 ) then
-              info = -4
-           else if( ldab<kl+ku+1 ) then
-              info = -6
-           else if( ldafb<2*kl+ku+1 ) then
-              info = -8
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'CLA_GBRCOND_C', -info )
-              return
-           end if
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           kd = ku + 1
-           ke = kl + 1
-           if ( notrans ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( kd+i-j, j ) ) / c( j )
-                    end do
-                 else
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( kd+i-j, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( ke-i+j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( ke-i+j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_cla_gbrcond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_clacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if ( notrans ) then
-                    call stdlib_cgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
-                              info )
-                 else
-                    call stdlib_cgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv, &
-                              work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( notrans ) then
-                    call stdlib_cgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv,  &
-                              work, n, info )
-                 else
-                    call stdlib_cgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
-                              info )
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_cla_gbrcond_c = one / ainvnm
-           return
-     end function stdlib_cla_gbrcond_c
-
-     module real(dp) function stdlib_zla_gbrcond_c( trans, n, kl, ku, ab,ldab, afb, ldafb, ipiv,c, &
-     !! ZLA_GBRCOND_C Computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
-               capply, info, work,rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: trans
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, kl, ku, ldab, ldafb
-           integer(ilp) :: kd, ke
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(dp), intent(in) :: ab(ldab,*), afb(ldafb,*)
-           complex(dp), intent(out) :: work(*)
-           real(dp), intent(in) :: c(*)
-           real(dp), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           logical(lk) :: notrans
-           integer(ilp) :: kase, i, j
-           real(dp) :: ainvnm, anorm, tmp
-           complex(dp) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_zla_gbrcond_c = zero
-           info = 0
-           notrans = stdlib_lsame( trans, 'N' )
-           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
-                     trans, 'C' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kl<0 .or. kl>n-1 ) then
-              info = -3
-           else if( ku<0 .or. ku>n-1 ) then
-              info = -4
-           else if( ldab<kl+ku+1 ) then
-              info = -6
-           else if( ldafb<2*kl+ku+1 ) then
-              info = -8
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLA_GBRCOND_C', -info )
-              return
-           end if
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           kd = ku + 1
-           ke = kl + 1
-           if ( notrans ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( kd+i-j, j ) ) / c( j )
-                    end do
-                 else
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( kd+i-j, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( ke-i+j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( ke-i+j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_zla_gbrcond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_zlacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if ( notrans ) then
-                    call stdlib_zgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
-                              info )
-                 else
-                    call stdlib_zgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv, &
-                              work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( notrans ) then
-                    call stdlib_zgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv,  &
-                              work, n, info )
-                 else
-                    call stdlib_zgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
-                              info )
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_zla_gbrcond_c = one / ainvnm
-           return
-     end function stdlib_zla_gbrcond_c
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module real(${ck}$) function stdlib_${ci}$la_gbrcond_c( trans, n, kl, ku, ab,ldab, afb, ldafb, ipiv,c, &
-     !! ZLA_GBRCOND_C: Computes the infinity norm condition number of
-     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
-               capply, info, work,rwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: trans
-           logical(lk), intent(in) :: capply
-           integer(ilp), intent(in) :: n, kl, ku, ldab, ldafb
-           integer(ilp) :: kd, ke
-           integer(ilp), intent(out) :: info
-           ! Array Arguments 
-           integer(ilp), intent(in) :: ipiv(*)
-           complex(${ck}$), intent(in) :: ab(ldab,*), afb(ldafb,*)
-           complex(${ck}$), intent(out) :: work(*)
-           real(${ck}$), intent(in) :: c(*)
-           real(${ck}$), intent(out) :: rwork(*)
-        ! =====================================================================
-           ! Local Scalars 
-           logical(lk) :: notrans
-           integer(ilp) :: kase, i, j
-           real(${ck}$) :: ainvnm, anorm, tmp
-           complex(${ck}$) :: zdum
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
-           ! Executable Statements 
-           stdlib_${ci}$la_gbrcond_c = zero
-           info = 0
-           notrans = stdlib_lsame( trans, 'N' )
-           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
-                     trans, 'C' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( kl<0 .or. kl>n-1 ) then
-              info = -3
-           else if( ku<0 .or. ku>n-1 ) then
-              info = -4
-           else if( ldab<kl+ku+1 ) then
-              info = -6
-           else if( ldafb<2*kl+ku+1 ) then
-              info = -8
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZLA_GBRCOND_C', -info )
-              return
-           end if
-           ! compute norm of op(a)*op2(c).
-           anorm = zero
-           kd = ku + 1
-           ke = kl + 1
-           if ( notrans ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( kd+i-j, j ) ) / c( j )
-                    end do
-                 else
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( kd+i-j, j ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( capply ) then
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( ke-i+j, i ) ) / c( j )
-                    end do
-                 else
-                    do j = max( i-kl, 1 ), min( i+ku, n )
-                       tmp = tmp + cabs1( ab( ke-i+j, i ) )
-                    end do
-                 end if
-                 rwork( i ) = tmp
-                 anorm = max( anorm, tmp )
-              end do
-           end if
-           ! quick return if possible.
-           if( n==0 ) then
-              stdlib_${ci}$la_gbrcond_c = one
-              return
-           else if( anorm == zero ) then
-              return
-           end if
-           ! estimate the norm of inv(op(a)).
-           ainvnm = zero
-           kase = 0
-           10 continue
-           call stdlib_${ci}$lacn2( n, work( n+1 ), work, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-                 if ( notrans ) then
-                    call stdlib_${ci}$gbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
-                              info )
-                 else
-                    call stdlib_${ci}$gbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv, &
-                              work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**h).
-                 if ( capply ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( notrans ) then
-                    call stdlib_${ci}$gbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv,  &
-                              work, n, info )
-                 else
-                    call stdlib_${ci}$gbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
-                              info )
-                 end if
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * rwork( i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_${ci}$la_gbrcond_c = one / ainvnm
-           return
-     end function stdlib_${ci}$la_gbrcond_c
-
-#:endif
-#:endfor
-
-
-
-     module real(sp) function stdlib_sla_syrcond( uplo, n, a, lda, af, ldaf, ipiv, cmode,c, info, work, &
-     !! SLA_SYRCOND estimates the Skeel condition number of  op(A) * op2(C)
-     !! where op2 is determined by CMODE as follows
-     !! CMODE =  1    op2(C) = C
-     !! CMODE =  0    op2(C) = I
-     !! CMODE = -1    op2(C) = inv(C)
-     !! The Skeel condition number cond(A) = norminf( |inv(A)||A| )
-     !! is computed by computing scaling factors R such that
-     !! diag(R)*A*op2(C) is row equilibrated and computing the standard
-     !! infinity-norm condition number.
-               iwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: uplo
-           integer(ilp), intent(in) :: n, lda, ldaf, cmode
-           integer(ilp), intent(out) :: info
-           ! Array Arguments
-           integer(ilp), intent(out) :: iwork(*)
-           integer(ilp), intent(in) :: ipiv(*)
-           real(sp), intent(in) :: a(lda,*), af(ldaf,*), c(*)
-           real(sp), intent(out) :: work(*)
-        ! =====================================================================
-           ! Local Scalars 
-           character :: normin
-           integer(ilp) :: kase, i, j
-           real(sp) :: ainvnm, smlnum, tmp
-           logical(lk) :: up
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           stdlib_sla_syrcond = zero
-           info = 0
-           if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'SLA_SYRCOND', -info )
-              return
-           end if
-           if( n==0 ) then
-              stdlib_sla_syrcond = one
-              return
-           end if
-           up = .false.
-           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
-           ! compute the equilibration matrix r such that
-           ! inv(r)*a*c has unit 1-norm.
-           if ( up ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( cmode == 1 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) * c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) * c( j ) )
-                    end do
-                 else if ( cmode == 0 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) / c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) / c( j ) )
-                    end do
-                 end if
-                 work( 2*n+i ) = tmp
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( cmode == 1 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j ) * c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i ) * c( j ) )
-                    end do
-                 else if ( cmode == 0 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i ) )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j) / c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i) / c( j ) )
-                    end do
-                 end if
-                 work( 2*n+i ) = tmp
-              end do
-           endif
-           ! estimate the norm of inv(op(a)).
-           smlnum = stdlib_slamch( 'SAFE MINIMUM' )
-           ainvnm = zero
-           normin = 'N'
-           kase = 0
-           10 continue
-           call stdlib_slacn2( n, work( n+1 ), work, iwork, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * work( 2*n+i )
-                 end do
-                 if ( up ) then
-                    call stdlib_ssytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
-                 else
-                    call stdlib_ssytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( cmode == 1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) / c( i )
-                    end do
-                 else if ( cmode == -1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**t).
-                 if ( cmode == 1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) / c( i )
-                    end do
-                 else if ( cmode == -1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( up ) then
-                    call stdlib_ssytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
-                 else
-                    call stdlib_ssytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
-                 endif
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * work( 2*n+i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= 0.0_sp )stdlib_sla_syrcond = ( 1.0_sp / ainvnm )
-           return
-     end function stdlib_sla_syrcond
-
-     module real(dp) function stdlib_dla_syrcond( uplo, n, a, lda, af, ldaf,ipiv, cmode, c, info, work,&
-     !! DLA_SYRCOND estimates the Skeel condition number of  op(A) * op2(C)
-     !! where op2 is determined by CMODE as follows
-     !! CMODE =  1    op2(C) = C
-     !! CMODE =  0    op2(C) = I
-     !! CMODE = -1    op2(C) = inv(C)
-     !! The Skeel condition number cond(A) = norminf( |inv(A)||A| )
-     !! is computed by computing scaling factors R such that
-     !! diag(R)*A*op2(C) is row equilibrated and computing the standard
-     !! infinity-norm condition number.
-               iwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: uplo
-           integer(ilp), intent(in) :: n, lda, ldaf, cmode
-           integer(ilp), intent(out) :: info
-           ! Array Arguments
-           integer(ilp), intent(out) :: iwork(*)
-           integer(ilp), intent(in) :: ipiv(*)
-           real(dp), intent(in) :: a(lda,*), af(ldaf,*), c(*)
-           real(dp), intent(out) :: work(*)
-        ! =====================================================================
-           ! Local Scalars 
-           character :: normin
-           integer(ilp) :: kase, i, j
-           real(dp) :: ainvnm, smlnum, tmp
-           logical(lk) :: up
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           stdlib_dla_syrcond = zero
-           info = 0
-           if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DLA_SYRCOND', -info )
-              return
-           end if
-           if( n==0 ) then
-              stdlib_dla_syrcond = one
-              return
-           end if
-           up = .false.
-           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
-           ! compute the equilibration matrix r such that
-           ! inv(r)*a*c has unit 1-norm.
-           if ( up ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( cmode == 1 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) * c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) * c( j ) )
-                    end do
-                 else if ( cmode == 0 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) / c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) / c( j ) )
-                    end do
-                 end if
-                 work( 2*n+i ) = tmp
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( cmode == 1 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j ) * c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i ) * c( j ) )
-                    end do
-                 else if ( cmode == 0 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i ) )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j) / c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i) / c( j ) )
-                    end do
-                 end if
-                 work( 2*n+i ) = tmp
-              end do
-           endif
-           ! estimate the norm of inv(op(a)).
-           smlnum = stdlib_dlamch( 'SAFE MINIMUM' )
-           ainvnm = zero
-           normin = 'N'
-           kase = 0
-           10 continue
-           call stdlib_dlacn2( n, work( n+1 ), work, iwork, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * work( 2*n+i )
-                 end do
-                 if ( up ) then
-                    call stdlib_dsytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
-                 else
-                    call stdlib_dsytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( cmode == 1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) / c( i )
-                    end do
-                 else if ( cmode == -1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**t).
-                 if ( cmode == 1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) / c( i )
-                    end do
-                 else if ( cmode == -1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( up ) then
-                    call stdlib_dsytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
-                 else
-                    call stdlib_dsytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
-                 endif
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * work( 2*n+i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_dla_syrcond = ( one / ainvnm )
-           return
-     end function stdlib_dla_syrcond
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module real(${rk}$) function stdlib_${ri}$la_syrcond( uplo, n, a, lda, af, ldaf,ipiv, cmode, c, info, work,&
-     !! DLA_SYRCOND: estimates the Skeel condition number of  op(A) * op2(C)
-     !! where op2 is determined by CMODE as follows
-     !! CMODE =  1    op2(C) = C
-     !! CMODE =  0    op2(C) = I
-     !! CMODE = -1    op2(C) = inv(C)
-     !! The Skeel condition number cond(A) = norminf( |inv(A)||A| )
-     !! is computed by computing scaling factors R such that
-     !! diag(R)*A*op2(C) is row equilibrated and computing the standard
-     !! infinity-norm condition number.
-               iwork )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: uplo
-           integer(ilp), intent(in) :: n, lda, ldaf, cmode
-           integer(ilp), intent(out) :: info
-           ! Array Arguments
-           integer(ilp), intent(out) :: iwork(*)
-           integer(ilp), intent(in) :: ipiv(*)
-           real(${rk}$), intent(in) :: a(lda,*), af(ldaf,*), c(*)
-           real(${rk}$), intent(out) :: work(*)
-        ! =====================================================================
-           ! Local Scalars 
-           character :: normin
-           integer(ilp) :: kase, i, j
-           real(${rk}$) :: ainvnm, smlnum, tmp
-           logical(lk) :: up
-           ! Local Arrays 
-           integer(ilp) :: isave(3)
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           stdlib_${ri}$la_syrcond = zero
-           info = 0
-           if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldaf<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DLA_SYRCOND', -info )
-              return
-           end if
-           if( n==0 ) then
-              stdlib_${ri}$la_syrcond = one
-              return
-           end if
-           up = .false.
-           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
-           ! compute the equilibration matrix r such that
-           ! inv(r)*a*c has unit 1-norm.
-           if ( up ) then
-              do i = 1, n
-                 tmp = zero
-                 if ( cmode == 1 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) * c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) * c( j ) )
-                    end do
-                 else if ( cmode == 0 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + abs( a( j, i ) / c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( i, j ) / c( j ) )
-                    end do
-                 end if
-                 work( 2*n+i ) = tmp
-              end do
-           else
-              do i = 1, n
-                 tmp = zero
-                 if ( cmode == 1 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j ) * c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i ) * c( j ) )
-                    end do
-                 else if ( cmode == 0 ) then
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i ) )
-                    end do
-                 else
-                    do j = 1, i
-                       tmp = tmp + abs( a( i, j) / c( j ) )
-                    end do
-                    do j = i+1, n
-                       tmp = tmp + abs( a( j, i) / c( j ) )
-                    end do
-                 end if
-                 work( 2*n+i ) = tmp
-              end do
-           endif
-           ! estimate the norm of inv(op(a)).
-           smlnum = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
-           ainvnm = zero
-           normin = 'N'
-           kase = 0
-           10 continue
-           call stdlib_${ri}$lacn2( n, work( n+1 ), work, iwork, ainvnm, kase, isave )
-           if( kase/=0 ) then
-              if( kase==2 ) then
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * work( 2*n+i )
-                 end do
-                 if ( up ) then
-                    call stdlib_${ri}$sytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
-                 else
-                    call stdlib_${ri}$sytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
-                 endif
-                 ! multiply by inv(c).
-                 if ( cmode == 1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) / c( i )
-                    end do
-                 else if ( cmode == -1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-              else
-                 ! multiply by inv(c**t).
-                 if ( cmode == 1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) / c( i )
-                    end do
-                 else if ( cmode == -1 ) then
-                    do i = 1, n
-                       work( i ) = work( i ) * c( i )
-                    end do
-                 end if
-                 if ( up ) then
-                    call stdlib_${ri}$sytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
-                 else
-                    call stdlib_${ri}$sytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
-                 endif
-                 ! multiply by r.
-                 do i = 1, n
-                    work( i ) = work( i ) * work( 2*n+i )
-                 end do
-              end if
-              go to 10
-           end if
-           ! compute the estimate of the reciprocal condition number.
-           if( ainvnm /= zero )stdlib_${ri}$la_syrcond = ( one / ainvnm )
-           return
-     end function stdlib_${ri}$la_syrcond
 
 #:endif
 #:endfor
@@ -4831,6 +3196,1136 @@ submodule(stdlib_lapack) stdlib_lapack_others
 
 
 
+     module pure real(sp) function stdlib_sla_gerpvgrw( n, ncols, a, lda, af, ldaf )
+     !! SLA_GERPVGRW computes the reciprocal pivot growth factor
+     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
+     !! much less than 1, the stability of the LU factorization of the
+     !! (equilibrated) matrix A could be poor. This also means that the
+     !! solution X, estimated condition numbers, and error bounds could be
+     !! unreliable.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, ncols, lda, ldaf
+           ! Array Arguments 
+           real(sp), intent(in) :: a(lda,*), af(ldaf,*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(sp) :: amax, umax, rpvgrw
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           rpvgrw = one
+           do j = 1, ncols
+              amax = zero
+              umax = zero
+              do i = 1, n
+                 amax = max( abs( a( i, j ) ), amax )
+              end do
+              do i = 1, j
+                 umax = max( abs( af( i, j ) ), umax )
+              end do
+              if ( umax /= 0.0_sp ) then
+                 rpvgrw = min( amax / umax, rpvgrw )
+              end if
+           end do
+           stdlib_sla_gerpvgrw = rpvgrw
+     end function stdlib_sla_gerpvgrw
+
+     module pure real(dp) function stdlib_dla_gerpvgrw( n, ncols, a, lda, af,ldaf )
+     !! DLA_GERPVGRW computes the reciprocal pivot growth factor
+     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
+     !! much less than 1, the stability of the LU factorization of the
+     !! (equilibrated) matrix A could be poor. This also means that the
+     !! solution X, estimated condition numbers, and error bounds could be
+     !! unreliable.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, ncols, lda, ldaf
+           ! Array Arguments 
+           real(dp), intent(in) :: a(lda,*), af(ldaf,*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(dp) :: amax, umax, rpvgrw
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           rpvgrw = one
+           do j = 1, ncols
+              amax = zero
+              umax = zero
+              do i = 1, n
+                 amax = max( abs( a( i, j ) ), amax )
+              end do
+              do i = 1, j
+                 umax = max( abs( af( i, j ) ), umax )
+              end do
+              if ( umax /= zero ) then
+                 rpvgrw = min( amax / umax, rpvgrw )
+              end if
+           end do
+           stdlib_dla_gerpvgrw = rpvgrw
+     end function stdlib_dla_gerpvgrw
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$la_gerpvgrw( n, ncols, a, lda, af,ldaf )
+     !! DLA_GERPVGRW: computes the reciprocal pivot growth factor
+     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
+     !! much less than 1, the stability of the LU factorization of the
+     !! (equilibrated) matrix A could be poor. This also means that the
+     !! solution X, estimated condition numbers, and error bounds could be
+     !! unreliable.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, ncols, lda, ldaf
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: a(lda,*), af(ldaf,*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(${rk}$) :: amax, umax, rpvgrw
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           rpvgrw = one
+           do j = 1, ncols
+              amax = zero
+              umax = zero
+              do i = 1, n
+                 amax = max( abs( a( i, j ) ), amax )
+              end do
+              do i = 1, j
+                 umax = max( abs( af( i, j ) ), umax )
+              end do
+              if ( umax /= zero ) then
+                 rpvgrw = min( amax / umax, rpvgrw )
+              end if
+           end do
+           stdlib_${ri}$la_gerpvgrw = rpvgrw
+     end function stdlib_${ri}$la_gerpvgrw
+
+#:endif
+#:endfor
+
+     module pure real(sp) function stdlib_cla_gerpvgrw( n, ncols, a, lda, af, ldaf )
+     !! CLA_GERPVGRW computes the reciprocal pivot growth factor
+     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
+     !! much less than 1, the stability of the LU factorization of the
+     !! (equilibrated) matrix A could be poor. This also means that the
+     !! solution X, estimated condition numbers, and error bounds could be
+     !! unreliable.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, ncols, lda, ldaf
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*), af(ldaf,*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(sp) :: amax, umax, rpvgrw
+           complex(sp) :: zdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           rpvgrw = one
+           do j = 1, ncols
+              amax = zero
+              umax = zero
+              do i = 1, n
+                 amax = max( cabs1( a( i, j ) ), amax )
+              end do
+              do i = 1, j
+                 umax = max( cabs1( af( i, j ) ), umax )
+              end do
+              if ( umax /= 0.0_sp ) then
+                 rpvgrw = min( amax / umax, rpvgrw )
+              end if
+           end do
+           stdlib_cla_gerpvgrw = rpvgrw
+     end function stdlib_cla_gerpvgrw
+
+     module pure real(dp) function stdlib_zla_gerpvgrw( n, ncols, a, lda, af,ldaf )
+     !! ZLA_GERPVGRW computes the reciprocal pivot growth factor
+     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
+     !! much less than 1, the stability of the LU factorization of the
+     !! (equilibrated) matrix A could be poor. This also means that the
+     !! solution X, estimated condition numbers, and error bounds could be
+     !! unreliable.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, ncols, lda, ldaf
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*), af(ldaf,*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(dp) :: amax, umax, rpvgrw
+           complex(dp) :: zdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           rpvgrw = one
+           do j = 1, ncols
+              amax = zero
+              umax = zero
+              do i = 1, n
+                 amax = max( cabs1( a( i, j ) ), amax )
+              end do
+              do i = 1, j
+                 umax = max( cabs1( af( i, j ) ), umax )
+              end do
+              if ( umax /= zero ) then
+                 rpvgrw = min( amax / umax, rpvgrw )
+              end if
+           end do
+           stdlib_zla_gerpvgrw = rpvgrw
+     end function stdlib_zla_gerpvgrw
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure real(${ck}$) function stdlib_${ci}$la_gerpvgrw( n, ncols, a, lda, af,ldaf )
+     !! ZLA_GERPVGRW: computes the reciprocal pivot growth factor
+     !! norm(A)/norm(U). The "max absolute element" norm is used. If this is
+     !! much less than 1, the stability of the LU factorization of the
+     !! (equilibrated) matrix A could be poor. This also means that the
+     !! solution X, estimated condition numbers, and error bounds could be
+     !! unreliable.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, ncols, lda, ldaf
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*), af(ldaf,*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           real(${ck}$) :: amax, umax, rpvgrw
+           complex(${ck}$) :: zdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           rpvgrw = one
+           do j = 1, ncols
+              amax = zero
+              umax = zero
+              do i = 1, n
+                 amax = max( cabs1( a( i, j ) ), amax )
+              end do
+              do i = 1, j
+                 umax = max( cabs1( af( i, j ) ), umax )
+              end do
+              if ( umax /= zero ) then
+                 rpvgrw = min( amax / umax, rpvgrw )
+              end if
+           end do
+           stdlib_${ci}$la_gerpvgrw = rpvgrw
+     end function stdlib_${ci}$la_gerpvgrw
+
+#:endif
+#:endfor
+
+
+
+     module real(sp) function stdlib_cla_gbrcond_c( trans, n, kl, ku, ab, ldab, afb,ldafb, ipiv, c, &
+     !! CLA_GBRCOND_C Computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a REAL vector.
+               capply, info, work,rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, kl, ku, ldab, ldafb
+           integer(ilp) :: kd, ke
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(sp), intent(in) :: ab(ldab,*), afb(ldafb,*)
+           complex(sp), intent(out) :: work(*)
+           real(sp), intent(in) :: c(*)
+           real(sp), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           logical(lk) :: notrans
+           integer(ilp) :: kase, i, j
+           real(sp) :: ainvnm, anorm, tmp
+           complex(sp) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_cla_gbrcond_c = zero
+           info = 0
+           notrans = stdlib_lsame( trans, 'N' )
+           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( kl<0 .or. kl>n-1 ) then
+              info = -3
+           else if( ku<0 .or. ku>n-1 ) then
+              info = -4
+           else if( ldab<kl+ku+1 ) then
+              info = -6
+           else if( ldafb<2*kl+ku+1 ) then
+              info = -8
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CLA_GBRCOND_C', -info )
+              return
+           end if
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           kd = ku + 1
+           ke = kl + 1
+           if ( notrans ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( kd+i-j, j ) ) / c( j )
+                    end do
+                 else
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( kd+i-j, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( ke-i+j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( ke-i+j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_cla_gbrcond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_clacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if ( notrans ) then
+                    call stdlib_cgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
+                              info )
+                 else
+                    call stdlib_cgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv, &
+                              work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( notrans ) then
+                    call stdlib_cgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv,  &
+                              work, n, info )
+                 else
+                    call stdlib_cgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
+                              info )
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_cla_gbrcond_c = one / ainvnm
+           return
+     end function stdlib_cla_gbrcond_c
+
+     module real(dp) function stdlib_zla_gbrcond_c( trans, n, kl, ku, ab,ldab, afb, ldafb, ipiv,c, &
+     !! ZLA_GBRCOND_C Computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
+               capply, info, work,rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, kl, ku, ldab, ldafb
+           integer(ilp) :: kd, ke
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(dp), intent(in) :: ab(ldab,*), afb(ldafb,*)
+           complex(dp), intent(out) :: work(*)
+           real(dp), intent(in) :: c(*)
+           real(dp), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           logical(lk) :: notrans
+           integer(ilp) :: kase, i, j
+           real(dp) :: ainvnm, anorm, tmp
+           complex(dp) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_zla_gbrcond_c = zero
+           info = 0
+           notrans = stdlib_lsame( trans, 'N' )
+           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( kl<0 .or. kl>n-1 ) then
+              info = -3
+           else if( ku<0 .or. ku>n-1 ) then
+              info = -4
+           else if( ldab<kl+ku+1 ) then
+              info = -6
+           else if( ldafb<2*kl+ku+1 ) then
+              info = -8
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLA_GBRCOND_C', -info )
+              return
+           end if
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           kd = ku + 1
+           ke = kl + 1
+           if ( notrans ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( kd+i-j, j ) ) / c( j )
+                    end do
+                 else
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( kd+i-j, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( ke-i+j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( ke-i+j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_zla_gbrcond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_zlacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if ( notrans ) then
+                    call stdlib_zgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
+                              info )
+                 else
+                    call stdlib_zgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv, &
+                              work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( notrans ) then
+                    call stdlib_zgbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv,  &
+                              work, n, info )
+                 else
+                    call stdlib_zgbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
+                              info )
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_zla_gbrcond_c = one / ainvnm
+           return
+     end function stdlib_zla_gbrcond_c
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module real(${ck}$) function stdlib_${ci}$la_gbrcond_c( trans, n, kl, ku, ab,ldab, afb, ldafb, ipiv,c, &
+     !! ZLA_GBRCOND_C: Computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
+               capply, info, work,rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, kl, ku, ldab, ldafb
+           integer(ilp) :: kd, ke
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(${ck}$), intent(in) :: ab(ldab,*), afb(ldafb,*)
+           complex(${ck}$), intent(out) :: work(*)
+           real(${ck}$), intent(in) :: c(*)
+           real(${ck}$), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           logical(lk) :: notrans
+           integer(ilp) :: kase, i, j
+           real(${ck}$) :: ainvnm, anorm, tmp
+           complex(${ck}$) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_${ci}$la_gbrcond_c = zero
+           info = 0
+           notrans = stdlib_lsame( trans, 'N' )
+           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( kl<0 .or. kl>n-1 ) then
+              info = -3
+           else if( ku<0 .or. ku>n-1 ) then
+              info = -4
+           else if( ldab<kl+ku+1 ) then
+              info = -6
+           else if( ldafb<2*kl+ku+1 ) then
+              info = -8
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLA_GBRCOND_C', -info )
+              return
+           end if
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           kd = ku + 1
+           ke = kl + 1
+           if ( notrans ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( kd+i-j, j ) ) / c( j )
+                    end do
+                 else
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( kd+i-j, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( ke-i+j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = max( i-kl, 1 ), min( i+ku, n )
+                       tmp = tmp + cabs1( ab( ke-i+j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_${ci}$la_gbrcond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_${ci}$lacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if ( notrans ) then
+                    call stdlib_${ci}$gbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
+                              info )
+                 else
+                    call stdlib_${ci}$gbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv, &
+                              work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( notrans ) then
+                    call stdlib_${ci}$gbtrs( 'CONJUGATE TRANSPOSE', n, kl, ku, 1, afb,ldafb, ipiv,  &
+                              work, n, info )
+                 else
+                    call stdlib_${ci}$gbtrs( 'NO TRANSPOSE', n, kl, ku, 1, afb, ldafb,ipiv, work, n, &
+                              info )
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_${ci}$la_gbrcond_c = one / ainvnm
+           return
+     end function stdlib_${ci}$la_gbrcond_c
+
+#:endif
+#:endfor
+
+
+
+     module real(sp) function stdlib_cla_gercond_c( trans, n, a, lda, af, ldaf, ipiv, c,capply, info, &
+     !! CLA_GERCOND_C computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a REAL vector.
+               work, rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, lda, ldaf
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(sp), intent(in) :: a(lda,*), af(ldaf,*)
+           complex(sp), intent(out) :: work(*)
+           real(sp), intent(in) :: c(*)
+           real(sp), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           logical(lk) :: notrans
+           integer(ilp) :: kase, i, j
+           real(sp) :: ainvnm, anorm, tmp
+           complex(sp) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=sp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_cla_gercond_c = zero
+           info = 0
+           notrans = stdlib_lsame( trans, 'N' )
+           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CLA_GERCOND_C', -info )
+              return
+           end if
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           if ( notrans ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_cla_gercond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_clacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if (notrans) then
+                    call stdlib_cgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
+                              
+                 else
+                    call stdlib_cgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
+                              )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( notrans ) then
+                    call stdlib_cgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
+                              )
+                 else
+                    call stdlib_cgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
+                              
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_cla_gercond_c = one / ainvnm
+           return
+     end function stdlib_cla_gercond_c
+
+     module real(dp) function stdlib_zla_gercond_c( trans, n, a, lda, af,ldaf, ipiv, c, capply,info, &
+     !! ZLA_GERCOND_C computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
+               work, rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, lda, ldaf
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(dp), intent(in) :: a(lda,*), af(ldaf,*)
+           complex(dp), intent(out) :: work(*)
+           real(dp), intent(in) :: c(*)
+           real(dp), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           logical(lk) :: notrans
+           integer(ilp) :: kase, i, j
+           real(dp) :: ainvnm, anorm, tmp
+           complex(dp) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=dp) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_zla_gercond_c = zero
+           info = 0
+           notrans = stdlib_lsame( trans, 'N' )
+           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLA_GERCOND_C', -info )
+              return
+           end if
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           if ( notrans ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_zla_gercond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_zlacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if (notrans) then
+                    call stdlib_zgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
+                              
+                 else
+                    call stdlib_zgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
+                              )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( notrans ) then
+                    call stdlib_zgetrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
+                              )
+                 else
+                    call stdlib_zgetrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
+                              
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_zla_gercond_c = one / ainvnm
+           return
+     end function stdlib_zla_gercond_c
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module real(${ck}$) function stdlib_${ci}$la_gercond_c( trans, n, a, lda, af,ldaf, ipiv, c, capply,info, &
+     !! ZLA_GERCOND_C: computes the infinity norm condition number of
+     !! op(A) * inv(diag(C)) where C is a DOUBLE PRECISION vector.
+               work, rwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           logical(lk), intent(in) :: capply
+           integer(ilp), intent(in) :: n, lda, ldaf
+           integer(ilp), intent(out) :: info
+           ! Array Arguments 
+           integer(ilp), intent(in) :: ipiv(*)
+           complex(${ck}$), intent(in) :: a(lda,*), af(ldaf,*)
+           complex(${ck}$), intent(out) :: work(*)
+           real(${ck}$), intent(in) :: c(*)
+           real(${ck}$), intent(out) :: rwork(*)
+        ! =====================================================================
+           ! Local Scalars 
+           logical(lk) :: notrans
+           integer(ilp) :: kase, i, j
+           real(${ck}$) :: ainvnm, anorm, tmp
+           complex(${ck}$) :: zdum
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( zdum ) = abs( real( zdum,KIND=${ck}$) ) + abs( aimag( zdum ) )
+           ! Executable Statements 
+           stdlib_${ci}$la_gercond_c = zero
+           info = 0
+           notrans = stdlib_lsame( trans, 'N' )
+           if ( .not. notrans .and. .not. stdlib_lsame( trans, 'T' ) .and. .not.stdlib_lsame( &
+                     trans, 'C' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZLA_GERCOND_C', -info )
+              return
+           end if
+           ! compute norm of op(a)*op2(c).
+           anorm = zero
+           if ( notrans ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( i, j ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( i, j ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( capply ) then
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( j, i ) ) / c( j )
+                    end do
+                 else
+                    do j = 1, n
+                       tmp = tmp + cabs1( a( j, i ) )
+                    end do
+                 end if
+                 rwork( i ) = tmp
+                 anorm = max( anorm, tmp )
+              end do
+           end if
+           ! quick return if possible.
+           if( n==0 ) then
+              stdlib_${ci}$la_gercond_c = one
+              return
+           else if( anorm == zero ) then
+              return
+           end if
+           ! estimate the norm of inv(op(a)).
+           ainvnm = zero
+           kase = 0
+           10 continue
+           call stdlib_${ci}$lacn2( n, work( n+1 ), work, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+                 if (notrans) then
+                    call stdlib_${ci}$getrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
+                              
+                 else
+                    call stdlib_${ci}$getrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
+                              )
+                 endif
+                 ! multiply by inv(c).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**h).
+                 if ( capply ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( notrans ) then
+                    call stdlib_${ci}$getrs( 'CONJUGATE TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info &
+                              )
+                 else
+                    call stdlib_${ci}$getrs( 'NO TRANSPOSE', n, 1, af, ldaf, ipiv,work, n, info )
+                              
+                 end if
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * rwork( i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_${ci}$la_gercond_c = one / ainvnm
+           return
+     end function stdlib_${ci}$la_gercond_c
+
+#:endif
+#:endfor
+
+
+
      module real(sp) function stdlib_cla_syrcond_c( uplo, n, a, lda, af, ldaf, ipiv, c,capply, info, &
      !! CLA_SYRCOND_C Computes the infinity norm condition number of
      !! op(A) * inv(diag(C)) where C is a REAL vector.
@@ -5282,6 +4777,511 @@ submodule(stdlib_lapack) stdlib_lapack_others
            if( ainvnm /= zero )stdlib_${ci}$la_syrcond_c = one / ainvnm
            return
      end function stdlib_${ci}$la_syrcond_c
+
+#:endif
+#:endfor
+
+
+
+     module real(sp) function stdlib_sla_syrcond( uplo, n, a, lda, af, ldaf, ipiv, cmode,c, info, work, &
+     !! SLA_SYRCOND estimates the Skeel condition number of  op(A) * op2(C)
+     !! where op2 is determined by CMODE as follows
+     !! CMODE =  1    op2(C) = C
+     !! CMODE =  0    op2(C) = I
+     !! CMODE = -1    op2(C) = inv(C)
+     !! The Skeel condition number cond(A) = norminf( |inv(A)||A| )
+     !! is computed by computing scaling factors R such that
+     !! diag(R)*A*op2(C) is row equilibrated and computing the standard
+     !! infinity-norm condition number.
+               iwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: n, lda, ldaf, cmode
+           integer(ilp), intent(out) :: info
+           ! Array Arguments
+           integer(ilp), intent(out) :: iwork(*)
+           integer(ilp), intent(in) :: ipiv(*)
+           real(sp), intent(in) :: a(lda,*), af(ldaf,*), c(*)
+           real(sp), intent(out) :: work(*)
+        ! =====================================================================
+           ! Local Scalars 
+           character :: normin
+           integer(ilp) :: kase, i, j
+           real(sp) :: ainvnm, smlnum, tmp
+           logical(lk) :: up
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           stdlib_sla_syrcond = zero
+           info = 0
+           if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SLA_SYRCOND', -info )
+              return
+           end if
+           if( n==0 ) then
+              stdlib_sla_syrcond = one
+              return
+           end if
+           up = .false.
+           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
+           ! compute the equilibration matrix r such that
+           ! inv(r)*a*c has unit 1-norm.
+           if ( up ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( cmode == 1 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) * c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) * c( j ) )
+                    end do
+                 else if ( cmode == 0 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) / c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) / c( j ) )
+                    end do
+                 end if
+                 work( 2*n+i ) = tmp
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( cmode == 1 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j ) * c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i ) * c( j ) )
+                    end do
+                 else if ( cmode == 0 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i ) )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j) / c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i) / c( j ) )
+                    end do
+                 end if
+                 work( 2*n+i ) = tmp
+              end do
+           endif
+           ! estimate the norm of inv(op(a)).
+           smlnum = stdlib_slamch( 'SAFE MINIMUM' )
+           ainvnm = zero
+           normin = 'N'
+           kase = 0
+           10 continue
+           call stdlib_slacn2( n, work( n+1 ), work, iwork, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * work( 2*n+i )
+                 end do
+                 if ( up ) then
+                    call stdlib_ssytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
+                 else
+                    call stdlib_ssytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( cmode == 1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) / c( i )
+                    end do
+                 else if ( cmode == -1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**t).
+                 if ( cmode == 1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) / c( i )
+                    end do
+                 else if ( cmode == -1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( up ) then
+                    call stdlib_ssytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
+                 else
+                    call stdlib_ssytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
+                 endif
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * work( 2*n+i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= 0.0_sp )stdlib_sla_syrcond = ( 1.0_sp / ainvnm )
+           return
+     end function stdlib_sla_syrcond
+
+     module real(dp) function stdlib_dla_syrcond( uplo, n, a, lda, af, ldaf,ipiv, cmode, c, info, work,&
+     !! DLA_SYRCOND estimates the Skeel condition number of  op(A) * op2(C)
+     !! where op2 is determined by CMODE as follows
+     !! CMODE =  1    op2(C) = C
+     !! CMODE =  0    op2(C) = I
+     !! CMODE = -1    op2(C) = inv(C)
+     !! The Skeel condition number cond(A) = norminf( |inv(A)||A| )
+     !! is computed by computing scaling factors R such that
+     !! diag(R)*A*op2(C) is row equilibrated and computing the standard
+     !! infinity-norm condition number.
+               iwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: n, lda, ldaf, cmode
+           integer(ilp), intent(out) :: info
+           ! Array Arguments
+           integer(ilp), intent(out) :: iwork(*)
+           integer(ilp), intent(in) :: ipiv(*)
+           real(dp), intent(in) :: a(lda,*), af(ldaf,*), c(*)
+           real(dp), intent(out) :: work(*)
+        ! =====================================================================
+           ! Local Scalars 
+           character :: normin
+           integer(ilp) :: kase, i, j
+           real(dp) :: ainvnm, smlnum, tmp
+           logical(lk) :: up
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           stdlib_dla_syrcond = zero
+           info = 0
+           if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DLA_SYRCOND', -info )
+              return
+           end if
+           if( n==0 ) then
+              stdlib_dla_syrcond = one
+              return
+           end if
+           up = .false.
+           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
+           ! compute the equilibration matrix r such that
+           ! inv(r)*a*c has unit 1-norm.
+           if ( up ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( cmode == 1 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) * c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) * c( j ) )
+                    end do
+                 else if ( cmode == 0 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) / c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) / c( j ) )
+                    end do
+                 end if
+                 work( 2*n+i ) = tmp
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( cmode == 1 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j ) * c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i ) * c( j ) )
+                    end do
+                 else if ( cmode == 0 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i ) )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j) / c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i) / c( j ) )
+                    end do
+                 end if
+                 work( 2*n+i ) = tmp
+              end do
+           endif
+           ! estimate the norm of inv(op(a)).
+           smlnum = stdlib_dlamch( 'SAFE MINIMUM' )
+           ainvnm = zero
+           normin = 'N'
+           kase = 0
+           10 continue
+           call stdlib_dlacn2( n, work( n+1 ), work, iwork, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * work( 2*n+i )
+                 end do
+                 if ( up ) then
+                    call stdlib_dsytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
+                 else
+                    call stdlib_dsytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( cmode == 1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) / c( i )
+                    end do
+                 else if ( cmode == -1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**t).
+                 if ( cmode == 1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) / c( i )
+                    end do
+                 else if ( cmode == -1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( up ) then
+                    call stdlib_dsytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
+                 else
+                    call stdlib_dsytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
+                 endif
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * work( 2*n+i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_dla_syrcond = ( one / ainvnm )
+           return
+     end function stdlib_dla_syrcond
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module real(${rk}$) function stdlib_${ri}$la_syrcond( uplo, n, a, lda, af, ldaf,ipiv, cmode, c, info, work,&
+     !! DLA_SYRCOND: estimates the Skeel condition number of  op(A) * op2(C)
+     !! where op2 is determined by CMODE as follows
+     !! CMODE =  1    op2(C) = C
+     !! CMODE =  0    op2(C) = I
+     !! CMODE = -1    op2(C) = inv(C)
+     !! The Skeel condition number cond(A) = norminf( |inv(A)||A| )
+     !! is computed by computing scaling factors R such that
+     !! diag(R)*A*op2(C) is row equilibrated and computing the standard
+     !! infinity-norm condition number.
+               iwork )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: n, lda, ldaf, cmode
+           integer(ilp), intent(out) :: info
+           ! Array Arguments
+           integer(ilp), intent(out) :: iwork(*)
+           integer(ilp), intent(in) :: ipiv(*)
+           real(${rk}$), intent(in) :: a(lda,*), af(ldaf,*), c(*)
+           real(${rk}$), intent(out) :: work(*)
+        ! =====================================================================
+           ! Local Scalars 
+           character :: normin
+           integer(ilp) :: kase, i, j
+           real(${rk}$) :: ainvnm, smlnum, tmp
+           logical(lk) :: up
+           ! Local Arrays 
+           integer(ilp) :: isave(3)
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           stdlib_${ri}$la_syrcond = zero
+           info = 0
+           if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldaf<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DLA_SYRCOND', -info )
+              return
+           end if
+           if( n==0 ) then
+              stdlib_${ri}$la_syrcond = one
+              return
+           end if
+           up = .false.
+           if ( stdlib_lsame( uplo, 'U' ) ) up = .true.
+           ! compute the equilibration matrix r such that
+           ! inv(r)*a*c has unit 1-norm.
+           if ( up ) then
+              do i = 1, n
+                 tmp = zero
+                 if ( cmode == 1 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) * c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) * c( j ) )
+                    end do
+                 else if ( cmode == 0 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + abs( a( j, i ) / c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( i, j ) / c( j ) )
+                    end do
+                 end if
+                 work( 2*n+i ) = tmp
+              end do
+           else
+              do i = 1, n
+                 tmp = zero
+                 if ( cmode == 1 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j ) * c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i ) * c( j ) )
+                    end do
+                 else if ( cmode == 0 ) then
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i ) )
+                    end do
+                 else
+                    do j = 1, i
+                       tmp = tmp + abs( a( i, j) / c( j ) )
+                    end do
+                    do j = i+1, n
+                       tmp = tmp + abs( a( j, i) / c( j ) )
+                    end do
+                 end if
+                 work( 2*n+i ) = tmp
+              end do
+           endif
+           ! estimate the norm of inv(op(a)).
+           smlnum = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
+           ainvnm = zero
+           normin = 'N'
+           kase = 0
+           10 continue
+           call stdlib_${ri}$lacn2( n, work( n+1 ), work, iwork, ainvnm, kase, isave )
+           if( kase/=0 ) then
+              if( kase==2 ) then
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * work( 2*n+i )
+                 end do
+                 if ( up ) then
+                    call stdlib_${ri}$sytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
+                 else
+                    call stdlib_${ri}$sytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
+                 endif
+                 ! multiply by inv(c).
+                 if ( cmode == 1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) / c( i )
+                    end do
+                 else if ( cmode == -1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+              else
+                 ! multiply by inv(c**t).
+                 if ( cmode == 1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) / c( i )
+                    end do
+                 else if ( cmode == -1 ) then
+                    do i = 1, n
+                       work( i ) = work( i ) * c( i )
+                    end do
+                 end if
+                 if ( up ) then
+                    call stdlib_${ri}$sytrs( 'U', n, 1, af, ldaf, ipiv, work, n, info )
+                 else
+                    call stdlib_${ri}$sytrs( 'L', n, 1, af, ldaf, ipiv, work, n, info )
+                 endif
+                 ! multiply by r.
+                 do i = 1, n
+                    work( i ) = work( i ) * work( 2*n+i )
+                 end do
+              end if
+              go to 10
+           end if
+           ! compute the estimate of the reciprocal condition number.
+           if( ainvnm /= zero )stdlib_${ri}$la_syrcond = ( one / ainvnm )
+           return
+     end function stdlib_${ri}$la_syrcond
 
 #:endif
 #:endfor

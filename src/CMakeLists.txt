@@ -108,8 +108,12 @@ set(cppFiles
     lapack/stdlib_lapack_blas_like_scalar.fypp
     lapack/stdlib_lapack_cosine_sine.fypp
     lapack/stdlib_lapack_eigv_gen.fypp
+    lapack/stdlib_lapack_eigv_std_driver.fypp
+    lapack/stdlib_lapack_eigv_svd_bidiag_dc.fypp
+    lapack/stdlib_lapack_eigv_svd_drivers.fypp
     lapack/stdlib_lapack_eigv_sym_comp.fypp
     lapack/stdlib_lapack_eigv_sym.fypp
+    lapack/stdlib_lapack_eigv_tridiag.fypp
     lapack/stdlib_lapack_givens_jacobi_rot.fypp
     lapack/stdlib_lapack_householder_reflectors.fypp
     lapack/stdlib_lapack_lsq.fypp
@@ -129,6 +133,7 @@ set(cppFiles
     lapack/stdlib_lapack_solve_tri_comp.fypp
     lapack/stdlib_lapack_svd_bidiag_qr.fypp
     lapack/stdlib_lapack_svd_comp.fypp
+    lapack/stdlib_lapack_svd_comp_2.fypp
 
     stdlib_linalg_blas.fypp
     stdlib_linalg_lapack.fypp

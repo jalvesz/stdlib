@@ -5,250 +5,6 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
 
   contains
 
-     module pure subroutine stdlib_sger(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_sp
-     !! SGER performs the rank 1 operation
-     !! A := alpha*x*y**T + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           real(sp), intent(inout) :: a(lda,*)
-           real(sp), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(sp) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('SGER  ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==zero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with one pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=zero) then
-                       temp = alpha*y(jy)
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=zero) then
-                       temp = alpha*y(jy)
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_sger
-
-     module pure subroutine stdlib_dger(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_dp
-     !! DGER performs the rank 1 operation
-     !! A := alpha*x*y**T + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           real(dp), intent(inout) :: a(lda,*)
-           real(dp), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(dp) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('DGER  ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==zero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with one pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=zero) then
-                       temp = alpha*y(jy)
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=zero) then
-                       temp = alpha*y(jy)
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_dger
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$ger(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_${rk}$
-     !! DGER:   performs the rank 1 operation
-     !! A := alpha*x*y**T + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: a(lda,*)
-           real(${rk}$), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('DGER  ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==zero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with one pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=zero) then
-                       temp = alpha*y(jy)
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=zero) then
-                       temp = alpha*y(jy)
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_${ri}$ger
-
-#:endif
-#:endfor
-
-
-
      module pure subroutine stdlib_sgemv(trans,m,n,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_sp
      !! SGEMV performs one of the matrix-vector operations
@@ -1176,6 +932,430 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
 
 
 
+     module pure subroutine stdlib_cher2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! CHER2 performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           complex(sp) :: temp1, temp2
+           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           ! Intrinsic Functions 
+           intrinsic :: conjg,max,real
+           ! test the input parameters.
+           info = 0
+           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,n)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('CHER2 ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. (alpha==czero)) return
+           ! set up the start points in x and y if the increments are not both
+           ! unity.
+           if ((incx/=1) .or. (incy/=1)) then
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (n-1)*incx
+               end if
+               if (incy>0) then
+                   ky = 1
+               else
+                   ky = 1 - (n-1)*incy
+               end if
+               jx = kx
+               jy = ky
+           end if
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through the triangular part
+           ! of a.
+           if (stdlib_lsame(uplo,'U')) then
+              ! form  a  when a is stored in the upper triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
+                           temp1 = alpha*conjg(y(j))
+                           temp2 = conjg(alpha*x(j))
+                           do i = 1,j - 1
+                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
+                           end do
+                           a(j,j) = real(a(j,j),KIND=sp) +real(x(j)*temp1+y(j)*temp2,KIND=sp)
+                                     
+                       else
+                           a(j,j) = real(a(j,j),KIND=sp)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
+                           temp1 = alpha*conjg(y(jy))
+                           temp2 = conjg(alpha*x(jx))
+                           ix = kx
+                           iy = ky
+                           do i = 1,j - 1
+                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
+                               ix = ix + incx
+                               iy = iy + incy
+                           end do
+                           a(j,j) = real(a(j,j),KIND=sp) +real(x(jx)*temp1+y(jy)*temp2,KIND=sp)
+                                     
+                       else
+                           a(j,j) = real(a(j,j),KIND=sp)
+                       end if
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           else
+              ! form  a  when a is stored in the lower triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
+                           temp1 = alpha*conjg(y(j))
+                           temp2 = conjg(alpha*x(j))
+                           a(j,j) = real(a(j,j),KIND=sp) +real(x(j)*temp1+y(j)*temp2,KIND=sp)
+                                     
+                           do i = j + 1,n
+                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
+                           end do
+                       else
+                           a(j,j) = real(a(j,j),KIND=sp)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
+                           temp1 = alpha*conjg(y(jy))
+                           temp2 = conjg(alpha*x(jx))
+                           a(j,j) = real(a(j,j),KIND=sp) +real(x(jx)*temp1+y(jy)*temp2,KIND=sp)
+                                     
+                           ix = jx
+                           iy = jy
+                           do i = j + 1,n
+                               ix = ix + incx
+                               iy = iy + incy
+                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
+                           end do
+                       else
+                           a(j,j) = real(a(j,j),KIND=sp)
+                       end if
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_cher2
+
+     module pure subroutine stdlib_zher2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! ZHER2 performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           complex(dp) :: temp1, temp2
+           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           ! Intrinsic Functions 
+           intrinsic :: real,conjg,max
+           ! test the input parameters.
+           info = 0
+           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,n)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('ZHER2 ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. (alpha==czero)) return
+           ! set up the start points in x and y if the increments are not both
+           ! unity.
+           if ((incx/=1) .or. (incy/=1)) then
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (n-1)*incx
+               end if
+               if (incy>0) then
+                   ky = 1
+               else
+                   ky = 1 - (n-1)*incy
+               end if
+               jx = kx
+               jy = ky
+           end if
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through the triangular part
+           ! of a.
+           if (stdlib_lsame(uplo,'U')) then
+              ! form  a  when a is stored in the upper triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
+                           temp1 = alpha*conjg(y(j))
+                           temp2 = conjg(alpha*x(j))
+                           do i = 1,j - 1
+                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
+                           end do
+                           a(j,j) = real(a(j,j),KIND=dp) +real(x(j)*temp1+y(j)*temp2,KIND=dp)
+                                     
+                       else
+                           a(j,j) = real(a(j,j),KIND=dp)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
+                           temp1 = alpha*conjg(y(jy))
+                           temp2 = conjg(alpha*x(jx))
+                           ix = kx
+                           iy = ky
+                           do i = 1,j - 1
+                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
+                               ix = ix + incx
+                               iy = iy + incy
+                           end do
+                           a(j,j) = real(a(j,j),KIND=dp) +real(x(jx)*temp1+y(jy)*temp2,KIND=dp)
+                                     
+                       else
+                           a(j,j) = real(a(j,j),KIND=dp)
+                       end if
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           else
+              ! form  a  when a is stored in the lower triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
+                           temp1 = alpha*conjg(y(j))
+                           temp2 = conjg(alpha*x(j))
+                           a(j,j) = real(a(j,j),KIND=dp) +real(x(j)*temp1+y(j)*temp2,KIND=dp)
+                                     
+                           do i = j + 1,n
+                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
+                           end do
+                       else
+                           a(j,j) = real(a(j,j),KIND=dp)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
+                           temp1 = alpha*conjg(y(jy))
+                           temp2 = conjg(alpha*x(jx))
+                           a(j,j) = real(a(j,j),KIND=dp) +real(x(jx)*temp1+y(jy)*temp2,KIND=dp)
+                                     
+                           ix = jx
+                           iy = jy
+                           do i = j + 1,n
+                               ix = ix + incx
+                               iy = iy + incy
+                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
+                           end do
+                       else
+                           a(j,j) = real(a(j,j),KIND=dp)
+                       end if
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_zher2
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$her2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+     !! ZHER2:  performs the hermitian rank 2 operation
+     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
+     !! where alpha is a scalar, x and y are n element vectors and A is an n
+     !! by n hermitian matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           complex(${ck}$) :: temp1, temp2
+           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           ! Intrinsic Functions 
+           intrinsic :: real,conjg,max
+           ! test the input parameters.
+           info = 0
+           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,n)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('ZHER2 ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. (alpha==czero)) return
+           ! set up the start points in x and y if the increments are not both
+           ! unity.
+           if ((incx/=1) .or. (incy/=1)) then
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (n-1)*incx
+               end if
+               if (incy>0) then
+                   ky = 1
+               else
+                   ky = 1 - (n-1)*incy
+               end if
+               jx = kx
+               jy = ky
+           end if
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through the triangular part
+           ! of a.
+           if (stdlib_lsame(uplo,'U')) then
+              ! form  a  when a is stored in the upper triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
+                           temp1 = alpha*conjg(y(j))
+                           temp2 = conjg(alpha*x(j))
+                           do i = 1,j - 1
+                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
+                           end do
+                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(j)*temp1+y(j)*temp2,KIND=${ck}$)
+                                     
+                       else
+                           a(j,j) = real(a(j,j),KIND=${ck}$)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
+                           temp1 = alpha*conjg(y(jy))
+                           temp2 = conjg(alpha*x(jx))
+                           ix = kx
+                           iy = ky
+                           do i = 1,j - 1
+                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
+                               ix = ix + incx
+                               iy = iy + incy
+                           end do
+                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(jx)*temp1+y(jy)*temp2,KIND=${ck}$)
+                                     
+                       else
+                           a(j,j) = real(a(j,j),KIND=${ck}$)
+                       end if
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           else
+              ! form  a  when a is stored in the lower triangle.
+               if ((incx==1) .and. (incy==1)) then
+                   do j = 1,n
+                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
+                           temp1 = alpha*conjg(y(j))
+                           temp2 = conjg(alpha*x(j))
+                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(j)*temp1+y(j)*temp2,KIND=${ck}$)
+                                     
+                           do i = j + 1,n
+                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
+                           end do
+                       else
+                           a(j,j) = real(a(j,j),KIND=${ck}$)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
+                           temp1 = alpha*conjg(y(jy))
+                           temp2 = conjg(alpha*x(jx))
+                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(jx)*temp1+y(jy)*temp2,KIND=${ck}$)
+                                     
+                           ix = jx
+                           iy = jy
+                           do i = j + 1,n
+                               ix = ix + incx
+                               iy = iy + incy
+                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
+                           end do
+                       else
+                           a(j,j) = real(a(j,j),KIND=${ck}$)
+                       end if
+                       jx = jx + incx
+                       jy = jy + incy
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_${ci}$her2
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_cher(uplo,n,alpha,x,incx,a,lda)
      use stdlib_blas_constants_sp
      !! CHER performs the hermitian rank 1 operation
@@ -1522,494 +1702,6 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
            end if
            return
      end subroutine stdlib_${ci}$her
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_cgerc(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_sp
-     !! CGERC performs the rank 1 operation
-     !! A := alpha*x*y**H + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           complex(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           complex(sp), intent(inout) :: a(lda,*)
-           complex(sp), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           complex(sp) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: conjg,max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('CGERC ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*conjg(y(jy))
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*conjg(y(jy))
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_cgerc
-
-     module pure subroutine stdlib_zgerc(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_dp
-     !! ZGERC performs the rank 1 operation
-     !! A := alpha*x*y**H + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           complex(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           complex(dp), intent(inout) :: a(lda,*)
-           complex(dp), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           complex(dp) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: conjg,max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('ZGERC ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*conjg(y(jy))
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*conjg(y(jy))
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_zgerc
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$gerc(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_${ck}$
-     !! ZGERC:  performs the rank 1 operation
-     !! A := alpha*x*y**H + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           complex(${ck}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           complex(${ck}$), intent(inout) :: a(lda,*)
-           complex(${ck}$), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           complex(${ck}$) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: conjg,max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('ZGERC ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*conjg(y(jy))
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*conjg(y(jy))
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_${ci}$gerc
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_cgeru(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_sp
-     !! CGERU performs the rank 1 operation
-     !! A := alpha*x*y**T + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           complex(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           complex(sp), intent(inout) :: a(lda,*)
-           complex(sp), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           complex(sp) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('CGERU ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*y(jy)
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*y(jy)
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_cgeru
-
-     module pure subroutine stdlib_zgeru(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_dp
-     !! ZGERU performs the rank 1 operation
-     !! A := alpha*x*y**T + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           complex(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           complex(dp), intent(inout) :: a(lda,*)
-           complex(dp), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           complex(dp) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('ZGERU ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*y(jy)
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*y(jy)
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_zgeru
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$geru(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_${ck}$
-     !! ZGERU:  performs the rank 1 operation
-     !! A := alpha*x*y**T + A,
-     !! where alpha is a scalar, x is an m element vector, y is an n element
-     !! vector and A is an m by n matrix.
-        ! -- reference blas level2 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           complex(${ck}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           ! Array Arguments 
-           complex(${ck}$), intent(inout) :: a(lda,*)
-           complex(${ck}$), intent(in) :: x(*), y(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           complex(${ck}$) :: temp
-           integer(ilp) :: i, info, ix, j, jy, kx
-           ! Intrinsic Functions 
-           intrinsic :: max
-           ! test the input parameters.
-           info = 0
-           if (m<0) then
-               info = 1
-           else if (n<0) then
-               info = 2
-           else if (incx==0) then
-               info = 5
-           else if (incy==0) then
-               info = 7
-           else if (lda<max(1,m)) then
-               info = 9
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('ZGERU ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through a.
-           if (incy>0) then
-               jy = 1
-           else
-               jy = 1 - (n-1)*incy
-           end if
-           if (incx==1) then
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*y(jy)
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(i)*temp
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           else
-               if (incx>0) then
-                   kx = 1
-               else
-                   kx = 1 - (m-1)*incx
-               end if
-               do j = 1,n
-                   if (y(jy)/=czero) then
-                       temp = alpha*y(jy)
-                       ix = kx
-                       do i = 1,m
-                           a(i,j) = a(i,j) + x(ix)*temp
-                           ix = ix + incx
-                       end do
-                   end if
-                   jy = jy + incy
-               end do
-           end if
-           return
-     end subroutine stdlib_${ci}$geru
 
 #:endif
 #:endfor
@@ -2482,32 +2174,31 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
 
 
 
-     module pure subroutine stdlib_cher2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     module pure subroutine stdlib_cgeru(m,n,alpha,x,incx,y,incy,a,lda)
      use stdlib_blas_constants_sp
-     !! CHER2 performs the hermitian rank 2 operation
-     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
-     !! where alpha is a scalar, x and y are n element vectors and A is an n
-     !! by n hermitian matrix.
+     !! CGERU performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
         ! -- reference blas level2 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
            complex(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
            ! Array Arguments 
            complex(sp), intent(inout) :: a(lda,*)
            complex(sp), intent(in) :: x(*), y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           complex(sp) :: temp1, temp2
-           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           complex(sp) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
            ! Intrinsic Functions 
-           intrinsic :: conjg,max,real
+           intrinsic :: max
            ! test the input parameters.
            info = 0
-           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+           if (m<0) then
                info = 1
            else if (n<0) then
                info = 2
@@ -2515,138 +2206,78 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
                info = 5
            else if (incy==0) then
                info = 7
-           else if (lda<max(1,n)) then
+           else if (lda<max(1,m)) then
                info = 9
            end if
            if (info/=0) then
-               call stdlib_xerbla('CHER2 ',info)
+               call stdlib_xerbla('CGERU ',info)
                return
            end if
            ! quick return if possible.
-           if ((n==0) .or. (alpha==czero)) return
-           ! set up the start points in x and y if the increments are not both
-           ! unity.
-           if ((incx/=1) .or. (incy/=1)) then
+           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*y(jy)
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
                if (incx>0) then
                    kx = 1
                else
-                   kx = 1 - (n-1)*incx
+                   kx = 1 - (m-1)*incx
                end if
-               if (incy>0) then
-                   ky = 1
-               else
-                   ky = 1 - (n-1)*incy
-               end if
-               jx = kx
-               jy = ky
-           end if
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through the triangular part
-           ! of a.
-           if (stdlib_lsame(uplo,'U')) then
-              ! form  a  when a is stored in the upper triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
-                           temp1 = alpha*conjg(y(j))
-                           temp2 = conjg(alpha*x(j))
-                           do i = 1,j - 1
-                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
-                           end do
-                           a(j,j) = real(a(j,j),KIND=sp) +real(x(j)*temp1+y(j)*temp2,KIND=sp)
-                                     
-                       else
-                           a(j,j) = real(a(j,j),KIND=sp)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
-                           temp1 = alpha*conjg(y(jy))
-                           temp2 = conjg(alpha*x(jx))
-                           ix = kx
-                           iy = ky
-                           do i = 1,j - 1
-                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
-                               ix = ix + incx
-                               iy = iy + incy
-                           end do
-                           a(j,j) = real(a(j,j),KIND=sp) +real(x(jx)*temp1+y(jy)*temp2,KIND=sp)
-                                     
-                       else
-                           a(j,j) = real(a(j,j),KIND=sp)
-                       end if
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           else
-              ! form  a  when a is stored in the lower triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
-                           temp1 = alpha*conjg(y(j))
-                           temp2 = conjg(alpha*x(j))
-                           a(j,j) = real(a(j,j),KIND=sp) +real(x(j)*temp1+y(j)*temp2,KIND=sp)
-                                     
-                           do i = j + 1,n
-                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
-                           end do
-                       else
-                           a(j,j) = real(a(j,j),KIND=sp)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
-                           temp1 = alpha*conjg(y(jy))
-                           temp2 = conjg(alpha*x(jx))
-                           a(j,j) = real(a(j,j),KIND=sp) +real(x(jx)*temp1+y(jy)*temp2,KIND=sp)
-                                     
-                           ix = jx
-                           iy = jy
-                           do i = j + 1,n
-                               ix = ix + incx
-                               iy = iy + incy
-                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
-                           end do
-                       else
-                           a(j,j) = real(a(j,j),KIND=sp)
-                       end if
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*y(jy)
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
            end if
            return
-     end subroutine stdlib_cher2
+     end subroutine stdlib_cgeru
 
-     module pure subroutine stdlib_zher2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     module pure subroutine stdlib_zgeru(m,n,alpha,x,incx,y,incy,a,lda)
      use stdlib_blas_constants_dp
-     !! ZHER2 performs the hermitian rank 2 operation
-     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
-     !! where alpha is a scalar, x and y are n element vectors and A is an n
-     !! by n hermitian matrix.
+     !! ZGERU performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
         ! -- reference blas level2 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
            complex(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
            ! Array Arguments 
            complex(dp), intent(inout) :: a(lda,*)
            complex(dp), intent(in) :: x(*), y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           complex(dp) :: temp1, temp2
-           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           complex(dp) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
            ! Intrinsic Functions 
-           intrinsic :: real,conjg,max
+           intrinsic :: max
            ! test the input parameters.
            info = 0
-           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+           if (m<0) then
                info = 1
            else if (n<0) then
                info = 2
@@ -2654,140 +2285,80 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
                info = 5
            else if (incy==0) then
                info = 7
-           else if (lda<max(1,n)) then
+           else if (lda<max(1,m)) then
                info = 9
            end if
            if (info/=0) then
-               call stdlib_xerbla('ZHER2 ',info)
+               call stdlib_xerbla('ZGERU ',info)
                return
            end if
            ! quick return if possible.
-           if ((n==0) .or. (alpha==czero)) return
-           ! set up the start points in x and y if the increments are not both
-           ! unity.
-           if ((incx/=1) .or. (incy/=1)) then
+           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*y(jy)
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
                if (incx>0) then
                    kx = 1
                else
-                   kx = 1 - (n-1)*incx
+                   kx = 1 - (m-1)*incx
                end if
-               if (incy>0) then
-                   ky = 1
-               else
-                   ky = 1 - (n-1)*incy
-               end if
-               jx = kx
-               jy = ky
-           end if
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through the triangular part
-           ! of a.
-           if (stdlib_lsame(uplo,'U')) then
-              ! form  a  when a is stored in the upper triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
-                           temp1 = alpha*conjg(y(j))
-                           temp2 = conjg(alpha*x(j))
-                           do i = 1,j - 1
-                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
-                           end do
-                           a(j,j) = real(a(j,j),KIND=dp) +real(x(j)*temp1+y(j)*temp2,KIND=dp)
-                                     
-                       else
-                           a(j,j) = real(a(j,j),KIND=dp)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
-                           temp1 = alpha*conjg(y(jy))
-                           temp2 = conjg(alpha*x(jx))
-                           ix = kx
-                           iy = ky
-                           do i = 1,j - 1
-                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
-                               ix = ix + incx
-                               iy = iy + incy
-                           end do
-                           a(j,j) = real(a(j,j),KIND=dp) +real(x(jx)*temp1+y(jy)*temp2,KIND=dp)
-                                     
-                       else
-                           a(j,j) = real(a(j,j),KIND=dp)
-                       end if
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           else
-              ! form  a  when a is stored in the lower triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
-                           temp1 = alpha*conjg(y(j))
-                           temp2 = conjg(alpha*x(j))
-                           a(j,j) = real(a(j,j),KIND=dp) +real(x(j)*temp1+y(j)*temp2,KIND=dp)
-                                     
-                           do i = j + 1,n
-                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
-                           end do
-                       else
-                           a(j,j) = real(a(j,j),KIND=dp)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
-                           temp1 = alpha*conjg(y(jy))
-                           temp2 = conjg(alpha*x(jx))
-                           a(j,j) = real(a(j,j),KIND=dp) +real(x(jx)*temp1+y(jy)*temp2,KIND=dp)
-                                     
-                           ix = jx
-                           iy = jy
-                           do i = j + 1,n
-                               ix = ix + incx
-                               iy = iy + incy
-                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
-                           end do
-                       else
-                           a(j,j) = real(a(j,j),KIND=dp)
-                       end if
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*y(jy)
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
            end if
            return
-     end subroutine stdlib_zher2
+     end subroutine stdlib_zgeru
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$her2(uplo,n,alpha,x,incx,y,incy,a,lda)
+     module pure subroutine stdlib_${ci}$geru(m,n,alpha,x,incx,y,incy,a,lda)
      use stdlib_blas_constants_${ck}$
-     !! ZHER2:  performs the hermitian rank 2 operation
-     !! A := alpha*x*y**H + conjg( alpha )*y*x**H + A,
-     !! where alpha is a scalar, x and y are n element vectors and A is an n
-     !! by n hermitian matrix.
+     !! ZGERU:  performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
         ! -- reference blas level2 routine --
         ! -- reference blas is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            ! Scalar Arguments 
            complex(${ck}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
            ! Array Arguments 
            complex(${ck}$), intent(inout) :: a(lda,*)
            complex(${ck}$), intent(in) :: x(*), y(*)
         ! =====================================================================
            
            ! Local Scalars 
-           complex(${ck}$) :: temp1, temp2
-           integer(ilp) :: i, info, ix, iy, j, jx, jy, kx, ky
+           complex(${ck}$) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
            ! Intrinsic Functions 
-           intrinsic :: real,conjg,max
+           intrinsic :: max
            ! test the input parameters.
            info = 0
-           if (.not.stdlib_lsame(uplo,'U') .and. .not.stdlib_lsame(uplo,'L')) then
+           if (m<0) then
                info = 1
            else if (n<0) then
                info = 2
@@ -2795,111 +2366,540 @@ submodule(stdlib_blas) stdlib_blas_level2_gen
                info = 5
            else if (incy==0) then
                info = 7
-           else if (lda<max(1,n)) then
+           else if (lda<max(1,m)) then
                info = 9
            end if
            if (info/=0) then
-               call stdlib_xerbla('ZHER2 ',info)
+               call stdlib_xerbla('ZGERU ',info)
                return
            end if
            ! quick return if possible.
-           if ((n==0) .or. (alpha==czero)) return
-           ! set up the start points in x and y if the increments are not both
-           ! unity.
-           if ((incx/=1) .or. (incy/=1)) then
+           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*y(jy)
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
                if (incx>0) then
                    kx = 1
                else
-                   kx = 1 - (n-1)*incx
+                   kx = 1 - (m-1)*incx
                end if
-               if (incy>0) then
-                   ky = 1
-               else
-                   ky = 1 - (n-1)*incy
-               end if
-               jx = kx
-               jy = ky
-           end if
-           ! start the operations. in this version the elements of a are
-           ! accessed sequentially with cone pass through the triangular part
-           ! of a.
-           if (stdlib_lsame(uplo,'U')) then
-              ! form  a  when a is stored in the upper triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
-                           temp1 = alpha*conjg(y(j))
-                           temp2 = conjg(alpha*x(j))
-                           do i = 1,j - 1
-                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
-                           end do
-                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(j)*temp1+y(j)*temp2,KIND=${ck}$)
-                                     
-                       else
-                           a(j,j) = real(a(j,j),KIND=${ck}$)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
-                           temp1 = alpha*conjg(y(jy))
-                           temp2 = conjg(alpha*x(jx))
-                           ix = kx
-                           iy = ky
-                           do i = 1,j - 1
-                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
-                               ix = ix + incx
-                               iy = iy + incy
-                           end do
-                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(jx)*temp1+y(jy)*temp2,KIND=${ck}$)
-                                     
-                       else
-                           a(j,j) = real(a(j,j),KIND=${ck}$)
-                       end if
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
-           else
-              ! form  a  when a is stored in the lower triangle.
-               if ((incx==1) .and. (incy==1)) then
-                   do j = 1,n
-                       if ((x(j)/=czero) .or. (y(j)/=czero)) then
-                           temp1 = alpha*conjg(y(j))
-                           temp2 = conjg(alpha*x(j))
-                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(j)*temp1+y(j)*temp2,KIND=${ck}$)
-                                     
-                           do i = j + 1,n
-                               a(i,j) = a(i,j) + x(i)*temp1 + y(i)*temp2
-                           end do
-                       else
-                           a(j,j) = real(a(j,j),KIND=${ck}$)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       if ((x(jx)/=czero) .or. (y(jy)/=czero)) then
-                           temp1 = alpha*conjg(y(jy))
-                           temp2 = conjg(alpha*x(jx))
-                           a(j,j) = real(a(j,j),KIND=${ck}$) +real(x(jx)*temp1+y(jy)*temp2,KIND=${ck}$)
-                                     
-                           ix = jx
-                           iy = jy
-                           do i = j + 1,n
-                               ix = ix + incx
-                               iy = iy + incy
-                               a(i,j) = a(i,j) + x(ix)*temp1 + y(iy)*temp2
-                           end do
-                       else
-                           a(j,j) = real(a(j,j),KIND=${ck}$)
-                       end if
-                       jx = jx + incx
-                       jy = jy + incy
-                   end do
-               end if
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*y(jy)
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
            end if
            return
-     end subroutine stdlib_${ci}$her2
+     end subroutine stdlib_${ci}$geru
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_cgerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! CGERC performs the rank 1 operation
+     !! A := alpha*x*y**H + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           complex(sp) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
+           ! Intrinsic Functions 
+           intrinsic :: conjg,max
+           ! test the input parameters.
+           info = 0
+           if (m<0) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,m)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('CGERC ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*conjg(y(jy))
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (m-1)*incx
+               end if
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*conjg(y(jy))
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           end if
+           return
+     end subroutine stdlib_cgerc
+
+     module pure subroutine stdlib_zgerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! ZGERC performs the rank 1 operation
+     !! A := alpha*x*y**H + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           complex(dp) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
+           ! Intrinsic Functions 
+           intrinsic :: conjg,max
+           ! test the input parameters.
+           info = 0
+           if (m<0) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,m)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('ZGERC ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*conjg(y(jy))
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (m-1)*incx
+               end if
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*conjg(y(jy))
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           end if
+           return
+     end subroutine stdlib_zgerc
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$gerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+     !! ZGERC:  performs the rank 1 operation
+     !! A := alpha*x*y**H + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           complex(${ck}$) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
+           ! Intrinsic Functions 
+           intrinsic :: conjg,max
+           ! test the input parameters.
+           info = 0
+           if (m<0) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,m)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('ZGERC ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((m==0) .or. (n==0) .or. (alpha==czero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with cone pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*conjg(y(jy))
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (m-1)*incx
+               end if
+               do j = 1,n
+                   if (y(jy)/=czero) then
+                       temp = alpha*conjg(y(jy))
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           end if
+           return
+     end subroutine stdlib_${ci}$gerc
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_sger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+     !! SGER performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(sp) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
+           ! Intrinsic Functions 
+           intrinsic :: max
+           ! test the input parameters.
+           info = 0
+           if (m<0) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,m)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('SGER  ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((m==0) .or. (n==0) .or. (alpha==zero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with one pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=zero) then
+                       temp = alpha*y(jy)
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (m-1)*incx
+               end if
+               do j = 1,n
+                   if (y(jy)/=zero) then
+                       temp = alpha*y(jy)
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           end if
+           return
+     end subroutine stdlib_sger
+
+     module pure subroutine stdlib_dger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+     !! DGER performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(dp) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
+           ! Intrinsic Functions 
+           intrinsic :: max
+           ! test the input parameters.
+           info = 0
+           if (m<0) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,m)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('DGER  ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((m==0) .or. (n==0) .or. (alpha==zero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with one pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=zero) then
+                       temp = alpha*y(jy)
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (m-1)*incx
+               end if
+               do j = 1,n
+                   if (y(jy)/=zero) then
+                       temp = alpha*y(jy)
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           end if
+           return
+     end subroutine stdlib_dger
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$ger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${rk}$
+     !! DGER:   performs the rank 1 operation
+     !! A := alpha*x*y**T + A,
+     !! where alpha is a scalar, x is an m element vector, y is an n element
+     !! vector and A is an m by n matrix.
+        ! -- reference blas level2 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(in) :: x(*), y(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: temp
+           integer(ilp) :: i, info, ix, j, jy, kx
+           ! Intrinsic Functions 
+           intrinsic :: max
+           ! test the input parameters.
+           info = 0
+           if (m<0) then
+               info = 1
+           else if (n<0) then
+               info = 2
+           else if (incx==0) then
+               info = 5
+           else if (incy==0) then
+               info = 7
+           else if (lda<max(1,m)) then
+               info = 9
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('DGER  ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((m==0) .or. (n==0) .or. (alpha==zero)) return
+           ! start the operations. in this version the elements of a are
+           ! accessed sequentially with one pass through a.
+           if (incy>0) then
+               jy = 1
+           else
+               jy = 1 - (n-1)*incy
+           end if
+           if (incx==1) then
+               do j = 1,n
+                   if (y(jy)/=zero) then
+                       temp = alpha*y(jy)
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(i)*temp
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           else
+               if (incx>0) then
+                   kx = 1
+               else
+                   kx = 1 - (m-1)*incx
+               end if
+               do j = 1,n
+                   if (y(jy)/=zero) then
+                       temp = alpha*y(jy)
+                       ix = kx
+                       do i = 1,m
+                           a(i,j) = a(i,j) + x(ix)*temp
+                           ix = ix + incx
+                       end do
+                   end if
+                   jy = jy + incy
+               end do
+           end if
+           return
+     end subroutine stdlib_${ri}$ger
 
 #:endif
 #:endfor
