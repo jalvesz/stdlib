@@ -321,7 +321,8 @@ with open(blas_include, 'w') as file:
                 if line.strip().lower().startswith("end subroutine stdlib_") or line.strip().lower().startswith("end function stdlib_"):
                     wr = True
                 if wr: 
-                    file.write(line)
+                    if not line.strip().startswith("!"):
+                        file.write(line)
 
             file.write("end interface \n")
             file.write("\n")
@@ -436,7 +437,8 @@ with open(lapack_include, 'w') as file:
                 if line.strip().lower().startswith("end subroutine stdlib_") or line.strip().lower().startswith("end function stdlib_"):
                     wr = True
                 if wr: 
-                    file.write(line)
+                    if not line.strip().startswith("!"):
+                        file.write(line)
 
             file.write("end interface \n")
             file.write("\n")
