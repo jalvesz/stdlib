@@ -11972,6 +11972,7 @@ module stdlib_linalg_lapack_c
         real(sp), intent(out) :: c
         complex(sp), intent(in) :: f, g
         complex(sp), intent(out) :: r, s
+        ! =====================================================================
         ! Local Scalars 
         real(sp) :: d, f1, f2, g1, g2, h2, p, u, uu, v, vv, w
         complex(sp) :: fs, gs, t
@@ -12834,6 +12835,7 @@ module stdlib_linalg_lapack_c
         real(sp), intent(inout) :: scl, sumsq
         ! Array Arguments 
         complex(sp), intent(in) :: x(*)
+        ! =====================================================================
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
@@ -44797,7 +44799,7 @@ module stdlib_linalg_lapack_c
                      zstart, ihi
            complex(sp), intent(inout) :: a(lda,*), b(ldb,*), q(ldq,*), z(ldz,*)
            
-           
+           ! ================================================================
            ! local variables
            real(sp) :: c
            complex(sp) :: s, temp
@@ -44853,7 +44855,7 @@ module stdlib_linalg_lapack_c
                      ldqc, * ), zc( ldzc, * ), work( * ),alpha( * ), beta( * )
            integer(ilp), intent( out ) :: info
            
-           
+           ! ================================================================
            ! local scalars
            integer(ilp) :: i, j, ns, istartm, istopm, sheight, swidth, k, np, istartb, istopb, &
                      ishift, nblock, npos
@@ -79714,7 +79716,7 @@ module stdlib_linalg_lapack_c
                      alpha( * ), beta( * ), work( * )
            real(sp), intent( out ) :: rwork( * )
            
-           
+           ! ================================================================
            ! local scalars
            real(sp) :: smlnum, ulp, safmin, safmax, c1, tempr
            complex(sp) :: eshift, s1, temp
@@ -80031,7 +80033,7 @@ module stdlib_linalg_lapack_c
            complex(sp), intent(out) :: work(*)
            real(sp), intent(out) :: rwork(*)
            
-           
+           ! ================================================================
            ! local scalars
            integer(ilp) :: jw, kwtop, kwbot, istopm, istartm, k, k2, ctgexc_info, ifst, ilst, &
                      lworkreq, qz_small_info

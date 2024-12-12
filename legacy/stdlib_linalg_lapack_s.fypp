@@ -5827,6 +5827,7 @@ module stdlib_linalg_lapack_s
         ! Scalar Arguments 
         real(sp), intent(out) :: c, r, s
         real(sp), intent(in) :: f, g
+        ! =====================================================================
         ! Local Scalars 
         real(sp) :: d, f1, fs, g1, gs, p, u, uu
         ! Intrinsic Functions 
@@ -7723,6 +7724,7 @@ module stdlib_linalg_lapack_s
         real(sp), intent(inout) :: scl, sumsq
         ! Array Arguments 
         real(sp), intent(in) :: x(*)
+        ! =====================================================================
         ! Local Scalars 
      integer(ilp) :: i, ix
      logical(lk) :: notbig
@@ -32017,7 +32019,7 @@ module stdlib_linalg_lapack_s
            integer(ilp), intent( in ) :: lda, ldb
            real(sp), intent( in ) :: a( lda, * ), b( ldb, * ), sr1, sr2, si,beta1, beta2
            real(sp), intent( out ) :: v( * )
-           
+           ! ================================================================
            ! local scalars
            real(sp) :: w(2), safmin, safmax, scale1, scale2
            safmin = stdlib_slamch( 'SAFE MINIMUM' )
@@ -32066,7 +32068,7 @@ module stdlib_linalg_lapack_s
            integer(ilp), intent( in ) :: k, lda, ldb, ldq, ldz, istartm, istopm,nq, nz, qstart, &
                      zstart, ihi
            real(sp), intent(inout) :: a(lda,*), b(ldb,*), q(ldq,*), z(ldz,*)
-           
+           ! ================================================================
            ! local variables
            real(sp) :: h(2,3), c1, s1, c2, s2, temp
            if( k+2 == ihi ) then
@@ -32179,7 +32181,7 @@ module stdlib_linalg_lapack_s
            real(sp), intent( inout ) :: a( lda, * ), b( ldb, * ), q( ldq, * ),z( ldz, * ), qc( &
                      ldqc, * ), zc( ldzc, * ), work( * ), sr( * ),si( * ), ss( * )
            integer(ilp), intent( out ) :: info
-           
+           ! ================================================================
            ! local scalars
            integer(ilp) :: i, j, ns, istartm, istopm, sheight, swidth, k, np, istartb, istopb, &
                      ishift, nblock, npos
@@ -81038,7 +81040,7 @@ module stdlib_linalg_lapack_s
            integer(ilp), intent( out ) :: info
            real(sp), intent( inout ) :: a( lda, * ), b( ldb, * ), q( ldq, * ),z( ldz, * ), alphar(&
                       * ), alphai( * ), beta( * ), work( * )
-           
+           ! ================================================================
            ! local scalars
            real(sp) :: smlnum, ulp, eshift, safmin, safmax, c1, s1, temp, swap
            integer(ilp) :: istart, istop, iiter, maxit, istart2, k, ld, nshifts, nblock, nw, nmin,&
@@ -81386,7 +81388,7 @@ module stdlib_linalg_lapack_s
            integer(ilp), intent( out ) :: ns, nd, info
            real(sp), intent(inout) :: qc(ldqc,*), zc(ldzc,*)
            real(sp), intent(out) :: work(*)
-           
+           ! ================================================================
            ! local scalars
            logical(lk) :: bulge
            integer(ilp) :: jw, kwtop, kwbot, istopm, istartm, k, k2, stgexc_info, ifst, ilst, &
