@@ -5,181 +5,6 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
   contains
 
-     module pure subroutine stdlib_slartgs( x, y, sigma, cs, sn )
-     !! SLARTGS generates a plane rotation designed to introduce a bulge in
-     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
-     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
-     !! The computed CS and SN define a plane rotation satisfying
-     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
-     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
-     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
-     !! rotation is by PI/2.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(out) :: cs, sn
-           real(sp), intent(in) :: sigma, x, y
-        ! ===================================================================
-           
-           ! Local Scalars 
-           real(sp) :: r, s, thresh, w, z
-           thresh = stdlib_slamch('E')
-           ! compute the first column of b**t*b - sigma^2*i, up to a scale
-           ! factor.
-           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
-                     then
-              z = zero
-              w = zero
-           else if( sigma == zero ) then
-              if( x >= zero ) then
-                 z = x
-                 w = y
-              else
-                 z = -x
-                 w = -y
-              end if
-           else if( abs(x) < thresh ) then
-              z = -sigma*sigma
-              w = zero
-           else
-              if( x >= zero ) then
-                 s = one
-              else
-                 s = negone
-              end if
-              z = s * (abs(x)-sigma) * (s+sigma/x)
-              w = s * y
-           end if
-           ! generate the rotation.
-           ! call stdlib_slartgp( z, w, cs, sn, r ) might seem more natural;
-           ! reordering the arguments ensures that if z = 0 then the rotation
-           ! is by pi/2.
-           call stdlib_slartgp( w, z, sn, cs, r )
-           return
-           ! end stdlib_slartgs
-     end subroutine stdlib_slartgs
-
-     module pure subroutine stdlib_dlartgs( x, y, sigma, cs, sn )
-     !! DLARTGS generates a plane rotation designed to introduce a bulge in
-     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
-     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
-     !! The computed CS and SN define a plane rotation satisfying
-     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
-     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
-     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
-     !! rotation is by PI/2.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(out) :: cs, sn
-           real(dp), intent(in) :: sigma, x, y
-        ! ===================================================================
-           
-           ! Local Scalars 
-           real(dp) :: r, s, thresh, w, z
-           thresh = stdlib_dlamch('E')
-           ! compute the first column of b**t*b - sigma^2*i, up to a scale
-           ! factor.
-           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
-                     then
-              z = zero
-              w = zero
-           else if( sigma == zero ) then
-              if( x >= zero ) then
-                 z = x
-                 w = y
-              else
-                 z = -x
-                 w = -y
-              end if
-           else if( abs(x) < thresh ) then
-              z = -sigma*sigma
-              w = zero
-           else
-              if( x >= zero ) then
-                 s = one
-              else
-                 s = negone
-              end if
-              z = s * (abs(x)-sigma) * (s+sigma/x)
-              w = s * y
-           end if
-           ! generate the rotation.
-           ! call stdlib_dlartgp( z, w, cs, sn, r ) might seem more natural;
-           ! reordering the arguments ensures that if z = 0 then the rotation
-           ! is by pi/2.
-           call stdlib_dlartgp( w, z, sn, cs, r )
-           return
-           ! end stdlib_dlartgs
-     end subroutine stdlib_dlartgs
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lartgs( x, y, sigma, cs, sn )
-     !! DLARTGS: generates a plane rotation designed to introduce a bulge in
-     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
-     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
-     !! The computed CS and SN define a plane rotation satisfying
-     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
-     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
-     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
-     !! rotation is by PI/2.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(out) :: cs, sn
-           real(${rk}$), intent(in) :: sigma, x, y
-        ! ===================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: r, s, thresh, w, z
-           thresh = stdlib_${ri}$lamch('E')
-           ! compute the first column of b**t*b - sigma^2*i, up to a scale
-           ! factor.
-           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
-                     then
-              z = zero
-              w = zero
-           else if( sigma == zero ) then
-              if( x >= zero ) then
-                 z = x
-                 w = y
-              else
-                 z = -x
-                 w = -y
-              end if
-           else if( abs(x) < thresh ) then
-              z = -sigma*sigma
-              w = zero
-           else
-              if( x >= zero ) then
-                 s = one
-              else
-                 s = negone
-              end if
-              z = s * (abs(x)-sigma) * (s+sigma/x)
-              w = s * y
-           end if
-           ! generate the rotation.
-           ! call stdlib_${ri}$lartgp( z, w, cs, sn, r ) might seem more natural;
-           ! reordering the arguments ensures that if z = 0 then the rotation
-           ! is by pi/2.
-           call stdlib_${ri}$lartgp( w, z, sn, cs, r )
-           return
-           ! end stdlib_${ri}$lartgs
-     end subroutine stdlib_${ri}$lartgs
-
-#:endif
-#:endfor
-
-
-
      module pure subroutine stdlib_slapll( n, x, incx, y, incy, ssmin )
      !! Given two column vectors X and Y, let
      !! A = ( X Y ).
@@ -1488,6 +1313,202 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 
 
+     module pure subroutine stdlib_slas2( f, g, h, ssmin, ssmax )
+     !! SLAS2 computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: f, g, h
+           real(sp), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(sp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_slas2
+
+     module pure subroutine stdlib_dlas2( f, g, h, ssmin, ssmax )
+     !! DLAS2 computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: f, g, h
+           real(dp), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(dp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_dlas2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$las2( f, g, h, ssmin, ssmax )
+     !! DLAS2:  computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: f, g, h
+           real(${rk}$), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(${rk}$) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_${ri}$las2
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_slabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
      !! SLABRD reduces the first NB rows and columns of a real general
      !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
@@ -2334,6 +2355,181 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 
 
+     module pure subroutine stdlib_slartgs( x, y, sigma, cs, sn )
+     !! SLARTGS generates a plane rotation designed to introduce a bulge in
+     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
+     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
+     !! The computed CS and SN define a plane rotation satisfying
+     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
+     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
+     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
+     !! rotation is by PI/2.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(out) :: cs, sn
+           real(sp), intent(in) :: sigma, x, y
+        ! ===================================================================
+           
+           ! Local Scalars 
+           real(sp) :: r, s, thresh, w, z
+           thresh = stdlib_slamch('E')
+           ! compute the first column of b**t*b - sigma^2*i, up to a scale
+           ! factor.
+           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
+                     then
+              z = zero
+              w = zero
+           else if( sigma == zero ) then
+              if( x >= zero ) then
+                 z = x
+                 w = y
+              else
+                 z = -x
+                 w = -y
+              end if
+           else if( abs(x) < thresh ) then
+              z = -sigma*sigma
+              w = zero
+           else
+              if( x >= zero ) then
+                 s = one
+              else
+                 s = negone
+              end if
+              z = s * (abs(x)-sigma) * (s+sigma/x)
+              w = s * y
+           end if
+           ! generate the rotation.
+           ! call stdlib_slartgp( z, w, cs, sn, r ) might seem more natural;
+           ! reordering the arguments ensures that if z = 0 then the rotation
+           ! is by pi/2.
+           call stdlib_slartgp( w, z, sn, cs, r )
+           return
+           ! end stdlib_slartgs
+     end subroutine stdlib_slartgs
+
+     module pure subroutine stdlib_dlartgs( x, y, sigma, cs, sn )
+     !! DLARTGS generates a plane rotation designed to introduce a bulge in
+     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
+     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
+     !! The computed CS and SN define a plane rotation satisfying
+     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
+     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
+     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
+     !! rotation is by PI/2.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(out) :: cs, sn
+           real(dp), intent(in) :: sigma, x, y
+        ! ===================================================================
+           
+           ! Local Scalars 
+           real(dp) :: r, s, thresh, w, z
+           thresh = stdlib_dlamch('E')
+           ! compute the first column of b**t*b - sigma^2*i, up to a scale
+           ! factor.
+           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
+                     then
+              z = zero
+              w = zero
+           else if( sigma == zero ) then
+              if( x >= zero ) then
+                 z = x
+                 w = y
+              else
+                 z = -x
+                 w = -y
+              end if
+           else if( abs(x) < thresh ) then
+              z = -sigma*sigma
+              w = zero
+           else
+              if( x >= zero ) then
+                 s = one
+              else
+                 s = negone
+              end if
+              z = s * (abs(x)-sigma) * (s+sigma/x)
+              w = s * y
+           end if
+           ! generate the rotation.
+           ! call stdlib_dlartgp( z, w, cs, sn, r ) might seem more natural;
+           ! reordering the arguments ensures that if z = 0 then the rotation
+           ! is by pi/2.
+           call stdlib_dlartgp( w, z, sn, cs, r )
+           return
+           ! end stdlib_dlartgs
+     end subroutine stdlib_dlartgs
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$lartgs( x, y, sigma, cs, sn )
+     !! DLARTGS: generates a plane rotation designed to introduce a bulge in
+     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
+     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
+     !! The computed CS and SN define a plane rotation satisfying
+     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
+     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
+     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
+     !! rotation is by PI/2.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(out) :: cs, sn
+           real(${rk}$), intent(in) :: sigma, x, y
+        ! ===================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: r, s, thresh, w, z
+           thresh = stdlib_${ri}$lamch('E')
+           ! compute the first column of b**t*b - sigma^2*i, up to a scale
+           ! factor.
+           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
+                     then
+              z = zero
+              w = zero
+           else if( sigma == zero ) then
+              if( x >= zero ) then
+                 z = x
+                 w = y
+              else
+                 z = -x
+                 w = -y
+              end if
+           else if( abs(x) < thresh ) then
+              z = -sigma*sigma
+              w = zero
+           else
+              if( x >= zero ) then
+                 s = one
+              else
+                 s = negone
+              end if
+              z = s * (abs(x)-sigma) * (s+sigma/x)
+              w = s * y
+           end if
+           ! generate the rotation.
+           ! call stdlib_${ri}$lartgp( z, w, cs, sn, r ) might seem more natural;
+           ! reordering the arguments ensures that if z = 0 then the rotation
+           ! is by pi/2.
+           call stdlib_${ri}$lartgp( w, z, sn, cs, r )
+           return
+           ! end stdlib_${ri}$lartgs
+     end subroutine stdlib_${ri}$lartgs
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_slasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
      !! SLASV2 computes the singular value decomposition of a 2-by-2
      !! triangular matrix
@@ -2767,202 +2963,6 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
            ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
            return
      end subroutine stdlib_${ri}$lasv2
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_slas2( f, g, h, ssmin, ssmax )
-     !! SLAS2 computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: f, g, h
-           real(sp), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
-           
-           ! Local Scalars 
-           real(sp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
-              ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_slas2
-
-     module pure subroutine stdlib_dlas2( f, g, h, ssmin, ssmax )
-     !! DLAS2 computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: f, g, h
-           real(dp), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
-           
-           ! Local Scalars 
-           real(dp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
-              ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_dlas2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$las2( f, g, h, ssmin, ssmax )
-     !! DLAS2:  computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: f, g, h
-           real(${rk}$), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
-           
-           ! Local Scalars 
-           real(${rk}$) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
-              ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_${ri}$las2
 
 #:endif
 #:endfor

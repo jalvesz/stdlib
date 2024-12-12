@@ -5,6 +5,244 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_parameters
 
   contains
 
+     module pure real(sp) function stdlib_slamc3( a, b )
+        ! -- lapack auxiliary routine --
+           ! univ. of tennessee, univ. of california berkeley and nag ltd..
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: a, b
+       ! =====================================================================
+           ! Executable Statements 
+           stdlib_slamc3 = a + b
+           return
+     end function stdlib_slamc3
+
+     module pure real(dp) function stdlib_dlamc3( a, b )
+        ! -- lapack auxiliary routine --
+           ! univ. of tennessee, univ. of california berkeley and nag ltd..
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: a, b
+       ! =====================================================================
+           ! Executable Statements 
+           stdlib_dlamc3 = a + b
+           return
+     end function stdlib_dlamc3
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$lamc3( a, b )
+        ! -- lapack auxiliary routine --
+           ! univ. of tennessee, univ. of california berkeley and nag ltd..
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: a, b
+       ! =====================================================================
+           ! Executable Statements 
+           stdlib_${ri}$lamc3 = a + b
+           return
+     end function stdlib_${ri}$lamc3
+
+#:endif
+#:endfor
+
+
+
+     module pure real(sp) function stdlib_slamch( cmach )
+     !! SLAMCH determines single precision machine parameters.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: zero, one, eps
+           ! Scalar Arguments 
+           character, intent(in) :: cmach
+       ! =====================================================================
+           
+           ! Local Scalars 
+           real(sp) :: sfmin, small, rmach
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! assume rounding, not chopping. always.
+           if( stdlib_lsame( cmach, 'E' ) ) then
+              rmach = eps
+           else if( stdlib_lsame( cmach, 'S' ) ) then
+              sfmin = tiny(zero)
+              small = one / huge(zero)
+              if( small>=sfmin ) then
+                 ! use small plus a bit, to avoid the possibility of rounding
+                 ! causing overflow when computing  1/sfmin.
+                 sfmin = small*( one+eps )
+              end if
+              rmach = sfmin
+           else if( stdlib_lsame( cmach, 'B' ) ) then
+              rmach = radix(zero)
+           else if( stdlib_lsame( cmach, 'P' ) ) then
+              rmach = eps * radix(zero)
+           else if( stdlib_lsame( cmach, 'N' ) ) then
+              rmach = digits(zero)
+           else if( stdlib_lsame( cmach, 'R' ) ) then
+              rmach = one
+           else if( stdlib_lsame( cmach, 'M' ) ) then
+              rmach = minexponent(zero)
+           else if( stdlib_lsame( cmach, 'U' ) ) then
+              rmach = tiny(zero)
+           else if( stdlib_lsame( cmach, 'L' ) ) then
+              rmach = maxexponent(zero)
+           else if( stdlib_lsame( cmach, 'O' ) ) then
+              rmach = huge(zero)
+           else
+              rmach = zero
+           end if
+           stdlib_slamch = rmach
+           return
+     end function stdlib_slamch
+
+     module pure real(dp) function stdlib_dlamch( cmach )
+     !! DLAMCH determines double precision machine parameters.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: zero, one, eps
+           ! Scalar Arguments 
+           character, intent(in) :: cmach
+       ! =====================================================================
+           
+           ! Local Scalars 
+           real(dp) :: sfmin, small, rmach
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! assume rounding, not chopping. always.
+           if( stdlib_lsame( cmach, 'E' ) ) then
+              rmach = eps
+           else if( stdlib_lsame( cmach, 'S' ) ) then
+              sfmin = tiny(zero)
+              small = one / huge(zero)
+              if( small>=sfmin ) then
+                 ! use small plus a bit, to avoid the possibility of rounding
+                 ! causing overflow when computing  1/sfmin.
+                 sfmin = small*( one+eps )
+              end if
+              rmach = sfmin
+           else if( stdlib_lsame( cmach, 'B' ) ) then
+              rmach = radix(zero)
+           else if( stdlib_lsame( cmach, 'P' ) ) then
+              rmach = eps * radix(zero)
+           else if( stdlib_lsame( cmach, 'N' ) ) then
+              rmach = digits(zero)
+           else if( stdlib_lsame( cmach, 'R' ) ) then
+              rmach = one
+           else if( stdlib_lsame( cmach, 'M' ) ) then
+              rmach = minexponent(zero)
+           else if( stdlib_lsame( cmach, 'U' ) ) then
+              rmach = tiny(zero)
+           else if( stdlib_lsame( cmach, 'L' ) ) then
+              rmach = maxexponent(zero)
+           else if( stdlib_lsame( cmach, 'O' ) ) then
+              rmach = huge(zero)
+           else
+              rmach = zero
+           end if
+           stdlib_dlamch = rmach
+           return
+     end function stdlib_dlamch
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure real(${rk}$) function stdlib_${ri}$lamch( cmach )
+     !! DLAMCH: determines quad precision machine parameters.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: zero, one, eps
+           ! Scalar Arguments 
+           character, intent(in) :: cmach
+       ! =====================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: sfmin, small, rmach
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! assume rounding, not chopping. always.
+           if( stdlib_lsame( cmach, 'E' ) ) then
+              rmach = eps
+           else if( stdlib_lsame( cmach, 'S' ) ) then
+              sfmin = tiny(zero)
+              small = one / huge(zero)
+              if( small>=sfmin ) then
+                 ! use small plus a bit, to avoid the possibility of rounding
+                 ! causing overflow when computing  1/sfmin.
+                 sfmin = small*( one+eps )
+              end if
+              rmach = sfmin
+           else if( stdlib_lsame( cmach, 'B' ) ) then
+              rmach = radix(zero)
+           else if( stdlib_lsame( cmach, 'P' ) ) then
+              rmach = eps * radix(zero)
+           else if( stdlib_lsame( cmach, 'N' ) ) then
+              rmach = digits(zero)
+           else if( stdlib_lsame( cmach, 'R' ) ) then
+              rmach = one
+           else if( stdlib_lsame( cmach, 'M' ) ) then
+              rmach = minexponent(zero)
+           else if( stdlib_lsame( cmach, 'U' ) ) then
+              rmach = tiny(zero)
+           else if( stdlib_lsame( cmach, 'L' ) ) then
+              rmach = maxexponent(zero)
+           else if( stdlib_lsame( cmach, 'O' ) ) then
+              rmach = huge(zero)
+           else
+              rmach = zero
+           end if
+           stdlib_${ri}$lamch = rmach
+           return
+     end function stdlib_${ri}$lamch
+
+#:endif
+#:endfor
+
+
+
+     module pure real(sp) function stdlib_scsum1( n, cx, incx )
+     !! SCSUM1 takes the sum of the absolute values of a complex
+     !! vector and returns a single precision result.
+     !! Based on SCASUM from the Level 1 BLAS.
+     !! The change is to use the 'genuine' absolute value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           ! Array Arguments 
+           complex(sp), intent(in) :: cx(*)
+        ! =====================================================================
+           ! Local Scalars 
+           integer(ilp) :: i, nincx
+           real(sp) :: stemp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           stdlib_scsum1 = zero
+           stemp = zero
+           if( n<=0 )return
+           if( incx==1 )go to 20
+           ! code for increment not equal to 1
+           nincx = n*incx
+           do i = 1, nincx, incx
+              ! next line modified.
+              stemp = stemp + abs( cx( i ) )
+           end do
+           stdlib_scsum1 = stemp
+           return
+           ! code for increment equal to 1
+           20 continue
+           do i = 1, n
+              ! next line modified.
+              stemp = stemp + abs( cx( i ) )
+           end do
+           stdlib_scsum1 = stemp
+           return
+     end function stdlib_scsum1
+
 
 
 
@@ -377,6 +615,8 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_parameters
 
 
 
+
+
      module pure subroutine stdlib_slabad( small, large )
      !! SLABAD takes as input the values computed by SLAMCH for underflow and
      !! overflow, and returns the square root of each of these values if the
@@ -465,247 +705,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_parameters
 
 
 
-     module pure real(sp) function stdlib_scsum1( n, cx, incx )
-     !! SCSUM1 takes the sum of the absolute values of a complex
-     !! vector and returns a single precision result.
-     !! Based on SCASUM from the Level 1 BLAS.
-     !! The change is to use the 'genuine' absolute value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, n
-           ! Array Arguments 
-           complex(sp), intent(in) :: cx(*)
-        ! =====================================================================
-           ! Local Scalars 
-           integer(ilp) :: i, nincx
-           real(sp) :: stemp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           stdlib_scsum1 = zero
-           stemp = zero
-           if( n<=0 )return
-           if( incx==1 )go to 20
-           ! code for increment not equal to 1
-           nincx = n*incx
-           do i = 1, nincx, incx
-              ! next line modified.
-              stemp = stemp + abs( cx( i ) )
-           end do
-           stdlib_scsum1 = stemp
-           return
-           ! code for increment equal to 1
-           20 continue
-           do i = 1, n
-              ! next line modified.
-              stemp = stemp + abs( cx( i ) )
-           end do
-           stdlib_scsum1 = stemp
-           return
-     end function stdlib_scsum1
 
-
-
-     module pure real(sp) function stdlib_slamch( cmach )
-     !! SLAMCH determines single precision machine parameters.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: zero, one, eps
-           ! Scalar Arguments 
-           character, intent(in) :: cmach
-       ! =====================================================================
-           
-           ! Local Scalars 
-           real(sp) :: sfmin, small, rmach
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! assume rounding, not chopping. always.
-           if( stdlib_lsame( cmach, 'E' ) ) then
-              rmach = eps
-           else if( stdlib_lsame( cmach, 'S' ) ) then
-              sfmin = tiny(zero)
-              small = one / huge(zero)
-              if( small>=sfmin ) then
-                 ! use small plus a bit, to avoid the possibility of rounding
-                 ! causing overflow when computing  1/sfmin.
-                 sfmin = small*( one+eps )
-              end if
-              rmach = sfmin
-           else if( stdlib_lsame( cmach, 'B' ) ) then
-              rmach = radix(zero)
-           else if( stdlib_lsame( cmach, 'P' ) ) then
-              rmach = eps * radix(zero)
-           else if( stdlib_lsame( cmach, 'N' ) ) then
-              rmach = digits(zero)
-           else if( stdlib_lsame( cmach, 'R' ) ) then
-              rmach = one
-           else if( stdlib_lsame( cmach, 'M' ) ) then
-              rmach = minexponent(zero)
-           else if( stdlib_lsame( cmach, 'U' ) ) then
-              rmach = tiny(zero)
-           else if( stdlib_lsame( cmach, 'L' ) ) then
-              rmach = maxexponent(zero)
-           else if( stdlib_lsame( cmach, 'O' ) ) then
-              rmach = huge(zero)
-           else
-              rmach = zero
-           end if
-           stdlib_slamch = rmach
-           return
-     end function stdlib_slamch
-
-     module pure real(dp) function stdlib_dlamch( cmach )
-     !! DLAMCH determines double precision machine parameters.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: zero, one, eps
-           ! Scalar Arguments 
-           character, intent(in) :: cmach
-       ! =====================================================================
-           
-           ! Local Scalars 
-           real(dp) :: sfmin, small, rmach
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! assume rounding, not chopping. always.
-           if( stdlib_lsame( cmach, 'E' ) ) then
-              rmach = eps
-           else if( stdlib_lsame( cmach, 'S' ) ) then
-              sfmin = tiny(zero)
-              small = one / huge(zero)
-              if( small>=sfmin ) then
-                 ! use small plus a bit, to avoid the possibility of rounding
-                 ! causing overflow when computing  1/sfmin.
-                 sfmin = small*( one+eps )
-              end if
-              rmach = sfmin
-           else if( stdlib_lsame( cmach, 'B' ) ) then
-              rmach = radix(zero)
-           else if( stdlib_lsame( cmach, 'P' ) ) then
-              rmach = eps * radix(zero)
-           else if( stdlib_lsame( cmach, 'N' ) ) then
-              rmach = digits(zero)
-           else if( stdlib_lsame( cmach, 'R' ) ) then
-              rmach = one
-           else if( stdlib_lsame( cmach, 'M' ) ) then
-              rmach = minexponent(zero)
-           else if( stdlib_lsame( cmach, 'U' ) ) then
-              rmach = tiny(zero)
-           else if( stdlib_lsame( cmach, 'L' ) ) then
-              rmach = maxexponent(zero)
-           else if( stdlib_lsame( cmach, 'O' ) ) then
-              rmach = huge(zero)
-           else
-              rmach = zero
-           end if
-           stdlib_dlamch = rmach
-           return
-     end function stdlib_dlamch
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure real(${rk}$) function stdlib_${ri}$lamch( cmach )
-     !! DLAMCH: determines quad precision machine parameters.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: zero, one, eps
-           ! Scalar Arguments 
-           character, intent(in) :: cmach
-       ! =====================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: sfmin, small, rmach
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! assume rounding, not chopping. always.
-           if( stdlib_lsame( cmach, 'E' ) ) then
-              rmach = eps
-           else if( stdlib_lsame( cmach, 'S' ) ) then
-              sfmin = tiny(zero)
-              small = one / huge(zero)
-              if( small>=sfmin ) then
-                 ! use small plus a bit, to avoid the possibility of rounding
-                 ! causing overflow when computing  1/sfmin.
-                 sfmin = small*( one+eps )
-              end if
-              rmach = sfmin
-           else if( stdlib_lsame( cmach, 'B' ) ) then
-              rmach = radix(zero)
-           else if( stdlib_lsame( cmach, 'P' ) ) then
-              rmach = eps * radix(zero)
-           else if( stdlib_lsame( cmach, 'N' ) ) then
-              rmach = digits(zero)
-           else if( stdlib_lsame( cmach, 'R' ) ) then
-              rmach = one
-           else if( stdlib_lsame( cmach, 'M' ) ) then
-              rmach = minexponent(zero)
-           else if( stdlib_lsame( cmach, 'U' ) ) then
-              rmach = tiny(zero)
-           else if( stdlib_lsame( cmach, 'L' ) ) then
-              rmach = maxexponent(zero)
-           else if( stdlib_lsame( cmach, 'O' ) ) then
-              rmach = huge(zero)
-           else
-              rmach = zero
-           end if
-           stdlib_${ri}$lamch = rmach
-           return
-     end function stdlib_${ri}$lamch
-
-#:endif
-#:endfor
-
-
-
-
-
-
-
-     module pure real(sp) function stdlib_slamc3( a, b )
-        ! -- lapack auxiliary routine --
-           ! univ. of tennessee, univ. of california berkeley and nag ltd..
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: a, b
-       ! =====================================================================
-           ! Executable Statements 
-           stdlib_slamc3 = a + b
-           return
-     end function stdlib_slamc3
-
-     module pure real(dp) function stdlib_dlamc3( a, b )
-        ! -- lapack auxiliary routine --
-           ! univ. of tennessee, univ. of california berkeley and nag ltd..
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: a, b
-       ! =====================================================================
-           ! Executable Statements 
-           stdlib_dlamc3 = a + b
-           return
-     end function stdlib_dlamc3
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure real(${rk}$) function stdlib_${ri}$lamc3( a, b )
-        ! -- lapack auxiliary routine --
-           ! univ. of tennessee, univ. of california berkeley and nag ltd..
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: a, b
-       ! =====================================================================
-           ! Executable Statements 
-           stdlib_${ri}$lamc3 = a + b
-           return
-     end function stdlib_${ri}$lamc3
-
-#:endif
-#:endfor
 
 
 

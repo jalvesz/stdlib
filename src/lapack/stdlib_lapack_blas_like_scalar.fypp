@@ -5,55 +5,102 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_scalar
 
   contains
 
-     module pure logical(lk) function stdlib_sisnan( sin )
-     !! SISNAN returns .TRUE. if its argument is NaN, and .FALSE.
-     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-     !! future.
+
+
+     module pure real(sp) function stdlib_slapy3( x, y, z )
+     !! SLAPY3 returns sqrt(x**2+y**2+z**2), taking care not to cause
+     !! unnecessary overflow and unnecessary underflow.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(sp), intent(in) :: sin
+           real(sp), intent(in) :: x, y, z
         ! =====================================================================
-        ! Executable Statements 
-           stdlib_sisnan = stdlib_slaisnan(sin,sin)
+           
+           ! Local Scalars 
+           real(sp) :: w, xabs, yabs, zabs, hugeval
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           hugeval = stdlib_slamch( 'OVERFLOW' )
+           xabs = abs( x )
+           yabs = abs( y )
+           zabs = abs( z )
+           w = max( xabs, yabs, zabs )
+           if( w==zero .or. w>hugeval ) then
+           ! w can be zero for max(0,nan,0)
+           ! adding all three entries together will make sure
+           ! nan will not disappear.
+              stdlib_slapy3 =  xabs + yabs + zabs
+           else
+              stdlib_slapy3 = w*sqrt( ( xabs / w )**2+( yabs / w )**2+( zabs / w )**2 )
+           end if
            return
-     end function stdlib_sisnan
+     end function stdlib_slapy3
 
-     module pure logical(lk) function stdlib_disnan( din )
-     !! DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
-     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-     !! future.
+     module pure real(dp) function stdlib_dlapy3( x, y, z )
+     !! DLAPY3 returns sqrt(x**2+y**2+z**2), taking care not to cause
+     !! unnecessary overflow and unnecessary underflow.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(dp), intent(in) :: din
+           real(dp), intent(in) :: x, y, z
         ! =====================================================================
-        ! Executable Statements 
-           stdlib_disnan = stdlib_dlaisnan(din,din)
+           
+           ! Local Scalars 
+           real(dp) :: w, xabs, yabs, zabs, hugeval
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           hugeval = stdlib_dlamch( 'OVERFLOW' )
+           xabs = abs( x )
+           yabs = abs( y )
+           zabs = abs( z )
+           w = max( xabs, yabs, zabs )
+           if( w==zero .or. w>hugeval ) then
+           ! w can be zero for max(0,nan,0)
+           ! adding all three entries together will make sure
+           ! nan will not disappear.
+              stdlib_dlapy3 =  xabs + yabs + zabs
+           else
+              stdlib_dlapy3 = w*sqrt( ( xabs / w )**2+( yabs / w )**2+( zabs / w )**2 )
+           end if
            return
-     end function stdlib_disnan
+     end function stdlib_dlapy3
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure logical(lk) function stdlib_${ri}$isnan( din )
-     !! DISNAN: returns .TRUE. if its argument is NaN, and .FALSE.
-     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-     !! future.
+     module pure real(${rk}$) function stdlib_${ri}$lapy3( x, y, z )
+     !! DLAPY3: returns sqrt(x**2+y**2+z**2), taking care not to cause
+     !! unnecessary overflow and unnecessary underflow.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: din
+           real(${rk}$), intent(in) :: x, y, z
         ! =====================================================================
-        ! Executable Statements 
-           stdlib_${ri}$isnan = stdlib_${ri}$laisnan(din,din)
+           
+           ! Local Scalars 
+           real(${rk}$) :: w, xabs, yabs, zabs, hugeval
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           hugeval = stdlib_${ri}$lamch( 'OVERFLOW' )
+           xabs = abs( x )
+           yabs = abs( y )
+           zabs = abs( z )
+           w = max( xabs, yabs, zabs )
+           if( w==zero .or. w>hugeval ) then
+           ! w can be zero for max(0,nan,0)
+           ! adding all three entries together will make sure
+           ! nan will not disappear.
+              stdlib_${ri}$lapy3 =  xabs + yabs + zabs
+           else
+              stdlib_${ri}$lapy3 = w*sqrt( ( xabs / w )**2+( yabs / w )**2+( zabs / w )**2 )
+           end if
            return
-     end function stdlib_${ri}$isnan
+     end function stdlib_${ri}$lapy3
 
 #:endif
 #:endfor
@@ -336,105 +383,58 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_scalar
 
 
 
-     module pure real(sp) function stdlib_slapy3( x, y, z )
-     !! SLAPY3 returns sqrt(x**2+y**2+z**2), taking care not to cause
-     !! unnecessary overflow and unnecessary underflow.
+     module pure logical(lk) function stdlib_sisnan( sin )
+     !! SISNAN returns .TRUE. if its argument is NaN, and .FALSE.
+     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+     !! future.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(sp), intent(in) :: x, y, z
+           real(sp), intent(in) :: sin
         ! =====================================================================
-           
-           ! Local Scalars 
-           real(sp) :: w, xabs, yabs, zabs, hugeval
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           hugeval = stdlib_slamch( 'OVERFLOW' )
-           xabs = abs( x )
-           yabs = abs( y )
-           zabs = abs( z )
-           w = max( xabs, yabs, zabs )
-           if( w==zero .or. w>hugeval ) then
-           ! w can be zero for max(0,nan,0)
-           ! adding all three entries together will make sure
-           ! nan will not disappear.
-              stdlib_slapy3 =  xabs + yabs + zabs
-           else
-              stdlib_slapy3 = w*sqrt( ( xabs / w )**2+( yabs / w )**2+( zabs / w )**2 )
-           end if
+        ! Executable Statements 
+           stdlib_sisnan = stdlib_slaisnan(sin,sin)
            return
-     end function stdlib_slapy3
+     end function stdlib_sisnan
 
-     module pure real(dp) function stdlib_dlapy3( x, y, z )
-     !! DLAPY3 returns sqrt(x**2+y**2+z**2), taking care not to cause
-     !! unnecessary overflow and unnecessary underflow.
+     module pure logical(lk) function stdlib_disnan( din )
+     !! DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
+     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+     !! future.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(dp), intent(in) :: x, y, z
+           real(dp), intent(in) :: din
         ! =====================================================================
-           
-           ! Local Scalars 
-           real(dp) :: w, xabs, yabs, zabs, hugeval
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           hugeval = stdlib_dlamch( 'OVERFLOW' )
-           xabs = abs( x )
-           yabs = abs( y )
-           zabs = abs( z )
-           w = max( xabs, yabs, zabs )
-           if( w==zero .or. w>hugeval ) then
-           ! w can be zero for max(0,nan,0)
-           ! adding all three entries together will make sure
-           ! nan will not disappear.
-              stdlib_dlapy3 =  xabs + yabs + zabs
-           else
-              stdlib_dlapy3 = w*sqrt( ( xabs / w )**2+( yabs / w )**2+( zabs / w )**2 )
-           end if
+        ! Executable Statements 
+           stdlib_disnan = stdlib_dlaisnan(din,din)
            return
-     end function stdlib_dlapy3
+     end function stdlib_disnan
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure real(${rk}$) function stdlib_${ri}$lapy3( x, y, z )
-     !! DLAPY3: returns sqrt(x**2+y**2+z**2), taking care not to cause
-     !! unnecessary overflow and unnecessary underflow.
+     module pure logical(lk) function stdlib_${ri}$isnan( din )
+     !! DISNAN: returns .TRUE. if its argument is NaN, and .FALSE.
+     !! otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+     !! future.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: x, y, z
+           real(${rk}$), intent(in) :: din
         ! =====================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: w, xabs, yabs, zabs, hugeval
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           hugeval = stdlib_${ri}$lamch( 'OVERFLOW' )
-           xabs = abs( x )
-           yabs = abs( y )
-           zabs = abs( z )
-           w = max( xabs, yabs, zabs )
-           if( w==zero .or. w>hugeval ) then
-           ! w can be zero for max(0,nan,0)
-           ! adding all three entries together will make sure
-           ! nan will not disappear.
-              stdlib_${ri}$lapy3 =  xabs + yabs + zabs
-           else
-              stdlib_${ri}$lapy3 = w*sqrt( ( xabs / w )**2+( yabs / w )**2+( zabs / w )**2 )
-           end if
+        ! Executable Statements 
+           stdlib_${ri}$isnan = stdlib_${ri}$laisnan(din,din)
            return
-     end function stdlib_${ri}$lapy3
+     end function stdlib_${ri}$isnan
 
 #:endif
 #:endfor
-
-
 
 
 

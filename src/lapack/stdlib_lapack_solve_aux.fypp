@@ -5,273 +5,6 @@ submodule(stdlib_lapack) stdlib_lapack_solve_aux
 
   contains
 
-     module pure subroutine stdlib_sla_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! SLA_LIN_BERR computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
-           ! Array Arguments 
-           real(sp), intent(in) :: ayb(n,nrhs)
-           real(sp), intent(out) :: berr(nrhs)
-           real(sp), intent(in) :: res(n,nrhs)
-        ! =====================================================================
-           ! Local Scalars 
-           real(sp) :: tmp,safe1
-           integer(ilp) :: i, j
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the sla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
-              do i = 1, n
-                 if (ayb(i,j) /= 0.0_sp) then
-                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_sp (and if computed by sla_yyamv), then we know
-           ! the true residual also must be exactly zero.
-              end do
-           end do
-     end subroutine stdlib_sla_lin_berr
-
-     module pure subroutine stdlib_dla_lin_berr ( n, nz, nrhs, res, ayb, berr )
-     !! DLA_LIN_BERR computes component-wise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the component-wise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
-           ! Array Arguments 
-           real(dp), intent(in) :: ayb(n,nrhs)
-           real(dp), intent(out) :: berr(nrhs)
-           real(dp), intent(in) :: res(n,nrhs)
-        ! =====================================================================
-           ! Local Scalars 
-           real(dp) :: tmp,safe1
-           integer(ilp) :: i, j
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the sla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
-              do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_dp (and if computed by sla_yyamv), then we know
-           ! the true residual also must be exactly zero.
-              end do
-           end do
-     end subroutine stdlib_dla_lin_berr
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$la_lin_berr ( n, nz, nrhs, res, ayb, berr )
-     !! DLA_LIN_BERR: computes component-wise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the component-wise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: ayb(n,nrhs)
-           real(${rk}$), intent(out) :: berr(nrhs)
-           real(${rk}$), intent(in) :: res(n,nrhs)
-        ! =====================================================================
-           ! Local Scalars 
-           real(${rk}$) :: tmp,safe1
-           integer(ilp) :: i, j
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the sla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
-              do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_${rk}$ (and if computed by sla_yyamv), then we know
-           ! the true residual also must be exactly zero.
-              end do
-           end do
-     end subroutine stdlib_${ri}$la_lin_berr
-
-#:endif
-#:endfor
-
-     module pure subroutine stdlib_cla_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! CLA_LIN_BERR computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
-           ! Array Arguments 
-           real(sp), intent(in) :: ayb(n,nrhs)
-           real(sp), intent(out) :: berr(nrhs)
-           complex(sp), intent(in) :: res(n,nrhs)
-        ! =====================================================================
-           ! Local Scalars 
-           real(sp) :: tmp,safe1
-           integer(ilp) :: i, j
-           complex(sp) :: cdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           complex(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=sp) ) + abs( aimag( cdum ) )
-           ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the cla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
-              do i = 1, n
-                 if (ayb(i,j) /= 0.0_sp) then
-                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_sp (and if computed by cla_yyamv), then we know
-           ! the true residual also must be exactly zero.
-              end do
-           end do
-     end subroutine stdlib_cla_lin_berr
-
-     module pure subroutine stdlib_zla_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! ZLA_LIN_BERR computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
-           ! Array Arguments 
-           real(dp), intent(in) :: ayb(n,nrhs)
-           real(dp), intent(out) :: berr(nrhs)
-           complex(dp), intent(in) :: res(n,nrhs)
-        ! =====================================================================
-           ! Local Scalars 
-           real(dp) :: tmp,safe1
-           integer(ilp) :: i, j
-           complex(dp) :: cdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           complex(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=dp) ) + abs( aimag( cdum ) )
-           ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the cla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
-              do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_dp (and if computed by cla_yyamv), then we know
-           ! the true residual also must be exactly zero.
-              end do
-           end do
-     end subroutine stdlib_zla_lin_berr
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$la_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! ZLA_LIN_BERR: computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
-           ! Array Arguments 
-           real(${ck}$), intent(in) :: ayb(n,nrhs)
-           real(${ck}$), intent(out) :: berr(nrhs)
-           complex(${ck}$), intent(in) :: res(n,nrhs)
-        ! =====================================================================
-           ! Local Scalars 
-           real(${ck}$) :: tmp,safe1
-           integer(ilp) :: i, j
-           complex(${ck}$) :: cdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           complex(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=${ck}$) ) + abs( aimag( cdum ) )
-           ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the cla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_${c2ri(ci)}$lamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
-              do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_${ck}$ (and if computed by cla_yyamv), then we know
-           ! the true residual also must be exactly zero.
-              end do
-           end do
-     end subroutine stdlib_${ci}$la_lin_berr
-
-#:endif
-#:endfor
-
-
-
      module subroutine stdlib_slacon( n, v, x, isgn, est, kase )
      !! SLACON estimates the 1-norm of a square, real matrix A.
      !! Reverse communication is used for evaluating matrix-vector products.
@@ -1802,6 +1535,273 @@ submodule(stdlib_lapack) stdlib_lapack_solve_aux
            kase = 0
            return
      end subroutine stdlib_${ci}$lacn2
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_sla_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! SLA_LIN_BERR computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, nz, nrhs
+           ! Array Arguments 
+           real(sp), intent(in) :: ayb(n,nrhs)
+           real(sp), intent(out) :: berr(nrhs)
+           real(sp), intent(in) :: res(n,nrhs)
+        ! =====================================================================
+           ! Local Scalars 
+           real(sp) :: tmp,safe1
+           integer(ilp) :: i, j
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the sla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
+              do i = 1, n
+                 if (ayb(i,j) /= 0.0_sp) then
+                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_sp (and if computed by sla_yyamv), then we know
+           ! the true residual also must be exactly zero.
+              end do
+           end do
+     end subroutine stdlib_sla_lin_berr
+
+     module pure subroutine stdlib_dla_lin_berr ( n, nz, nrhs, res, ayb, berr )
+     !! DLA_LIN_BERR computes component-wise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the component-wise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, nz, nrhs
+           ! Array Arguments 
+           real(dp), intent(in) :: ayb(n,nrhs)
+           real(dp), intent(out) :: berr(nrhs)
+           real(dp), intent(in) :: res(n,nrhs)
+        ! =====================================================================
+           ! Local Scalars 
+           real(dp) :: tmp,safe1
+           integer(ilp) :: i, j
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the sla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
+              do i = 1, n
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_dp (and if computed by sla_yyamv), then we know
+           ! the true residual also must be exactly zero.
+              end do
+           end do
+     end subroutine stdlib_dla_lin_berr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$la_lin_berr ( n, nz, nrhs, res, ayb, berr )
+     !! DLA_LIN_BERR: computes component-wise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the component-wise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, nz, nrhs
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: ayb(n,nrhs)
+           real(${rk}$), intent(out) :: berr(nrhs)
+           real(${rk}$), intent(in) :: res(n,nrhs)
+        ! =====================================================================
+           ! Local Scalars 
+           real(${rk}$) :: tmp,safe1
+           integer(ilp) :: i, j
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the sla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
+              do i = 1, n
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_${rk}$ (and if computed by sla_yyamv), then we know
+           ! the true residual also must be exactly zero.
+              end do
+           end do
+     end subroutine stdlib_${ri}$la_lin_berr
+
+#:endif
+#:endfor
+
+     module pure subroutine stdlib_cla_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! CLA_LIN_BERR computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, nz, nrhs
+           ! Array Arguments 
+           real(sp), intent(in) :: ayb(n,nrhs)
+           real(sp), intent(out) :: berr(nrhs)
+           complex(sp), intent(in) :: res(n,nrhs)
+        ! =====================================================================
+           ! Local Scalars 
+           real(sp) :: tmp,safe1
+           integer(ilp) :: i, j
+           complex(sp) :: cdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           complex(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=sp) ) + abs( aimag( cdum ) )
+           ! Executable Statements 
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the cla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
+              do i = 1, n
+                 if (ayb(i,j) /= 0.0_sp) then
+                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_sp (and if computed by cla_yyamv), then we know
+           ! the true residual also must be exactly zero.
+              end do
+           end do
+     end subroutine stdlib_cla_lin_berr
+
+     module pure subroutine stdlib_zla_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! ZLA_LIN_BERR computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, nz, nrhs
+           ! Array Arguments 
+           real(dp), intent(in) :: ayb(n,nrhs)
+           real(dp), intent(out) :: berr(nrhs)
+           complex(dp), intent(in) :: res(n,nrhs)
+        ! =====================================================================
+           ! Local Scalars 
+           real(dp) :: tmp,safe1
+           integer(ilp) :: i, j
+           complex(dp) :: cdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           complex(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=dp) ) + abs( aimag( cdum ) )
+           ! Executable Statements 
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the cla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
+              do i = 1, n
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_dp (and if computed by cla_yyamv), then we know
+           ! the true residual also must be exactly zero.
+              end do
+           end do
+     end subroutine stdlib_zla_lin_berr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$la_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! ZLA_LIN_BERR: computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: n, nz, nrhs
+           ! Array Arguments 
+           real(${ck}$), intent(in) :: ayb(n,nrhs)
+           real(${ck}$), intent(out) :: berr(nrhs)
+           complex(${ck}$), intent(in) :: res(n,nrhs)
+        ! =====================================================================
+           ! Local Scalars 
+           real(${ck}$) :: tmp,safe1
+           integer(ilp) :: i, j
+           complex(${ck}$) :: cdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           complex(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=${ck}$) ) + abs( aimag( cdum ) )
+           ! Executable Statements 
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the cla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_${c2ri(ci)}$lamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
+              do i = 1, n
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_${ck}$ (and if computed by cla_yyamv), then we know
+           ! the true residual also must be exactly zero.
+              end do
+           end do
+     end subroutine stdlib_${ci}$la_lin_berr
 
 #:endif
 #:endfor

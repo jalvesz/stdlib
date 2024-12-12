@@ -27,6 +27,9 @@ blas_groups = {
 
 # Define the LAPACK routine groups
 lapack_groups = {
+    "solve_aux": {
+        "lacn2", "lacon", "la_lin_berr"
+    },
     "solve_lu": {
         "gesv", "gesvx", "gesvxx", "gesv", 
         "gbsv", "gbsvx", "gbsvxx",
@@ -91,9 +94,7 @@ lapack_groups = {
         "tbcon", "tbtrs",
         "latbs","tbrfs"  
     },
-    "solve_aux": {
-        "lacn2", "lacon", "la_lin_berr"
-    },
+    
     "lsq": {
         "gelss", "gelsy", "gels", "gelst", "gelsd", "getsls"
     },
@@ -121,7 +122,10 @@ lapack_groups = {
     },
     "cosine_sine": {
         "bbcsd","uncsd","uncsd2by1","unbdb","unbdb1","unbdb2","unbdb3","unbdb4",
-        "unbdb5","unbdb6","orcsd","orcsd2by1","orbdb","orbdb1","orbdb2","orbdb3",
+        "unbdb5","unbdb6",
+    },
+    "cosine_sine2": {
+        "orcsd","orcsd2by1","orbdb","orbdb1","orbdb2","orbdb3",
         "orbdb4","orbdb5","orbdb6","lapmr","lapmt"
     },
     "householder_reflectors": {
@@ -137,11 +141,17 @@ lapack_groups = {
     },
     "eigv_gen2": {
         "hseqr","hsein","trevc","trevc3","laln2","trsyl","trsyl3","lasy2",
-        "trsna","laqtr","trexc","trsen","laexc","lanv2","laein","lahqr","laqr0",
-        "laqr1","laqr2","laqr3","laqr4","laqr5","iparmq","laqz0","laqz1","laqz2","laqz3","laqz4",
+        "trsna","trexc","trsen","laexc","lanv2","laein",
+    },
+    "eigv_gen3": {
+        "laqtr","lahqr","laqr0","laqr1","laqr2","laqr3","laqr4","laqr5",
+        "laqz0","laqz1","laqz2","laqz3","laqz4","iparmq",
     },
     "eigv_comp": {
-        "ggbal","gghrd","gghd3","hgeqz","ggbak","tgsen","tgsna","tgsyl","tgsy2",
+        "ggbal","gghrd","gghd3","hgeqz","ggbak",
+    },
+    "eigv_comp2": {
+        "tgsen","tgsna","tgsyl","tgsy2",
         "lagv2","tgevc","tgexc","tgex2",
     },
     "eigv_sym_comp": {
@@ -159,20 +169,28 @@ lapack_groups = {
     },
     "eigv_tridiag": {
         "laebz","laneg","laed0","laed1","laed2","laed3","laed4",
-        "laed5","laed6","lamrg","laed7","laed8","laed9","laeda","larra","larrb","larrc",
-        "larrd","larre","larrf","larrj","larrk","larrr","larrv","lar1v","stev","stevd",
-        "stevr","stevx","pteqr","stebz","sterf","stedc","stegr","stein","stemr",
-        "steqr",
+        "laed5","laed6","laed7","laed8","laed9",
+    },
+    "eigv_tridiag2": {
+        "lamrg","laeda","larra","larrb","larrc","larrd","larre",
+        "larrf","larrj","larrk","larrr","larrv","lar1v",
+    },
+    "eigv_tridiag3": {
+        "stev","stevd","stevr","stevx","pteqr","stebz","sterf",
+        "stedc","stegr","stein","stemr","steqr",
     },
     "eigv_svd_bidiag_dc": {
         "lasd0","lasdt","lasd1","lasd2","lasd3","lasd4","lasd5","lasdq",
         "lasda","lasd6","lasd7","lasd8",
     },
     "eigv_svd_drivers": {
-        "gesvd", "gesvdq", "gesdd", "gesvdx", "gejsv",
+        "gesvd", "gesvdq", "ggsvd3", 
     },
     "eigv_svd_drivers2": {
-        "bdsqr", "bdsdc", "bdsvdx", "ggsvd3", "gesvj",
+        "gesdd", "gesvdx", "gejsv", "gesvj",
+    },
+    "eigv_svd_drivers3": {
+        "bdsqr", "bdsdc", "bdsvdx", 
     },
     "eigv_std_driver": {
         "syev","syevd","syevr","syevx","syev_2stage","syevd_2stage","syevr_2stage",
