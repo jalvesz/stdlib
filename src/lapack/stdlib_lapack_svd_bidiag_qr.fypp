@@ -1,17 +1,11 @@
 #:include "common.fypp" 
-module stdlib_lapack_svd_bidiag_qr
-  use stdlib_linalg_constants
-  use stdlib_linalg_lapack_aux
-  use stdlib_linalg_blas
-  use stdlib_lapack_svd_comp
-  use stdlib_lapack_blas_like_l2
-  use stdlib_lapack_blas_like_l1
+submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
   implicit none(type,external)
 
 
   contains
 
-     pure subroutine stdlib_slasq2( n, z, info )
+     module pure subroutine stdlib_slasq2( n, z, info )
      !! SLASQ2 computes all the eigenvalues of the symmetric positive
      !! definite tridiagonal matrix associated with the qd array Z to high
      !! relative accuracy are computed to high relative accuracy, in the
@@ -403,7 +397,7 @@ module stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq2
 
-     pure subroutine stdlib_dlasq2( n, z, info )
+     module pure subroutine stdlib_dlasq2( n, z, info )
      !! DLASQ2 computes all the eigenvalues of the symmetric positive
      !! definite tridiagonal matrix associated with the qd array Z to high
      !! relative accuracy are computed to high relative accuracy, in the
@@ -792,7 +786,7 @@ module stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lasq2( n, z, info )
+     module pure subroutine stdlib_${ri}$lasq2( n, z, info )
      !! DLASQ2: computes all the eigenvalues of the symmetric positive
      !! definite tridiagonal matrix associated with the qd array Z to high
      !! relative accuracy are computed to high relative accuracy, in the
@@ -1184,287 +1178,7 @@ module stdlib_lapack_svd_bidiag_qr
 
 
 
-     pure subroutine stdlib_slasq1( n, d, e, work, info )
-     !! SLASQ1 computes the singular values of a real N-by-N bidiagonal
-     !! matrix with diagonal D and off-diagonal E. The singular values
-     !! are computed to high relative accuracy, in the absence of
-     !! denormalization, underflow and overflow. The algorithm was first
-     !! presented in
-     !! "Accurate singular values and differential qd algorithms" by K. V.
-     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
-     !! 1994,
-     !! and the present implementation is described in "An implementation of
-     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: n
-           ! Array Arguments 
-           real(sp), intent(inout) :: d(*), e(*)
-           real(sp), intent(out) :: work(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, iinfo
-           real(sp) :: eps, scale, safmin, sigmn, sigmx
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           info = 0
-           if( n<0 ) then
-              info = -1
-              call stdlib_xerbla( 'SLASQ1', -info )
-              return
-           else if( n==0 ) then
-              return
-           else if( n==1 ) then
-              d( 1 ) = abs( d( 1 ) )
-              return
-           else if( n==2 ) then
-              call stdlib_slas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
-              d( 1 ) = sigmx
-              d( 2 ) = sigmn
-              return
-           end if
-           ! estimate the largest singular value.
-           sigmx = zero
-           do i = 1, n - 1
-              d( i ) = abs( d( i ) )
-              sigmx = max( sigmx, abs( e( i ) ) )
-           end do
-           d( n ) = abs( d( n ) )
-           ! early return if sigmx is zero (matrix is already diagonal).
-           if( sigmx==zero ) then
-              call stdlib_slasrt( 'D', n, d, iinfo )
-              return
-           end if
-           do i = 1, n
-              sigmx = max( sigmx, d( i ) )
-           end do
-           ! copy d and e into work (in the z format) and scale (squaring the
-           ! input data makes scaling by a power of the radix pointless).
-           eps = stdlib_slamch( 'PRECISION' )
-           safmin = stdlib_slamch( 'SAFE MINIMUM' )
-           scale = sqrt( eps / safmin )
-           call stdlib_scopy( n, d, 1, work( 1 ), 2 )
-           call stdlib_scopy( n-1, e, 1, work( 2 ), 2 )
-           call stdlib_slascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
-           ! compute the q's and e's.
-           do i = 1, 2*n - 1
-              work( i ) = work( i )**2
-           end do
-           work( 2*n ) = zero
-           call stdlib_slasq2( n, work, info )
-           if( info==0 ) then
-              do i = 1, n
-                 d( i ) = sqrt( work( i ) )
-              end do
-              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-           else if( info==2 ) then
-           ! maximum number of iterations exceeded.  move data from work
-           ! into d and e so the calling subroutine can try to finish
-              do i = 1, n
-                 d( i ) = sqrt( work( 2*i-1 ) )
-                 e( i ) = sqrt( work( 2*i ) )
-              end do
-              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
-           end if
-           return
-     end subroutine stdlib_slasq1
-
-     pure subroutine stdlib_dlasq1( n, d, e, work, info )
-     !! DLASQ1 computes the singular values of a real N-by-N bidiagonal
-     !! matrix with diagonal D and off-diagonal E. The singular values
-     !! are computed to high relative accuracy, in the absence of
-     !! denormalization, underflow and overflow. The algorithm was first
-     !! presented in
-     !! "Accurate singular values and differential qd algorithms" by K. V.
-     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
-     !! 1994,
-     !! and the present implementation is described in "An implementation of
-     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: n
-           ! Array Arguments 
-           real(dp), intent(inout) :: d(*), e(*)
-           real(dp), intent(out) :: work(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, iinfo
-           real(dp) :: eps, scale, safmin, sigmn, sigmx
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           info = 0
-           if( n<0 ) then
-              info = -1
-              call stdlib_xerbla( 'DLASQ1', -info )
-              return
-           else if( n==0 ) then
-              return
-           else if( n==1 ) then
-              d( 1 ) = abs( d( 1 ) )
-              return
-           else if( n==2 ) then
-              call stdlib_dlas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
-              d( 1 ) = sigmx
-              d( 2 ) = sigmn
-              return
-           end if
-           ! estimate the largest singular value.
-           sigmx = zero
-           do i = 1, n - 1
-              d( i ) = abs( d( i ) )
-              sigmx = max( sigmx, abs( e( i ) ) )
-           end do
-           d( n ) = abs( d( n ) )
-           ! early return if sigmx is zero (matrix is already diagonal).
-           if( sigmx==zero ) then
-              call stdlib_dlasrt( 'D', n, d, iinfo )
-              return
-           end if
-           do i = 1, n
-              sigmx = max( sigmx, d( i ) )
-           end do
-           ! copy d and e into work (in the z format) and scale (squaring the
-           ! input data makes scaling by a power of the radix pointless).
-           eps = stdlib_dlamch( 'PRECISION' )
-           safmin = stdlib_dlamch( 'SAFE MINIMUM' )
-           scale = sqrt( eps / safmin )
-           call stdlib_dcopy( n, d, 1, work( 1 ), 2 )
-           call stdlib_dcopy( n-1, e, 1, work( 2 ), 2 )
-           call stdlib_dlascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
-           ! compute the q's and e's.
-           do i = 1, 2*n - 1
-              work( i ) = work( i )**2
-           end do
-           work( 2*n ) = zero
-           call stdlib_dlasq2( n, work, info )
-           if( info==0 ) then
-              do i = 1, n
-                 d( i ) = sqrt( work( i ) )
-              end do
-              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-           else if( info==2 ) then
-           ! maximum number of iterations exceeded.  move data from work
-           ! into d and e so the calling subroutine can try to finish
-              do i = 1, n
-                 d( i ) = sqrt( work( 2*i-1 ) )
-                 e( i ) = sqrt( work( 2*i ) )
-              end do
-              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
-           end if
-           return
-     end subroutine stdlib_dlasq1
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lasq1( n, d, e, work, info )
-     !! DLASQ1: computes the singular values of a real N-by-N bidiagonal
-     !! matrix with diagonal D and off-diagonal E. The singular values
-     !! are computed to high relative accuracy, in the absence of
-     !! denormalization, underflow and overflow. The algorithm was first
-     !! presented in
-     !! "Accurate singular values and differential qd algorithms" by K. V.
-     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
-     !! 1994,
-     !! and the present implementation is described in "An implementation of
-     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: n
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: d(*), e(*)
-           real(${rk}$), intent(out) :: work(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, iinfo
-           real(${rk}$) :: eps, scale, safmin, sigmn, sigmx
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           info = 0
-           if( n<0 ) then
-              info = -1
-              call stdlib_xerbla( 'DLASQ1', -info )
-              return
-           else if( n==0 ) then
-              return
-           else if( n==1 ) then
-              d( 1 ) = abs( d( 1 ) )
-              return
-           else if( n==2 ) then
-              call stdlib_${ri}$las2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
-              d( 1 ) = sigmx
-              d( 2 ) = sigmn
-              return
-           end if
-           ! estimate the largest singular value.
-           sigmx = zero
-           do i = 1, n - 1
-              d( i ) = abs( d( i ) )
-              sigmx = max( sigmx, abs( e( i ) ) )
-           end do
-           d( n ) = abs( d( n ) )
-           ! early return if sigmx is zero (matrix is already diagonal).
-           if( sigmx==zero ) then
-              call stdlib_${ri}$lasrt( 'D', n, d, iinfo )
-              return
-           end if
-           do i = 1, n
-              sigmx = max( sigmx, d( i ) )
-           end do
-           ! copy d and e into work (in the z format) and scale (squaring the
-           ! input data makes scaling by a power of the radix pointless).
-           eps = stdlib_${ri}$lamch( 'PRECISION' )
-           safmin = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
-           scale = sqrt( eps / safmin )
-           call stdlib_${ri}$copy( n, d, 1, work( 1 ), 2 )
-           call stdlib_${ri}$copy( n-1, e, 1, work( 2 ), 2 )
-           call stdlib_${ri}$lascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
-           ! compute the q's and e's.
-           do i = 1, 2*n - 1
-              work( i ) = work( i )**2
-           end do
-           work( 2*n ) = zero
-           call stdlib_${ri}$lasq2( n, work, info )
-           if( info==0 ) then
-              do i = 1, n
-                 d( i ) = sqrt( work( i ) )
-              end do
-              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-           else if( info==2 ) then
-           ! maximum number of iterations exceeded.  move data from work
-           ! into d and e so the calling subroutine can try to finish
-              do i = 1, n
-                 d( i ) = sqrt( work( 2*i-1 ) )
-                 e( i ) = sqrt( work( 2*i ) )
-              end do
-              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
-           end if
-           return
-     end subroutine stdlib_${ri}$lasq1
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     module pure subroutine stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
      !! SLASQ5 computes one dqds transform in ping-pong form, one
      !! version for IEEE machines another for non IEEE machines.
                ieee, eps )
@@ -1691,7 +1405,7 @@ module stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq5
 
-     pure subroutine stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     module pure subroutine stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
      !! DLASQ5 computes one dqds transform in ping-pong form, one
      !! version for IEEE machines another for non IEEE machines.
                ieee, eps )
@@ -1920,7 +1634,7 @@ module stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     module pure subroutine stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
      !! DLASQ5: computes one dqds transform in ping-pong form, one
      !! version for IEEE machines another for non IEEE machines.
                ieee, eps )
@@ -2152,7 +1866,855 @@ module stdlib_lapack_svd_bidiag_qr
 
 
 
-     pure subroutine stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     module pure subroutine stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
+     !! SLASQ6 computes one dqd (shift equal to zero) transform in
+     !! ping-pong form, with protection against underflow and overflow.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, pp
+           real(sp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           ! Array Arguments 
+           real(sp), intent(inout) :: z(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j4, j4p2
+           real(sp) :: d, emin, safmin, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( ( n0-i0-1 )<=0 )return
+           safmin = stdlib_slamch( 'SAFE MINIMUM' )
+           j4 = 4*i0 + pp - 3
+           emin = z( j4+4 )
+           d = z( j4 )
+           dmin = d
+           if( pp==0 ) then
+              do j4 = 4*i0, 4*( n0-3 ), 4
+                 z( j4-2 ) = d + z( j4-1 )
+                 if( z( j4-2 )==zero ) then
+                    z( j4 ) = zero
+                    d = z( j4+1 )
+                    dmin = d
+                    emin = zero
+                 else if( safmin*z( j4+1 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4+1 ) ) &
+                           then
+                    temp = z( j4+1 ) / z( j4-2 )
+                    z( j4 ) = z( j4-1 )*temp
+                    d = d*temp
+                 else
+                    z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                    d = z( j4+1 )*( d / z( j4-2 ) )
+                 end if
+                 dmin = min( dmin, d )
+                 emin = min( emin, z( j4 ) )
+              end do
+           else
+              do j4 = 4*i0, 4*( n0-3 ), 4
+                 z( j4-3 ) = d + z( j4 )
+                 if( z( j4-3 )==zero ) then
+                    z( j4-1 ) = zero
+                    d = z( j4+2 )
+                    dmin = d
+                    emin = zero
+                 else if( safmin*z( j4+2 )<z( j4-3 ) .and.safmin*z( j4-3 )<z( j4+2 ) ) &
+                           then
+                    temp = z( j4+2 ) / z( j4-3 )
+                    z( j4-1 ) = z( j4 )*temp
+                    d = d*temp
+                 else
+                    z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                    d = z( j4+2 )*( d / z( j4-3 ) )
+                 end if
+                 dmin = min( dmin, d )
+                 emin = min( emin, z( j4-1 ) )
+              end do
+           end if
+           ! unroll last two steps.
+           dnm2 = d
+           dmin2 = dmin
+           j4 = 4*( n0-2 ) - pp
+           j4p2 = j4 + 2*pp - 1
+           z( j4-2 ) = dnm2 + z( j4p2 )
+           if( z( j4-2 )==zero ) then
+              z( j4 ) = zero
+              dnm1 = z( j4p2+2 )
+              dmin = dnm1
+              emin = zero
+           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
+              temp = z( j4p2+2 ) / z( j4-2 )
+              z( j4 ) = z( j4p2 )*temp
+              dnm1 = dnm2*temp
+           else
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) )
+           end if
+           dmin = min( dmin, dnm1 )
+           dmin1 = dmin
+           j4 = j4 + 4
+           j4p2 = j4 + 2*pp - 1
+           z( j4-2 ) = dnm1 + z( j4p2 )
+           if( z( j4-2 )==zero ) then
+              z( j4 ) = zero
+              dn = z( j4p2+2 )
+              dmin = dn
+              emin = zero
+           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
+              temp = z( j4p2+2 ) / z( j4-2 )
+              z( j4 ) = z( j4p2 )*temp
+              dn = dnm1*temp
+           else
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) )
+           end if
+           dmin = min( dmin, dn )
+           z( j4+2 ) = dn
+           z( 4*n0-pp ) = emin
+           return
+     end subroutine stdlib_slasq6
+
+     module pure subroutine stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
+     !! DLASQ6 computes one dqd (shift equal to zero) transform in
+     !! ping-pong form, with protection against underflow and overflow.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, pp
+           real(dp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           ! Array Arguments 
+           real(dp), intent(inout) :: z(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j4, j4p2
+           real(dp) :: d, emin, safmin, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( ( n0-i0-1 )<=0 )return
+           safmin = stdlib_dlamch( 'SAFE MINIMUM' )
+           j4 = 4*i0 + pp - 3
+           emin = z( j4+4 )
+           d = z( j4 )
+           dmin = d
+           if( pp==0 ) then
+              do j4 = 4*i0, 4*( n0-3 ), 4
+                 z( j4-2 ) = d + z( j4-1 )
+                 if( z( j4-2 )==zero ) then
+                    z( j4 ) = zero
+                    d = z( j4+1 )
+                    dmin = d
+                    emin = zero
+                 else if( safmin*z( j4+1 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4+1 ) ) &
+                           then
+                    temp = z( j4+1 ) / z( j4-2 )
+                    z( j4 ) = z( j4-1 )*temp
+                    d = d*temp
+                 else
+                    z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                    d = z( j4+1 )*( d / z( j4-2 ) )
+                 end if
+                 dmin = min( dmin, d )
+                 emin = min( emin, z( j4 ) )
+              end do
+           else
+              do j4 = 4*i0, 4*( n0-3 ), 4
+                 z( j4-3 ) = d + z( j4 )
+                 if( z( j4-3 )==zero ) then
+                    z( j4-1 ) = zero
+                    d = z( j4+2 )
+                    dmin = d
+                    emin = zero
+                 else if( safmin*z( j4+2 )<z( j4-3 ) .and.safmin*z( j4-3 )<z( j4+2 ) ) &
+                           then
+                    temp = z( j4+2 ) / z( j4-3 )
+                    z( j4-1 ) = z( j4 )*temp
+                    d = d*temp
+                 else
+                    z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                    d = z( j4+2 )*( d / z( j4-3 ) )
+                 end if
+                 dmin = min( dmin, d )
+                 emin = min( emin, z( j4-1 ) )
+              end do
+           end if
+           ! unroll last two steps.
+           dnm2 = d
+           dmin2 = dmin
+           j4 = 4*( n0-2 ) - pp
+           j4p2 = j4 + 2*pp - 1
+           z( j4-2 ) = dnm2 + z( j4p2 )
+           if( z( j4-2 )==zero ) then
+              z( j4 ) = zero
+              dnm1 = z( j4p2+2 )
+              dmin = dnm1
+              emin = zero
+           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
+              temp = z( j4p2+2 ) / z( j4-2 )
+              z( j4 ) = z( j4p2 )*temp
+              dnm1 = dnm2*temp
+           else
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) )
+           end if
+           dmin = min( dmin, dnm1 )
+           dmin1 = dmin
+           j4 = j4 + 4
+           j4p2 = j4 + 2*pp - 1
+           z( j4-2 ) = dnm1 + z( j4p2 )
+           if( z( j4-2 )==zero ) then
+              z( j4 ) = zero
+              dn = z( j4p2+2 )
+              dmin = dn
+              emin = zero
+           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
+              temp = z( j4p2+2 ) / z( j4-2 )
+              z( j4 ) = z( j4p2 )*temp
+              dn = dnm1*temp
+           else
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) )
+           end if
+           dmin = min( dmin, dn )
+           z( j4+2 ) = dn
+           z( 4*n0-pp ) = emin
+           return
+     end subroutine stdlib_dlasq6
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
+     !! DLASQ6: computes one dqd (shift equal to zero) transform in
+     !! ping-pong form, with protection against underflow and overflow.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, pp
+           real(${rk}$), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: z(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j4, j4p2
+           real(${rk}$) :: d, emin, safmin, temp
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( ( n0-i0-1 )<=0 )return
+           safmin = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
+           j4 = 4*i0 + pp - 3
+           emin = z( j4+4 )
+           d = z( j4 )
+           dmin = d
+           if( pp==0 ) then
+              do j4 = 4*i0, 4*( n0-3 ), 4
+                 z( j4-2 ) = d + z( j4-1 )
+                 if( z( j4-2 )==zero ) then
+                    z( j4 ) = zero
+                    d = z( j4+1 )
+                    dmin = d
+                    emin = zero
+                 else if( safmin*z( j4+1 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4+1 ) ) &
+                           then
+                    temp = z( j4+1 ) / z( j4-2 )
+                    z( j4 ) = z( j4-1 )*temp
+                    d = d*temp
+                 else
+                    z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                    d = z( j4+1 )*( d / z( j4-2 ) )
+                 end if
+                 dmin = min( dmin, d )
+                 emin = min( emin, z( j4 ) )
+              end do
+           else
+              do j4 = 4*i0, 4*( n0-3 ), 4
+                 z( j4-3 ) = d + z( j4 )
+                 if( z( j4-3 )==zero ) then
+                    z( j4-1 ) = zero
+                    d = z( j4+2 )
+                    dmin = d
+                    emin = zero
+                 else if( safmin*z( j4+2 )<z( j4-3 ) .and.safmin*z( j4-3 )<z( j4+2 ) ) &
+                           then
+                    temp = z( j4+2 ) / z( j4-3 )
+                    z( j4-1 ) = z( j4 )*temp
+                    d = d*temp
+                 else
+                    z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                    d = z( j4+2 )*( d / z( j4-3 ) )
+                 end if
+                 dmin = min( dmin, d )
+                 emin = min( emin, z( j4-1 ) )
+              end do
+           end if
+           ! unroll last two steps.
+           dnm2 = d
+           dmin2 = dmin
+           j4 = 4*( n0-2 ) - pp
+           j4p2 = j4 + 2*pp - 1
+           z( j4-2 ) = dnm2 + z( j4p2 )
+           if( z( j4-2 )==zero ) then
+              z( j4 ) = zero
+              dnm1 = z( j4p2+2 )
+              dmin = dnm1
+              emin = zero
+           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
+              temp = z( j4p2+2 ) / z( j4-2 )
+              z( j4 ) = z( j4p2 )*temp
+              dnm1 = dnm2*temp
+           else
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) )
+           end if
+           dmin = min( dmin, dnm1 )
+           dmin1 = dmin
+           j4 = j4 + 4
+           j4p2 = j4 + 2*pp - 1
+           z( j4-2 ) = dnm1 + z( j4p2 )
+           if( z( j4-2 )==zero ) then
+              z( j4 ) = zero
+              dn = z( j4p2+2 )
+              dmin = dn
+              emin = zero
+           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
+              temp = z( j4p2+2 ) / z( j4-2 )
+              z( j4 ) = z( j4p2 )*temp
+              dn = dnm1*temp
+           else
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) )
+           end if
+           dmin = min( dmin, dn )
+           z( j4+2 ) = dn
+           z( 4*n0-pp ) = emin
+           return
+     end subroutine stdlib_${ri}$lasq6
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_slasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! SLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(sp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(sp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(sp), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: cbias = 1.50_sp
+           real(sp), parameter :: qurtr = 0.250_sp
+           real(sp), parameter :: hundrd = 100.0_sp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(sp) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_slamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_sisnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_slasq3
+
+     module pure subroutine stdlib_dlasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! DLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(dp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(dp), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: cbias = 1.50_dp
+           real(dp), parameter :: qurtr = 0.250_dp
+           real(dp), parameter :: hundrd = 100.0_dp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(dp) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_dlamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_disnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_dlasq3
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$lasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! DLASQ3: checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(${rk}$), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(${rk}$), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(${rk}$), parameter :: cbias = 1.50_${rk}$
+           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
+           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(${rk}$) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_${ri}$lamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_${ri}$isnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_${ri}$lasq3
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
      !! SLASQ4 computes an approximation TAU to the smallest eigenvalue
      !! using values of d from the previous transform.
                ttype, g )
@@ -2359,7 +2921,7 @@ module stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq4
 
-     pure subroutine stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     module pure subroutine stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
      !! DLASQ4 computes an approximation TAU to the smallest eigenvalue
      !! using values of d from the previous transform.
                ttype, g )
@@ -2568,7 +3130,7 @@ module stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     module pure subroutine stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
      !! DLASQ4: computes an approximation TAU to the smallest eigenvalue
      !! using values of d from the previous transform.
                ttype, g )
@@ -2780,851 +3342,283 @@ module stdlib_lapack_svd_bidiag_qr
 
 
 
-     pure subroutine stdlib_slasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! SLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+     module pure subroutine stdlib_slasq1( n, d, e, work, info )
+     !! SLASQ1 computes the singular values of a real N-by-N bidiagonal
+     !! matrix with diagonal D and off-diagonal E. The singular values
+     !! are computed to high relative accuracy, in the absence of
+     !! denormalization, underflow and overflow. The algorithm was first
+     !! presented in
+     !! "Accurate singular values and differential qd algorithms" by K. V.
+     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
+     !! 1994,
+     !! and the present implementation is described in "An implementation of
+     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(sp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(sp), intent(out) :: dmin, sigma
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
            ! Array Arguments 
-           real(sp), intent(inout) :: z(*)
+           real(sp), intent(inout) :: d(*), e(*)
+           real(sp), intent(out) :: work(*)
         ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: cbias = 1.50_sp
-           real(sp), parameter :: qurtr = 0.250_sp
-           real(sp), parameter :: hundrd = 100.0_sp
-           
            
            ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           integer(ilp), intent(inout) :: ttype
-           real(sp) :: eps, s, t, temp, tol, tol2
+           integer(ilp) :: i, iinfo
+           real(sp) :: eps, scale, safmin, sigmn, sigmx
            ! Intrinsic Functions 
            ! Executable Statements 
-           n0in = n0
+           info = 0
+           if( n<0 ) then
+              info = -1
+              call stdlib_xerbla( 'SLASQ1', -info )
+              return
+           else if( n==0 ) then
+              return
+           else if( n==1 ) then
+              d( 1 ) = abs( d( 1 ) )
+              return
+           else if( n==2 ) then
+              call stdlib_slas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
+              d( 1 ) = sigmx
+              d( 2 ) = sigmn
+              return
+           end if
+           ! estimate the largest singular value.
+           sigmx = zero
+           do i = 1, n - 1
+              d( i ) = abs( d( i ) )
+              sigmx = max( sigmx, abs( e( i ) ) )
+           end do
+           d( n ) = abs( d( n ) )
+           ! early return if sigmx is zero (matrix is already diagonal).
+           if( sigmx==zero ) then
+              call stdlib_slasrt( 'D', n, d, iinfo )
+              return
+           end if
+           do i = 1, n
+              sigmx = max( sigmx, d( i ) )
+           end do
+           ! copy d and e into work (in the z format) and scale (squaring the
+           ! input data makes scaling by a power of the radix pointless).
            eps = stdlib_slamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
-           end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_sisnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
-           return
-     end subroutine stdlib_slasq3
-
-     pure subroutine stdlib_dlasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! DLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(dp), intent(out) :: dmin, sigma
-           ! Array Arguments 
-           real(dp), intent(inout) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: cbias = 1.50_dp
-           real(dp), parameter :: qurtr = 0.250_dp
-           real(dp), parameter :: hundrd = 100.0_dp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           integer(ilp), intent(inout) :: ttype
-           real(dp) :: eps, s, t, temp, tol, tol2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           n0in = n0
-           eps = stdlib_dlamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
-           end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_disnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
-           return
-     end subroutine stdlib_dlasq3
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! DLASQ3: checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(${rk}$), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(${rk}$), intent(out) :: dmin, sigma
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(${rk}$), parameter :: cbias = 1.50_${rk}$
-           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
-           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           integer(ilp), intent(inout) :: ttype
-           real(${rk}$) :: eps, s, t, temp, tol, tol2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           n0in = n0
-           eps = stdlib_${ri}$lamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
-           end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_${ri}$isnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
-           return
-     end subroutine stdlib_${ri}$lasq3
-
-#:endif
-#:endfor
-
-
-
-     pure subroutine stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
-     !! SLASQ6 computes one dqd (shift equal to zero) transform in
-     !! ping-pong form, with protection against underflow and overflow.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, pp
-           real(sp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
-           ! Array Arguments 
-           real(sp), intent(inout) :: z(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: j4, j4p2
-           real(sp) :: d, emin, safmin, temp
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           if( ( n0-i0-1 )<=0 )return
            safmin = stdlib_slamch( 'SAFE MINIMUM' )
-           j4 = 4*i0 + pp - 3
-           emin = z( j4+4 )
-           d = z( j4 )
-           dmin = d
-           if( pp==0 ) then
-              do j4 = 4*i0, 4*( n0-3 ), 4
-                 z( j4-2 ) = d + z( j4-1 )
-                 if( z( j4-2 )==zero ) then
-                    z( j4 ) = zero
-                    d = z( j4+1 )
-                    dmin = d
-                    emin = zero
-                 else if( safmin*z( j4+1 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4+1 ) ) &
-                           then
-                    temp = z( j4+1 ) / z( j4-2 )
-                    z( j4 ) = z( j4-1 )*temp
-                    d = d*temp
-                 else
-                    z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                    d = z( j4+1 )*( d / z( j4-2 ) )
-                 end if
-                 dmin = min( dmin, d )
-                 emin = min( emin, z( j4 ) )
+           scale = sqrt( eps / safmin )
+           call stdlib_scopy( n, d, 1, work( 1 ), 2 )
+           call stdlib_scopy( n-1, e, 1, work( 2 ), 2 )
+           call stdlib_slascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
+           ! compute the q's and e's.
+           do i = 1, 2*n - 1
+              work( i ) = work( i )**2
+           end do
+           work( 2*n ) = zero
+           call stdlib_slasq2( n, work, info )
+           if( info==0 ) then
+              do i = 1, n
+                 d( i ) = sqrt( work( i ) )
               end do
-           else
-              do j4 = 4*i0, 4*( n0-3 ), 4
-                 z( j4-3 ) = d + z( j4 )
-                 if( z( j4-3 )==zero ) then
-                    z( j4-1 ) = zero
-                    d = z( j4+2 )
-                    dmin = d
-                    emin = zero
-                 else if( safmin*z( j4+2 )<z( j4-3 ) .and.safmin*z( j4-3 )<z( j4+2 ) ) &
-                           then
-                    temp = z( j4+2 ) / z( j4-3 )
-                    z( j4-1 ) = z( j4 )*temp
-                    d = d*temp
-                 else
-                    z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                    d = z( j4+2 )*( d / z( j4-3 ) )
-                 end if
-                 dmin = min( dmin, d )
-                 emin = min( emin, z( j4-1 ) )
+              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+           else if( info==2 ) then
+           ! maximum number of iterations exceeded.  move data from work
+           ! into d and e so the calling subroutine can try to finish
+              do i = 1, n
+                 d( i ) = sqrt( work( 2*i-1 ) )
+                 e( i ) = sqrt( work( 2*i ) )
               end do
+              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
            end if
-           ! unroll last two steps.
-           dnm2 = d
-           dmin2 = dmin
-           j4 = 4*( n0-2 ) - pp
-           j4p2 = j4 + 2*pp - 1
-           z( j4-2 ) = dnm2 + z( j4p2 )
-           if( z( j4-2 )==zero ) then
-              z( j4 ) = zero
-              dnm1 = z( j4p2+2 )
-              dmin = dnm1
-              emin = zero
-           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
-              temp = z( j4p2+2 ) / z( j4-2 )
-              z( j4 ) = z( j4p2 )*temp
-              dnm1 = dnm2*temp
-           else
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) )
-           end if
-           dmin = min( dmin, dnm1 )
-           dmin1 = dmin
-           j4 = j4 + 4
-           j4p2 = j4 + 2*pp - 1
-           z( j4-2 ) = dnm1 + z( j4p2 )
-           if( z( j4-2 )==zero ) then
-              z( j4 ) = zero
-              dn = z( j4p2+2 )
-              dmin = dn
-              emin = zero
-           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
-              temp = z( j4p2+2 ) / z( j4-2 )
-              z( j4 ) = z( j4p2 )*temp
-              dn = dnm1*temp
-           else
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) )
-           end if
-           dmin = min( dmin, dn )
-           z( j4+2 ) = dn
-           z( 4*n0-pp ) = emin
            return
-     end subroutine stdlib_slasq6
+     end subroutine stdlib_slasq1
 
-     pure subroutine stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
-     !! DLASQ6 computes one dqd (shift equal to zero) transform in
-     !! ping-pong form, with protection against underflow and overflow.
+     module pure subroutine stdlib_dlasq1( n, d, e, work, info )
+     !! DLASQ1 computes the singular values of a real N-by-N bidiagonal
+     !! matrix with diagonal D and off-diagonal E. The singular values
+     !! are computed to high relative accuracy, in the absence of
+     !! denormalization, underflow and overflow. The algorithm was first
+     !! presented in
+     !! "Accurate singular values and differential qd algorithms" by K. V.
+     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
+     !! 1994,
+     !! and the present implementation is described in "An implementation of
+     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, pp
-           real(dp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
            ! Array Arguments 
-           real(dp), intent(inout) :: z(*)
+           real(dp), intent(inout) :: d(*), e(*)
+           real(dp), intent(out) :: work(*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: j4, j4p2
-           real(dp) :: d, emin, safmin, temp
+           integer(ilp) :: i, iinfo
+           real(dp) :: eps, scale, safmin, sigmn, sigmx
            ! Intrinsic Functions 
            ! Executable Statements 
-           if( ( n0-i0-1 )<=0 )return
+           info = 0
+           if( n<0 ) then
+              info = -1
+              call stdlib_xerbla( 'DLASQ1', -info )
+              return
+           else if( n==0 ) then
+              return
+           else if( n==1 ) then
+              d( 1 ) = abs( d( 1 ) )
+              return
+           else if( n==2 ) then
+              call stdlib_dlas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
+              d( 1 ) = sigmx
+              d( 2 ) = sigmn
+              return
+           end if
+           ! estimate the largest singular value.
+           sigmx = zero
+           do i = 1, n - 1
+              d( i ) = abs( d( i ) )
+              sigmx = max( sigmx, abs( e( i ) ) )
+           end do
+           d( n ) = abs( d( n ) )
+           ! early return if sigmx is zero (matrix is already diagonal).
+           if( sigmx==zero ) then
+              call stdlib_dlasrt( 'D', n, d, iinfo )
+              return
+           end if
+           do i = 1, n
+              sigmx = max( sigmx, d( i ) )
+           end do
+           ! copy d and e into work (in the z format) and scale (squaring the
+           ! input data makes scaling by a power of the radix pointless).
+           eps = stdlib_dlamch( 'PRECISION' )
            safmin = stdlib_dlamch( 'SAFE MINIMUM' )
-           j4 = 4*i0 + pp - 3
-           emin = z( j4+4 )
-           d = z( j4 )
-           dmin = d
-           if( pp==0 ) then
-              do j4 = 4*i0, 4*( n0-3 ), 4
-                 z( j4-2 ) = d + z( j4-1 )
-                 if( z( j4-2 )==zero ) then
-                    z( j4 ) = zero
-                    d = z( j4+1 )
-                    dmin = d
-                    emin = zero
-                 else if( safmin*z( j4+1 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4+1 ) ) &
-                           then
-                    temp = z( j4+1 ) / z( j4-2 )
-                    z( j4 ) = z( j4-1 )*temp
-                    d = d*temp
-                 else
-                    z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                    d = z( j4+1 )*( d / z( j4-2 ) )
-                 end if
-                 dmin = min( dmin, d )
-                 emin = min( emin, z( j4 ) )
+           scale = sqrt( eps / safmin )
+           call stdlib_dcopy( n, d, 1, work( 1 ), 2 )
+           call stdlib_dcopy( n-1, e, 1, work( 2 ), 2 )
+           call stdlib_dlascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
+           ! compute the q's and e's.
+           do i = 1, 2*n - 1
+              work( i ) = work( i )**2
+           end do
+           work( 2*n ) = zero
+           call stdlib_dlasq2( n, work, info )
+           if( info==0 ) then
+              do i = 1, n
+                 d( i ) = sqrt( work( i ) )
               end do
-           else
-              do j4 = 4*i0, 4*( n0-3 ), 4
-                 z( j4-3 ) = d + z( j4 )
-                 if( z( j4-3 )==zero ) then
-                    z( j4-1 ) = zero
-                    d = z( j4+2 )
-                    dmin = d
-                    emin = zero
-                 else if( safmin*z( j4+2 )<z( j4-3 ) .and.safmin*z( j4-3 )<z( j4+2 ) ) &
-                           then
-                    temp = z( j4+2 ) / z( j4-3 )
-                    z( j4-1 ) = z( j4 )*temp
-                    d = d*temp
-                 else
-                    z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                    d = z( j4+2 )*( d / z( j4-3 ) )
-                 end if
-                 dmin = min( dmin, d )
-                 emin = min( emin, z( j4-1 ) )
+              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+           else if( info==2 ) then
+           ! maximum number of iterations exceeded.  move data from work
+           ! into d and e so the calling subroutine can try to finish
+              do i = 1, n
+                 d( i ) = sqrt( work( 2*i-1 ) )
+                 e( i ) = sqrt( work( 2*i ) )
               end do
+              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
            end if
-           ! unroll last two steps.
-           dnm2 = d
-           dmin2 = dmin
-           j4 = 4*( n0-2 ) - pp
-           j4p2 = j4 + 2*pp - 1
-           z( j4-2 ) = dnm2 + z( j4p2 )
-           if( z( j4-2 )==zero ) then
-              z( j4 ) = zero
-              dnm1 = z( j4p2+2 )
-              dmin = dnm1
-              emin = zero
-           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
-              temp = z( j4p2+2 ) / z( j4-2 )
-              z( j4 ) = z( j4p2 )*temp
-              dnm1 = dnm2*temp
-           else
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) )
-           end if
-           dmin = min( dmin, dnm1 )
-           dmin1 = dmin
-           j4 = j4 + 4
-           j4p2 = j4 + 2*pp - 1
-           z( j4-2 ) = dnm1 + z( j4p2 )
-           if( z( j4-2 )==zero ) then
-              z( j4 ) = zero
-              dn = z( j4p2+2 )
-              dmin = dn
-              emin = zero
-           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
-              temp = z( j4p2+2 ) / z( j4-2 )
-              z( j4 ) = z( j4p2 )*temp
-              dn = dnm1*temp
-           else
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) )
-           end if
-           dmin = min( dmin, dn )
-           z( j4+2 ) = dn
-           z( 4*n0-pp ) = emin
            return
-     end subroutine stdlib_dlasq6
+     end subroutine stdlib_dlasq1
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure subroutine stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
-     !! DLASQ6: computes one dqd (shift equal to zero) transform in
-     !! ping-pong form, with protection against underflow and overflow.
+     module pure subroutine stdlib_${ri}$lasq1( n, d, e, work, info )
+     !! DLASQ1: computes the singular values of a real N-by-N bidiagonal
+     !! matrix with diagonal D and off-diagonal E. The singular values
+     !! are computed to high relative accuracy, in the absence of
+     !! denormalization, underflow and overflow. The algorithm was first
+     !! presented in
+     !! "Accurate singular values and differential qd algorithms" by K. V.
+     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
+     !! 1994,
+     !! and the present implementation is described in "An implementation of
+     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, pp
-           real(${rk}$), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: z(*)
+           real(${rk}$), intent(inout) :: d(*), e(*)
+           real(${rk}$), intent(out) :: work(*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: j4, j4p2
-           real(${rk}$) :: d, emin, safmin, temp
+           integer(ilp) :: i, iinfo
+           real(${rk}$) :: eps, scale, safmin, sigmn, sigmx
            ! Intrinsic Functions 
            ! Executable Statements 
-           if( ( n0-i0-1 )<=0 )return
+           info = 0
+           if( n<0 ) then
+              info = -1
+              call stdlib_xerbla( 'DLASQ1', -info )
+              return
+           else if( n==0 ) then
+              return
+           else if( n==1 ) then
+              d( 1 ) = abs( d( 1 ) )
+              return
+           else if( n==2 ) then
+              call stdlib_${ri}$las2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
+              d( 1 ) = sigmx
+              d( 2 ) = sigmn
+              return
+           end if
+           ! estimate the largest singular value.
+           sigmx = zero
+           do i = 1, n - 1
+              d( i ) = abs( d( i ) )
+              sigmx = max( sigmx, abs( e( i ) ) )
+           end do
+           d( n ) = abs( d( n ) )
+           ! early return if sigmx is zero (matrix is already diagonal).
+           if( sigmx==zero ) then
+              call stdlib_${ri}$lasrt( 'D', n, d, iinfo )
+              return
+           end if
+           do i = 1, n
+              sigmx = max( sigmx, d( i ) )
+           end do
+           ! copy d and e into work (in the z format) and scale (squaring the
+           ! input data makes scaling by a power of the radix pointless).
+           eps = stdlib_${ri}$lamch( 'PRECISION' )
            safmin = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
-           j4 = 4*i0 + pp - 3
-           emin = z( j4+4 )
-           d = z( j4 )
-           dmin = d
-           if( pp==0 ) then
-              do j4 = 4*i0, 4*( n0-3 ), 4
-                 z( j4-2 ) = d + z( j4-1 )
-                 if( z( j4-2 )==zero ) then
-                    z( j4 ) = zero
-                    d = z( j4+1 )
-                    dmin = d
-                    emin = zero
-                 else if( safmin*z( j4+1 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4+1 ) ) &
-                           then
-                    temp = z( j4+1 ) / z( j4-2 )
-                    z( j4 ) = z( j4-1 )*temp
-                    d = d*temp
-                 else
-                    z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                    d = z( j4+1 )*( d / z( j4-2 ) )
-                 end if
-                 dmin = min( dmin, d )
-                 emin = min( emin, z( j4 ) )
+           scale = sqrt( eps / safmin )
+           call stdlib_${ri}$copy( n, d, 1, work( 1 ), 2 )
+           call stdlib_${ri}$copy( n-1, e, 1, work( 2 ), 2 )
+           call stdlib_${ri}$lascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
+           ! compute the q's and e's.
+           do i = 1, 2*n - 1
+              work( i ) = work( i )**2
+           end do
+           work( 2*n ) = zero
+           call stdlib_${ri}$lasq2( n, work, info )
+           if( info==0 ) then
+              do i = 1, n
+                 d( i ) = sqrt( work( i ) )
               end do
-           else
-              do j4 = 4*i0, 4*( n0-3 ), 4
-                 z( j4-3 ) = d + z( j4 )
-                 if( z( j4-3 )==zero ) then
-                    z( j4-1 ) = zero
-                    d = z( j4+2 )
-                    dmin = d
-                    emin = zero
-                 else if( safmin*z( j4+2 )<z( j4-3 ) .and.safmin*z( j4-3 )<z( j4+2 ) ) &
-                           then
-                    temp = z( j4+2 ) / z( j4-3 )
-                    z( j4-1 ) = z( j4 )*temp
-                    d = d*temp
-                 else
-                    z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                    d = z( j4+2 )*( d / z( j4-3 ) )
-                 end if
-                 dmin = min( dmin, d )
-                 emin = min( emin, z( j4-1 ) )
+              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+           else if( info==2 ) then
+           ! maximum number of iterations exceeded.  move data from work
+           ! into d and e so the calling subroutine can try to finish
+              do i = 1, n
+                 d( i ) = sqrt( work( 2*i-1 ) )
+                 e( i ) = sqrt( work( 2*i ) )
               end do
+              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
            end if
-           ! unroll last two steps.
-           dnm2 = d
-           dmin2 = dmin
-           j4 = 4*( n0-2 ) - pp
-           j4p2 = j4 + 2*pp - 1
-           z( j4-2 ) = dnm2 + z( j4p2 )
-           if( z( j4-2 )==zero ) then
-              z( j4 ) = zero
-              dnm1 = z( j4p2+2 )
-              dmin = dnm1
-              emin = zero
-           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
-              temp = z( j4p2+2 ) / z( j4-2 )
-              z( j4 ) = z( j4p2 )*temp
-              dnm1 = dnm2*temp
-           else
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) )
-           end if
-           dmin = min( dmin, dnm1 )
-           dmin1 = dmin
-           j4 = j4 + 4
-           j4p2 = j4 + 2*pp - 1
-           z( j4-2 ) = dnm1 + z( j4p2 )
-           if( z( j4-2 )==zero ) then
-              z( j4 ) = zero
-              dn = z( j4p2+2 )
-              dmin = dn
-              emin = zero
-           else if( safmin*z( j4p2+2 )<z( j4-2 ) .and.safmin*z( j4-2 )<z( j4p2+2 ) ) then
-              temp = z( j4p2+2 ) / z( j4-2 )
-              z( j4 ) = z( j4p2 )*temp
-              dn = dnm1*temp
-           else
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) )
-           end if
-           dmin = min( dmin, dn )
-           z( j4+2 ) = dn
-           z( 4*n0-pp ) = emin
            return
-     end subroutine stdlib_${ri}$lasq6
+     end subroutine stdlib_${ri}$lasq1
 
 #:endif
 #:endfor
 
 
-end module stdlib_lapack_svd_bidiag_qr
+end submodule stdlib_lapack_svd_bidiag_qr

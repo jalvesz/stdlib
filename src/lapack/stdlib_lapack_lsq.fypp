@@ -1,21 +1,1391 @@
 #:include "common.fypp" 
-module stdlib_lapack_lsq
-  use stdlib_linalg_constants
-  use stdlib_linalg_lapack_aux
-  use stdlib_linalg_blas
-  use stdlib_lapack_svd_comp
-  use stdlib_lapack_blas_like_mnorm
-  use stdlib_lapack_lsq_aux
-  use stdlib_lapack_orthogonal_factors_rz
-  use stdlib_lapack_blas_like_l2
-  use stdlib_lapack_orthogonal_factors_qr
-  use stdlib_lapack_eigv_sym
+submodule(stdlib_lapack) stdlib_lapack_lsq
   implicit none(type,external)
 
 
   contains
 
-     subroutine stdlib_sgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, info )
+     module subroutine stdlib_sgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, info )
+     !! SGELSY computes the minimum-norm solution to a real linear least
+     !! squares problem:
+     !! minimize || A * X - B ||
+     !! using a complete orthogonal factorization of A.  A is an M-by-N
+     !! matrix which may be rank-deficient.
+     !! Several right hand side vectors b and solution vectors x can be
+     !! handled in a single call; they are stored as the columns of the
+     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
+     !! matrix X.
+     !! The routine first computes a QR factorization with column pivoting:
+     !! A * P = Q * [ R11 R12 ]
+     !! [  0  R22 ]
+     !! with R11 defined as the largest leading submatrix whose estimated
+     !! condition number is less than 1/RCOND.  The order of R11, RANK,
+     !! is the effective rank of A.
+     !! Then, R22 is considered to be negligible, and R12 is annihilated
+     !! by orthogonal transformations from the right, arriving at the
+     !! complete orthogonal factorization:
+     !! A * P = Q * [ T11 0 ] * Z
+     !! [  0  0 ]
+     !! The minimum-norm solution is then
+     !! X = P * Z**T [ inv(T11)*Q1**T*B ]
+     !! [        0         ]
+     !! where Q1 consists of the first RANK columns of Q.
+     !! This routine is basically identical to the original xGELSX except
+     !! three differences:
+     !! o The call to the subroutine xGEQPF has been substituted by the
+     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
+     !! version of the QR factorization with column pivoting.
+     !! o Matrix B (the right hand side) is updated with Blas-3.
+     !! o The permutation of matrix B (the right hand side) is faster and
+     !! more simple.
+               
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info, rank
+           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
+           real(sp), intent(in) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: jpvt(*)
+           real(sp), intent(inout) :: a(lda,*), b(ldb,*)
+           real(sp), intent(out) :: work(*)
+        ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: imax = 1
+           integer(ilp), parameter :: imin = 2
+           
+           
+           ! Local Scalars 
+           logical(lk) :: lquery
+           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkmin, lwkopt, mn, nb, nb1, nb2, &
+                     nb3, nb4
+           real(sp) :: anrm, bignum, bnrm, c1, c2, s1, s2, smax, smaxpr, smin, sminpr, smlnum, &
+                     wsize
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           mn = min( m, n )
+           ismin = mn + 1
+           ismax = 2*mn + 1
+           ! test the input arguments.
+           info = 0
+           lquery = ( lwork==-1 )
+           if( m<0 ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( nrhs<0 ) then
+              info = -3
+           else if( lda<max( 1, m ) ) then
+              info = -5
+           else if( ldb<max( 1, m, n ) ) then
+              info = -7
+           end if
+           ! figure out optimal block size
+           if( info==0 ) then
+              if( mn==0 .or. nrhs==0 ) then
+                 lwkmin = 1
+                 lwkopt = 1
+              else
+                 nb1 = stdlib_ilaenv( 1, 'SGEQRF', ' ', m, n, -1, -1 )
+                 nb2 = stdlib_ilaenv( 1, 'SGERQF', ' ', m, n, -1, -1 )
+                 nb3 = stdlib_ilaenv( 1, 'SORMQR', ' ', m, n, nrhs, -1 )
+                 nb4 = stdlib_ilaenv( 1, 'SORMRQ', ' ', m, n, nrhs, -1 )
+                 nb = max( nb1, nb2, nb3, nb4 )
+                 lwkmin = mn + max( 2*mn, n + 1, mn + nrhs )
+                 lwkopt = max( lwkmin,mn + 2*n + nb*( n + 1 ), 2*mn + nb*nrhs )
+              end if
+              work( 1 ) = lwkopt
+              if( lwork<lwkmin .and. .not.lquery ) then
+                 info = -12
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SGELSY', -info )
+              return
+           else if( lquery ) then
+              return
+           end if
+           ! quick return if possible
+           if( mn==0 .or. nrhs==0 ) then
+              rank = 0
+              return
+           end if
+           ! get machine parameters
+           smlnum = stdlib_slamch( 'S' ) / stdlib_slamch( 'P' )
+           bignum = one / smlnum
+           call stdlib_slabad( smlnum, bignum )
+           ! scale a, b if max entries outside range [smlnum,bignum]
+           anrm = stdlib_slange( 'M', m, n, a, lda, work )
+           iascl = 0
+           if( anrm>zero .and. anrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_slascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
+              iascl = 1
+           else if( anrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_slascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
+              iascl = 2
+           else if( anrm==zero ) then
+              ! matrix all zero. return zero solution.
+              call stdlib_slaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
+              rank = 0
+              go to 70
+           end if
+           bnrm = stdlib_slange( 'M', m, nrhs, b, ldb, work )
+           ibscl = 0
+           if( bnrm>zero .and. bnrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_slascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
+              ibscl = 1
+           else if( bnrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_slascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
+              ibscl = 2
+           end if
+           ! compute qr factorization with column pivoting of a:
+              ! a * p = q * r
+           call stdlib_sgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, info )
+                     
+           wsize = mn + work( mn+1 )
+           ! workspace: mn+2*n+nb*(n+1).
+           ! details of householder rotations stored in work(1:mn).
+           ! determine rank using incremental condition estimation
+           work( ismin ) = one
+           work( ismax ) = one
+           smax = abs( a( 1, 1 ) )
+           smin = smax
+           if( abs( a( 1, 1 ) )==zero ) then
+              rank = 0
+              call stdlib_slaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
+              go to 70
+           else
+              rank = 1
+           end if
+           10 continue
+           if( rank<mn ) then
+              i = rank + 1
+              call stdlib_slaic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
+                        s1, c1 )
+              call stdlib_slaic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
+                        s2, c2 )
+              if( smaxpr*rcond<=sminpr ) then
+                 do i = 1, rank
+                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
+                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
+                 end do
+                 work( ismin+rank ) = c1
+                 work( ismax+rank ) = c2
+                 smin = sminpr
+                 smax = smaxpr
+                 rank = rank + 1
+                 go to 10
+              end if
+           end if
+           ! workspace: 3*mn.
+           ! logically partition r = [ r11 r12 ]
+                                   ! [  0  r22 ]
+           ! where r11 = r(1:rank,1:rank)
+           ! [r11,r12] = [ t11, 0 ] * y
+           if( rank<n )call stdlib_stzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
+                     2*mn, info )
+           ! workspace: 2*mn.
+           ! details of householder rotations stored in work(mn+1:2*mn)
+           ! b(1:m,1:nrhs) := q**t * b(1:m,1:nrhs)
+           call stdlib_sormqr( 'LEFT', 'TRANSPOSE', m, nrhs, mn, a, lda, work( 1 ),b, ldb, work( &
+                     2*mn+1 ), lwork-2*mn, info )
+           wsize = max( wsize, 2*mn+work( 2*mn+1 ) )
+           ! workspace: 2*mn+nb*nrhs.
+           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
+           call stdlib_strsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, one, a, lda,&
+                      b, ldb )
+           do j = 1, nrhs
+              do i = rank + 1, n
+                 b( i, j ) = zero
+              end do
+           end do
+           ! b(1:n,1:nrhs) := y**t * b(1:n,1:nrhs)
+           if( rank<n ) then
+              call stdlib_sormrz( 'LEFT', 'TRANSPOSE', n, nrhs, rank, n-rank, a,lda, work( mn+1 ),&
+                         b, ldb, work( 2*mn+1 ),lwork-2*mn, info )
+           end if
+           ! workspace: 2*mn+nrhs.
+           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
+           do j = 1, nrhs
+              do i = 1, n
+                 work( jpvt( i ) ) = b( i, j )
+              end do
+              call stdlib_scopy( n, work( 1 ), 1, b( 1, j ), 1 )
+           end do
+           ! workspace: n.
+           ! undo scaling
+           if( iascl==1 ) then
+              call stdlib_slascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
+              call stdlib_slascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
+           else if( iascl==2 ) then
+              call stdlib_slascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
+              call stdlib_slascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
+           end if
+           if( ibscl==1 ) then
+              call stdlib_slascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
+           else if( ibscl==2 ) then
+              call stdlib_slascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
+           end if
+           70 continue
+           work( 1 ) = lwkopt
+           return
+     end subroutine stdlib_sgelsy
+
+     module subroutine stdlib_dgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, info )
+     !! DGELSY computes the minimum-norm solution to a real linear least
+     !! squares problem:
+     !! minimize || A * X - B ||
+     !! using a complete orthogonal factorization of A.  A is an M-by-N
+     !! matrix which may be rank-deficient.
+     !! Several right hand side vectors b and solution vectors x can be
+     !! handled in a single call; they are stored as the columns of the
+     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
+     !! matrix X.
+     !! The routine first computes a QR factorization with column pivoting:
+     !! A * P = Q * [ R11 R12 ]
+     !! [  0  R22 ]
+     !! with R11 defined as the largest leading submatrix whose estimated
+     !! condition number is less than 1/RCOND.  The order of R11, RANK,
+     !! is the effective rank of A.
+     !! Then, R22 is considered to be negligible, and R12 is annihilated
+     !! by orthogonal transformations from the right, arriving at the
+     !! complete orthogonal factorization:
+     !! A * P = Q * [ T11 0 ] * Z
+     !! [  0  0 ]
+     !! The minimum-norm solution is then
+     !! X = P * Z**T [ inv(T11)*Q1**T*B ]
+     !! [        0         ]
+     !! where Q1 consists of the first RANK columns of Q.
+     !! This routine is basically identical to the original xGELSX except
+     !! three differences:
+     !! o The call to the subroutine xGEQPF has been substituted by the
+     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
+     !! version of the QR factorization with column pivoting.
+     !! o Matrix B (the right hand side) is updated with Blas-3.
+     !! o The permutation of matrix B (the right hand side) is faster and
+     !! more simple.
+               
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info, rank
+           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
+           real(dp), intent(in) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: jpvt(*)
+           real(dp), intent(inout) :: a(lda,*), b(ldb,*)
+           real(dp), intent(out) :: work(*)
+        ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: imax = 1
+           integer(ilp), parameter :: imin = 2
+           
+           
+           ! Local Scalars 
+           logical(lk) :: lquery
+           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkmin, lwkopt, mn, nb, nb1, nb2, &
+                     nb3, nb4
+           real(dp) :: anrm, bignum, bnrm, c1, c2, s1, s2, smax, smaxpr, smin, sminpr, smlnum, &
+                     wsize
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           mn = min( m, n )
+           ismin = mn + 1
+           ismax = 2*mn + 1
+           ! test the input arguments.
+           info = 0
+           lquery = ( lwork==-1 )
+           if( m<0 ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( nrhs<0 ) then
+              info = -3
+           else if( lda<max( 1, m ) ) then
+              info = -5
+           else if( ldb<max( 1, m, n ) ) then
+              info = -7
+           end if
+           ! figure out optimal block size
+           if( info==0 ) then
+              if( mn==0 .or. nrhs==0 ) then
+                 lwkmin = 1
+                 lwkopt = 1
+              else
+                 nb1 = stdlib_ilaenv( 1, 'DGEQRF', ' ', m, n, -1, -1 )
+                 nb2 = stdlib_ilaenv( 1, 'DGERQF', ' ', m, n, -1, -1 )
+                 nb3 = stdlib_ilaenv( 1, 'DORMQR', ' ', m, n, nrhs, -1 )
+                 nb4 = stdlib_ilaenv( 1, 'DORMRQ', ' ', m, n, nrhs, -1 )
+                 nb = max( nb1, nb2, nb3, nb4 )
+                 lwkmin = mn + max( 2*mn, n + 1, mn + nrhs )
+                 lwkopt = max( lwkmin,mn + 2*n + nb*( n + 1 ), 2*mn + nb*nrhs )
+              end if
+              work( 1 ) = lwkopt
+              if( lwork<lwkmin .and. .not.lquery ) then
+                 info = -12
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGELSY', -info )
+              return
+           else if( lquery ) then
+              return
+           end if
+           ! quick return if possible
+           if( mn==0 .or. nrhs==0 ) then
+              rank = 0
+              return
+           end if
+           ! get machine parameters
+           smlnum = stdlib_dlamch( 'S' ) / stdlib_dlamch( 'P' )
+           bignum = one / smlnum
+           call stdlib_dlabad( smlnum, bignum )
+           ! scale a, b if max entries outside range [smlnum,bignum]
+           anrm = stdlib_dlange( 'M', m, n, a, lda, work )
+           iascl = 0
+           if( anrm>zero .and. anrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_dlascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
+              iascl = 1
+           else if( anrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_dlascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
+              iascl = 2
+           else if( anrm==zero ) then
+              ! matrix all zero. return zero solution.
+              call stdlib_dlaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
+              rank = 0
+              go to 70
+           end if
+           bnrm = stdlib_dlange( 'M', m, nrhs, b, ldb, work )
+           ibscl = 0
+           if( bnrm>zero .and. bnrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_dlascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
+              ibscl = 1
+           else if( bnrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_dlascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
+              ibscl = 2
+           end if
+           ! compute qr factorization with column pivoting of a:
+              ! a * p = q * r
+           call stdlib_dgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, info )
+                     
+           wsize = mn + work( mn+1 )
+           ! workspace: mn+2*n+nb*(n+1).
+           ! details of householder rotations stored in work(1:mn).
+           ! determine rank using incremental condition estimation
+           work( ismin ) = one
+           work( ismax ) = one
+           smax = abs( a( 1, 1 ) )
+           smin = smax
+           if( abs( a( 1, 1 ) )==zero ) then
+              rank = 0
+              call stdlib_dlaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
+              go to 70
+           else
+              rank = 1
+           end if
+           10 continue
+           if( rank<mn ) then
+              i = rank + 1
+              call stdlib_dlaic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
+                        s1, c1 )
+              call stdlib_dlaic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
+                        s2, c2 )
+              if( smaxpr*rcond<=sminpr ) then
+                 do i = 1, rank
+                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
+                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
+                 end do
+                 work( ismin+rank ) = c1
+                 work( ismax+rank ) = c2
+                 smin = sminpr
+                 smax = smaxpr
+                 rank = rank + 1
+                 go to 10
+              end if
+           end if
+           ! workspace: 3*mn.
+           ! logically partition r = [ r11 r12 ]
+                                   ! [  0  r22 ]
+           ! where r11 = r(1:rank,1:rank)
+           ! [r11,r12] = [ t11, 0 ] * y
+           if( rank<n )call stdlib_dtzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
+                     2*mn, info )
+           ! workspace: 2*mn.
+           ! details of householder rotations stored in work(mn+1:2*mn)
+           ! b(1:m,1:nrhs) := q**t * b(1:m,1:nrhs)
+           call stdlib_dormqr( 'LEFT', 'TRANSPOSE', m, nrhs, mn, a, lda, work( 1 ),b, ldb, work( &
+                     2*mn+1 ), lwork-2*mn, info )
+           wsize = max( wsize, 2*mn+work( 2*mn+1 ) )
+           ! workspace: 2*mn+nb*nrhs.
+           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
+           call stdlib_dtrsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, one, a, lda,&
+                      b, ldb )
+           do j = 1, nrhs
+              do i = rank + 1, n
+                 b( i, j ) = zero
+              end do
+           end do
+           ! b(1:n,1:nrhs) := y**t * b(1:n,1:nrhs)
+           if( rank<n ) then
+              call stdlib_dormrz( 'LEFT', 'TRANSPOSE', n, nrhs, rank, n-rank, a,lda, work( mn+1 ),&
+                         b, ldb, work( 2*mn+1 ),lwork-2*mn, info )
+           end if
+           ! workspace: 2*mn+nrhs.
+           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
+           do j = 1, nrhs
+              do i = 1, n
+                 work( jpvt( i ) ) = b( i, j )
+              end do
+              call stdlib_dcopy( n, work( 1 ), 1, b( 1, j ), 1 )
+           end do
+           ! workspace: n.
+           ! undo scaling
+           if( iascl==1 ) then
+              call stdlib_dlascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
+              call stdlib_dlascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
+           else if( iascl==2 ) then
+              call stdlib_dlascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
+              call stdlib_dlascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
+           end if
+           if( ibscl==1 ) then
+              call stdlib_dlascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
+           else if( ibscl==2 ) then
+              call stdlib_dlascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
+           end if
+           70 continue
+           work( 1 ) = lwkopt
+           return
+     end subroutine stdlib_dgelsy
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module subroutine stdlib_${ri}$gelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, info )
+     !! DGELSY: computes the minimum-norm solution to a real linear least
+     !! squares problem:
+     !! minimize || A * X - B ||
+     !! using a complete orthogonal factorization of A.  A is an M-by-N
+     !! matrix which may be rank-deficient.
+     !! Several right hand side vectors b and solution vectors x can be
+     !! handled in a single call; they are stored as the columns of the
+     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
+     !! matrix X.
+     !! The routine first computes a QR factorization with column pivoting:
+     !! A * P = Q * [ R11 R12 ]
+     !! [  0  R22 ]
+     !! with R11 defined as the largest leading submatrix whose estimated
+     !! condition number is less than 1/RCOND.  The order of R11, RANK,
+     !! is the effective rank of A.
+     !! Then, R22 is considered to be negligible, and R12 is annihilated
+     !! by orthogonal transformations from the right, arriving at the
+     !! complete orthogonal factorization:
+     !! A * P = Q * [ T11 0 ] * Z
+     !! [  0  0 ]
+     !! The minimum-norm solution is then
+     !! X = P * Z**T [ inv(T11)*Q1**T*B ]
+     !! [        0         ]
+     !! where Q1 consists of the first RANK columns of Q.
+     !! This routine is basically identical to the original xGELSX except
+     !! three differences:
+     !! o The call to the subroutine xGEQPF has been substituted by the
+     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
+     !! version of the QR factorization with column pivoting.
+     !! o Matrix B (the right hand side) is updated with Blas-3.
+     !! o The permutation of matrix B (the right hand side) is faster and
+     !! more simple.
+               
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info, rank
+           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
+           real(${rk}$), intent(in) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: jpvt(*)
+           real(${rk}$), intent(inout) :: a(lda,*), b(ldb,*)
+           real(${rk}$), intent(out) :: work(*)
+        ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: imax = 1
+           integer(ilp), parameter :: imin = 2
+           
+           
+           ! Local Scalars 
+           logical(lk) :: lquery
+           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkmin, lwkopt, mn, nb, nb1, nb2, &
+                     nb3, nb4
+           real(${rk}$) :: anrm, bignum, bnrm, c1, c2, s1, s2, smax, smaxpr, smin, sminpr, smlnum, &
+                     wsize
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           mn = min( m, n )
+           ismin = mn + 1
+           ismax = 2*mn + 1
+           ! test the input arguments.
+           info = 0
+           lquery = ( lwork==-1 )
+           if( m<0 ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( nrhs<0 ) then
+              info = -3
+           else if( lda<max( 1, m ) ) then
+              info = -5
+           else if( ldb<max( 1, m, n ) ) then
+              info = -7
+           end if
+           ! figure out optimal block size
+           if( info==0 ) then
+              if( mn==0 .or. nrhs==0 ) then
+                 lwkmin = 1
+                 lwkopt = 1
+              else
+                 nb1 = stdlib_ilaenv( 1, 'DGEQRF', ' ', m, n, -1, -1 )
+                 nb2 = stdlib_ilaenv( 1, 'DGERQF', ' ', m, n, -1, -1 )
+                 nb3 = stdlib_ilaenv( 1, 'DORMQR', ' ', m, n, nrhs, -1 )
+                 nb4 = stdlib_ilaenv( 1, 'DORMRQ', ' ', m, n, nrhs, -1 )
+                 nb = max( nb1, nb2, nb3, nb4 )
+                 lwkmin = mn + max( 2*mn, n + 1, mn + nrhs )
+                 lwkopt = max( lwkmin,mn + 2*n + nb*( n + 1 ), 2*mn + nb*nrhs )
+              end if
+              work( 1 ) = lwkopt
+              if( lwork<lwkmin .and. .not.lquery ) then
+                 info = -12
+              end if
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGELSY', -info )
+              return
+           else if( lquery ) then
+              return
+           end if
+           ! quick return if possible
+           if( mn==0 .or. nrhs==0 ) then
+              rank = 0
+              return
+           end if
+           ! get machine parameters
+           smlnum = stdlib_${ri}$lamch( 'S' ) / stdlib_${ri}$lamch( 'P' )
+           bignum = one / smlnum
+           call stdlib_${ri}$labad( smlnum, bignum )
+           ! scale a, b if max entries outside range [smlnum,bignum]
+           anrm = stdlib_${ri}$lange( 'M', m, n, a, lda, work )
+           iascl = 0
+           if( anrm>zero .and. anrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
+              iascl = 1
+           else if( anrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
+              iascl = 2
+           else if( anrm==zero ) then
+              ! matrix all zero. return zero solution.
+              call stdlib_${ri}$laset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
+              rank = 0
+              go to 70
+           end if
+           bnrm = stdlib_${ri}$lange( 'M', m, nrhs, b, ldb, work )
+           ibscl = 0
+           if( bnrm>zero .and. bnrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_${ri}$lascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
+              ibscl = 1
+           else if( bnrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_${ri}$lascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
+              ibscl = 2
+           end if
+           ! compute qr factorization with column pivoting of a:
+              ! a * p = q * r
+           call stdlib_${ri}$geqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, info )
+                     
+           wsize = mn + work( mn+1 )
+           ! workspace: mn+2*n+nb*(n+1).
+           ! details of householder rotations stored in work(1:mn).
+           ! determine rank using incremental condition estimation
+           work( ismin ) = one
+           work( ismax ) = one
+           smax = abs( a( 1, 1 ) )
+           smin = smax
+           if( abs( a( 1, 1 ) )==zero ) then
+              rank = 0
+              call stdlib_${ri}$laset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
+              go to 70
+           else
+              rank = 1
+           end if
+           10 continue
+           if( rank<mn ) then
+              i = rank + 1
+              call stdlib_${ri}$laic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
+                        s1, c1 )
+              call stdlib_${ri}$laic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
+                        s2, c2 )
+              if( smaxpr*rcond<=sminpr ) then
+                 do i = 1, rank
+                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
+                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
+                 end do
+                 work( ismin+rank ) = c1
+                 work( ismax+rank ) = c2
+                 smin = sminpr
+                 smax = smaxpr
+                 rank = rank + 1
+                 go to 10
+              end if
+           end if
+           ! workspace: 3*mn.
+           ! logically partition r = [ r11 r12 ]
+                                   ! [  0  r22 ]
+           ! where r11 = r(1:rank,1:rank)
+           ! [r11,r12] = [ t11, 0 ] * y
+           if( rank<n )call stdlib_${ri}$tzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
+                     2*mn, info )
+           ! workspace: 2*mn.
+           ! details of householder rotations stored in work(mn+1:2*mn)
+           ! b(1:m,1:nrhs) := q**t * b(1:m,1:nrhs)
+           call stdlib_${ri}$ormqr( 'LEFT', 'TRANSPOSE', m, nrhs, mn, a, lda, work( 1 ),b, ldb, work( &
+                     2*mn+1 ), lwork-2*mn, info )
+           wsize = max( wsize, 2*mn+work( 2*mn+1 ) )
+           ! workspace: 2*mn+nb*nrhs.
+           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
+           call stdlib_${ri}$trsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, one, a, lda,&
+                      b, ldb )
+           do j = 1, nrhs
+              do i = rank + 1, n
+                 b( i, j ) = zero
+              end do
+           end do
+           ! b(1:n,1:nrhs) := y**t * b(1:n,1:nrhs)
+           if( rank<n ) then
+              call stdlib_${ri}$ormrz( 'LEFT', 'TRANSPOSE', n, nrhs, rank, n-rank, a,lda, work( mn+1 ),&
+                         b, ldb, work( 2*mn+1 ),lwork-2*mn, info )
+           end if
+           ! workspace: 2*mn+nrhs.
+           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
+           do j = 1, nrhs
+              do i = 1, n
+                 work( jpvt( i ) ) = b( i, j )
+              end do
+              call stdlib_${ri}$copy( n, work( 1 ), 1, b( 1, j ), 1 )
+           end do
+           ! workspace: n.
+           ! undo scaling
+           if( iascl==1 ) then
+              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
+              call stdlib_${ri}$lascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
+           else if( iascl==2 ) then
+              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
+              call stdlib_${ri}$lascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
+           end if
+           if( ibscl==1 ) then
+              call stdlib_${ri}$lascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
+           else if( ibscl==2 ) then
+              call stdlib_${ri}$lascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
+           end if
+           70 continue
+           work( 1 ) = lwkopt
+           return
+     end subroutine stdlib_${ri}$gelsy
+
+#:endif
+#:endfor
+
+     module subroutine stdlib_cgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, rwork, &
+     !! CGELSY computes the minimum-norm solution to a complex linear least
+     !! squares problem:
+     !! minimize || A * X - B ||
+     !! using a complete orthogonal factorization of A.  A is an M-by-N
+     !! matrix which may be rank-deficient.
+     !! Several right hand side vectors b and solution vectors x can be
+     !! handled in a single call; they are stored as the columns of the
+     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
+     !! matrix X.
+     !! The routine first computes a QR factorization with column pivoting:
+     !! A * P = Q * [ R11 R12 ]
+     !! [  0  R22 ]
+     !! with R11 defined as the largest leading submatrix whose estimated
+     !! condition number is less than 1/RCOND.  The order of R11, RANK,
+     !! is the effective rank of A.
+     !! Then, R22 is considered to be negligible, and R12 is annihilated
+     !! by unitary transformations from the right, arriving at the
+     !! complete orthogonal factorization:
+     !! A * P = Q * [ T11 0 ] * Z
+     !! [  0  0 ]
+     !! The minimum-norm solution is then
+     !! X = P * Z**H [ inv(T11)*Q1**H*B ]
+     !! [        0         ]
+     !! where Q1 consists of the first RANK columns of Q.
+     !! This routine is basically identical to the original xGELSX except
+     !! three differences:
+     !! o The permutation of matrix B (the right hand side) is faster and
+     !! more simple.
+     !! o The call to the subroutine xGEQPF has been substituted by the
+     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
+     !! version of the QR factorization with column pivoting.
+     !! o Matrix B (the right hand side) is updated with Blas-3.
+               info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info, rank
+           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
+           real(sp), intent(in) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: jpvt(*)
+           real(sp), intent(out) :: rwork(*)
+           complex(sp), intent(inout) :: a(lda,*), b(ldb,*)
+           complex(sp), intent(out) :: work(*)
+        ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: imax = 1
+           integer(ilp), parameter :: imin = 2
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: lquery
+           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkopt, mn, nb, nb1, nb2, nb3, &
+                     nb4
+           real(sp) :: anrm, bignum, bnrm, smax, smaxpr, smin, sminpr, smlnum, wsize
+           complex(sp) :: c1, c2, s1, s2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           mn = min( m, n )
+           ismin = mn + 1
+           ismax = 2*mn + 1
+           ! test the input arguments.
+           info = 0
+           nb1 = stdlib_ilaenv( 1, 'CGEQRF', ' ', m, n, -1, -1 )
+           nb2 = stdlib_ilaenv( 1, 'CGERQF', ' ', m, n, -1, -1 )
+           nb3 = stdlib_ilaenv( 1, 'CUNMQR', ' ', m, n, nrhs, -1 )
+           nb4 = stdlib_ilaenv( 1, 'CUNMRQ', ' ', m, n, nrhs, -1 )
+           nb = max( nb1, nb2, nb3, nb4 )
+           lwkopt = max( 1, mn+2*n+nb*(n+1), 2*mn+nb*nrhs )
+           work( 1 ) = cmplx( lwkopt,KIND=sp)
+           lquery = ( lwork==-1 )
+           if( m<0 ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( nrhs<0 ) then
+              info = -3
+           else if( lda<max( 1, m ) ) then
+              info = -5
+           else if( ldb<max( 1, m, n ) ) then
+              info = -7
+           else if( lwork<( mn+max( 2*mn, n+1, mn+nrhs ) ) .and..not.lquery ) then
+              info = -12
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CGELSY', -info )
+              return
+           else if( lquery ) then
+              return
+           end if
+           ! quick return if possible
+           if( min( m, n, nrhs )==0 ) then
+              rank = 0
+              return
+           end if
+           ! get machine parameters
+           smlnum = stdlib_slamch( 'S' ) / stdlib_slamch( 'P' )
+           bignum = one / smlnum
+           call stdlib_slabad( smlnum, bignum )
+           ! scale a, b if max entries outside range [smlnum,bignum]
+           anrm = stdlib_clange( 'M', m, n, a, lda, rwork )
+           iascl = 0
+           if( anrm>zero .and. anrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_clascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
+              iascl = 1
+           else if( anrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_clascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
+              iascl = 2
+           else if( anrm==zero ) then
+              ! matrix all zero. return zero solution.
+              call stdlib_claset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
+              rank = 0
+              go to 70
+           end if
+           bnrm = stdlib_clange( 'M', m, nrhs, b, ldb, rwork )
+           ibscl = 0
+           if( bnrm>zero .and. bnrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_clascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
+              ibscl = 1
+           else if( bnrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_clascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
+              ibscl = 2
+           end if
+           ! compute qr factorization with column pivoting of a:
+              ! a * p = q * r
+           call stdlib_cgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, rwork, info )
+                     
+           wsize = mn + real( work( mn+1 ),KIND=sp)
+           ! complex workspace: mn+nb*(n+1). real workspace 2*n.
+           ! details of householder rotations stored in work(1:mn).
+           ! determine rank using incremental condition estimation
+           work( ismin ) = cone
+           work( ismax ) = cone
+           smax = abs( a( 1, 1 ) )
+           smin = smax
+           if( abs( a( 1, 1 ) )==zero ) then
+              rank = 0
+              call stdlib_claset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
+              go to 70
+           else
+              rank = 1
+           end if
+           10 continue
+           if( rank<mn ) then
+              i = rank + 1
+              call stdlib_claic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
+                        s1, c1 )
+              call stdlib_claic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
+                        s2, c2 )
+              if( smaxpr*rcond<=sminpr ) then
+                 do i = 1, rank
+                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
+                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
+                 end do
+                 work( ismin+rank ) = c1
+                 work( ismax+rank ) = c2
+                 smin = sminpr
+                 smax = smaxpr
+                 rank = rank + 1
+                 go to 10
+              end if
+           end if
+           ! complex workspace: 3*mn.
+           ! logically partition r = [ r11 r12 ]
+                                   ! [  0  r22 ]
+           ! where r11 = r(1:rank,1:rank)
+           ! [r11,r12] = [ t11, 0 ] * y
+           if( rank<n )call stdlib_ctzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
+                     2*mn, info )
+           ! complex workspace: 2*mn.
+           ! details of householder rotations stored in work(mn+1:2*mn)
+           ! b(1:m,1:nrhs) := q**h * b(1:m,1:nrhs)
+           call stdlib_cunmqr( 'LEFT', 'CONJUGATE TRANSPOSE', m, nrhs, mn, a, lda,work( 1 ), b, &
+                     ldb, work( 2*mn+1 ), lwork-2*mn, info )
+           wsize = max( wsize, 2*mn+real( work( 2*mn+1 ),KIND=sp) )
+           ! complex workspace: 2*mn+nb*nrhs.
+           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
+           call stdlib_ctrsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, cone, a, &
+                     lda, b, ldb )
+           do j = 1, nrhs
+              do i = rank + 1, n
+                 b( i, j ) = czero
+              end do
+           end do
+           ! b(1:n,1:nrhs) := y**h * b(1:n,1:nrhs)
+           if( rank<n ) then
+              call stdlib_cunmrz( 'LEFT', 'CONJUGATE TRANSPOSE', n, nrhs, rank,n-rank, a, lda, &
+                        work( mn+1 ), b, ldb,work( 2*mn+1 ), lwork-2*mn, info )
+           end if
+           ! complex workspace: 2*mn+nrhs.
+           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
+           do j = 1, nrhs
+              do i = 1, n
+                 work( jpvt( i ) ) = b( i, j )
+              end do
+              call stdlib_ccopy( n, work( 1 ), 1, b( 1, j ), 1 )
+           end do
+           ! complex workspace: n.
+           ! undo scaling
+           if( iascl==1 ) then
+              call stdlib_clascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
+              call stdlib_clascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
+           else if( iascl==2 ) then
+              call stdlib_clascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
+              call stdlib_clascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
+           end if
+           if( ibscl==1 ) then
+              call stdlib_clascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
+           else if( ibscl==2 ) then
+              call stdlib_clascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
+           end if
+           70 continue
+           work( 1 ) = cmplx( lwkopt,KIND=sp)
+           return
+     end subroutine stdlib_cgelsy
+
+     module subroutine stdlib_zgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, rwork, &
+     !! ZGELSY computes the minimum-norm solution to a complex linear least
+     !! squares problem:
+     !! minimize || A * X - B ||
+     !! using a complete orthogonal factorization of A.  A is an M-by-N
+     !! matrix which may be rank-deficient.
+     !! Several right hand side vectors b and solution vectors x can be
+     !! handled in a single call; they are stored as the columns of the
+     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
+     !! matrix X.
+     !! The routine first computes a QR factorization with column pivoting:
+     !! A * P = Q * [ R11 R12 ]
+     !! [  0  R22 ]
+     !! with R11 defined as the largest leading submatrix whose estimated
+     !! condition number is less than 1/RCOND.  The order of R11, RANK,
+     !! is the effective rank of A.
+     !! Then, R22 is considered to be negligible, and R12 is annihilated
+     !! by unitary transformations from the right, arriving at the
+     !! complete orthogonal factorization:
+     !! A * P = Q * [ T11 0 ] * Z
+     !! [  0  0 ]
+     !! The minimum-norm solution is then
+     !! X = P * Z**H [ inv(T11)*Q1**H*B ]
+     !! [        0         ]
+     !! where Q1 consists of the first RANK columns of Q.
+     !! This routine is basically identical to the original xGELSX except
+     !! three differences:
+     !! o The permutation of matrix B (the right hand side) is faster and
+     !! more simple.
+     !! o The call to the subroutine xGEQPF has been substituted by the
+     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
+     !! version of the QR factorization with column pivoting.
+     !! o Matrix B (the right hand side) is updated with Blas-3.
+               info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info, rank
+           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
+           real(dp), intent(in) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: jpvt(*)
+           real(dp), intent(out) :: rwork(*)
+           complex(dp), intent(inout) :: a(lda,*), b(ldb,*)
+           complex(dp), intent(out) :: work(*)
+        ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: imax = 1
+           integer(ilp), parameter :: imin = 2
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: lquery
+           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkopt, mn, nb, nb1, nb2, nb3, &
+                     nb4
+           real(dp) :: anrm, bignum, bnrm, smax, smaxpr, smin, sminpr, smlnum, wsize
+           complex(dp) :: c1, c2, s1, s2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           mn = min( m, n )
+           ismin = mn + 1
+           ismax = 2*mn + 1
+           ! test the input arguments.
+           info = 0
+           nb1 = stdlib_ilaenv( 1, 'ZGEQRF', ' ', m, n, -1, -1 )
+           nb2 = stdlib_ilaenv( 1, 'ZGERQF', ' ', m, n, -1, -1 )
+           nb3 = stdlib_ilaenv( 1, 'ZUNMQR', ' ', m, n, nrhs, -1 )
+           nb4 = stdlib_ilaenv( 1, 'ZUNMRQ', ' ', m, n, nrhs, -1 )
+           nb = max( nb1, nb2, nb3, nb4 )
+           lwkopt = max( 1, mn+2*n+nb*( n+1 ), 2*mn+nb*nrhs )
+           work( 1 ) = cmplx( lwkopt,KIND=dp)
+           lquery = ( lwork==-1 )
+           if( m<0 ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( nrhs<0 ) then
+              info = -3
+           else if( lda<max( 1, m ) ) then
+              info = -5
+           else if( ldb<max( 1, m, n ) ) then
+              info = -7
+           else if( lwork<( mn+max( 2*mn, n+1, mn+nrhs ) ) .and. .not.lquery ) then
+              info = -12
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGELSY', -info )
+              return
+           else if( lquery ) then
+              return
+           end if
+           ! quick return if possible
+           if( min( m, n, nrhs )==0 ) then
+              rank = 0
+              return
+           end if
+           ! get machine parameters
+           smlnum = stdlib_dlamch( 'S' ) / stdlib_dlamch( 'P' )
+           bignum = one / smlnum
+           call stdlib_dlabad( smlnum, bignum )
+           ! scale a, b if max entries outside range [smlnum,bignum]
+           anrm = stdlib_zlange( 'M', m, n, a, lda, rwork )
+           iascl = 0
+           if( anrm>zero .and. anrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_zlascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
+              iascl = 1
+           else if( anrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_zlascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
+              iascl = 2
+           else if( anrm==zero ) then
+              ! matrix all zero. return zero solution.
+              call stdlib_zlaset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
+              rank = 0
+              go to 70
+           end if
+           bnrm = stdlib_zlange( 'M', m, nrhs, b, ldb, rwork )
+           ibscl = 0
+           if( bnrm>zero .and. bnrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_zlascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
+              ibscl = 1
+           else if( bnrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_zlascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
+              ibscl = 2
+           end if
+           ! compute qr factorization with column pivoting of a:
+              ! a * p = q * r
+           call stdlib_zgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, rwork, info )
+                     
+           wsize = mn + real( work( mn+1 ),KIND=dp)
+           ! complex workspace: mn+nb*(n+1). real workspace 2*n.
+           ! details of householder rotations stored in work(1:mn).
+           ! determine rank using incremental condition estimation
+           work( ismin ) = cone
+           work( ismax ) = cone
+           smax = abs( a( 1, 1 ) )
+           smin = smax
+           if( abs( a( 1, 1 ) )==zero ) then
+              rank = 0
+              call stdlib_zlaset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
+              go to 70
+           else
+              rank = 1
+           end if
+           10 continue
+           if( rank<mn ) then
+              i = rank + 1
+              call stdlib_zlaic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
+                        s1, c1 )
+              call stdlib_zlaic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
+                        s2, c2 )
+              if( smaxpr*rcond<=sminpr ) then
+                 do i = 1, rank
+                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
+                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
+                 end do
+                 work( ismin+rank ) = c1
+                 work( ismax+rank ) = c2
+                 smin = sminpr
+                 smax = smaxpr
+                 rank = rank + 1
+                 go to 10
+              end if
+           end if
+           ! complex workspace: 3*mn.
+           ! logically partition r = [ r11 r12 ]
+                                   ! [  0  r22 ]
+           ! where r11 = r(1:rank,1:rank)
+           ! [r11,r12] = [ t11, 0 ] * y
+           if( rank<n )call stdlib_ztzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
+                     2*mn, info )
+           ! complex workspace: 2*mn.
+           ! details of householder rotations stored in work(mn+1:2*mn)
+           ! b(1:m,1:nrhs) := q**h * b(1:m,1:nrhs)
+           call stdlib_zunmqr( 'LEFT', 'CONJUGATE TRANSPOSE', m, nrhs, mn, a, lda,work( 1 ), b, &
+                     ldb, work( 2*mn+1 ), lwork-2*mn, info )
+           wsize = max( wsize, 2*mn+real( work( 2*mn+1 ),KIND=dp) )
+           ! complex workspace: 2*mn+nb*nrhs.
+           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
+           call stdlib_ztrsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, cone, a, &
+                     lda, b, ldb )
+           do j = 1, nrhs
+              do i = rank + 1, n
+                 b( i, j ) = czero
+              end do
+           end do
+           ! b(1:n,1:nrhs) := y**h * b(1:n,1:nrhs)
+           if( rank<n ) then
+              call stdlib_zunmrz( 'LEFT', 'CONJUGATE TRANSPOSE', n, nrhs, rank,n-rank, a, lda, &
+                        work( mn+1 ), b, ldb,work( 2*mn+1 ), lwork-2*mn, info )
+           end if
+           ! complex workspace: 2*mn+nrhs.
+           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
+           do j = 1, nrhs
+              do i = 1, n
+                 work( jpvt( i ) ) = b( i, j )
+              end do
+              call stdlib_zcopy( n, work( 1 ), 1, b( 1, j ), 1 )
+           end do
+           ! complex workspace: n.
+           ! undo scaling
+           if( iascl==1 ) then
+              call stdlib_zlascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
+              call stdlib_zlascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
+           else if( iascl==2 ) then
+              call stdlib_zlascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
+              call stdlib_zlascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
+           end if
+           if( ibscl==1 ) then
+              call stdlib_zlascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
+           else if( ibscl==2 ) then
+              call stdlib_zlascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
+           end if
+           70 continue
+           work( 1 ) = cmplx( lwkopt,KIND=dp)
+           return
+     end subroutine stdlib_zgelsy
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module subroutine stdlib_${ci}$gelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, rwork, &
+     !! ZGELSY: computes the minimum-norm solution to a complex linear least
+     !! squares problem:
+     !! minimize || A * X - B ||
+     !! using a complete orthogonal factorization of A.  A is an M-by-N
+     !! matrix which may be rank-deficient.
+     !! Several right hand side vectors b and solution vectors x can be
+     !! handled in a single call; they are stored as the columns of the
+     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
+     !! matrix X.
+     !! The routine first computes a QR factorization with column pivoting:
+     !! A * P = Q * [ R11 R12 ]
+     !! [  0  R22 ]
+     !! with R11 defined as the largest leading submatrix whose estimated
+     !! condition number is less than 1/RCOND.  The order of R11, RANK,
+     !! is the effective rank of A.
+     !! Then, R22 is considered to be negligible, and R12 is annihilated
+     !! by unitary transformations from the right, arriving at the
+     !! complete orthogonal factorization:
+     !! A * P = Q * [ T11 0 ] * Z
+     !! [  0  0 ]
+     !! The minimum-norm solution is then
+     !! X = P * Z**H [ inv(T11)*Q1**H*B ]
+     !! [        0         ]
+     !! where Q1 consists of the first RANK columns of Q.
+     !! This routine is basically identical to the original xGELSX except
+     !! three differences:
+     !! o The permutation of matrix B (the right hand side) is faster and
+     !! more simple.
+     !! o The call to the subroutine xGEQPF has been substituted by the
+     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
+     !! version of the QR factorization with column pivoting.
+     !! o Matrix B (the right hand side) is updated with Blas-3.
+               info )
+        ! -- lapack driver routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(out) :: info, rank
+           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
+           real(${ck}$), intent(in) :: rcond
+           ! Array Arguments 
+           integer(ilp), intent(inout) :: jpvt(*)
+           real(${ck}$), intent(out) :: rwork(*)
+           complex(${ck}$), intent(inout) :: a(lda,*), b(ldb,*)
+           complex(${ck}$), intent(out) :: work(*)
+        ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: imax = 1
+           integer(ilp), parameter :: imin = 2
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: lquery
+           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkopt, mn, nb, nb1, nb2, nb3, &
+                     nb4
+           real(${ck}$) :: anrm, bignum, bnrm, smax, smaxpr, smin, sminpr, smlnum, wsize
+           complex(${ck}$) :: c1, c2, s1, s2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           mn = min( m, n )
+           ismin = mn + 1
+           ismax = 2*mn + 1
+           ! test the input arguments.
+           info = 0
+           nb1 = stdlib_ilaenv( 1, 'ZGEQRF', ' ', m, n, -1, -1 )
+           nb2 = stdlib_ilaenv( 1, 'ZGERQF', ' ', m, n, -1, -1 )
+           nb3 = stdlib_ilaenv( 1, 'ZUNMQR', ' ', m, n, nrhs, -1 )
+           nb4 = stdlib_ilaenv( 1, 'ZUNMRQ', ' ', m, n, nrhs, -1 )
+           nb = max( nb1, nb2, nb3, nb4 )
+           lwkopt = max( 1, mn+2*n+nb*( n+1 ), 2*mn+nb*nrhs )
+           work( 1 ) = cmplx( lwkopt,KIND=${ck}$)
+           lquery = ( lwork==-1 )
+           if( m<0 ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( nrhs<0 ) then
+              info = -3
+           else if( lda<max( 1, m ) ) then
+              info = -5
+           else if( ldb<max( 1, m, n ) ) then
+              info = -7
+           else if( lwork<( mn+max( 2*mn, n+1, mn+nrhs ) ) .and. .not.lquery ) then
+              info = -12
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGELSY', -info )
+              return
+           else if( lquery ) then
+              return
+           end if
+           ! quick return if possible
+           if( min( m, n, nrhs )==0 ) then
+              rank = 0
+              return
+           end if
+           ! get machine parameters
+           smlnum = stdlib_${c2ri(ci)}$lamch( 'S' ) / stdlib_${c2ri(ci)}$lamch( 'P' )
+           bignum = one / smlnum
+           call stdlib_${c2ri(ci)}$labad( smlnum, bignum )
+           ! scale a, b if max entries outside range [smlnum,bignum]
+           anrm = stdlib_${ci}$lange( 'M', m, n, a, lda, rwork )
+           iascl = 0
+           if( anrm>zero .and. anrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
+              iascl = 1
+           else if( anrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
+              iascl = 2
+           else if( anrm==zero ) then
+              ! matrix all zero. return zero solution.
+              call stdlib_${ci}$laset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
+              rank = 0
+              go to 70
+           end if
+           bnrm = stdlib_${ci}$lange( 'M', m, nrhs, b, ldb, rwork )
+           ibscl = 0
+           if( bnrm>zero .and. bnrm<smlnum ) then
+              ! scale matrix norm up to smlnum
+              call stdlib_${ci}$lascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
+              ibscl = 1
+           else if( bnrm>bignum ) then
+              ! scale matrix norm down to bignum
+              call stdlib_${ci}$lascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
+              ibscl = 2
+           end if
+           ! compute qr factorization with column pivoting of a:
+              ! a * p = q * r
+           call stdlib_${ci}$geqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, rwork, info )
+                     
+           wsize = mn + real( work( mn+1 ),KIND=${ck}$)
+           ! complex workspace: mn+nb*(n+1). real workspace 2*n.
+           ! details of householder rotations stored in work(1:mn).
+           ! determine rank using incremental condition estimation
+           work( ismin ) = cone
+           work( ismax ) = cone
+           smax = abs( a( 1, 1 ) )
+           smin = smax
+           if( abs( a( 1, 1 ) )==zero ) then
+              rank = 0
+              call stdlib_${ci}$laset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
+              go to 70
+           else
+              rank = 1
+           end if
+           10 continue
+           if( rank<mn ) then
+              i = rank + 1
+              call stdlib_${ci}$laic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
+                        s1, c1 )
+              call stdlib_${ci}$laic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
+                        s2, c2 )
+              if( smaxpr*rcond<=sminpr ) then
+                 do i = 1, rank
+                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
+                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
+                 end do
+                 work( ismin+rank ) = c1
+                 work( ismax+rank ) = c2
+                 smin = sminpr
+                 smax = smaxpr
+                 rank = rank + 1
+                 go to 10
+              end if
+           end if
+           ! complex workspace: 3*mn.
+           ! logically partition r = [ r11 r12 ]
+                                   ! [  0  r22 ]
+           ! where r11 = r(1:rank,1:rank)
+           ! [r11,r12] = [ t11, 0 ] * y
+           if( rank<n )call stdlib_${ci}$tzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
+                     2*mn, info )
+           ! complex workspace: 2*mn.
+           ! details of householder rotations stored in work(mn+1:2*mn)
+           ! b(1:m,1:nrhs) := q**h * b(1:m,1:nrhs)
+           call stdlib_${ci}$unmqr( 'LEFT', 'CONJUGATE TRANSPOSE', m, nrhs, mn, a, lda,work( 1 ), b, &
+                     ldb, work( 2*mn+1 ), lwork-2*mn, info )
+           wsize = max( wsize, 2*mn+real( work( 2*mn+1 ),KIND=${ck}$) )
+           ! complex workspace: 2*mn+nb*nrhs.
+           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
+           call stdlib_${ci}$trsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, cone, a, &
+                     lda, b, ldb )
+           do j = 1, nrhs
+              do i = rank + 1, n
+                 b( i, j ) = czero
+              end do
+           end do
+           ! b(1:n,1:nrhs) := y**h * b(1:n,1:nrhs)
+           if( rank<n ) then
+              call stdlib_${ci}$unmrz( 'LEFT', 'CONJUGATE TRANSPOSE', n, nrhs, rank,n-rank, a, lda, &
+                        work( mn+1 ), b, ldb,work( 2*mn+1 ), lwork-2*mn, info )
+           end if
+           ! complex workspace: 2*mn+nrhs.
+           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
+           do j = 1, nrhs
+              do i = 1, n
+                 work( jpvt( i ) ) = b( i, j )
+              end do
+              call stdlib_${ci}$copy( n, work( 1 ), 1, b( 1, j ), 1 )
+           end do
+           ! complex workspace: n.
+           ! undo scaling
+           if( iascl==1 ) then
+              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
+              call stdlib_${ci}$lascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
+           else if( iascl==2 ) then
+              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
+              call stdlib_${ci}$lascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
+           end if
+           if( ibscl==1 ) then
+              call stdlib_${ci}$lascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
+           else if( ibscl==2 ) then
+              call stdlib_${ci}$lascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
+           end if
+           70 continue
+           work( 1 ) = cmplx( lwkopt,KIND=${ck}$)
+           return
+     end subroutine stdlib_${ci}$gelsy
+
+#:endif
+#:endfor
+
+
+
+     module subroutine stdlib_sgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, info )
      !! SGELSS computes the minimum norm solution to a real linear least
      !! squares problem:
      !! Minimize 2-norm(| b - A*x |).
@@ -453,7 +1823,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_sgelss
 
-     subroutine stdlib_dgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, info )
+     module subroutine stdlib_dgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, info )
      !! DGELSS computes the minimum norm solution to a real linear least
      !! squares problem:
      !! Minimize 2-norm(| b - A*x |).
@@ -896,7 +2266,7 @@ module stdlib_lapack_lsq
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     subroutine stdlib_${ri}$gelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, info )
+     module subroutine stdlib_${ri}$gelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, info )
      !! DGELSS: computes the minimum norm solution to a real linear least
      !! squares problem:
      !! Minimize 2-norm(| b - A*x |).
@@ -1340,7 +2710,7 @@ module stdlib_lapack_lsq
 #:endif
 #:endfor
 
-     subroutine stdlib_cgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
+     module subroutine stdlib_cgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
      !! CGELSS computes the minimum norm solution to a complex linear
      !! least squares problem:
      !! Minimize 2-norm(| b - A*x |).
@@ -1797,7 +3167,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_cgelss
 
-     subroutine stdlib_zgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
+     module subroutine stdlib_zgelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
      !! ZGELSS computes the minimum norm solution to a complex linear
      !! least squares problem:
      !! Minimize 2-norm(| b - A*x |).
@@ -2256,7 +3626,7 @@ module stdlib_lapack_lsq
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     subroutine stdlib_${ci}$gelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
+     module subroutine stdlib_${ci}$gelss( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
      !! ZGELSS: computes the minimum norm solution to a complex linear
      !! least squares problem:
      !! Minimize 2-norm(| b - A*x |).
@@ -2718,1389 +4088,7 @@ module stdlib_lapack_lsq
 
 
 
-     subroutine stdlib_sgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, info )
-     !! SGELSY computes the minimum-norm solution to a real linear least
-     !! squares problem:
-     !! minimize || A * X - B ||
-     !! using a complete orthogonal factorization of A.  A is an M-by-N
-     !! matrix which may be rank-deficient.
-     !! Several right hand side vectors b and solution vectors x can be
-     !! handled in a single call; they are stored as the columns of the
-     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
-     !! matrix X.
-     !! The routine first computes a QR factorization with column pivoting:
-     !! A * P = Q * [ R11 R12 ]
-     !! [  0  R22 ]
-     !! with R11 defined as the largest leading submatrix whose estimated
-     !! condition number is less than 1/RCOND.  The order of R11, RANK,
-     !! is the effective rank of A.
-     !! Then, R22 is considered to be negligible, and R12 is annihilated
-     !! by orthogonal transformations from the right, arriving at the
-     !! complete orthogonal factorization:
-     !! A * P = Q * [ T11 0 ] * Z
-     !! [  0  0 ]
-     !! The minimum-norm solution is then
-     !! X = P * Z**T [ inv(T11)*Q1**T*B ]
-     !! [        0         ]
-     !! where Q1 consists of the first RANK columns of Q.
-     !! This routine is basically identical to the original xGELSX except
-     !! three differences:
-     !! o The call to the subroutine xGEQPF has been substituted by the
-     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
-     !! version of the QR factorization with column pivoting.
-     !! o Matrix B (the right hand side) is updated with Blas-3.
-     !! o The permutation of matrix B (the right hand side) is faster and
-     !! more simple.
-               
-        ! -- lapack driver routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info, rank
-           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
-           real(sp), intent(in) :: rcond
-           ! Array Arguments 
-           integer(ilp), intent(inout) :: jpvt(*)
-           real(sp), intent(inout) :: a(lda,*), b(ldb,*)
-           real(sp), intent(out) :: work(*)
-        ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: imax = 1
-           integer(ilp), parameter :: imin = 2
-           
-           
-           ! Local Scalars 
-           logical(lk) :: lquery
-           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkmin, lwkopt, mn, nb, nb1, nb2, &
-                     nb3, nb4
-           real(sp) :: anrm, bignum, bnrm, c1, c2, s1, s2, smax, smaxpr, smin, sminpr, smlnum, &
-                     wsize
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           mn = min( m, n )
-           ismin = mn + 1
-           ismax = 2*mn + 1
-           ! test the input arguments.
-           info = 0
-           lquery = ( lwork==-1 )
-           if( m<0 ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( nrhs<0 ) then
-              info = -3
-           else if( lda<max( 1, m ) ) then
-              info = -5
-           else if( ldb<max( 1, m, n ) ) then
-              info = -7
-           end if
-           ! figure out optimal block size
-           if( info==0 ) then
-              if( mn==0 .or. nrhs==0 ) then
-                 lwkmin = 1
-                 lwkopt = 1
-              else
-                 nb1 = stdlib_ilaenv( 1, 'SGEQRF', ' ', m, n, -1, -1 )
-                 nb2 = stdlib_ilaenv( 1, 'SGERQF', ' ', m, n, -1, -1 )
-                 nb3 = stdlib_ilaenv( 1, 'SORMQR', ' ', m, n, nrhs, -1 )
-                 nb4 = stdlib_ilaenv( 1, 'SORMRQ', ' ', m, n, nrhs, -1 )
-                 nb = max( nb1, nb2, nb3, nb4 )
-                 lwkmin = mn + max( 2*mn, n + 1, mn + nrhs )
-                 lwkopt = max( lwkmin,mn + 2*n + nb*( n + 1 ), 2*mn + nb*nrhs )
-              end if
-              work( 1 ) = lwkopt
-              if( lwork<lwkmin .and. .not.lquery ) then
-                 info = -12
-              end if
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'SGELSY', -info )
-              return
-           else if( lquery ) then
-              return
-           end if
-           ! quick return if possible
-           if( mn==0 .or. nrhs==0 ) then
-              rank = 0
-              return
-           end if
-           ! get machine parameters
-           smlnum = stdlib_slamch( 'S' ) / stdlib_slamch( 'P' )
-           bignum = one / smlnum
-           call stdlib_slabad( smlnum, bignum )
-           ! scale a, b if max entries outside range [smlnum,bignum]
-           anrm = stdlib_slange( 'M', m, n, a, lda, work )
-           iascl = 0
-           if( anrm>zero .and. anrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_slascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
-              iascl = 1
-           else if( anrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_slascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
-              iascl = 2
-           else if( anrm==zero ) then
-              ! matrix all zero. return zero solution.
-              call stdlib_slaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
-              rank = 0
-              go to 70
-           end if
-           bnrm = stdlib_slange( 'M', m, nrhs, b, ldb, work )
-           ibscl = 0
-           if( bnrm>zero .and. bnrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_slascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
-              ibscl = 1
-           else if( bnrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_slascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
-              ibscl = 2
-           end if
-           ! compute qr factorization with column pivoting of a:
-              ! a * p = q * r
-           call stdlib_sgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, info )
-                     
-           wsize = mn + work( mn+1 )
-           ! workspace: mn+2*n+nb*(n+1).
-           ! details of householder rotations stored in work(1:mn).
-           ! determine rank using incremental condition estimation
-           work( ismin ) = one
-           work( ismax ) = one
-           smax = abs( a( 1, 1 ) )
-           smin = smax
-           if( abs( a( 1, 1 ) )==zero ) then
-              rank = 0
-              call stdlib_slaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
-              go to 70
-           else
-              rank = 1
-           end if
-           10 continue
-           if( rank<mn ) then
-              i = rank + 1
-              call stdlib_slaic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
-                        s1, c1 )
-              call stdlib_slaic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
-                        s2, c2 )
-              if( smaxpr*rcond<=sminpr ) then
-                 do i = 1, rank
-                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
-                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
-                 end do
-                 work( ismin+rank ) = c1
-                 work( ismax+rank ) = c2
-                 smin = sminpr
-                 smax = smaxpr
-                 rank = rank + 1
-                 go to 10
-              end if
-           end if
-           ! workspace: 3*mn.
-           ! logically partition r = [ r11 r12 ]
-                                   ! [  0  r22 ]
-           ! where r11 = r(1:rank,1:rank)
-           ! [r11,r12] = [ t11, 0 ] * y
-           if( rank<n )call stdlib_stzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
-                     2*mn, info )
-           ! workspace: 2*mn.
-           ! details of householder rotations stored in work(mn+1:2*mn)
-           ! b(1:m,1:nrhs) := q**t * b(1:m,1:nrhs)
-           call stdlib_sormqr( 'LEFT', 'TRANSPOSE', m, nrhs, mn, a, lda, work( 1 ),b, ldb, work( &
-                     2*mn+1 ), lwork-2*mn, info )
-           wsize = max( wsize, 2*mn+work( 2*mn+1 ) )
-           ! workspace: 2*mn+nb*nrhs.
-           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
-           call stdlib_strsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, one, a, lda,&
-                      b, ldb )
-           do j = 1, nrhs
-              do i = rank + 1, n
-                 b( i, j ) = zero
-              end do
-           end do
-           ! b(1:n,1:nrhs) := y**t * b(1:n,1:nrhs)
-           if( rank<n ) then
-              call stdlib_sormrz( 'LEFT', 'TRANSPOSE', n, nrhs, rank, n-rank, a,lda, work( mn+1 ),&
-                         b, ldb, work( 2*mn+1 ),lwork-2*mn, info )
-           end if
-           ! workspace: 2*mn+nrhs.
-           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
-           do j = 1, nrhs
-              do i = 1, n
-                 work( jpvt( i ) ) = b( i, j )
-              end do
-              call stdlib_scopy( n, work( 1 ), 1, b( 1, j ), 1 )
-           end do
-           ! workspace: n.
-           ! undo scaling
-           if( iascl==1 ) then
-              call stdlib_slascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
-              call stdlib_slascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
-           else if( iascl==2 ) then
-              call stdlib_slascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
-              call stdlib_slascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
-           end if
-           if( ibscl==1 ) then
-              call stdlib_slascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
-           else if( ibscl==2 ) then
-              call stdlib_slascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
-           end if
-           70 continue
-           work( 1 ) = lwkopt
-           return
-     end subroutine stdlib_sgelsy
-
-     subroutine stdlib_dgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, info )
-     !! DGELSY computes the minimum-norm solution to a real linear least
-     !! squares problem:
-     !! minimize || A * X - B ||
-     !! using a complete orthogonal factorization of A.  A is an M-by-N
-     !! matrix which may be rank-deficient.
-     !! Several right hand side vectors b and solution vectors x can be
-     !! handled in a single call; they are stored as the columns of the
-     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
-     !! matrix X.
-     !! The routine first computes a QR factorization with column pivoting:
-     !! A * P = Q * [ R11 R12 ]
-     !! [  0  R22 ]
-     !! with R11 defined as the largest leading submatrix whose estimated
-     !! condition number is less than 1/RCOND.  The order of R11, RANK,
-     !! is the effective rank of A.
-     !! Then, R22 is considered to be negligible, and R12 is annihilated
-     !! by orthogonal transformations from the right, arriving at the
-     !! complete orthogonal factorization:
-     !! A * P = Q * [ T11 0 ] * Z
-     !! [  0  0 ]
-     !! The minimum-norm solution is then
-     !! X = P * Z**T [ inv(T11)*Q1**T*B ]
-     !! [        0         ]
-     !! where Q1 consists of the first RANK columns of Q.
-     !! This routine is basically identical to the original xGELSX except
-     !! three differences:
-     !! o The call to the subroutine xGEQPF has been substituted by the
-     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
-     !! version of the QR factorization with column pivoting.
-     !! o Matrix B (the right hand side) is updated with Blas-3.
-     !! o The permutation of matrix B (the right hand side) is faster and
-     !! more simple.
-               
-        ! -- lapack driver routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info, rank
-           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
-           real(dp), intent(in) :: rcond
-           ! Array Arguments 
-           integer(ilp), intent(inout) :: jpvt(*)
-           real(dp), intent(inout) :: a(lda,*), b(ldb,*)
-           real(dp), intent(out) :: work(*)
-        ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: imax = 1
-           integer(ilp), parameter :: imin = 2
-           
-           
-           ! Local Scalars 
-           logical(lk) :: lquery
-           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkmin, lwkopt, mn, nb, nb1, nb2, &
-                     nb3, nb4
-           real(dp) :: anrm, bignum, bnrm, c1, c2, s1, s2, smax, smaxpr, smin, sminpr, smlnum, &
-                     wsize
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           mn = min( m, n )
-           ismin = mn + 1
-           ismax = 2*mn + 1
-           ! test the input arguments.
-           info = 0
-           lquery = ( lwork==-1 )
-           if( m<0 ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( nrhs<0 ) then
-              info = -3
-           else if( lda<max( 1, m ) ) then
-              info = -5
-           else if( ldb<max( 1, m, n ) ) then
-              info = -7
-           end if
-           ! figure out optimal block size
-           if( info==0 ) then
-              if( mn==0 .or. nrhs==0 ) then
-                 lwkmin = 1
-                 lwkopt = 1
-              else
-                 nb1 = stdlib_ilaenv( 1, 'DGEQRF', ' ', m, n, -1, -1 )
-                 nb2 = stdlib_ilaenv( 1, 'DGERQF', ' ', m, n, -1, -1 )
-                 nb3 = stdlib_ilaenv( 1, 'DORMQR', ' ', m, n, nrhs, -1 )
-                 nb4 = stdlib_ilaenv( 1, 'DORMRQ', ' ', m, n, nrhs, -1 )
-                 nb = max( nb1, nb2, nb3, nb4 )
-                 lwkmin = mn + max( 2*mn, n + 1, mn + nrhs )
-                 lwkopt = max( lwkmin,mn + 2*n + nb*( n + 1 ), 2*mn + nb*nrhs )
-              end if
-              work( 1 ) = lwkopt
-              if( lwork<lwkmin .and. .not.lquery ) then
-                 info = -12
-              end if
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DGELSY', -info )
-              return
-           else if( lquery ) then
-              return
-           end if
-           ! quick return if possible
-           if( mn==0 .or. nrhs==0 ) then
-              rank = 0
-              return
-           end if
-           ! get machine parameters
-           smlnum = stdlib_dlamch( 'S' ) / stdlib_dlamch( 'P' )
-           bignum = one / smlnum
-           call stdlib_dlabad( smlnum, bignum )
-           ! scale a, b if max entries outside range [smlnum,bignum]
-           anrm = stdlib_dlange( 'M', m, n, a, lda, work )
-           iascl = 0
-           if( anrm>zero .and. anrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_dlascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
-              iascl = 1
-           else if( anrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_dlascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
-              iascl = 2
-           else if( anrm==zero ) then
-              ! matrix all zero. return zero solution.
-              call stdlib_dlaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
-              rank = 0
-              go to 70
-           end if
-           bnrm = stdlib_dlange( 'M', m, nrhs, b, ldb, work )
-           ibscl = 0
-           if( bnrm>zero .and. bnrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_dlascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
-              ibscl = 1
-           else if( bnrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_dlascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
-              ibscl = 2
-           end if
-           ! compute qr factorization with column pivoting of a:
-              ! a * p = q * r
-           call stdlib_dgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, info )
-                     
-           wsize = mn + work( mn+1 )
-           ! workspace: mn+2*n+nb*(n+1).
-           ! details of householder rotations stored in work(1:mn).
-           ! determine rank using incremental condition estimation
-           work( ismin ) = one
-           work( ismax ) = one
-           smax = abs( a( 1, 1 ) )
-           smin = smax
-           if( abs( a( 1, 1 ) )==zero ) then
-              rank = 0
-              call stdlib_dlaset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
-              go to 70
-           else
-              rank = 1
-           end if
-           10 continue
-           if( rank<mn ) then
-              i = rank + 1
-              call stdlib_dlaic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
-                        s1, c1 )
-              call stdlib_dlaic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
-                        s2, c2 )
-              if( smaxpr*rcond<=sminpr ) then
-                 do i = 1, rank
-                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
-                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
-                 end do
-                 work( ismin+rank ) = c1
-                 work( ismax+rank ) = c2
-                 smin = sminpr
-                 smax = smaxpr
-                 rank = rank + 1
-                 go to 10
-              end if
-           end if
-           ! workspace: 3*mn.
-           ! logically partition r = [ r11 r12 ]
-                                   ! [  0  r22 ]
-           ! where r11 = r(1:rank,1:rank)
-           ! [r11,r12] = [ t11, 0 ] * y
-           if( rank<n )call stdlib_dtzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
-                     2*mn, info )
-           ! workspace: 2*mn.
-           ! details of householder rotations stored in work(mn+1:2*mn)
-           ! b(1:m,1:nrhs) := q**t * b(1:m,1:nrhs)
-           call stdlib_dormqr( 'LEFT', 'TRANSPOSE', m, nrhs, mn, a, lda, work( 1 ),b, ldb, work( &
-                     2*mn+1 ), lwork-2*mn, info )
-           wsize = max( wsize, 2*mn+work( 2*mn+1 ) )
-           ! workspace: 2*mn+nb*nrhs.
-           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
-           call stdlib_dtrsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, one, a, lda,&
-                      b, ldb )
-           do j = 1, nrhs
-              do i = rank + 1, n
-                 b( i, j ) = zero
-              end do
-           end do
-           ! b(1:n,1:nrhs) := y**t * b(1:n,1:nrhs)
-           if( rank<n ) then
-              call stdlib_dormrz( 'LEFT', 'TRANSPOSE', n, nrhs, rank, n-rank, a,lda, work( mn+1 ),&
-                         b, ldb, work( 2*mn+1 ),lwork-2*mn, info )
-           end if
-           ! workspace: 2*mn+nrhs.
-           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
-           do j = 1, nrhs
-              do i = 1, n
-                 work( jpvt( i ) ) = b( i, j )
-              end do
-              call stdlib_dcopy( n, work( 1 ), 1, b( 1, j ), 1 )
-           end do
-           ! workspace: n.
-           ! undo scaling
-           if( iascl==1 ) then
-              call stdlib_dlascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
-              call stdlib_dlascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
-           else if( iascl==2 ) then
-              call stdlib_dlascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
-              call stdlib_dlascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
-           end if
-           if( ibscl==1 ) then
-              call stdlib_dlascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
-           else if( ibscl==2 ) then
-              call stdlib_dlascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
-           end if
-           70 continue
-           work( 1 ) = lwkopt
-           return
-     end subroutine stdlib_dgelsy
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     subroutine stdlib_${ri}$gelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, info )
-     !! DGELSY: computes the minimum-norm solution to a real linear least
-     !! squares problem:
-     !! minimize || A * X - B ||
-     !! using a complete orthogonal factorization of A.  A is an M-by-N
-     !! matrix which may be rank-deficient.
-     !! Several right hand side vectors b and solution vectors x can be
-     !! handled in a single call; they are stored as the columns of the
-     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
-     !! matrix X.
-     !! The routine first computes a QR factorization with column pivoting:
-     !! A * P = Q * [ R11 R12 ]
-     !! [  0  R22 ]
-     !! with R11 defined as the largest leading submatrix whose estimated
-     !! condition number is less than 1/RCOND.  The order of R11, RANK,
-     !! is the effective rank of A.
-     !! Then, R22 is considered to be negligible, and R12 is annihilated
-     !! by orthogonal transformations from the right, arriving at the
-     !! complete orthogonal factorization:
-     !! A * P = Q * [ T11 0 ] * Z
-     !! [  0  0 ]
-     !! The minimum-norm solution is then
-     !! X = P * Z**T [ inv(T11)*Q1**T*B ]
-     !! [        0         ]
-     !! where Q1 consists of the first RANK columns of Q.
-     !! This routine is basically identical to the original xGELSX except
-     !! three differences:
-     !! o The call to the subroutine xGEQPF has been substituted by the
-     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
-     !! version of the QR factorization with column pivoting.
-     !! o Matrix B (the right hand side) is updated with Blas-3.
-     !! o The permutation of matrix B (the right hand side) is faster and
-     !! more simple.
-               
-        ! -- lapack driver routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info, rank
-           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
-           real(${rk}$), intent(in) :: rcond
-           ! Array Arguments 
-           integer(ilp), intent(inout) :: jpvt(*)
-           real(${rk}$), intent(inout) :: a(lda,*), b(ldb,*)
-           real(${rk}$), intent(out) :: work(*)
-        ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: imax = 1
-           integer(ilp), parameter :: imin = 2
-           
-           
-           ! Local Scalars 
-           logical(lk) :: lquery
-           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkmin, lwkopt, mn, nb, nb1, nb2, &
-                     nb3, nb4
-           real(${rk}$) :: anrm, bignum, bnrm, c1, c2, s1, s2, smax, smaxpr, smin, sminpr, smlnum, &
-                     wsize
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           mn = min( m, n )
-           ismin = mn + 1
-           ismax = 2*mn + 1
-           ! test the input arguments.
-           info = 0
-           lquery = ( lwork==-1 )
-           if( m<0 ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( nrhs<0 ) then
-              info = -3
-           else if( lda<max( 1, m ) ) then
-              info = -5
-           else if( ldb<max( 1, m, n ) ) then
-              info = -7
-           end if
-           ! figure out optimal block size
-           if( info==0 ) then
-              if( mn==0 .or. nrhs==0 ) then
-                 lwkmin = 1
-                 lwkopt = 1
-              else
-                 nb1 = stdlib_ilaenv( 1, 'DGEQRF', ' ', m, n, -1, -1 )
-                 nb2 = stdlib_ilaenv( 1, 'DGERQF', ' ', m, n, -1, -1 )
-                 nb3 = stdlib_ilaenv( 1, 'DORMQR', ' ', m, n, nrhs, -1 )
-                 nb4 = stdlib_ilaenv( 1, 'DORMRQ', ' ', m, n, nrhs, -1 )
-                 nb = max( nb1, nb2, nb3, nb4 )
-                 lwkmin = mn + max( 2*mn, n + 1, mn + nrhs )
-                 lwkopt = max( lwkmin,mn + 2*n + nb*( n + 1 ), 2*mn + nb*nrhs )
-              end if
-              work( 1 ) = lwkopt
-              if( lwork<lwkmin .and. .not.lquery ) then
-                 info = -12
-              end if
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DGELSY', -info )
-              return
-           else if( lquery ) then
-              return
-           end if
-           ! quick return if possible
-           if( mn==0 .or. nrhs==0 ) then
-              rank = 0
-              return
-           end if
-           ! get machine parameters
-           smlnum = stdlib_${ri}$lamch( 'S' ) / stdlib_${ri}$lamch( 'P' )
-           bignum = one / smlnum
-           call stdlib_${ri}$labad( smlnum, bignum )
-           ! scale a, b if max entries outside range [smlnum,bignum]
-           anrm = stdlib_${ri}$lange( 'M', m, n, a, lda, work )
-           iascl = 0
-           if( anrm>zero .and. anrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
-              iascl = 1
-           else if( anrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
-              iascl = 2
-           else if( anrm==zero ) then
-              ! matrix all zero. return zero solution.
-              call stdlib_${ri}$laset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
-              rank = 0
-              go to 70
-           end if
-           bnrm = stdlib_${ri}$lange( 'M', m, nrhs, b, ldb, work )
-           ibscl = 0
-           if( bnrm>zero .and. bnrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_${ri}$lascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
-              ibscl = 1
-           else if( bnrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_${ri}$lascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
-              ibscl = 2
-           end if
-           ! compute qr factorization with column pivoting of a:
-              ! a * p = q * r
-           call stdlib_${ri}$geqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, info )
-                     
-           wsize = mn + work( mn+1 )
-           ! workspace: mn+2*n+nb*(n+1).
-           ! details of householder rotations stored in work(1:mn).
-           ! determine rank using incremental condition estimation
-           work( ismin ) = one
-           work( ismax ) = one
-           smax = abs( a( 1, 1 ) )
-           smin = smax
-           if( abs( a( 1, 1 ) )==zero ) then
-              rank = 0
-              call stdlib_${ri}$laset( 'F', max( m, n ), nrhs, zero, zero, b, ldb )
-              go to 70
-           else
-              rank = 1
-           end if
-           10 continue
-           if( rank<mn ) then
-              i = rank + 1
-              call stdlib_${ri}$laic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
-                        s1, c1 )
-              call stdlib_${ri}$laic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
-                        s2, c2 )
-              if( smaxpr*rcond<=sminpr ) then
-                 do i = 1, rank
-                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
-                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
-                 end do
-                 work( ismin+rank ) = c1
-                 work( ismax+rank ) = c2
-                 smin = sminpr
-                 smax = smaxpr
-                 rank = rank + 1
-                 go to 10
-              end if
-           end if
-           ! workspace: 3*mn.
-           ! logically partition r = [ r11 r12 ]
-                                   ! [  0  r22 ]
-           ! where r11 = r(1:rank,1:rank)
-           ! [r11,r12] = [ t11, 0 ] * y
-           if( rank<n )call stdlib_${ri}$tzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
-                     2*mn, info )
-           ! workspace: 2*mn.
-           ! details of householder rotations stored in work(mn+1:2*mn)
-           ! b(1:m,1:nrhs) := q**t * b(1:m,1:nrhs)
-           call stdlib_${ri}$ormqr( 'LEFT', 'TRANSPOSE', m, nrhs, mn, a, lda, work( 1 ),b, ldb, work( &
-                     2*mn+1 ), lwork-2*mn, info )
-           wsize = max( wsize, 2*mn+work( 2*mn+1 ) )
-           ! workspace: 2*mn+nb*nrhs.
-           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
-           call stdlib_${ri}$trsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, one, a, lda,&
-                      b, ldb )
-           do j = 1, nrhs
-              do i = rank + 1, n
-                 b( i, j ) = zero
-              end do
-           end do
-           ! b(1:n,1:nrhs) := y**t * b(1:n,1:nrhs)
-           if( rank<n ) then
-              call stdlib_${ri}$ormrz( 'LEFT', 'TRANSPOSE', n, nrhs, rank, n-rank, a,lda, work( mn+1 ),&
-                         b, ldb, work( 2*mn+1 ),lwork-2*mn, info )
-           end if
-           ! workspace: 2*mn+nrhs.
-           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
-           do j = 1, nrhs
-              do i = 1, n
-                 work( jpvt( i ) ) = b( i, j )
-              end do
-              call stdlib_${ri}$copy( n, work( 1 ), 1, b( 1, j ), 1 )
-           end do
-           ! workspace: n.
-           ! undo scaling
-           if( iascl==1 ) then
-              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
-              call stdlib_${ri}$lascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
-           else if( iascl==2 ) then
-              call stdlib_${ri}$lascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
-              call stdlib_${ri}$lascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
-           end if
-           if( ibscl==1 ) then
-              call stdlib_${ri}$lascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
-           else if( ibscl==2 ) then
-              call stdlib_${ri}$lascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
-           end if
-           70 continue
-           work( 1 ) = lwkopt
-           return
-     end subroutine stdlib_${ri}$gelsy
-
-#:endif
-#:endfor
-
-     subroutine stdlib_cgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, rwork, &
-     !! CGELSY computes the minimum-norm solution to a complex linear least
-     !! squares problem:
-     !! minimize || A * X - B ||
-     !! using a complete orthogonal factorization of A.  A is an M-by-N
-     !! matrix which may be rank-deficient.
-     !! Several right hand side vectors b and solution vectors x can be
-     !! handled in a single call; they are stored as the columns of the
-     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
-     !! matrix X.
-     !! The routine first computes a QR factorization with column pivoting:
-     !! A * P = Q * [ R11 R12 ]
-     !! [  0  R22 ]
-     !! with R11 defined as the largest leading submatrix whose estimated
-     !! condition number is less than 1/RCOND.  The order of R11, RANK,
-     !! is the effective rank of A.
-     !! Then, R22 is considered to be negligible, and R12 is annihilated
-     !! by unitary transformations from the right, arriving at the
-     !! complete orthogonal factorization:
-     !! A * P = Q * [ T11 0 ] * Z
-     !! [  0  0 ]
-     !! The minimum-norm solution is then
-     !! X = P * Z**H [ inv(T11)*Q1**H*B ]
-     !! [        0         ]
-     !! where Q1 consists of the first RANK columns of Q.
-     !! This routine is basically identical to the original xGELSX except
-     !! three differences:
-     !! o The permutation of matrix B (the right hand side) is faster and
-     !! more simple.
-     !! o The call to the subroutine xGEQPF has been substituted by the
-     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
-     !! version of the QR factorization with column pivoting.
-     !! o Matrix B (the right hand side) is updated with Blas-3.
-               info )
-        ! -- lapack driver routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info, rank
-           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
-           real(sp), intent(in) :: rcond
-           ! Array Arguments 
-           integer(ilp), intent(inout) :: jpvt(*)
-           real(sp), intent(out) :: rwork(*)
-           complex(sp), intent(inout) :: a(lda,*), b(ldb,*)
-           complex(sp), intent(out) :: work(*)
-        ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: imax = 1
-           integer(ilp), parameter :: imin = 2
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: lquery
-           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkopt, mn, nb, nb1, nb2, nb3, &
-                     nb4
-           real(sp) :: anrm, bignum, bnrm, smax, smaxpr, smin, sminpr, smlnum, wsize
-           complex(sp) :: c1, c2, s1, s2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           mn = min( m, n )
-           ismin = mn + 1
-           ismax = 2*mn + 1
-           ! test the input arguments.
-           info = 0
-           nb1 = stdlib_ilaenv( 1, 'CGEQRF', ' ', m, n, -1, -1 )
-           nb2 = stdlib_ilaenv( 1, 'CGERQF', ' ', m, n, -1, -1 )
-           nb3 = stdlib_ilaenv( 1, 'CUNMQR', ' ', m, n, nrhs, -1 )
-           nb4 = stdlib_ilaenv( 1, 'CUNMRQ', ' ', m, n, nrhs, -1 )
-           nb = max( nb1, nb2, nb3, nb4 )
-           lwkopt = max( 1, mn+2*n+nb*(n+1), 2*mn+nb*nrhs )
-           work( 1 ) = cmplx( lwkopt,KIND=sp)
-           lquery = ( lwork==-1 )
-           if( m<0 ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( nrhs<0 ) then
-              info = -3
-           else if( lda<max( 1, m ) ) then
-              info = -5
-           else if( ldb<max( 1, m, n ) ) then
-              info = -7
-           else if( lwork<( mn+max( 2*mn, n+1, mn+nrhs ) ) .and..not.lquery ) then
-              info = -12
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'CGELSY', -info )
-              return
-           else if( lquery ) then
-              return
-           end if
-           ! quick return if possible
-           if( min( m, n, nrhs )==0 ) then
-              rank = 0
-              return
-           end if
-           ! get machine parameters
-           smlnum = stdlib_slamch( 'S' ) / stdlib_slamch( 'P' )
-           bignum = one / smlnum
-           call stdlib_slabad( smlnum, bignum )
-           ! scale a, b if max entries outside range [smlnum,bignum]
-           anrm = stdlib_clange( 'M', m, n, a, lda, rwork )
-           iascl = 0
-           if( anrm>zero .and. anrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_clascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
-              iascl = 1
-           else if( anrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_clascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
-              iascl = 2
-           else if( anrm==zero ) then
-              ! matrix all zero. return zero solution.
-              call stdlib_claset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
-              rank = 0
-              go to 70
-           end if
-           bnrm = stdlib_clange( 'M', m, nrhs, b, ldb, rwork )
-           ibscl = 0
-           if( bnrm>zero .and. bnrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_clascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
-              ibscl = 1
-           else if( bnrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_clascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
-              ibscl = 2
-           end if
-           ! compute qr factorization with column pivoting of a:
-              ! a * p = q * r
-           call stdlib_cgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, rwork, info )
-                     
-           wsize = mn + real( work( mn+1 ),KIND=sp)
-           ! complex workspace: mn+nb*(n+1). real workspace 2*n.
-           ! details of householder rotations stored in work(1:mn).
-           ! determine rank using incremental condition estimation
-           work( ismin ) = cone
-           work( ismax ) = cone
-           smax = abs( a( 1, 1 ) )
-           smin = smax
-           if( abs( a( 1, 1 ) )==zero ) then
-              rank = 0
-              call stdlib_claset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
-              go to 70
-           else
-              rank = 1
-           end if
-           10 continue
-           if( rank<mn ) then
-              i = rank + 1
-              call stdlib_claic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
-                        s1, c1 )
-              call stdlib_claic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
-                        s2, c2 )
-              if( smaxpr*rcond<=sminpr ) then
-                 do i = 1, rank
-                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
-                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
-                 end do
-                 work( ismin+rank ) = c1
-                 work( ismax+rank ) = c2
-                 smin = sminpr
-                 smax = smaxpr
-                 rank = rank + 1
-                 go to 10
-              end if
-           end if
-           ! complex workspace: 3*mn.
-           ! logically partition r = [ r11 r12 ]
-                                   ! [  0  r22 ]
-           ! where r11 = r(1:rank,1:rank)
-           ! [r11,r12] = [ t11, 0 ] * y
-           if( rank<n )call stdlib_ctzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
-                     2*mn, info )
-           ! complex workspace: 2*mn.
-           ! details of householder rotations stored in work(mn+1:2*mn)
-           ! b(1:m,1:nrhs) := q**h * b(1:m,1:nrhs)
-           call stdlib_cunmqr( 'LEFT', 'CONJUGATE TRANSPOSE', m, nrhs, mn, a, lda,work( 1 ), b, &
-                     ldb, work( 2*mn+1 ), lwork-2*mn, info )
-           wsize = max( wsize, 2*mn+real( work( 2*mn+1 ),KIND=sp) )
-           ! complex workspace: 2*mn+nb*nrhs.
-           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
-           call stdlib_ctrsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, cone, a, &
-                     lda, b, ldb )
-           do j = 1, nrhs
-              do i = rank + 1, n
-                 b( i, j ) = czero
-              end do
-           end do
-           ! b(1:n,1:nrhs) := y**h * b(1:n,1:nrhs)
-           if( rank<n ) then
-              call stdlib_cunmrz( 'LEFT', 'CONJUGATE TRANSPOSE', n, nrhs, rank,n-rank, a, lda, &
-                        work( mn+1 ), b, ldb,work( 2*mn+1 ), lwork-2*mn, info )
-           end if
-           ! complex workspace: 2*mn+nrhs.
-           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
-           do j = 1, nrhs
-              do i = 1, n
-                 work( jpvt( i ) ) = b( i, j )
-              end do
-              call stdlib_ccopy( n, work( 1 ), 1, b( 1, j ), 1 )
-           end do
-           ! complex workspace: n.
-           ! undo scaling
-           if( iascl==1 ) then
-              call stdlib_clascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
-              call stdlib_clascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
-           else if( iascl==2 ) then
-              call stdlib_clascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
-              call stdlib_clascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
-           end if
-           if( ibscl==1 ) then
-              call stdlib_clascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
-           else if( ibscl==2 ) then
-              call stdlib_clascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
-           end if
-           70 continue
-           work( 1 ) = cmplx( lwkopt,KIND=sp)
-           return
-     end subroutine stdlib_cgelsy
-
-     subroutine stdlib_zgelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, rwork, &
-     !! ZGELSY computes the minimum-norm solution to a complex linear least
-     !! squares problem:
-     !! minimize || A * X - B ||
-     !! using a complete orthogonal factorization of A.  A is an M-by-N
-     !! matrix which may be rank-deficient.
-     !! Several right hand side vectors b and solution vectors x can be
-     !! handled in a single call; they are stored as the columns of the
-     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
-     !! matrix X.
-     !! The routine first computes a QR factorization with column pivoting:
-     !! A * P = Q * [ R11 R12 ]
-     !! [  0  R22 ]
-     !! with R11 defined as the largest leading submatrix whose estimated
-     !! condition number is less than 1/RCOND.  The order of R11, RANK,
-     !! is the effective rank of A.
-     !! Then, R22 is considered to be negligible, and R12 is annihilated
-     !! by unitary transformations from the right, arriving at the
-     !! complete orthogonal factorization:
-     !! A * P = Q * [ T11 0 ] * Z
-     !! [  0  0 ]
-     !! The minimum-norm solution is then
-     !! X = P * Z**H [ inv(T11)*Q1**H*B ]
-     !! [        0         ]
-     !! where Q1 consists of the first RANK columns of Q.
-     !! This routine is basically identical to the original xGELSX except
-     !! three differences:
-     !! o The permutation of matrix B (the right hand side) is faster and
-     !! more simple.
-     !! o The call to the subroutine xGEQPF has been substituted by the
-     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
-     !! version of the QR factorization with column pivoting.
-     !! o Matrix B (the right hand side) is updated with Blas-3.
-               info )
-        ! -- lapack driver routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info, rank
-           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
-           real(dp), intent(in) :: rcond
-           ! Array Arguments 
-           integer(ilp), intent(inout) :: jpvt(*)
-           real(dp), intent(out) :: rwork(*)
-           complex(dp), intent(inout) :: a(lda,*), b(ldb,*)
-           complex(dp), intent(out) :: work(*)
-        ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: imax = 1
-           integer(ilp), parameter :: imin = 2
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: lquery
-           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkopt, mn, nb, nb1, nb2, nb3, &
-                     nb4
-           real(dp) :: anrm, bignum, bnrm, smax, smaxpr, smin, sminpr, smlnum, wsize
-           complex(dp) :: c1, c2, s1, s2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           mn = min( m, n )
-           ismin = mn + 1
-           ismax = 2*mn + 1
-           ! test the input arguments.
-           info = 0
-           nb1 = stdlib_ilaenv( 1, 'ZGEQRF', ' ', m, n, -1, -1 )
-           nb2 = stdlib_ilaenv( 1, 'ZGERQF', ' ', m, n, -1, -1 )
-           nb3 = stdlib_ilaenv( 1, 'ZUNMQR', ' ', m, n, nrhs, -1 )
-           nb4 = stdlib_ilaenv( 1, 'ZUNMRQ', ' ', m, n, nrhs, -1 )
-           nb = max( nb1, nb2, nb3, nb4 )
-           lwkopt = max( 1, mn+2*n+nb*( n+1 ), 2*mn+nb*nrhs )
-           work( 1 ) = cmplx( lwkopt,KIND=dp)
-           lquery = ( lwork==-1 )
-           if( m<0 ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( nrhs<0 ) then
-              info = -3
-           else if( lda<max( 1, m ) ) then
-              info = -5
-           else if( ldb<max( 1, m, n ) ) then
-              info = -7
-           else if( lwork<( mn+max( 2*mn, n+1, mn+nrhs ) ) .and. .not.lquery ) then
-              info = -12
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZGELSY', -info )
-              return
-           else if( lquery ) then
-              return
-           end if
-           ! quick return if possible
-           if( min( m, n, nrhs )==0 ) then
-              rank = 0
-              return
-           end if
-           ! get machine parameters
-           smlnum = stdlib_dlamch( 'S' ) / stdlib_dlamch( 'P' )
-           bignum = one / smlnum
-           call stdlib_dlabad( smlnum, bignum )
-           ! scale a, b if max entries outside range [smlnum,bignum]
-           anrm = stdlib_zlange( 'M', m, n, a, lda, rwork )
-           iascl = 0
-           if( anrm>zero .and. anrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_zlascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
-              iascl = 1
-           else if( anrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_zlascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
-              iascl = 2
-           else if( anrm==zero ) then
-              ! matrix all zero. return zero solution.
-              call stdlib_zlaset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
-              rank = 0
-              go to 70
-           end if
-           bnrm = stdlib_zlange( 'M', m, nrhs, b, ldb, rwork )
-           ibscl = 0
-           if( bnrm>zero .and. bnrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_zlascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
-              ibscl = 1
-           else if( bnrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_zlascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
-              ibscl = 2
-           end if
-           ! compute qr factorization with column pivoting of a:
-              ! a * p = q * r
-           call stdlib_zgeqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, rwork, info )
-                     
-           wsize = mn + real( work( mn+1 ),KIND=dp)
-           ! complex workspace: mn+nb*(n+1). real workspace 2*n.
-           ! details of householder rotations stored in work(1:mn).
-           ! determine rank using incremental condition estimation
-           work( ismin ) = cone
-           work( ismax ) = cone
-           smax = abs( a( 1, 1 ) )
-           smin = smax
-           if( abs( a( 1, 1 ) )==zero ) then
-              rank = 0
-              call stdlib_zlaset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
-              go to 70
-           else
-              rank = 1
-           end if
-           10 continue
-           if( rank<mn ) then
-              i = rank + 1
-              call stdlib_zlaic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
-                        s1, c1 )
-              call stdlib_zlaic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
-                        s2, c2 )
-              if( smaxpr*rcond<=sminpr ) then
-                 do i = 1, rank
-                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
-                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
-                 end do
-                 work( ismin+rank ) = c1
-                 work( ismax+rank ) = c2
-                 smin = sminpr
-                 smax = smaxpr
-                 rank = rank + 1
-                 go to 10
-              end if
-           end if
-           ! complex workspace: 3*mn.
-           ! logically partition r = [ r11 r12 ]
-                                   ! [  0  r22 ]
-           ! where r11 = r(1:rank,1:rank)
-           ! [r11,r12] = [ t11, 0 ] * y
-           if( rank<n )call stdlib_ztzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
-                     2*mn, info )
-           ! complex workspace: 2*mn.
-           ! details of householder rotations stored in work(mn+1:2*mn)
-           ! b(1:m,1:nrhs) := q**h * b(1:m,1:nrhs)
-           call stdlib_zunmqr( 'LEFT', 'CONJUGATE TRANSPOSE', m, nrhs, mn, a, lda,work( 1 ), b, &
-                     ldb, work( 2*mn+1 ), lwork-2*mn, info )
-           wsize = max( wsize, 2*mn+real( work( 2*mn+1 ),KIND=dp) )
-           ! complex workspace: 2*mn+nb*nrhs.
-           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
-           call stdlib_ztrsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, cone, a, &
-                     lda, b, ldb )
-           do j = 1, nrhs
-              do i = rank + 1, n
-                 b( i, j ) = czero
-              end do
-           end do
-           ! b(1:n,1:nrhs) := y**h * b(1:n,1:nrhs)
-           if( rank<n ) then
-              call stdlib_zunmrz( 'LEFT', 'CONJUGATE TRANSPOSE', n, nrhs, rank,n-rank, a, lda, &
-                        work( mn+1 ), b, ldb,work( 2*mn+1 ), lwork-2*mn, info )
-           end if
-           ! complex workspace: 2*mn+nrhs.
-           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
-           do j = 1, nrhs
-              do i = 1, n
-                 work( jpvt( i ) ) = b( i, j )
-              end do
-              call stdlib_zcopy( n, work( 1 ), 1, b( 1, j ), 1 )
-           end do
-           ! complex workspace: n.
-           ! undo scaling
-           if( iascl==1 ) then
-              call stdlib_zlascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
-              call stdlib_zlascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
-           else if( iascl==2 ) then
-              call stdlib_zlascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
-              call stdlib_zlascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
-           end if
-           if( ibscl==1 ) then
-              call stdlib_zlascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
-           else if( ibscl==2 ) then
-              call stdlib_zlascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
-           end if
-           70 continue
-           work( 1 ) = cmplx( lwkopt,KIND=dp)
-           return
-     end subroutine stdlib_zgelsy
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     subroutine stdlib_${ci}$gelsy( m, n, nrhs, a, lda, b, ldb, jpvt, rcond, rank,work, lwork, rwork, &
-     !! ZGELSY: computes the minimum-norm solution to a complex linear least
-     !! squares problem:
-     !! minimize || A * X - B ||
-     !! using a complete orthogonal factorization of A.  A is an M-by-N
-     !! matrix which may be rank-deficient.
-     !! Several right hand side vectors b and solution vectors x can be
-     !! handled in a single call; they are stored as the columns of the
-     !! M-by-NRHS right hand side matrix B and the N-by-NRHS solution
-     !! matrix X.
-     !! The routine first computes a QR factorization with column pivoting:
-     !! A * P = Q * [ R11 R12 ]
-     !! [  0  R22 ]
-     !! with R11 defined as the largest leading submatrix whose estimated
-     !! condition number is less than 1/RCOND.  The order of R11, RANK,
-     !! is the effective rank of A.
-     !! Then, R22 is considered to be negligible, and R12 is annihilated
-     !! by unitary transformations from the right, arriving at the
-     !! complete orthogonal factorization:
-     !! A * P = Q * [ T11 0 ] * Z
-     !! [  0  0 ]
-     !! The minimum-norm solution is then
-     !! X = P * Z**H [ inv(T11)*Q1**H*B ]
-     !! [        0         ]
-     !! where Q1 consists of the first RANK columns of Q.
-     !! This routine is basically identical to the original xGELSX except
-     !! three differences:
-     !! o The permutation of matrix B (the right hand side) is faster and
-     !! more simple.
-     !! o The call to the subroutine xGEQPF has been substituted by the
-     !! the call to the subroutine xGEQP3. This subroutine is a Blas-3
-     !! version of the QR factorization with column pivoting.
-     !! o Matrix B (the right hand side) is updated with Blas-3.
-               info )
-        ! -- lapack driver routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info, rank
-           integer(ilp), intent(in) :: lda, ldb, lwork, m, n, nrhs
-           real(${ck}$), intent(in) :: rcond
-           ! Array Arguments 
-           integer(ilp), intent(inout) :: jpvt(*)
-           real(${ck}$), intent(out) :: rwork(*)
-           complex(${ck}$), intent(inout) :: a(lda,*), b(ldb,*)
-           complex(${ck}$), intent(out) :: work(*)
-        ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: imax = 1
-           integer(ilp), parameter :: imin = 2
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: lquery
-           integer(ilp) :: i, iascl, ibscl, ismax, ismin, j, lwkopt, mn, nb, nb1, nb2, nb3, &
-                     nb4
-           real(${ck}$) :: anrm, bignum, bnrm, smax, smaxpr, smin, sminpr, smlnum, wsize
-           complex(${ck}$) :: c1, c2, s1, s2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           mn = min( m, n )
-           ismin = mn + 1
-           ismax = 2*mn + 1
-           ! test the input arguments.
-           info = 0
-           nb1 = stdlib_ilaenv( 1, 'ZGEQRF', ' ', m, n, -1, -1 )
-           nb2 = stdlib_ilaenv( 1, 'ZGERQF', ' ', m, n, -1, -1 )
-           nb3 = stdlib_ilaenv( 1, 'ZUNMQR', ' ', m, n, nrhs, -1 )
-           nb4 = stdlib_ilaenv( 1, 'ZUNMRQ', ' ', m, n, nrhs, -1 )
-           nb = max( nb1, nb2, nb3, nb4 )
-           lwkopt = max( 1, mn+2*n+nb*( n+1 ), 2*mn+nb*nrhs )
-           work( 1 ) = cmplx( lwkopt,KIND=${ck}$)
-           lquery = ( lwork==-1 )
-           if( m<0 ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( nrhs<0 ) then
-              info = -3
-           else if( lda<max( 1, m ) ) then
-              info = -5
-           else if( ldb<max( 1, m, n ) ) then
-              info = -7
-           else if( lwork<( mn+max( 2*mn, n+1, mn+nrhs ) ) .and. .not.lquery ) then
-              info = -12
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZGELSY', -info )
-              return
-           else if( lquery ) then
-              return
-           end if
-           ! quick return if possible
-           if( min( m, n, nrhs )==0 ) then
-              rank = 0
-              return
-           end if
-           ! get machine parameters
-           smlnum = stdlib_${c2ri(ci)}$lamch( 'S' ) / stdlib_${c2ri(ci)}$lamch( 'P' )
-           bignum = one / smlnum
-           call stdlib_${c2ri(ci)}$labad( smlnum, bignum )
-           ! scale a, b if max entries outside range [smlnum,bignum]
-           anrm = stdlib_${ci}$lange( 'M', m, n, a, lda, rwork )
-           iascl = 0
-           if( anrm>zero .and. anrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, smlnum, m, n, a, lda, info )
-              iascl = 1
-           else if( anrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, bignum, m, n, a, lda, info )
-              iascl = 2
-           else if( anrm==zero ) then
-              ! matrix all zero. return zero solution.
-              call stdlib_${ci}$laset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
-              rank = 0
-              go to 70
-           end if
-           bnrm = stdlib_${ci}$lange( 'M', m, nrhs, b, ldb, rwork )
-           ibscl = 0
-           if( bnrm>zero .and. bnrm<smlnum ) then
-              ! scale matrix norm up to smlnum
-              call stdlib_${ci}$lascl( 'G', 0, 0, bnrm, smlnum, m, nrhs, b, ldb, info )
-              ibscl = 1
-           else if( bnrm>bignum ) then
-              ! scale matrix norm down to bignum
-              call stdlib_${ci}$lascl( 'G', 0, 0, bnrm, bignum, m, nrhs, b, ldb, info )
-              ibscl = 2
-           end if
-           ! compute qr factorization with column pivoting of a:
-              ! a * p = q * r
-           call stdlib_${ci}$geqp3( m, n, a, lda, jpvt, work( 1 ), work( mn+1 ),lwork-mn, rwork, info )
-                     
-           wsize = mn + real( work( mn+1 ),KIND=${ck}$)
-           ! complex workspace: mn+nb*(n+1). real workspace 2*n.
-           ! details of householder rotations stored in work(1:mn).
-           ! determine rank using incremental condition estimation
-           work( ismin ) = cone
-           work( ismax ) = cone
-           smax = abs( a( 1, 1 ) )
-           smin = smax
-           if( abs( a( 1, 1 ) )==zero ) then
-              rank = 0
-              call stdlib_${ci}$laset( 'F', max( m, n ), nrhs, czero, czero, b, ldb )
-              go to 70
-           else
-              rank = 1
-           end if
-           10 continue
-           if( rank<mn ) then
-              i = rank + 1
-              call stdlib_${ci}$laic1( imin, rank, work( ismin ), smin, a( 1, i ),a( i, i ), sminpr, &
-                        s1, c1 )
-              call stdlib_${ci}$laic1( imax, rank, work( ismax ), smax, a( 1, i ),a( i, i ), smaxpr, &
-                        s2, c2 )
-              if( smaxpr*rcond<=sminpr ) then
-                 do i = 1, rank
-                    work( ismin+i-1 ) = s1*work( ismin+i-1 )
-                    work( ismax+i-1 ) = s2*work( ismax+i-1 )
-                 end do
-                 work( ismin+rank ) = c1
-                 work( ismax+rank ) = c2
-                 smin = sminpr
-                 smax = smaxpr
-                 rank = rank + 1
-                 go to 10
-              end if
-           end if
-           ! complex workspace: 3*mn.
-           ! logically partition r = [ r11 r12 ]
-                                   ! [  0  r22 ]
-           ! where r11 = r(1:rank,1:rank)
-           ! [r11,r12] = [ t11, 0 ] * y
-           if( rank<n )call stdlib_${ci}$tzrzf( rank, n, a, lda, work( mn+1 ), work( 2*mn+1 ),lwork-&
-                     2*mn, info )
-           ! complex workspace: 2*mn.
-           ! details of householder rotations stored in work(mn+1:2*mn)
-           ! b(1:m,1:nrhs) := q**h * b(1:m,1:nrhs)
-           call stdlib_${ci}$unmqr( 'LEFT', 'CONJUGATE TRANSPOSE', m, nrhs, mn, a, lda,work( 1 ), b, &
-                     ldb, work( 2*mn+1 ), lwork-2*mn, info )
-           wsize = max( wsize, 2*mn+real( work( 2*mn+1 ),KIND=${ck}$) )
-           ! complex workspace: 2*mn+nb*nrhs.
-           ! b(1:rank,1:nrhs) := inv(t11) * b(1:rank,1:nrhs)
-           call stdlib_${ci}$trsm( 'LEFT', 'UPPER', 'NO TRANSPOSE', 'NON-UNIT', rank,nrhs, cone, a, &
-                     lda, b, ldb )
-           do j = 1, nrhs
-              do i = rank + 1, n
-                 b( i, j ) = czero
-              end do
-           end do
-           ! b(1:n,1:nrhs) := y**h * b(1:n,1:nrhs)
-           if( rank<n ) then
-              call stdlib_${ci}$unmrz( 'LEFT', 'CONJUGATE TRANSPOSE', n, nrhs, rank,n-rank, a, lda, &
-                        work( mn+1 ), b, ldb,work( 2*mn+1 ), lwork-2*mn, info )
-           end if
-           ! complex workspace: 2*mn+nrhs.
-           ! b(1:n,1:nrhs) := p * b(1:n,1:nrhs)
-           do j = 1, nrhs
-              do i = 1, n
-                 work( jpvt( i ) ) = b( i, j )
-              end do
-              call stdlib_${ci}$copy( n, work( 1 ), 1, b( 1, j ), 1 )
-           end do
-           ! complex workspace: n.
-           ! undo scaling
-           if( iascl==1 ) then
-              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, smlnum, n, nrhs, b, ldb, info )
-              call stdlib_${ci}$lascl( 'U', 0, 0, smlnum, anrm, rank, rank, a, lda,info )
-           else if( iascl==2 ) then
-              call stdlib_${ci}$lascl( 'G', 0, 0, anrm, bignum, n, nrhs, b, ldb, info )
-              call stdlib_${ci}$lascl( 'U', 0, 0, bignum, anrm, rank, rank, a, lda,info )
-           end if
-           if( ibscl==1 ) then
-              call stdlib_${ci}$lascl( 'G', 0, 0, smlnum, bnrm, n, nrhs, b, ldb, info )
-           else if( ibscl==2 ) then
-              call stdlib_${ci}$lascl( 'G', 0, 0, bignum, bnrm, n, nrhs, b, ldb, info )
-           end if
-           70 continue
-           work( 1 ) = cmplx( lwkopt,KIND=${ck}$)
-           return
-     end subroutine stdlib_${ci}$gelsy
-
-#:endif
-#:endfor
-
-
-
-
-
-     subroutine stdlib_sgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond,rank, work, lwork, iwork, &
+     module subroutine stdlib_sgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond,rank, work, lwork, iwork, &
      !! SGELSD computes the minimum-norm solution to a real linear least
      !! squares problem:
      !! minimize 2-norm(| b - A*x |)
@@ -4425,7 +4413,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_sgelsd
 
-     subroutine stdlib_dgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, iwork, &
+     module subroutine stdlib_dgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, iwork, &
      !! DGELSD computes the minimum-norm solution to a real linear least
      !! squares problem:
      !! minimize 2-norm(| b - A*x |)
@@ -4749,7 +4737,7 @@ module stdlib_lapack_lsq
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     subroutine stdlib_${ri}$gelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, iwork, &
+     module subroutine stdlib_${ri}$gelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, iwork, &
      !! DGELSD: computes the minimum-norm solution to a real linear least
      !! squares problem:
      !! minimize 2-norm(| b - A*x |)
@@ -5074,7 +5062,7 @@ module stdlib_lapack_lsq
 #:endif
 #:endfor
 
-     subroutine stdlib_cgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
+     module subroutine stdlib_cgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
      !! CGELSD computes the minimum-norm solution to a real linear least
      !! squares problem:
      !! minimize 2-norm(| b - A*x |)
@@ -5411,7 +5399,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_cgelsd
 
-     subroutine stdlib_zgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
+     module subroutine stdlib_zgelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
      !! ZGELSD computes the minimum-norm solution to a real linear least
      !! squares problem:
      !! minimize 2-norm(| b - A*x |)
@@ -5750,7 +5738,7 @@ module stdlib_lapack_lsq
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     subroutine stdlib_${ci}$gelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
+     module subroutine stdlib_${ci}$gelsd( m, n, nrhs, a, lda, b, ldb, s, rcond, rank,work, lwork, rwork, &
      !! ZGELSD: computes the minimum-norm solution to a real linear least
      !! squares problem:
      !! minimize 2-norm(| b - A*x |)
@@ -6092,7 +6080,7 @@ module stdlib_lapack_lsq
 
 
 
-     subroutine stdlib_sgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
+     module subroutine stdlib_sgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
      !! SGETSLS solves overdetermined or underdetermined real linear systems
      !! involving an M-by-N matrix A, using a tall skinny QR or short wide LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -6327,7 +6315,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_sgetsls
 
-     subroutine stdlib_dgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
+     module subroutine stdlib_dgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
      !! DGETSLS solves overdetermined or underdetermined real linear systems
      !! involving an M-by-N matrix A, using a tall skinny QR or short wide LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -6564,7 +6552,7 @@ module stdlib_lapack_lsq
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     subroutine stdlib_${ri}$getsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
+     module subroutine stdlib_${ri}$getsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
      !! DGETSLS: solves overdetermined or underdetermined real linear systems
      !! involving an M-by-N matrix A, using a tall skinny QR or short wide LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -6802,7 +6790,7 @@ module stdlib_lapack_lsq
 #:endif
 #:endfor
 
-     subroutine stdlib_cgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
+     module subroutine stdlib_cgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
      !! CGETSLS solves overdetermined or underdetermined complex linear systems
      !! involving an M-by-N matrix A, using a tall skinny QR or short wide LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -7038,7 +7026,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_cgetsls
 
-     subroutine stdlib_zgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
+     module subroutine stdlib_zgetsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
      !! ZGETSLS solves overdetermined or underdetermined complex linear systems
      !! involving an M-by-N matrix A, using a tall skinny QR or short wide LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -7276,7 +7264,7 @@ module stdlib_lapack_lsq
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     subroutine stdlib_${ci}$getsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
+     module subroutine stdlib_${ci}$getsls( trans, m, n, nrhs, a, lda, b, ldb,work, lwork, info )
      !! ZGETSLS: solves overdetermined or underdetermined complex linear systems
      !! involving an M-by-N matrix A, using a tall skinny QR or short wide LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -7517,7 +7505,9 @@ module stdlib_lapack_lsq
 
 
 
-     subroutine stdlib_sgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
+
+
+     module subroutine stdlib_sgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
      !! SGELS solves overdetermined or underdetermined real linear systems
      !! involving an M-by-N matrix A, or its transpose, using a QR or LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -7733,7 +7723,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_sgels
 
-     subroutine stdlib_dgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
+     module subroutine stdlib_dgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
      !! DGELS solves overdetermined or underdetermined real linear systems
      !! involving an M-by-N matrix A, or its transpose, using a QR or LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -7951,7 +7941,7 @@ module stdlib_lapack_lsq
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     subroutine stdlib_${ri}$gels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
+     module subroutine stdlib_${ri}$gels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
      !! DGELS: solves overdetermined or underdetermined real linear systems
      !! involving an M-by-N matrix A, or its transpose, using a QR or LQ
      !! factorization of A.  It is assumed that A has full rank.
@@ -8170,7 +8160,7 @@ module stdlib_lapack_lsq
 #:endif
 #:endfor
 
-     subroutine stdlib_cgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
+     module subroutine stdlib_cgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
      !! CGELS solves overdetermined or underdetermined complex linear systems
      !! involving an M-by-N matrix A, or its conjugate-transpose, using a QR
      !! or LQ factorization of A.  It is assumed that A has full rank.
@@ -8387,7 +8377,7 @@ module stdlib_lapack_lsq
            return
      end subroutine stdlib_cgels
 
-     subroutine stdlib_zgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
+     module subroutine stdlib_zgels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
      !! ZGELS solves overdetermined or underdetermined complex linear systems
      !! involving an M-by-N matrix A, or its conjugate-transpose, using a QR
      !! or LQ factorization of A.  It is assumed that A has full rank.
@@ -8606,7 +8596,7 @@ module stdlib_lapack_lsq
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     subroutine stdlib_${ci}$gels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
+     module subroutine stdlib_${ci}$gels( trans, m, n, nrhs, a, lda, b, ldb, work, lwork,info )
      !! ZGELS: solves overdetermined or underdetermined complex linear systems
      !! involving an M-by-N matrix A, or its conjugate-transpose, using a QR
      !! or LQ factorization of A.  It is assumed that A has full rank.
@@ -8827,4 +8817,4 @@ module stdlib_lapack_lsq
 #:endfor
 
 
-end module stdlib_lapack_lsq
+end submodule stdlib_lapack_lsq
