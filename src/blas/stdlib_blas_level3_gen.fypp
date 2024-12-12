@@ -5,601 +5,6 @@ submodule(stdlib_blas) stdlib_blas_level3_gen
 
   contains
 
-     module pure subroutine stdlib_cherk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
-     use stdlib_blas_constants_sp
-     !! CHERK performs one of the hermitian rank k operations
-     !! C := alpha*A*A**H + beta*C,
-     !! or
-     !! C := alpha*A**H*A + beta*C,
-     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
-     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
-     !! matrix in the second case.
-        ! -- reference blas level3 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: k, lda, ldc, n
-           character, intent(in) :: trans, uplo
-           ! Array Arguments 
-           complex(sp), intent(in) :: a(lda,*)
-           complex(sp), intent(inout) :: c(ldc,*)
-        ! =====================================================================
-           ! Intrinsic Functions 
-           intrinsic :: cmplx,conjg,max,real
-           ! Local Scalars 
-           complex(sp) :: temp
-           real(sp) :: rtemp
-           integer(ilp) :: i, info, j, l, nrowa
-           logical(lk) :: upper
-           
-           ! test the input parameters.
-           if (stdlib_lsame(trans,'N')) then
-               nrowa = n
-           else
-               nrowa = k
-           end if
-           upper = stdlib_lsame(uplo,'U')
-           info = 0
-           if ((.not.upper) .and. (.not.stdlib_lsame(uplo,'L'))) then
-               info = 1
-           else if ((.not.stdlib_lsame(trans,'N')) .and.(.not.stdlib_lsame(trans,'C'))) &
-                     then
-               info = 2
-           else if (n<0) then
-               info = 3
-           else if (k<0) then
-               info = 4
-           else if (lda<max(1,nrowa)) then
-               info = 7
-           else if (ldc<max(1,n)) then
-               info = 10
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('CHERK ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((n==0) .or. (((alpha==zero).or.(k==0)).and. (beta==one))) return
-           ! and when  alpha.eq.zero.
-           if (alpha==zero) then
-               if (upper) then
-                   if (beta==zero) then
-                       do j = 1,n
-                           do i = 1,j
-                               c(i,j) = zero
-                           end do
-                       end do
-                   else
-                       do j = 1,n
-                           do i = 1,j - 1
-                               c(i,j) = beta*c(i,j)
-                           end do
-                           c(j,j) = beta*real(c(j,j),KIND=sp)
-                       end do
-                   end if
-               else
-                   if (beta==zero) then
-                       do j = 1,n
-                           do i = j,n
-                               c(i,j) = zero
-                           end do
-                       end do
-                   else
-                       do j = 1,n
-                           c(j,j) = beta*real(c(j,j),KIND=sp)
-                           do i = j + 1,n
-                               c(i,j) = beta*c(i,j)
-                           end do
-                       end do
-                   end if
-               end if
-               return
-           end if
-           ! start the operations.
-           if (stdlib_lsame(trans,'N')) then
-              ! form  c := alpha*a*a**h + beta*c.
-               if (upper) then
-                   do j = 1,n
-                       if (beta==zero) then
-                           do i = 1,j
-                               c(i,j) = zero
-                           end do
-                       else if (beta/=one) then
-                           do i = 1,j - 1
-                               c(i,j) = beta*c(i,j)
-                           end do
-                           c(j,j) = beta*real(c(j,j),KIND=sp)
-                       else
-                           c(j,j) = real(c(j,j),KIND=sp)
-                       end if
-                       do l = 1,k
-                           if (a(j,l)/=cmplx(zero,KIND=sp)) then
-                               temp = alpha*conjg(a(j,l))
-                               do i = 1,j - 1
-                                   c(i,j) = c(i,j) + temp*a(i,l)
-                               end do
-                               c(j,j) = real(c(j,j),KIND=sp) + real(temp*a(i,l),KIND=sp)
-                           end if
-                       end do
-                   end do
-               else
-                   do j = 1,n
-                       if (beta==zero) then
-                           do i = j,n
-                               c(i,j) = zero
-                           end do
-                       else if (beta/=one) then
-                           c(j,j) = beta*real(c(j,j),KIND=sp)
-                           do i = j + 1,n
-                               c(i,j) = beta*c(i,j)
-                           end do
-                       else
-                           c(j,j) = real(c(j,j),KIND=sp)
-                       end if
-                       do l = 1,k
-                           if (a(j,l)/=cmplx(zero,KIND=sp)) then
-                               temp = alpha*conjg(a(j,l))
-                               c(j,j) = real(c(j,j),KIND=sp) + real(temp*a(j,l),KIND=sp)
-                               do i = j + 1,n
-                                   c(i,j) = c(i,j) + temp*a(i,l)
-                               end do
-                           end if
-                       end do
-                   end do
-               end if
-           else
-              ! form  c := alpha*a**h*a + beta*c.
-               if (upper) then
-                   do j = 1,n
-                       do i = 1,j - 1
-                           temp = zero
-                           do l = 1,k
-                               temp = temp + conjg(a(l,i))*a(l,j)
-                           end do
-                           if (beta==zero) then
-                               c(i,j) = alpha*temp
-                           else
-                               c(i,j) = alpha*temp + beta*c(i,j)
-                           end if
-                       end do
-                       rtemp = zero
-                       do l = 1,k
-                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
-                       end do
-                       if (beta==zero) then
-                           c(j,j) = alpha*rtemp
-                       else
-                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=sp)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       rtemp = zero
-                       do l = 1,k
-                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
-                       end do
-                       if (beta==zero) then
-                           c(j,j) = alpha*rtemp
-                       else
-                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=sp)
-                       end if
-                       do i = j + 1,n
-                           temp = zero
-                           do l = 1,k
-                               temp = temp + conjg(a(l,i))*a(l,j)
-                           end do
-                           if (beta==zero) then
-                               c(i,j) = alpha*temp
-                           else
-                               c(i,j) = alpha*temp + beta*c(i,j)
-                           end if
-                       end do
-                   end do
-               end if
-           end if
-           return
-     end subroutine stdlib_cherk
-
-     module pure subroutine stdlib_zherk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
-     use stdlib_blas_constants_dp
-     !! ZHERK performs one of the hermitian rank k operations
-     !! C := alpha*A*A**H + beta*C,
-     !! or
-     !! C := alpha*A**H*A + beta*C,
-     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
-     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
-     !! matrix in the second case.
-        ! -- reference blas level3 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: k, lda, ldc, n
-           character, intent(in) :: trans, uplo
-           ! Array Arguments 
-           complex(dp), intent(in) :: a(lda,*)
-           complex(dp), intent(inout) :: c(ldc,*)
-        ! =====================================================================
-           ! Intrinsic Functions 
-           intrinsic :: real,cmplx,conjg,max
-           ! Local Scalars 
-           complex(dp) :: temp
-           real(dp) :: rtemp
-           integer(ilp) :: i, info, j, l, nrowa
-           logical(lk) :: upper
-           
-           ! test the input parameters.
-           if (stdlib_lsame(trans,'N')) then
-               nrowa = n
-           else
-               nrowa = k
-           end if
-           upper = stdlib_lsame(uplo,'U')
-           info = 0
-           if ((.not.upper) .and. (.not.stdlib_lsame(uplo,'L'))) then
-               info = 1
-           else if ((.not.stdlib_lsame(trans,'N')) .and.(.not.stdlib_lsame(trans,'C'))) &
-                     then
-               info = 2
-           else if (n<0) then
-               info = 3
-           else if (k<0) then
-               info = 4
-           else if (lda<max(1,nrowa)) then
-               info = 7
-           else if (ldc<max(1,n)) then
-               info = 10
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('ZHERK ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((n==0) .or. (((alpha==zero).or.(k==0)).and. (beta==one))) return
-           ! and when  alpha.eq.zero.
-           if (alpha==zero) then
-               if (upper) then
-                   if (beta==zero) then
-                       do j = 1,n
-                           do i = 1,j
-                               c(i,j) = zero
-                           end do
-                       end do
-                   else
-                       do j = 1,n
-                           do i = 1,j - 1
-                               c(i,j) = beta*c(i,j)
-                           end do
-                           c(j,j) = beta*real(c(j,j),KIND=dp)
-                       end do
-                   end if
-               else
-                   if (beta==zero) then
-                       do j = 1,n
-                           do i = j,n
-                               c(i,j) = zero
-                           end do
-                       end do
-                   else
-                       do j = 1,n
-                           c(j,j) = beta*real(c(j,j),KIND=dp)
-                           do i = j + 1,n
-                               c(i,j) = beta*c(i,j)
-                           end do
-                       end do
-                   end if
-               end if
-               return
-           end if
-           ! start the operations.
-           if (stdlib_lsame(trans,'N')) then
-              ! form  c := alpha*a*a**h + beta*c.
-               if (upper) then
-                   do j = 1,n
-                       if (beta==zero) then
-                           do i = 1,j
-                               c(i,j) = zero
-                           end do
-                       else if (beta/=one) then
-                           do i = 1,j - 1
-                               c(i,j) = beta*c(i,j)
-                           end do
-                           c(j,j) = beta*real(c(j,j),KIND=dp)
-                       else
-                           c(j,j) = real(c(j,j),KIND=dp)
-                       end if
-                       do l = 1,k
-                           if (a(j,l)/=cmplx(zero,KIND=dp)) then
-                               temp = alpha*conjg(a(j,l))
-                               do i = 1,j - 1
-                                   c(i,j) = c(i,j) + temp*a(i,l)
-                               end do
-                               c(j,j) = real(c(j,j),KIND=dp) + real(temp*a(i,l),KIND=dp)
-                           end if
-                       end do
-                   end do
-               else
-                   do j = 1,n
-                       if (beta==zero) then
-                           do i = j,n
-                               c(i,j) = zero
-                           end do
-                       else if (beta/=one) then
-                           c(j,j) = beta*real(c(j,j),KIND=dp)
-                           do i = j + 1,n
-                               c(i,j) = beta*c(i,j)
-                           end do
-                       else
-                           c(j,j) = real(c(j,j),KIND=dp)
-                       end if
-                       do l = 1,k
-                           if (a(j,l)/=cmplx(zero,KIND=dp)) then
-                               temp = alpha*conjg(a(j,l))
-                               c(j,j) = real(c(j,j),KIND=dp) + real(temp*a(j,l),KIND=dp)
-                               do i = j + 1,n
-                                   c(i,j) = c(i,j) + temp*a(i,l)
-                               end do
-                           end if
-                       end do
-                   end do
-               end if
-           else
-              ! form  c := alpha*a**h*a + beta*c.
-               if (upper) then
-                   do j = 1,n
-                       do i = 1,j - 1
-                           temp = zero
-                           do l = 1,k
-                               temp = temp + conjg(a(l,i))*a(l,j)
-                           end do
-                           if (beta==zero) then
-                               c(i,j) = alpha*temp
-                           else
-                               c(i,j) = alpha*temp + beta*c(i,j)
-                           end if
-                       end do
-                       rtemp = zero
-                       do l = 1,k
-                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
-                       end do
-                       if (beta==zero) then
-                           c(j,j) = alpha*rtemp
-                       else
-                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=dp)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       rtemp = zero
-                       do l = 1,k
-                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
-                       end do
-                       if (beta==zero) then
-                           c(j,j) = alpha*rtemp
-                       else
-                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=dp)
-                       end if
-                       do i = j + 1,n
-                           temp = zero
-                           do l = 1,k
-                               temp = temp + conjg(a(l,i))*a(l,j)
-                           end do
-                           if (beta==zero) then
-                               c(i,j) = alpha*temp
-                           else
-                               c(i,j) = alpha*temp + beta*c(i,j)
-                           end if
-                       end do
-                   end do
-               end if
-           end if
-           return
-     end subroutine stdlib_zherk
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$herk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
-     use stdlib_blas_constants_${ck}$
-     !! ZHERK:  performs one of the hermitian rank k operations
-     !! C := alpha*A*A**H + beta*C,
-     !! or
-     !! C := alpha*A**H*A + beta*C,
-     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
-     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
-     !! matrix in the second case.
-        ! -- reference blas level3 routine --
-        ! -- reference blas is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           ! Scalar Arguments 
-           real(${ck}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: k, lda, ldc, n
-           character, intent(in) :: trans, uplo
-           ! Array Arguments 
-           complex(${ck}$), intent(in) :: a(lda,*)
-           complex(${ck}$), intent(inout) :: c(ldc,*)
-        ! =====================================================================
-           ! Intrinsic Functions 
-           intrinsic :: real,cmplx,conjg,max
-           ! Local Scalars 
-           complex(${ck}$) :: temp
-           real(${ck}$) :: rtemp
-           integer(ilp) :: i, info, j, l, nrowa
-           logical(lk) :: upper
-           
-           ! test the input parameters.
-           if (stdlib_lsame(trans,'N')) then
-               nrowa = n
-           else
-               nrowa = k
-           end if
-           upper = stdlib_lsame(uplo,'U')
-           info = 0
-           if ((.not.upper) .and. (.not.stdlib_lsame(uplo,'L'))) then
-               info = 1
-           else if ((.not.stdlib_lsame(trans,'N')) .and.(.not.stdlib_lsame(trans,'C'))) &
-                     then
-               info = 2
-           else if (n<0) then
-               info = 3
-           else if (k<0) then
-               info = 4
-           else if (lda<max(1,nrowa)) then
-               info = 7
-           else if (ldc<max(1,n)) then
-               info = 10
-           end if
-           if (info/=0) then
-               call stdlib_xerbla('ZHERK ',info)
-               return
-           end if
-           ! quick return if possible.
-           if ((n==0) .or. (((alpha==zero).or.(k==0)).and. (beta==one))) return
-           ! and when  alpha.eq.zero.
-           if (alpha==zero) then
-               if (upper) then
-                   if (beta==zero) then
-                       do j = 1,n
-                           do i = 1,j
-                               c(i,j) = zero
-                           end do
-                       end do
-                   else
-                       do j = 1,n
-                           do i = 1,j - 1
-                               c(i,j) = beta*c(i,j)
-                           end do
-                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
-                       end do
-                   end if
-               else
-                   if (beta==zero) then
-                       do j = 1,n
-                           do i = j,n
-                               c(i,j) = zero
-                           end do
-                       end do
-                   else
-                       do j = 1,n
-                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
-                           do i = j + 1,n
-                               c(i,j) = beta*c(i,j)
-                           end do
-                       end do
-                   end if
-               end if
-               return
-           end if
-           ! start the operations.
-           if (stdlib_lsame(trans,'N')) then
-              ! form  c := alpha*a*a**h + beta*c.
-               if (upper) then
-                   do j = 1,n
-                       if (beta==zero) then
-                           do i = 1,j
-                               c(i,j) = zero
-                           end do
-                       else if (beta/=one) then
-                           do i = 1,j - 1
-                               c(i,j) = beta*c(i,j)
-                           end do
-                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
-                       else
-                           c(j,j) = real(c(j,j),KIND=${ck}$)
-                       end if
-                       do l = 1,k
-                           if (a(j,l)/=cmplx(zero,KIND=${ck}$)) then
-                               temp = alpha*conjg(a(j,l))
-                               do i = 1,j - 1
-                                   c(i,j) = c(i,j) + temp*a(i,l)
-                               end do
-                               c(j,j) = real(c(j,j),KIND=${ck}$) + real(temp*a(i,l),KIND=${ck}$)
-                           end if
-                       end do
-                   end do
-               else
-                   do j = 1,n
-                       if (beta==zero) then
-                           do i = j,n
-                               c(i,j) = zero
-                           end do
-                       else if (beta/=one) then
-                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
-                           do i = j + 1,n
-                               c(i,j) = beta*c(i,j)
-                           end do
-                       else
-                           c(j,j) = real(c(j,j),KIND=${ck}$)
-                       end if
-                       do l = 1,k
-                           if (a(j,l)/=cmplx(zero,KIND=${ck}$)) then
-                               temp = alpha*conjg(a(j,l))
-                               c(j,j) = real(c(j,j),KIND=${ck}$) + real(temp*a(j,l),KIND=${ck}$)
-                               do i = j + 1,n
-                                   c(i,j) = c(i,j) + temp*a(i,l)
-                               end do
-                           end if
-                       end do
-                   end do
-               end if
-           else
-              ! form  c := alpha*a**h*a + beta*c.
-               if (upper) then
-                   do j = 1,n
-                       do i = 1,j - 1
-                           temp = zero
-                           do l = 1,k
-                               temp = temp + conjg(a(l,i))*a(l,j)
-                           end do
-                           if (beta==zero) then
-                               c(i,j) = alpha*temp
-                           else
-                               c(i,j) = alpha*temp + beta*c(i,j)
-                           end if
-                       end do
-                       rtemp = zero
-                       do l = 1,k
-                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
-                       end do
-                       if (beta==zero) then
-                           c(j,j) = alpha*rtemp
-                       else
-                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=${ck}$)
-                       end if
-                   end do
-               else
-                   do j = 1,n
-                       rtemp = zero
-                       do l = 1,k
-                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
-                       end do
-                       if (beta==zero) then
-                           c(j,j) = alpha*rtemp
-                       else
-                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=${ck}$)
-                       end if
-                       do i = j + 1,n
-                           temp = zero
-                           do l = 1,k
-                               temp = temp + conjg(a(l,i))*a(l,j)
-                           end do
-                           if (beta==zero) then
-                               c(i,j) = alpha*temp
-                           else
-                               c(i,j) = alpha*temp + beta*c(i,j)
-                           end if
-                       end do
-                   end do
-               end if
-           end if
-           return
-     end subroutine stdlib_${ci}$herk
-
-#:endif
-#:endfor
-
-
-
      module pure subroutine stdlib_chemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
      !! CHEMM performs one of the matrix-matrix operations
@@ -2933,6 +2338,601 @@ submodule(stdlib_blas) stdlib_blas_level3_gen
            end if
            return
      end subroutine stdlib_${ci}$gemm
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_cherk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_sp
+     !! CHERK performs one of the hermitian rank k operations
+     !! C := alpha*A*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*A + beta*C,
+     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
+     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
+     !! matrix in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: c(ldc,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           intrinsic :: cmplx,conjg,max,real
+           ! Local Scalars 
+           complex(sp) :: temp
+           real(sp) :: rtemp
+           integer(ilp) :: i, info, j, l, nrowa
+           logical(lk) :: upper
+           
+           ! test the input parameters.
+           if (stdlib_lsame(trans,'N')) then
+               nrowa = n
+           else
+               nrowa = k
+           end if
+           upper = stdlib_lsame(uplo,'U')
+           info = 0
+           if ((.not.upper) .and. (.not.stdlib_lsame(uplo,'L'))) then
+               info = 1
+           else if ((.not.stdlib_lsame(trans,'N')) .and.(.not.stdlib_lsame(trans,'C'))) &
+                     then
+               info = 2
+           else if (n<0) then
+               info = 3
+           else if (k<0) then
+               info = 4
+           else if (lda<max(1,nrowa)) then
+               info = 7
+           else if (ldc<max(1,n)) then
+               info = 10
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('CHERK ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. (((alpha==zero).or.(k==0)).and. (beta==one))) return
+           ! and when  alpha.eq.zero.
+           if (alpha==zero) then
+               if (upper) then
+                   if (beta==zero) then
+                       do j = 1,n
+                           do i = 1,j
+                               c(i,j) = zero
+                           end do
+                       end do
+                   else
+                       do j = 1,n
+                           do i = 1,j - 1
+                               c(i,j) = beta*c(i,j)
+                           end do
+                           c(j,j) = beta*real(c(j,j),KIND=sp)
+                       end do
+                   end if
+               else
+                   if (beta==zero) then
+                       do j = 1,n
+                           do i = j,n
+                               c(i,j) = zero
+                           end do
+                       end do
+                   else
+                       do j = 1,n
+                           c(j,j) = beta*real(c(j,j),KIND=sp)
+                           do i = j + 1,n
+                               c(i,j) = beta*c(i,j)
+                           end do
+                       end do
+                   end if
+               end if
+               return
+           end if
+           ! start the operations.
+           if (stdlib_lsame(trans,'N')) then
+              ! form  c := alpha*a*a**h + beta*c.
+               if (upper) then
+                   do j = 1,n
+                       if (beta==zero) then
+                           do i = 1,j
+                               c(i,j) = zero
+                           end do
+                       else if (beta/=one) then
+                           do i = 1,j - 1
+                               c(i,j) = beta*c(i,j)
+                           end do
+                           c(j,j) = beta*real(c(j,j),KIND=sp)
+                       else
+                           c(j,j) = real(c(j,j),KIND=sp)
+                       end if
+                       do l = 1,k
+                           if (a(j,l)/=cmplx(zero,KIND=sp)) then
+                               temp = alpha*conjg(a(j,l))
+                               do i = 1,j - 1
+                                   c(i,j) = c(i,j) + temp*a(i,l)
+                               end do
+                               c(j,j) = real(c(j,j),KIND=sp) + real(temp*a(i,l),KIND=sp)
+                           end if
+                       end do
+                   end do
+               else
+                   do j = 1,n
+                       if (beta==zero) then
+                           do i = j,n
+                               c(i,j) = zero
+                           end do
+                       else if (beta/=one) then
+                           c(j,j) = beta*real(c(j,j),KIND=sp)
+                           do i = j + 1,n
+                               c(i,j) = beta*c(i,j)
+                           end do
+                       else
+                           c(j,j) = real(c(j,j),KIND=sp)
+                       end if
+                       do l = 1,k
+                           if (a(j,l)/=cmplx(zero,KIND=sp)) then
+                               temp = alpha*conjg(a(j,l))
+                               c(j,j) = real(c(j,j),KIND=sp) + real(temp*a(j,l),KIND=sp)
+                               do i = j + 1,n
+                                   c(i,j) = c(i,j) + temp*a(i,l)
+                               end do
+                           end if
+                       end do
+                   end do
+               end if
+           else
+              ! form  c := alpha*a**h*a + beta*c.
+               if (upper) then
+                   do j = 1,n
+                       do i = 1,j - 1
+                           temp = zero
+                           do l = 1,k
+                               temp = temp + conjg(a(l,i))*a(l,j)
+                           end do
+                           if (beta==zero) then
+                               c(i,j) = alpha*temp
+                           else
+                               c(i,j) = alpha*temp + beta*c(i,j)
+                           end if
+                       end do
+                       rtemp = zero
+                       do l = 1,k
+                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
+                       end do
+                       if (beta==zero) then
+                           c(j,j) = alpha*rtemp
+                       else
+                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=sp)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       rtemp = zero
+                       do l = 1,k
+                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
+                       end do
+                       if (beta==zero) then
+                           c(j,j) = alpha*rtemp
+                       else
+                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=sp)
+                       end if
+                       do i = j + 1,n
+                           temp = zero
+                           do l = 1,k
+                               temp = temp + conjg(a(l,i))*a(l,j)
+                           end do
+                           if (beta==zero) then
+                               c(i,j) = alpha*temp
+                           else
+                               c(i,j) = alpha*temp + beta*c(i,j)
+                           end if
+                       end do
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_cherk
+
+     module pure subroutine stdlib_zherk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_dp
+     !! ZHERK performs one of the hermitian rank k operations
+     !! C := alpha*A*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*A + beta*C,
+     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
+     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
+     !! matrix in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: c(ldc,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           intrinsic :: real,cmplx,conjg,max
+           ! Local Scalars 
+           complex(dp) :: temp
+           real(dp) :: rtemp
+           integer(ilp) :: i, info, j, l, nrowa
+           logical(lk) :: upper
+           
+           ! test the input parameters.
+           if (stdlib_lsame(trans,'N')) then
+               nrowa = n
+           else
+               nrowa = k
+           end if
+           upper = stdlib_lsame(uplo,'U')
+           info = 0
+           if ((.not.upper) .and. (.not.stdlib_lsame(uplo,'L'))) then
+               info = 1
+           else if ((.not.stdlib_lsame(trans,'N')) .and.(.not.stdlib_lsame(trans,'C'))) &
+                     then
+               info = 2
+           else if (n<0) then
+               info = 3
+           else if (k<0) then
+               info = 4
+           else if (lda<max(1,nrowa)) then
+               info = 7
+           else if (ldc<max(1,n)) then
+               info = 10
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('ZHERK ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. (((alpha==zero).or.(k==0)).and. (beta==one))) return
+           ! and when  alpha.eq.zero.
+           if (alpha==zero) then
+               if (upper) then
+                   if (beta==zero) then
+                       do j = 1,n
+                           do i = 1,j
+                               c(i,j) = zero
+                           end do
+                       end do
+                   else
+                       do j = 1,n
+                           do i = 1,j - 1
+                               c(i,j) = beta*c(i,j)
+                           end do
+                           c(j,j) = beta*real(c(j,j),KIND=dp)
+                       end do
+                   end if
+               else
+                   if (beta==zero) then
+                       do j = 1,n
+                           do i = j,n
+                               c(i,j) = zero
+                           end do
+                       end do
+                   else
+                       do j = 1,n
+                           c(j,j) = beta*real(c(j,j),KIND=dp)
+                           do i = j + 1,n
+                               c(i,j) = beta*c(i,j)
+                           end do
+                       end do
+                   end if
+               end if
+               return
+           end if
+           ! start the operations.
+           if (stdlib_lsame(trans,'N')) then
+              ! form  c := alpha*a*a**h + beta*c.
+               if (upper) then
+                   do j = 1,n
+                       if (beta==zero) then
+                           do i = 1,j
+                               c(i,j) = zero
+                           end do
+                       else if (beta/=one) then
+                           do i = 1,j - 1
+                               c(i,j) = beta*c(i,j)
+                           end do
+                           c(j,j) = beta*real(c(j,j),KIND=dp)
+                       else
+                           c(j,j) = real(c(j,j),KIND=dp)
+                       end if
+                       do l = 1,k
+                           if (a(j,l)/=cmplx(zero,KIND=dp)) then
+                               temp = alpha*conjg(a(j,l))
+                               do i = 1,j - 1
+                                   c(i,j) = c(i,j) + temp*a(i,l)
+                               end do
+                               c(j,j) = real(c(j,j),KIND=dp) + real(temp*a(i,l),KIND=dp)
+                           end if
+                       end do
+                   end do
+               else
+                   do j = 1,n
+                       if (beta==zero) then
+                           do i = j,n
+                               c(i,j) = zero
+                           end do
+                       else if (beta/=one) then
+                           c(j,j) = beta*real(c(j,j),KIND=dp)
+                           do i = j + 1,n
+                               c(i,j) = beta*c(i,j)
+                           end do
+                       else
+                           c(j,j) = real(c(j,j),KIND=dp)
+                       end if
+                       do l = 1,k
+                           if (a(j,l)/=cmplx(zero,KIND=dp)) then
+                               temp = alpha*conjg(a(j,l))
+                               c(j,j) = real(c(j,j),KIND=dp) + real(temp*a(j,l),KIND=dp)
+                               do i = j + 1,n
+                                   c(i,j) = c(i,j) + temp*a(i,l)
+                               end do
+                           end if
+                       end do
+                   end do
+               end if
+           else
+              ! form  c := alpha*a**h*a + beta*c.
+               if (upper) then
+                   do j = 1,n
+                       do i = 1,j - 1
+                           temp = zero
+                           do l = 1,k
+                               temp = temp + conjg(a(l,i))*a(l,j)
+                           end do
+                           if (beta==zero) then
+                               c(i,j) = alpha*temp
+                           else
+                               c(i,j) = alpha*temp + beta*c(i,j)
+                           end if
+                       end do
+                       rtemp = zero
+                       do l = 1,k
+                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
+                       end do
+                       if (beta==zero) then
+                           c(j,j) = alpha*rtemp
+                       else
+                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=dp)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       rtemp = zero
+                       do l = 1,k
+                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
+                       end do
+                       if (beta==zero) then
+                           c(j,j) = alpha*rtemp
+                       else
+                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=dp)
+                       end if
+                       do i = j + 1,n
+                           temp = zero
+                           do l = 1,k
+                               temp = temp + conjg(a(l,i))*a(l,j)
+                           end do
+                           if (beta==zero) then
+                               c(i,j) = alpha*temp
+                           else
+                               c(i,j) = alpha*temp + beta*c(i,j)
+                           end if
+                       end do
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_zherk
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$herk(uplo,trans,n,k,alpha,a,lda,beta,c,ldc)
+     use stdlib_blas_constants_${ck}$
+     !! ZHERK:  performs one of the hermitian rank k operations
+     !! C := alpha*A*A**H + beta*C,
+     !! or
+     !! C := alpha*A**H*A + beta*C,
+     !! where  alpha and beta  are  real scalars,  C is an  n by n  hermitian
+     !! matrix and  A  is an  n by k  matrix in the  first case and a  k by n
+     !! matrix in the second case.
+        ! -- reference blas level3 routine --
+        ! -- reference blas is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           ! Scalar Arguments 
+           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, ldc, n
+           character, intent(in) :: trans, uplo
+           ! Array Arguments 
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+        ! =====================================================================
+           ! Intrinsic Functions 
+           intrinsic :: real,cmplx,conjg,max
+           ! Local Scalars 
+           complex(${ck}$) :: temp
+           real(${ck}$) :: rtemp
+           integer(ilp) :: i, info, j, l, nrowa
+           logical(lk) :: upper
+           
+           ! test the input parameters.
+           if (stdlib_lsame(trans,'N')) then
+               nrowa = n
+           else
+               nrowa = k
+           end if
+           upper = stdlib_lsame(uplo,'U')
+           info = 0
+           if ((.not.upper) .and. (.not.stdlib_lsame(uplo,'L'))) then
+               info = 1
+           else if ((.not.stdlib_lsame(trans,'N')) .and.(.not.stdlib_lsame(trans,'C'))) &
+                     then
+               info = 2
+           else if (n<0) then
+               info = 3
+           else if (k<0) then
+               info = 4
+           else if (lda<max(1,nrowa)) then
+               info = 7
+           else if (ldc<max(1,n)) then
+               info = 10
+           end if
+           if (info/=0) then
+               call stdlib_xerbla('ZHERK ',info)
+               return
+           end if
+           ! quick return if possible.
+           if ((n==0) .or. (((alpha==zero).or.(k==0)).and. (beta==one))) return
+           ! and when  alpha.eq.zero.
+           if (alpha==zero) then
+               if (upper) then
+                   if (beta==zero) then
+                       do j = 1,n
+                           do i = 1,j
+                               c(i,j) = zero
+                           end do
+                       end do
+                   else
+                       do j = 1,n
+                           do i = 1,j - 1
+                               c(i,j) = beta*c(i,j)
+                           end do
+                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
+                       end do
+                   end if
+               else
+                   if (beta==zero) then
+                       do j = 1,n
+                           do i = j,n
+                               c(i,j) = zero
+                           end do
+                       end do
+                   else
+                       do j = 1,n
+                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
+                           do i = j + 1,n
+                               c(i,j) = beta*c(i,j)
+                           end do
+                       end do
+                   end if
+               end if
+               return
+           end if
+           ! start the operations.
+           if (stdlib_lsame(trans,'N')) then
+              ! form  c := alpha*a*a**h + beta*c.
+               if (upper) then
+                   do j = 1,n
+                       if (beta==zero) then
+                           do i = 1,j
+                               c(i,j) = zero
+                           end do
+                       else if (beta/=one) then
+                           do i = 1,j - 1
+                               c(i,j) = beta*c(i,j)
+                           end do
+                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
+                       else
+                           c(j,j) = real(c(j,j),KIND=${ck}$)
+                       end if
+                       do l = 1,k
+                           if (a(j,l)/=cmplx(zero,KIND=${ck}$)) then
+                               temp = alpha*conjg(a(j,l))
+                               do i = 1,j - 1
+                                   c(i,j) = c(i,j) + temp*a(i,l)
+                               end do
+                               c(j,j) = real(c(j,j),KIND=${ck}$) + real(temp*a(i,l),KIND=${ck}$)
+                           end if
+                       end do
+                   end do
+               else
+                   do j = 1,n
+                       if (beta==zero) then
+                           do i = j,n
+                               c(i,j) = zero
+                           end do
+                       else if (beta/=one) then
+                           c(j,j) = beta*real(c(j,j),KIND=${ck}$)
+                           do i = j + 1,n
+                               c(i,j) = beta*c(i,j)
+                           end do
+                       else
+                           c(j,j) = real(c(j,j),KIND=${ck}$)
+                       end if
+                       do l = 1,k
+                           if (a(j,l)/=cmplx(zero,KIND=${ck}$)) then
+                               temp = alpha*conjg(a(j,l))
+                               c(j,j) = real(c(j,j),KIND=${ck}$) + real(temp*a(j,l),KIND=${ck}$)
+                               do i = j + 1,n
+                                   c(i,j) = c(i,j) + temp*a(i,l)
+                               end do
+                           end if
+                       end do
+                   end do
+               end if
+           else
+              ! form  c := alpha*a**h*a + beta*c.
+               if (upper) then
+                   do j = 1,n
+                       do i = 1,j - 1
+                           temp = zero
+                           do l = 1,k
+                               temp = temp + conjg(a(l,i))*a(l,j)
+                           end do
+                           if (beta==zero) then
+                               c(i,j) = alpha*temp
+                           else
+                               c(i,j) = alpha*temp + beta*c(i,j)
+                           end if
+                       end do
+                       rtemp = zero
+                       do l = 1,k
+                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
+                       end do
+                       if (beta==zero) then
+                           c(j,j) = alpha*rtemp
+                       else
+                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=${ck}$)
+                       end if
+                   end do
+               else
+                   do j = 1,n
+                       rtemp = zero
+                       do l = 1,k
+                           rtemp = rtemp + conjg(a(l,j))*a(l,j)
+                       end do
+                       if (beta==zero) then
+                           c(j,j) = alpha*rtemp
+                       else
+                           c(j,j) = alpha*rtemp + beta*real(c(j,j),KIND=${ck}$)
+                       end if
+                       do i = j + 1,n
+                           temp = zero
+                           do l = 1,k
+                               temp = temp + conjg(a(l,i))*a(l,j)
+                           end do
+                           if (beta==zero) then
+                               c(i,j) = alpha*temp
+                           else
+                               c(i,j) = alpha*temp + beta*c(i,j)
+                           end if
+                       end do
+                   end do
+               end if
+           end if
+           return
+     end subroutine stdlib_${ci}$herk
 
 #:endif
 #:endfor

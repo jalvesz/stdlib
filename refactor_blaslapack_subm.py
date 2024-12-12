@@ -62,17 +62,24 @@ lapack_groups = {
         "sycon","sytrf","lasyf","sytf2","sytrs","sytri","syrfs","syrfsx","syequb",
         "syconv","sycon_3","sytri2","sytri2x","sytri_3","sytri_3x","sytrs2","sytrs_3",
         "syswapr","la_hercond","la_herfsx_extended","la_herpvgrw","spcon","sptrf",
+    },
+    "solve_ldl_comp2": {
         "sptrs","sptri","sprfs","sycon_rook","sytrf_rook","lasyf_rook","sytf2_rook",
         "sytrs_rook","sytri_rook","sytrf_rk","lasyf_rk","sytf2_rk","syconvf","syconvf_rook",
-        "sytrf_aa","lasyf_aa","sytrs_aa","sytrf_aa_2stage","sytrs_aa_2stage","hecon",
-        "hetrf","lahef","hetf2","hetrs","hetri","herfs","herfsx","heequb","syconv",
+        "sytrf_aa","lasyf_aa","sytrs_aa","sytrf_aa_2stage","sytrs_aa_2stage",
+    },
+    "solve_ldl_comp3": {
+        "hecon","hetrf","lahef","hetf2","hetrs","hetri","herfs","herfsx","heequb",
         "hecon_3","hetri2","hetri2x","hetri_3","hetri_3x","hetrs2","hetrs_3","heswapr",
-        "la_hercond","la_herfsx_extended","la_herpvgrw","hpcon","hptrf","hptrs","hptri",
+        "hpcon","hptrf","hptrs","hptri",
+    },
+    "solve_ldl_comp4": {
         "hprfs","hecon_rook","hetrf_rook","lahef_rook","hetf2_rook","hetrs_rook",
-        "hetri_rook","hetrf_rk","lahef_rk","hetf2_rk","syconvf","syconvf_rook","hetrf_aa",
+        "hetri_rook","hetrf_rk","lahef_rk","hetf2_rk","hetrf_aa",
         "lahef_aa","hetrs_aa","hetrf_aa_2stage","hetrs_aa_2stage",
         "laqsy"
     },
+    
     "solve_tri_comp": {
         "trcon", "trtrs", 
         "latrs", "latrs3",
@@ -126,11 +133,14 @@ lapack_groups = {
     "eigv_gen": {
         "geev","geevx","gees","geesx","ggev3","ggev","ggevx","gges3","gges",
         "ggesx","cgedmd","cgedmdq","dgedmd","dgedmdq","sgedmd","sgedmdq","zgedmd",
-        "zgedmdq","gebal","gehrd","gehd2","lahr2","unghr","unmhr","orghr","ormhr",
-        "gebak","hseqr","hsein","trevc","trevc3","laln2","trsyl","trsyl3","lasy2",
+        "zgedmdq","gebal","gehrd","gehd2","gebak","lahr2","unghr","unmhr","orghr","ormhr",
+    },
+    "eigv_gen2": {
+        "hseqr","hsein","trevc","trevc3","laln2","trsyl","trsyl3","lasy2",
         "trsna","laqtr","trexc","trsen","laexc","lanv2","laein","lahqr","laqr0",
         "laqr1","laqr2","laqr3","laqr4","laqr5","iparmq","laqz0","laqz1","laqz2","laqz3","laqz4",
-        # eigv_comp
+    },
+    "eigv_comp": {
         "ggbal","gghrd","gghd3","hgeqz","ggbak","tgsen","tgsna","tgsyl","tgsy2",
         "lagv2","tgevc","tgexc","tgex2",
     },
@@ -159,8 +169,10 @@ lapack_groups = {
         "lasda","lasd6","lasd7","lasd8",
     },
     "eigv_svd_drivers": {
-        "gesvd", "gesvdq", "gesdd", "gesvdx", "gejsv", "gesvj",
-        "bdsqr", "bdsdc", "bdsvdx", "ggsvd3",
+        "gesvd", "gesvdq", "gesdd", "gesvdx", "gejsv",
+    },
+    "eigv_svd_drivers2": {
+        "bdsqr", "bdsdc", "bdsvdx", "ggsvd3", "gesvj",
     },
     "eigv_std_driver": {
         "syev","syevd","syevr","syevx","syev_2stage","syevd_2stage","syevr_2stage",
@@ -173,7 +185,7 @@ lapack_groups = {
         "gebrd", "gebd2", "gbbrd", "gsvj0", "gsvj1","ggsvp3","tgsja", 
         "ungbr","orgbr","unmbr","ormbr",
     },
-    "svd_comp_2": { # standard driver
+    "svd_comp2": { # standard driver
         "labrd", "las2", "lasv2", "lartgs","lags2", "lapll",
     },
     "svd_bidiag_qr": { # standard driver

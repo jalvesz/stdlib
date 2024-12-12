@@ -5,6 +5,119 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l1
 
   contains
 
+     module pure subroutine stdlib_zdrscl( n, sa, sx, incx )
+     !! ZDRSCL multiplies an n-element complex vector x by the real scalar
+     !! 1/a.  This is done without overflow or underflow as long as
+     !! the final result x/a does not overflow or underflow.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(in) :: sa
+           ! Array Arguments 
+           complex(dp), intent(inout) :: sx(*)
+       ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           real(dp) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! quick return if possible
+           if( n<=0 )return
+           ! get machine parameters
+           smlnum = stdlib_dlamch( 'S' )
+           bignum = one / smlnum
+           call stdlib_dlabad( smlnum, bignum )
+           ! initialize the denominator to sa and the numerator to 1.
+           cden = sa
+           cnum = one
+           10 continue
+           cden1 = cden*smlnum
+           cnum1 = cnum / bignum
+           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
+              ! pre-multiply x by smlnum if cden is large compared to cnum.
+              mul = smlnum
+              done = .false.
+              cden = cden1
+           else if( abs( cnum1 )>abs( cden ) ) then
+              ! pre-multiply x by bignum if cden is small compared to cnum.
+              mul = bignum
+              done = .false.
+              cnum = cnum1
+           else
+              ! multiply x by cnum / cden and return.
+              mul = cnum / cden
+              done = .true.
+           end if
+           ! scale the vector x by mul
+           call stdlib_zdscal( n, mul, sx, incx )
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_zdrscl
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module pure subroutine stdlib_${ci}$drscl( n, sa, sx, incx )
+     !! ZDRSCL: multiplies an n-element complex vector x by the real scalar
+     !! 1/a.  This is done without overflow or underflow as long as
+     !! the final result x/a does not overflow or underflow.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           real(${ck}$), intent(in) :: sa
+           ! Array Arguments 
+           complex(${ck}$), intent(inout) :: sx(*)
+       ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           real(${ck}$) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! quick return if possible
+           if( n<=0 )return
+           ! get machine parameters
+           smlnum = stdlib_${c2ri(ci)}$lamch( 'S' )
+           bignum = one / smlnum
+           call stdlib_${c2ri(ci)}$labad( smlnum, bignum )
+           ! initialize the denominator to sa and the numerator to 1.
+           cden = sa
+           cnum = one
+           10 continue
+           cden1 = cden*smlnum
+           cnum1 = cnum / bignum
+           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
+              ! pre-multiply x by smlnum if cden is large compared to cnum.
+              mul = smlnum
+              done = .false.
+              cden = cden1
+           else if( abs( cnum1 )>abs( cden ) ) then
+              ! pre-multiply x by bignum if cden is small compared to cnum.
+              mul = bignum
+              done = .false.
+              cnum = cnum1
+           else
+              ! multiply x by cnum / cden and return.
+              mul = cnum / cden
+              done = .true.
+           end if
+           ! scale the vector x by mul
+           call stdlib_${ci}$dscal( n, mul, sx, incx )
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_${ci}$drscl
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_csrscl( n, sa, sx, incx )
      !! CSRSCL multiplies an n-element complex vector x by the real scalar
      !! 1/a.  This is done without overflow or underflow as long as
@@ -795,6 +908,172 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l1
 
 
 
+     module pure subroutine stdlib_srscl( n, sa, sx, incx )
+     !! SRSCL multiplies an n-element real vector x by the real scalar 1/a.
+     !! This is done without overflow or underflow as long as
+     !! the final result x/a does not overflow or underflow.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(in) :: sa
+           ! Array Arguments 
+           real(sp), intent(inout) :: sx(*)
+       ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           real(sp) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! quick return if possible
+           if( n<=0 )return
+           ! get machine parameters
+           smlnum = stdlib_slamch( 'S' )
+           bignum = one / smlnum
+           call stdlib_slabad( smlnum, bignum )
+           ! initialize the denominator to sa and the numerator to 1.
+           cden = sa
+           cnum = one
+           10 continue
+           cden1 = cden*smlnum
+           cnum1 = cnum / bignum
+           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
+              ! pre-multiply x by smlnum if cden is large compared to cnum.
+              mul = smlnum
+              done = .false.
+              cden = cden1
+           else if( abs( cnum1 )>abs( cden ) ) then
+              ! pre-multiply x by bignum if cden is small compared to cnum.
+              mul = bignum
+              done = .false.
+              cnum = cnum1
+           else
+              ! multiply x by cnum / cden and return.
+              mul = cnum / cden
+              done = .true.
+           end if
+           ! scale the vector x by mul
+           call stdlib_sscal( n, mul, sx, incx )
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_srscl
+
+     module pure subroutine stdlib_drscl( n, sa, sx, incx )
+     !! DRSCL multiplies an n-element real vector x by the real scalar 1/a.
+     !! This is done without overflow or underflow as long as
+     !! the final result x/a does not overflow or underflow.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(in) :: sa
+           ! Array Arguments 
+           real(dp), intent(inout) :: sx(*)
+       ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           real(dp) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! quick return if possible
+           if( n<=0 )return
+           ! get machine parameters
+           smlnum = stdlib_dlamch( 'S' )
+           bignum = one / smlnum
+           call stdlib_dlabad( smlnum, bignum )
+           ! initialize the denominator to sa and the numerator to 1.
+           cden = sa
+           cnum = one
+           10 continue
+           cden1 = cden*smlnum
+           cnum1 = cnum / bignum
+           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
+              ! pre-multiply x by smlnum if cden is large compared to cnum.
+              mul = smlnum
+              done = .false.
+              cden = cden1
+           else if( abs( cnum1 )>abs( cden ) ) then
+              ! pre-multiply x by bignum if cden is small compared to cnum.
+              mul = bignum
+              done = .false.
+              cnum = cnum1
+           else
+              ! multiply x by cnum / cden and return.
+              mul = cnum / cden
+              done = .true.
+           end if
+           ! scale the vector x by mul
+           call stdlib_dscal( n, mul, sx, incx )
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_drscl
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$rscl( n, sa, sx, incx )
+     !! DRSCL: multiplies an n-element real vector x by the real scalar 1/a.
+     !! This is done without overflow or underflow as long as
+     !! the final result x/a does not overflow or underflow.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: incx, n
+           real(${rk}$), intent(in) :: sa
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: sx(*)
+       ! =====================================================================
+           
+           ! Local Scalars 
+           logical(lk) :: done
+           real(${rk}$) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! quick return if possible
+           if( n<=0 )return
+           ! get machine parameters
+           smlnum = stdlib_${ri}$lamch( 'S' )
+           bignum = one / smlnum
+           call stdlib_${ri}$labad( smlnum, bignum )
+           ! initialize the denominator to sa and the numerator to 1.
+           cden = sa
+           cnum = one
+           10 continue
+           cden1 = cden*smlnum
+           cnum1 = cnum / bignum
+           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
+              ! pre-multiply x by smlnum if cden is large compared to cnum.
+              mul = smlnum
+              done = .false.
+              cden = cden1
+           else if( abs( cnum1 )>abs( cden ) ) then
+              ! pre-multiply x by bignum if cden is small compared to cnum.
+              mul = bignum
+              done = .false.
+              cnum = cnum1
+           else
+              ! multiply x by cnum / cden and return.
+              mul = cnum / cden
+              done = .true.
+           end if
+           ! scale the vector x by mul
+           call stdlib_${ri}$scal( n, mul, sx, incx )
+           if( .not.done )go to 10
+           return
+     end subroutine stdlib_${ri}$rscl
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_clacgv( n, x, incx )
      !! CLACGV conjugates a complex vector of length N.
         ! -- lapack auxiliary routine --
@@ -886,119 +1165,6 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l1
            end if
            return
      end subroutine stdlib_${ci}$lacgv
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_zdrscl( n, sa, sx, incx )
-     !! ZDRSCL multiplies an n-element complex vector x by the real scalar
-     !! 1/a.  This is done without overflow or underflow as long as
-     !! the final result x/a does not overflow or underflow.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, n
-           real(dp), intent(in) :: sa
-           ! Array Arguments 
-           complex(dp), intent(inout) :: sx(*)
-       ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: done
-           real(dp) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( n<=0 )return
-           ! get machine parameters
-           smlnum = stdlib_dlamch( 'S' )
-           bignum = one / smlnum
-           call stdlib_dlabad( smlnum, bignum )
-           ! initialize the denominator to sa and the numerator to 1.
-           cden = sa
-           cnum = one
-           10 continue
-           cden1 = cden*smlnum
-           cnum1 = cnum / bignum
-           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
-              ! pre-multiply x by smlnum if cden is large compared to cnum.
-              mul = smlnum
-              done = .false.
-              cden = cden1
-           else if( abs( cnum1 )>abs( cden ) ) then
-              ! pre-multiply x by bignum if cden is small compared to cnum.
-              mul = bignum
-              done = .false.
-              cnum = cnum1
-           else
-              ! multiply x by cnum / cden and return.
-              mul = cnum / cden
-              done = .true.
-           end if
-           ! scale the vector x by mul
-           call stdlib_zdscal( n, mul, sx, incx )
-           if( .not.done )go to 10
-           return
-     end subroutine stdlib_zdrscl
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$drscl( n, sa, sx, incx )
-     !! ZDRSCL: multiplies an n-element complex vector x by the real scalar
-     !! 1/a.  This is done without overflow or underflow as long as
-     !! the final result x/a does not overflow or underflow.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, n
-           real(${ck}$), intent(in) :: sa
-           ! Array Arguments 
-           complex(${ck}$), intent(inout) :: sx(*)
-       ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: done
-           real(${ck}$) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( n<=0 )return
-           ! get machine parameters
-           smlnum = stdlib_${c2ri(ci)}$lamch( 'S' )
-           bignum = one / smlnum
-           call stdlib_${c2ri(ci)}$labad( smlnum, bignum )
-           ! initialize the denominator to sa and the numerator to 1.
-           cden = sa
-           cnum = one
-           10 continue
-           cden1 = cden*smlnum
-           cnum1 = cnum / bignum
-           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
-              ! pre-multiply x by smlnum if cden is large compared to cnum.
-              mul = smlnum
-              done = .false.
-              cden = cden1
-           else if( abs( cnum1 )>abs( cden ) ) then
-              ! pre-multiply x by bignum if cden is small compared to cnum.
-              mul = bignum
-              done = .false.
-              cnum = cnum1
-           else
-              ! multiply x by cnum / cden and return.
-              mul = cnum / cden
-              done = .true.
-           end if
-           ! scale the vector x by mul
-           call stdlib_${ci}$dscal( n, mul, sx, incx )
-           if( .not.done )go to 10
-           return
-     end subroutine stdlib_${ci}$drscl
 
 #:endif
 #:endfor
@@ -1528,172 +1694,6 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l1
            if( stkpnt>0 )go to 10
            return
      end subroutine stdlib_${ri}$lasrt
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_srscl( n, sa, sx, incx )
-     !! SRSCL multiplies an n-element real vector x by the real scalar 1/a.
-     !! This is done without overflow or underflow as long as
-     !! the final result x/a does not overflow or underflow.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, n
-           real(sp), intent(in) :: sa
-           ! Array Arguments 
-           real(sp), intent(inout) :: sx(*)
-       ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: done
-           real(sp) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( n<=0 )return
-           ! get machine parameters
-           smlnum = stdlib_slamch( 'S' )
-           bignum = one / smlnum
-           call stdlib_slabad( smlnum, bignum )
-           ! initialize the denominator to sa and the numerator to 1.
-           cden = sa
-           cnum = one
-           10 continue
-           cden1 = cden*smlnum
-           cnum1 = cnum / bignum
-           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
-              ! pre-multiply x by smlnum if cden is large compared to cnum.
-              mul = smlnum
-              done = .false.
-              cden = cden1
-           else if( abs( cnum1 )>abs( cden ) ) then
-              ! pre-multiply x by bignum if cden is small compared to cnum.
-              mul = bignum
-              done = .false.
-              cnum = cnum1
-           else
-              ! multiply x by cnum / cden and return.
-              mul = cnum / cden
-              done = .true.
-           end if
-           ! scale the vector x by mul
-           call stdlib_sscal( n, mul, sx, incx )
-           if( .not.done )go to 10
-           return
-     end subroutine stdlib_srscl
-
-     module pure subroutine stdlib_drscl( n, sa, sx, incx )
-     !! DRSCL multiplies an n-element real vector x by the real scalar 1/a.
-     !! This is done without overflow or underflow as long as
-     !! the final result x/a does not overflow or underflow.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, n
-           real(dp), intent(in) :: sa
-           ! Array Arguments 
-           real(dp), intent(inout) :: sx(*)
-       ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: done
-           real(dp) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( n<=0 )return
-           ! get machine parameters
-           smlnum = stdlib_dlamch( 'S' )
-           bignum = one / smlnum
-           call stdlib_dlabad( smlnum, bignum )
-           ! initialize the denominator to sa and the numerator to 1.
-           cden = sa
-           cnum = one
-           10 continue
-           cden1 = cden*smlnum
-           cnum1 = cnum / bignum
-           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
-              ! pre-multiply x by smlnum if cden is large compared to cnum.
-              mul = smlnum
-              done = .false.
-              cden = cden1
-           else if( abs( cnum1 )>abs( cden ) ) then
-              ! pre-multiply x by bignum if cden is small compared to cnum.
-              mul = bignum
-              done = .false.
-              cnum = cnum1
-           else
-              ! multiply x by cnum / cden and return.
-              mul = cnum / cden
-              done = .true.
-           end if
-           ! scale the vector x by mul
-           call stdlib_dscal( n, mul, sx, incx )
-           if( .not.done )go to 10
-           return
-     end subroutine stdlib_drscl
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$rscl( n, sa, sx, incx )
-     !! DRSCL: multiplies an n-element real vector x by the real scalar 1/a.
-     !! This is done without overflow or underflow as long as
-     !! the final result x/a does not overflow or underflow.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, n
-           real(${rk}$), intent(in) :: sa
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: sx(*)
-       ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: done
-           real(${rk}$) :: bignum, cden, cden1, cnum, cnum1, mul, smlnum
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( n<=0 )return
-           ! get machine parameters
-           smlnum = stdlib_${ri}$lamch( 'S' )
-           bignum = one / smlnum
-           call stdlib_${ri}$labad( smlnum, bignum )
-           ! initialize the denominator to sa and the numerator to 1.
-           cden = sa
-           cnum = one
-           10 continue
-           cden1 = cden*smlnum
-           cnum1 = cnum / bignum
-           if( abs( cden1 )>abs( cnum ) .and. cnum/=zero ) then
-              ! pre-multiply x by smlnum if cden is large compared to cnum.
-              mul = smlnum
-              done = .false.
-              cden = cden1
-           else if( abs( cnum1 )>abs( cden ) ) then
-              ! pre-multiply x by bignum if cden is small compared to cnum.
-              mul = bignum
-              done = .false.
-              cnum = cnum1
-           else
-              ! multiply x by cnum / cden and return.
-              mul = cnum / cden
-              done = .true.
-           end if
-           ! scale the vector x by mul
-           call stdlib_${ri}$scal( n, mul, sx, incx )
-           if( .not.done )go to 10
-           return
-     end subroutine stdlib_${ri}$rscl
 
 #:endif
 #:endfor

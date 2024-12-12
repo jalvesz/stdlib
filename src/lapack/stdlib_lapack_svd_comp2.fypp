@@ -1,5 +1,5 @@
 #:include "common.fypp" 
-submodule(stdlib_lapack) stdlib_lapack_svd_comp_2
+submodule(stdlib_lapack) stdlib_lapack_svd_comp2
   implicit none(type,external)
 
 
@@ -174,445 +174,6 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp_2
            return
            ! end stdlib_${ri}$lartgs
      end subroutine stdlib_${ri}$lartgs
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_slasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
-     !! SLASV2 computes the singular value decomposition of a 2-by-2
-     !! triangular matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
-     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
-     !! right singular vectors for abs(SSMAX), giving the decomposition
-     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
-     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
-           real(sp), intent(in) :: f, g, h
-       ! =====================================================================
-           
-           
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: gasmal, swap
-           integer(ilp) :: pmax
-           real(sp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
-                     tsign, tt
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ft = f
-           fa = abs( ft )
-           ht = h
-           ha = abs( h )
-           ! pmax points to the maximum absolute element of matrix
-             ! pmax = 1 if f largest in absolute values
-             ! pmax = 2 if g largest in absolute values
-             ! pmax = 3 if h largest in absolute values
-           pmax = 1
-           swap = ( ha>fa )
-           if( swap ) then
-              pmax = 3
-              temp = ft
-              ft = ht
-              ht = temp
-              temp = fa
-              fa = ha
-              ha = temp
-              ! now fa .ge. ha
-           end if
-           gt = g
-           ga = abs( gt )
-           if( ga==zero ) then
-              ! diagonal matrix
-              ssmin = ha
-              ssmax = fa
-              clt = one
-              crt = one
-              slt = zero
-              srt = zero
-           else
-              gasmal = .true.
-              if( ga>fa ) then
-                 pmax = 2
-                 if( ( fa / ga )<stdlib_slamch( 'EPS' ) ) then
-                    ! case of very large ga
-                    gasmal = .false.
-                    ssmax = ga
-                    if( ha>one ) then
-                       ssmin = fa / ( ga / ha )
-                    else
-                       ssmin = ( fa / ga )*ha
-                    end if
-                    clt = one
-                    slt = ht / gt
-                    srt = one
-                    crt = ft / gt
-                 end if
-              end if
-              if( gasmal ) then
-                 ! normal case
-                 d = fa - ha
-                 if( d==fa ) then
-                    ! copes with infinite f or h
-                    l = one
-                 else
-                    l = d / fa
-                 end if
-                 ! note that 0 .le. l .le. 1
-                 m = gt / ft
-                 ! note that abs(m) .le. 1/macheps
-                 t = two - l
-                 ! note that t .ge. 1
-                 mm = m*m
-                 tt = t*t
-                 s = sqrt( tt+mm )
-                 ! note that 1 .le. s .le. 1 + 1/macheps
-                 if( l==zero ) then
-                    r = abs( m )
-                 else
-                    r = sqrt( l*l+mm )
-                 end if
-                 ! note that 0 .le. r .le. 1 + 1/macheps
-                 a = half*( s+r )
-                 ! note that 1 .le. a .le. 1 + abs(m)
-                 ssmin = ha / a
-                 ssmax = fa*a
-                 if( mm==zero ) then
-                    ! note that m is very tiny
-                    if( l==zero ) then
-                       t = sign( two, ft )*sign( one, gt )
-                    else
-                       t = gt / sign( d, ft ) + m / t
-                    end if
-                 else
-                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
-                 end if
-                 l = sqrt( t*t+four )
-                 crt = two / l
-                 srt = t / l
-                 clt = ( crt+srt*m ) / a
-                 slt = ( ht / ft )*srt / a
-              end if
-           end if
-           if( swap ) then
-              csl = srt
-              snl = crt
-              csr = slt
-              snr = clt
-           else
-              csl = clt
-              snl = slt
-              csr = crt
-              snr = srt
-           end if
-           ! correct signs of ssmax and ssmin
-           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
-           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
-           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
-           ssmax = sign( ssmax, tsign )
-           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
-           return
-     end subroutine stdlib_slasv2
-
-     module pure subroutine stdlib_dlasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
-     !! DLASV2 computes the singular value decomposition of a 2-by-2
-     !! triangular matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
-     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
-     !! right singular vectors for abs(SSMAX), giving the decomposition
-     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
-     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
-           real(dp), intent(in) :: f, g, h
-       ! =====================================================================
-           
-           
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: gasmal, swap
-           integer(ilp) :: pmax
-           real(dp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
-                     tsign, tt
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ft = f
-           fa = abs( ft )
-           ht = h
-           ha = abs( h )
-           ! pmax points to the maximum absolute element of matrix
-             ! pmax = 1 if f largest in absolute values
-             ! pmax = 2 if g largest in absolute values
-             ! pmax = 3 if h largest in absolute values
-           pmax = 1
-           swap = ( ha>fa )
-           if( swap ) then
-              pmax = 3
-              temp = ft
-              ft = ht
-              ht = temp
-              temp = fa
-              fa = ha
-              ha = temp
-              ! now fa .ge. ha
-           end if
-           gt = g
-           ga = abs( gt )
-           if( ga==zero ) then
-              ! diagonal matrix
-              ssmin = ha
-              ssmax = fa
-              clt = one
-              crt = one
-              slt = zero
-              srt = zero
-           else
-              gasmal = .true.
-              if( ga>fa ) then
-                 pmax = 2
-                 if( ( fa / ga )<stdlib_dlamch( 'EPS' ) ) then
-                    ! case of very large ga
-                    gasmal = .false.
-                    ssmax = ga
-                    if( ha>one ) then
-                       ssmin = fa / ( ga / ha )
-                    else
-                       ssmin = ( fa / ga )*ha
-                    end if
-                    clt = one
-                    slt = ht / gt
-                    srt = one
-                    crt = ft / gt
-                 end if
-              end if
-              if( gasmal ) then
-                 ! normal case
-                 d = fa - ha
-                 if( d==fa ) then
-                    ! copes with infinite f or h
-                    l = one
-                 else
-                    l = d / fa
-                 end if
-                 ! note that 0 .le. l .le. 1
-                 m = gt / ft
-                 ! note that abs(m) .le. 1/macheps
-                 t = two - l
-                 ! note that t .ge. 1
-                 mm = m*m
-                 tt = t*t
-                 s = sqrt( tt+mm )
-                 ! note that 1 .le. s .le. 1 + 1/macheps
-                 if( l==zero ) then
-                    r = abs( m )
-                 else
-                    r = sqrt( l*l+mm )
-                 end if
-                 ! note that 0 .le. r .le. 1 + 1/macheps
-                 a = half*( s+r )
-                 ! note that 1 .le. a .le. 1 + abs(m)
-                 ssmin = ha / a
-                 ssmax = fa*a
-                 if( mm==zero ) then
-                    ! note that m is very tiny
-                    if( l==zero ) then
-                       t = sign( two, ft )*sign( one, gt )
-                    else
-                       t = gt / sign( d, ft ) + m / t
-                    end if
-                 else
-                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
-                 end if
-                 l = sqrt( t*t+four )
-                 crt = two / l
-                 srt = t / l
-                 clt = ( crt+srt*m ) / a
-                 slt = ( ht / ft )*srt / a
-              end if
-           end if
-           if( swap ) then
-              csl = srt
-              snl = crt
-              csr = slt
-              snr = clt
-           else
-              csl = clt
-              snl = slt
-              csr = crt
-              snr = srt
-           end if
-           ! correct signs of ssmax and ssmin
-           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
-           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
-           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
-           ssmax = sign( ssmax, tsign )
-           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
-           return
-     end subroutine stdlib_dlasv2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
-     !! DLASV2: computes the singular value decomposition of a 2-by-2
-     !! triangular matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
-     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
-     !! right singular vectors for abs(SSMAX), giving the decomposition
-     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
-     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
-           real(${rk}$), intent(in) :: f, g, h
-       ! =====================================================================
-           
-           
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: gasmal, swap
-           integer(ilp) :: pmax
-           real(${rk}$) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
-                     tsign, tt
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ft = f
-           fa = abs( ft )
-           ht = h
-           ha = abs( h )
-           ! pmax points to the maximum absolute element of matrix
-             ! pmax = 1 if f largest in absolute values
-             ! pmax = 2 if g largest in absolute values
-             ! pmax = 3 if h largest in absolute values
-           pmax = 1
-           swap = ( ha>fa )
-           if( swap ) then
-              pmax = 3
-              temp = ft
-              ft = ht
-              ht = temp
-              temp = fa
-              fa = ha
-              ha = temp
-              ! now fa .ge. ha
-           end if
-           gt = g
-           ga = abs( gt )
-           if( ga==zero ) then
-              ! diagonal matrix
-              ssmin = ha
-              ssmax = fa
-              clt = one
-              crt = one
-              slt = zero
-              srt = zero
-           else
-              gasmal = .true.
-              if( ga>fa ) then
-                 pmax = 2
-                 if( ( fa / ga )<stdlib_${ri}$lamch( 'EPS' ) ) then
-                    ! case of very large ga
-                    gasmal = .false.
-                    ssmax = ga
-                    if( ha>one ) then
-                       ssmin = fa / ( ga / ha )
-                    else
-                       ssmin = ( fa / ga )*ha
-                    end if
-                    clt = one
-                    slt = ht / gt
-                    srt = one
-                    crt = ft / gt
-                 end if
-              end if
-              if( gasmal ) then
-                 ! normal case
-                 d = fa - ha
-                 if( d==fa ) then
-                    ! copes with infinite f or h
-                    l = one
-                 else
-                    l = d / fa
-                 end if
-                 ! note that 0 .le. l .le. 1
-                 m = gt / ft
-                 ! note that abs(m) .le. 1/macheps
-                 t = two - l
-                 ! note that t .ge. 1
-                 mm = m*m
-                 tt = t*t
-                 s = sqrt( tt+mm )
-                 ! note that 1 .le. s .le. 1 + 1/macheps
-                 if( l==zero ) then
-                    r = abs( m )
-                 else
-                    r = sqrt( l*l+mm )
-                 end if
-                 ! note that 0 .le. r .le. 1 + 1/macheps
-                 a = half*( s+r )
-                 ! note that 1 .le. a .le. 1 + abs(m)
-                 ssmin = ha / a
-                 ssmax = fa*a
-                 if( mm==zero ) then
-                    ! note that m is very tiny
-                    if( l==zero ) then
-                       t = sign( two, ft )*sign( one, gt )
-                    else
-                       t = gt / sign( d, ft ) + m / t
-                    end if
-                 else
-                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
-                 end if
-                 l = sqrt( t*t+four )
-                 crt = two / l
-                 srt = t / l
-                 clt = ( crt+srt*m ) / a
-                 slt = ( ht / ft )*srt / a
-              end if
-           end if
-           if( swap ) then
-              csl = srt
-              snl = crt
-              csr = slt
-              snr = clt
-           else
-              csl = clt
-              snl = slt
-              csr = crt
-              snr = srt
-           end if
-           ! correct signs of ssmax and ssmin
-           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
-           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
-           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
-           ssmax = sign( ssmax, tsign )
-           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
-           return
-     end subroutine stdlib_${ri}$lasv2
 
 #:endif
 #:endfor
@@ -1726,6 +1287,641 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp_2
 
 
 
+     module pure subroutine stdlib_slas2( f, g, h, ssmin, ssmax )
+     !! SLAS2 computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: f, g, h
+           real(sp), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(sp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_slas2
+
+     module pure subroutine stdlib_dlas2( f, g, h, ssmin, ssmax )
+     !! DLAS2 computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: f, g, h
+           real(dp), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(dp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_dlas2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$las2( f, g, h, ssmin, ssmax )
+     !! DLAS2:  computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: f, g, h
+           real(${rk}$), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(${rk}$) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_${ri}$las2
+
+#:endif
+#:endfor
+
+
+
+     module pure subroutine stdlib_slasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
+     !! SLASV2 computes the singular value decomposition of a 2-by-2
+     !! triangular matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
+     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
+     !! right singular vectors for abs(SSMAX), giving the decomposition
+     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
+     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
+           real(sp), intent(in) :: f, g, h
+       ! =====================================================================
+           
+           
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: gasmal, swap
+           integer(ilp) :: pmax
+           real(sp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
+                     tsign, tt
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ft = f
+           fa = abs( ft )
+           ht = h
+           ha = abs( h )
+           ! pmax points to the maximum absolute element of matrix
+             ! pmax = 1 if f largest in absolute values
+             ! pmax = 2 if g largest in absolute values
+             ! pmax = 3 if h largest in absolute values
+           pmax = 1
+           swap = ( ha>fa )
+           if( swap ) then
+              pmax = 3
+              temp = ft
+              ft = ht
+              ht = temp
+              temp = fa
+              fa = ha
+              ha = temp
+              ! now fa .ge. ha
+           end if
+           gt = g
+           ga = abs( gt )
+           if( ga==zero ) then
+              ! diagonal matrix
+              ssmin = ha
+              ssmax = fa
+              clt = one
+              crt = one
+              slt = zero
+              srt = zero
+           else
+              gasmal = .true.
+              if( ga>fa ) then
+                 pmax = 2
+                 if( ( fa / ga )<stdlib_slamch( 'EPS' ) ) then
+                    ! case of very large ga
+                    gasmal = .false.
+                    ssmax = ga
+                    if( ha>one ) then
+                       ssmin = fa / ( ga / ha )
+                    else
+                       ssmin = ( fa / ga )*ha
+                    end if
+                    clt = one
+                    slt = ht / gt
+                    srt = one
+                    crt = ft / gt
+                 end if
+              end if
+              if( gasmal ) then
+                 ! normal case
+                 d = fa - ha
+                 if( d==fa ) then
+                    ! copes with infinite f or h
+                    l = one
+                 else
+                    l = d / fa
+                 end if
+                 ! note that 0 .le. l .le. 1
+                 m = gt / ft
+                 ! note that abs(m) .le. 1/macheps
+                 t = two - l
+                 ! note that t .ge. 1
+                 mm = m*m
+                 tt = t*t
+                 s = sqrt( tt+mm )
+                 ! note that 1 .le. s .le. 1 + 1/macheps
+                 if( l==zero ) then
+                    r = abs( m )
+                 else
+                    r = sqrt( l*l+mm )
+                 end if
+                 ! note that 0 .le. r .le. 1 + 1/macheps
+                 a = half*( s+r )
+                 ! note that 1 .le. a .le. 1 + abs(m)
+                 ssmin = ha / a
+                 ssmax = fa*a
+                 if( mm==zero ) then
+                    ! note that m is very tiny
+                    if( l==zero ) then
+                       t = sign( two, ft )*sign( one, gt )
+                    else
+                       t = gt / sign( d, ft ) + m / t
+                    end if
+                 else
+                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
+                 end if
+                 l = sqrt( t*t+four )
+                 crt = two / l
+                 srt = t / l
+                 clt = ( crt+srt*m ) / a
+                 slt = ( ht / ft )*srt / a
+              end if
+           end if
+           if( swap ) then
+              csl = srt
+              snl = crt
+              csr = slt
+              snr = clt
+           else
+              csl = clt
+              snl = slt
+              csr = crt
+              snr = srt
+           end if
+           ! correct signs of ssmax and ssmin
+           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
+           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
+           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
+           ssmax = sign( ssmax, tsign )
+           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
+           return
+     end subroutine stdlib_slasv2
+
+     module pure subroutine stdlib_dlasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
+     !! DLASV2 computes the singular value decomposition of a 2-by-2
+     !! triangular matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
+     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
+     !! right singular vectors for abs(SSMAX), giving the decomposition
+     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
+     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
+           real(dp), intent(in) :: f, g, h
+       ! =====================================================================
+           
+           
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: gasmal, swap
+           integer(ilp) :: pmax
+           real(dp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
+                     tsign, tt
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ft = f
+           fa = abs( ft )
+           ht = h
+           ha = abs( h )
+           ! pmax points to the maximum absolute element of matrix
+             ! pmax = 1 if f largest in absolute values
+             ! pmax = 2 if g largest in absolute values
+             ! pmax = 3 if h largest in absolute values
+           pmax = 1
+           swap = ( ha>fa )
+           if( swap ) then
+              pmax = 3
+              temp = ft
+              ft = ht
+              ht = temp
+              temp = fa
+              fa = ha
+              ha = temp
+              ! now fa .ge. ha
+           end if
+           gt = g
+           ga = abs( gt )
+           if( ga==zero ) then
+              ! diagonal matrix
+              ssmin = ha
+              ssmax = fa
+              clt = one
+              crt = one
+              slt = zero
+              srt = zero
+           else
+              gasmal = .true.
+              if( ga>fa ) then
+                 pmax = 2
+                 if( ( fa / ga )<stdlib_dlamch( 'EPS' ) ) then
+                    ! case of very large ga
+                    gasmal = .false.
+                    ssmax = ga
+                    if( ha>one ) then
+                       ssmin = fa / ( ga / ha )
+                    else
+                       ssmin = ( fa / ga )*ha
+                    end if
+                    clt = one
+                    slt = ht / gt
+                    srt = one
+                    crt = ft / gt
+                 end if
+              end if
+              if( gasmal ) then
+                 ! normal case
+                 d = fa - ha
+                 if( d==fa ) then
+                    ! copes with infinite f or h
+                    l = one
+                 else
+                    l = d / fa
+                 end if
+                 ! note that 0 .le. l .le. 1
+                 m = gt / ft
+                 ! note that abs(m) .le. 1/macheps
+                 t = two - l
+                 ! note that t .ge. 1
+                 mm = m*m
+                 tt = t*t
+                 s = sqrt( tt+mm )
+                 ! note that 1 .le. s .le. 1 + 1/macheps
+                 if( l==zero ) then
+                    r = abs( m )
+                 else
+                    r = sqrt( l*l+mm )
+                 end if
+                 ! note that 0 .le. r .le. 1 + 1/macheps
+                 a = half*( s+r )
+                 ! note that 1 .le. a .le. 1 + abs(m)
+                 ssmin = ha / a
+                 ssmax = fa*a
+                 if( mm==zero ) then
+                    ! note that m is very tiny
+                    if( l==zero ) then
+                       t = sign( two, ft )*sign( one, gt )
+                    else
+                       t = gt / sign( d, ft ) + m / t
+                    end if
+                 else
+                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
+                 end if
+                 l = sqrt( t*t+four )
+                 crt = two / l
+                 srt = t / l
+                 clt = ( crt+srt*m ) / a
+                 slt = ( ht / ft )*srt / a
+              end if
+           end if
+           if( swap ) then
+              csl = srt
+              snl = crt
+              csr = slt
+              snr = clt
+           else
+              csl = clt
+              snl = slt
+              csr = crt
+              snr = srt
+           end if
+           ! correct signs of ssmax and ssmin
+           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
+           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
+           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
+           ssmax = sign( ssmax, tsign )
+           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
+           return
+     end subroutine stdlib_dlasv2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module pure subroutine stdlib_${ri}$lasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
+     !! DLASV2: computes the singular value decomposition of a 2-by-2
+     !! triangular matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
+     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
+     !! right singular vectors for abs(SSMAX), giving the decomposition
+     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
+     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
+           real(${rk}$), intent(in) :: f, g, h
+       ! =====================================================================
+           
+           
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: gasmal, swap
+           integer(ilp) :: pmax
+           real(${rk}$) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
+                     tsign, tt
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ft = f
+           fa = abs( ft )
+           ht = h
+           ha = abs( h )
+           ! pmax points to the maximum absolute element of matrix
+             ! pmax = 1 if f largest in absolute values
+             ! pmax = 2 if g largest in absolute values
+             ! pmax = 3 if h largest in absolute values
+           pmax = 1
+           swap = ( ha>fa )
+           if( swap ) then
+              pmax = 3
+              temp = ft
+              ft = ht
+              ht = temp
+              temp = fa
+              fa = ha
+              ha = temp
+              ! now fa .ge. ha
+           end if
+           gt = g
+           ga = abs( gt )
+           if( ga==zero ) then
+              ! diagonal matrix
+              ssmin = ha
+              ssmax = fa
+              clt = one
+              crt = one
+              slt = zero
+              srt = zero
+           else
+              gasmal = .true.
+              if( ga>fa ) then
+                 pmax = 2
+                 if( ( fa / ga )<stdlib_${ri}$lamch( 'EPS' ) ) then
+                    ! case of very large ga
+                    gasmal = .false.
+                    ssmax = ga
+                    if( ha>one ) then
+                       ssmin = fa / ( ga / ha )
+                    else
+                       ssmin = ( fa / ga )*ha
+                    end if
+                    clt = one
+                    slt = ht / gt
+                    srt = one
+                    crt = ft / gt
+                 end if
+              end if
+              if( gasmal ) then
+                 ! normal case
+                 d = fa - ha
+                 if( d==fa ) then
+                    ! copes with infinite f or h
+                    l = one
+                 else
+                    l = d / fa
+                 end if
+                 ! note that 0 .le. l .le. 1
+                 m = gt / ft
+                 ! note that abs(m) .le. 1/macheps
+                 t = two - l
+                 ! note that t .ge. 1
+                 mm = m*m
+                 tt = t*t
+                 s = sqrt( tt+mm )
+                 ! note that 1 .le. s .le. 1 + 1/macheps
+                 if( l==zero ) then
+                    r = abs( m )
+                 else
+                    r = sqrt( l*l+mm )
+                 end if
+                 ! note that 0 .le. r .le. 1 + 1/macheps
+                 a = half*( s+r )
+                 ! note that 1 .le. a .le. 1 + abs(m)
+                 ssmin = ha / a
+                 ssmax = fa*a
+                 if( mm==zero ) then
+                    ! note that m is very tiny
+                    if( l==zero ) then
+                       t = sign( two, ft )*sign( one, gt )
+                    else
+                       t = gt / sign( d, ft ) + m / t
+                    end if
+                 else
+                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
+                 end if
+                 l = sqrt( t*t+four )
+                 crt = two / l
+                 srt = t / l
+                 clt = ( crt+srt*m ) / a
+                 slt = ( ht / ft )*srt / a
+              end if
+           end if
+           if( swap ) then
+              csl = srt
+              snl = crt
+              csr = slt
+              snr = clt
+           else
+              csl = clt
+              snl = slt
+              csr = crt
+              snr = srt
+           end if
+           ! correct signs of ssmax and ssmin
+           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
+           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
+           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
+           ssmax = sign( ssmax, tsign )
+           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
+           return
+     end subroutine stdlib_${ri}$lasv2
+
+#:endif
+#:endfor
+
+
+
      module pure subroutine stdlib_slags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! SLAGS2 computes 2-by-2 orthogonal matrices U, V and Q, such
      !! that if ( UPPER ) then
@@ -2772,200 +2968,4 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp_2
 #:endfor
 
 
-
-     module pure subroutine stdlib_slas2( f, g, h, ssmin, ssmax )
-     !! SLAS2 computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: f, g, h
-           real(sp), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
-           
-           ! Local Scalars 
-           real(sp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
-              ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_slas2
-
-     module pure subroutine stdlib_dlas2( f, g, h, ssmin, ssmax )
-     !! DLAS2 computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: f, g, h
-           real(dp), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
-           
-           ! Local Scalars 
-           real(dp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
-              ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_dlas2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$las2( f, g, h, ssmin, ssmax )
-     !! DLAS2:  computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: f, g, h
-           real(${rk}$), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
-           
-           ! Local Scalars 
-           real(${rk}$) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
-              ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_${ri}$las2
-
-#:endif
-#:endfor
-
-
-end submodule stdlib_lapack_svd_comp_2
+end submodule stdlib_lapack_svd_comp2

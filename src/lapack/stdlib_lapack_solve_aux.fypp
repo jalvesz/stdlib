@@ -5,750 +5,267 @@ submodule(stdlib_lapack) stdlib_lapack_solve_aux
 
   contains
 
-     module subroutine stdlib_slacon( n, v, x, isgn, est, kase )
-     !! SLACON estimates the 1-norm of a square, real matrix A.
-     !! Reverse communication is used for evaluating matrix-vector products.
-        ! -- lapack auxiliary routine --
+     module pure subroutine stdlib_sla_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! SLA_LIN_BERR computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(inout) :: kase
-           integer(ilp), intent(in) :: n
-           real(sp), intent(inout) :: est
+           integer(ilp), intent(in) :: n, nz, nrhs
            ! Array Arguments 
-           integer(ilp), intent(out) :: isgn(*)
-           real(sp), intent(out) :: v(*)
-           real(sp), intent(inout) :: x(*)
+           real(sp), intent(in) :: ayb(n,nrhs)
+           real(sp), intent(out) :: berr(nrhs)
+           real(sp), intent(in) :: res(n,nrhs)
         ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: itmax = 5
-           
-           
            ! Local Scalars 
-           integer(ilp) :: i, iter, j, jlast, jump
-           real(sp) :: altsgn, estold, temp
+           real(sp) :: tmp,safe1
+           integer(ilp) :: i, j
            ! Intrinsic Functions 
-           ! Save Statement 
-           save
            ! Executable Statements 
-           if( kase==0 ) then
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the sla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
               do i = 1, n
-                 x( i ) = one / real( n,KIND=sp)
+                 if (ayb(i,j) /= 0.0_sp) then
+                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_sp (and if computed by sla_yyamv), then we know
+           ! the true residual also must be exactly zero.
               end do
-              kase = 1
-              jump = 1
-              return
-           end if
-           go to ( 20, 40, 70, 110, 140 )jump
-           ! ................ entry   (jump = 1)
-           ! first iteration.  x has been overwritten by a*x.
-           20 continue
-           if( n==1 ) then
-              v( 1 ) = x( 1 )
-              est = abs( v( 1 ) )
-              ! ... quit
-              go to 150
-           end if
-           est = stdlib_sasum( n, x, 1 )
-           do i = 1, n
-              x( i ) = sign( one, x( i ) )
-              isgn( i ) = nint( x( i ),KIND=ilp)
            end do
-           kase = 2
-           jump = 2
-           return
-           ! ................ entry   (jump = 2)
-           ! first iteration.  x has been overwritten by transpose(a)*x.
-           40 continue
-           j = stdlib_isamax( n, x, 1 )
-           iter = 2
-           ! main loop - iterations 2,3,...,itmax.
-           50 continue
-           do i = 1, n
-              x( i ) = zero
-           end do
-           x( j ) = one
-           kase = 1
-           jump = 3
-           return
-           ! ................ entry   (jump = 3)
-           ! x has been overwritten by a*x.
-           70 continue
-           call stdlib_scopy( n, x, 1, v, 1 )
-           estold = est
-           est = stdlib_sasum( n, v, 1 )
-           do i = 1, n
-              if( nint( sign( one, x( i ) ),KIND=ilp)/=isgn( i ) )go to 90
-           end do
-           ! repeated sign vector detected, hence algorithm has converged.
-           go to 120
-           90 continue
-           ! test for cycling.
-           if( est<=estold )go to 120
-           do i = 1, n
-              x( i ) = sign( one, x( i ) )
-              isgn( i ) = nint( x( i ),KIND=ilp)
-           end do
-           kase = 2
-           jump = 4
-           return
-           ! ................ entry   (jump = 4)
-           ! x has been overwritten by transpose(a)*x.
-           110 continue
-           jlast = j
-           j = stdlib_isamax( n, x, 1 )
-           if( ( x( jlast )/=abs( x( j ) ) ) .and. ( iter<itmax ) ) then
-              iter = iter + 1
-              go to 50
-           end if
-           ! iteration complete.  final stage.
-           120 continue
-           altsgn = one
-           do i = 1, n
-              x( i ) = altsgn*( one+real( i-1,KIND=sp) / real( n-1,KIND=sp) )
-              altsgn = -altsgn
-           end do
-           kase = 1
-           jump = 5
-           return
-           ! ................ entry   (jump = 5)
-           ! x has been overwritten by a*x.
-           140 continue
-           temp = two*( stdlib_sasum( n, x, 1 ) / real( 3*n,KIND=sp) )
-           if( temp>est ) then
-              call stdlib_scopy( n, x, 1, v, 1 )
-              est = temp
-           end if
-           150 continue
-           kase = 0
-           return
-     end subroutine stdlib_slacon
+     end subroutine stdlib_sla_lin_berr
 
-     module subroutine stdlib_dlacon( n, v, x, isgn, est, kase )
-     !! DLACON estimates the 1-norm of a square, real matrix A.
-     !! Reverse communication is used for evaluating matrix-vector products.
-        ! -- lapack auxiliary routine --
+     module pure subroutine stdlib_dla_lin_berr ( n, nz, nrhs, res, ayb, berr )
+     !! DLA_LIN_BERR computes component-wise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the component-wise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(inout) :: kase
-           integer(ilp), intent(in) :: n
-           real(dp), intent(inout) :: est
+           integer(ilp), intent(in) :: n, nz, nrhs
            ! Array Arguments 
-           integer(ilp), intent(out) :: isgn(*)
-           real(dp), intent(out) :: v(*)
-           real(dp), intent(inout) :: x(*)
+           real(dp), intent(in) :: ayb(n,nrhs)
+           real(dp), intent(out) :: berr(nrhs)
+           real(dp), intent(in) :: res(n,nrhs)
         ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: itmax = 5
-           
-           
            ! Local Scalars 
-           integer(ilp) :: i, iter, j, jlast, jump
-           real(dp) :: altsgn, estold, temp
+           real(dp) :: tmp,safe1
+           integer(ilp) :: i, j
            ! Intrinsic Functions 
-           ! Save Statement 
-           save
            ! Executable Statements 
-           if( kase==0 ) then
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the sla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
               do i = 1, n
-                 x( i ) = one / real( n,KIND=dp)
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_dp (and if computed by sla_yyamv), then we know
+           ! the true residual also must be exactly zero.
               end do
-              kase = 1
-              jump = 1
-              return
-           end if
-           go to ( 20, 40, 70, 110, 140 )jump
-           ! ................ entry   (jump = 1)
-           ! first iteration.  x has been overwritten by a*x.
-           20 continue
-           if( n==1 ) then
-              v( 1 ) = x( 1 )
-              est = abs( v( 1 ) )
-              ! ... quit
-              go to 150
-           end if
-           est = stdlib_dasum( n, x, 1 )
-           do i = 1, n
-              x( i ) = sign( one, x( i ) )
-              isgn( i ) = nint( x( i ),KIND=ilp)
            end do
-           kase = 2
-           jump = 2
-           return
-           ! ................ entry   (jump = 2)
-           ! first iteration.  x has been overwritten by transpose(a)*x.
-           40 continue
-           j = stdlib_idamax( n, x, 1 )
-           iter = 2
-           ! main loop - iterations 2,3,...,itmax.
-           50 continue
-           do i = 1, n
-              x( i ) = zero
-           end do
-           x( j ) = one
-           kase = 1
-           jump = 3
-           return
-           ! ................ entry   (jump = 3)
-           ! x has been overwritten by a*x.
-           70 continue
-           call stdlib_dcopy( n, x, 1, v, 1 )
-           estold = est
-           est = stdlib_dasum( n, v, 1 )
-           do i = 1, n
-              if( nint( sign( one, x( i ) ),KIND=ilp)/=isgn( i ) )go to 90
-           end do
-           ! repeated sign vector detected, hence algorithm has converged.
-           go to 120
-           90 continue
-           ! test for cycling.
-           if( est<=estold )go to 120
-           do i = 1, n
-              x( i ) = sign( one, x( i ) )
-              isgn( i ) = nint( x( i ),KIND=ilp)
-           end do
-           kase = 2
-           jump = 4
-           return
-           ! ................ entry   (jump = 4)
-           ! x has been overwritten by transpose(a)*x.
-           110 continue
-           jlast = j
-           j = stdlib_idamax( n, x, 1 )
-           if( ( x( jlast )/=abs( x( j ) ) ) .and. ( iter<itmax ) ) then
-              iter = iter + 1
-              go to 50
-           end if
-           ! iteration complete.  final stage.
-           120 continue
-           altsgn = one
-           do i = 1, n
-              x( i ) = altsgn*( one+real( i-1,KIND=dp) / real( n-1,KIND=dp) )
-              altsgn = -altsgn
-           end do
-           kase = 1
-           jump = 5
-           return
-           ! ................ entry   (jump = 5)
-           ! x has been overwritten by a*x.
-           140 continue
-           temp = two*( stdlib_dasum( n, x, 1 ) / real( 3*n,KIND=dp) )
-           if( temp>est ) then
-              call stdlib_dcopy( n, x, 1, v, 1 )
-              est = temp
-           end if
-           150 continue
-           kase = 0
-           return
-     end subroutine stdlib_dlacon
+     end subroutine stdlib_dla_lin_berr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module subroutine stdlib_${ri}$lacon( n, v, x, isgn, est, kase )
-     !! DLACON: estimates the 1-norm of a square, real matrix A.
-     !! Reverse communication is used for evaluating matrix-vector products.
-        ! -- lapack auxiliary routine --
+     module pure subroutine stdlib_${ri}$la_lin_berr ( n, nz, nrhs, res, ayb, berr )
+     !! DLA_LIN_BERR: computes component-wise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the component-wise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(inout) :: kase
-           integer(ilp), intent(in) :: n
-           real(${rk}$), intent(inout) :: est
+           integer(ilp), intent(in) :: n, nz, nrhs
            ! Array Arguments 
-           integer(ilp), intent(out) :: isgn(*)
-           real(${rk}$), intent(out) :: v(*)
-           real(${rk}$), intent(inout) :: x(*)
+           real(${rk}$), intent(in) :: ayb(n,nrhs)
+           real(${rk}$), intent(out) :: berr(nrhs)
+           real(${rk}$), intent(in) :: res(n,nrhs)
         ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: itmax = 5
-           
-           
            ! Local Scalars 
-           integer(ilp) :: i, iter, j, jlast, jump
-           real(${rk}$) :: altsgn, estold, temp
+           real(${rk}$) :: tmp,safe1
+           integer(ilp) :: i, j
            ! Intrinsic Functions 
-           ! Save Statement 
-           save
            ! Executable Statements 
-           if( kase==0 ) then
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the sla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
               do i = 1, n
-                 x( i ) = one / real( n,KIND=${rk}$)
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_${rk}$ (and if computed by sla_yyamv), then we know
+           ! the true residual also must be exactly zero.
               end do
-              kase = 1
-              jump = 1
-              return
-           end if
-           go to ( 20, 40, 70, 110, 140 )jump
-           ! ................ entry   (jump = 1)
-           ! first iteration.  x has been overwritten by a*x.
-           20 continue
-           if( n==1 ) then
-              v( 1 ) = x( 1 )
-              est = abs( v( 1 ) )
-              ! ... quit
-              go to 150
-           end if
-           est = stdlib_${ri}$asum( n, x, 1 )
-           do i = 1, n
-              x( i ) = sign( one, x( i ) )
-              isgn( i ) = nint( x( i ),KIND=ilp)
            end do
-           kase = 2
-           jump = 2
-           return
-           ! ................ entry   (jump = 2)
-           ! first iteration.  x has been overwritten by transpose(a)*x.
-           40 continue
-           j = stdlib_i${ri}$amax( n, x, 1 )
-           iter = 2
-           ! main loop - iterations 2,3,...,itmax.
-           50 continue
-           do i = 1, n
-              x( i ) = zero
-           end do
-           x( j ) = one
-           kase = 1
-           jump = 3
-           return
-           ! ................ entry   (jump = 3)
-           ! x has been overwritten by a*x.
-           70 continue
-           call stdlib_${ri}$copy( n, x, 1, v, 1 )
-           estold = est
-           est = stdlib_${ri}$asum( n, v, 1 )
-           do i = 1, n
-              if( nint( sign( one, x( i ) ),KIND=ilp)/=isgn( i ) )go to 90
-           end do
-           ! repeated sign vector detected, hence algorithm has converged.
-           go to 120
-           90 continue
-           ! test for cycling.
-           if( est<=estold )go to 120
-           do i = 1, n
-              x( i ) = sign( one, x( i ) )
-              isgn( i ) = nint( x( i ),KIND=ilp)
-           end do
-           kase = 2
-           jump = 4
-           return
-           ! ................ entry   (jump = 4)
-           ! x has been overwritten by transpose(a)*x.
-           110 continue
-           jlast = j
-           j = stdlib_i${ri}$amax( n, x, 1 )
-           if( ( x( jlast )/=abs( x( j ) ) ) .and. ( iter<itmax ) ) then
-              iter = iter + 1
-              go to 50
-           end if
-           ! iteration complete.  final stage.
-           120 continue
-           altsgn = one
-           do i = 1, n
-              x( i ) = altsgn*( one+real( i-1,KIND=${rk}$) / real( n-1,KIND=${rk}$) )
-              altsgn = -altsgn
-           end do
-           kase = 1
-           jump = 5
-           return
-           ! ................ entry   (jump = 5)
-           ! x has been overwritten by a*x.
-           140 continue
-           temp = two*( stdlib_${ri}$asum( n, x, 1 ) / real( 3*n,KIND=${rk}$) )
-           if( temp>est ) then
-              call stdlib_${ri}$copy( n, x, 1, v, 1 )
-              est = temp
-           end if
-           150 continue
-           kase = 0
-           return
-     end subroutine stdlib_${ri}$lacon
+     end subroutine stdlib_${ri}$la_lin_berr
 
 #:endif
 #:endfor
 
-     module subroutine stdlib_clacon( n, v, x, est, kase )
-     !! CLACON estimates the 1-norm of a square, complex matrix A.
-     !! Reverse communication is used for evaluating matrix-vector products.
-        ! -- lapack auxiliary routine --
+     module pure subroutine stdlib_cla_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! CLA_LIN_BERR computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(inout) :: kase
-           integer(ilp), intent(in) :: n
-           real(sp), intent(inout) :: est
+           integer(ilp), intent(in) :: n, nz, nrhs
            ! Array Arguments 
-           complex(sp), intent(out) :: v(n)
-           complex(sp), intent(inout) :: x(n)
+           real(sp), intent(in) :: ayb(n,nrhs)
+           real(sp), intent(out) :: berr(nrhs)
+           complex(sp), intent(in) :: res(n,nrhs)
         ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: itmax = 5
-           
-           
-           
            ! Local Scalars 
-           integer(ilp) :: i, iter, j, jlast, jump
-           real(sp) :: absxi, altsgn, estold, safmin, temp
+           real(sp) :: tmp,safe1
+           integer(ilp) :: i, j
+           complex(sp) :: cdum
            ! Intrinsic Functions 
-           ! Save Statement 
-           save
+           ! Statement Functions 
+           complex(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=sp) ) + abs( aimag( cdum ) )
            ! Executable Statements 
-           safmin = stdlib_slamch( 'SAFE MINIMUM' )
-           if( kase==0 ) then
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the cla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
               do i = 1, n
-                 x( i ) = cmplx( one / real( n,KIND=sp),KIND=sp)
+                 if (ayb(i,j) /= 0.0_sp) then
+                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_sp (and if computed by cla_yyamv), then we know
+           ! the true residual also must be exactly zero.
               end do
-              kase = 1
-              jump = 1
-              return
-           end if
-           go to ( 20, 40, 70, 90, 120 )jump
-           ! ................ entry   (jump = 1)
-           ! first iteration.  x has been overwritten by a*x.
-           20 continue
-           if( n==1 ) then
-              v( 1 ) = x( 1 )
-              est = abs( v( 1 ) )
-              ! ... quit
-              go to 130
-           end if
-           est = stdlib_scsum1( n, x, 1 )
-           do i = 1, n
-              absxi = abs( x( i ) )
-              if( absxi>safmin ) then
-                 x( i ) = cmplx( real( x( i ),KIND=sp) / absxi,aimag( x( i ) ) / absxi,KIND=sp)
-                           
-              else
-                 x( i ) = cone
-              end if
            end do
-           kase = 2
-           jump = 2
-           return
-           ! ................ entry   (jump = 2)
-           ! first iteration.  x has been overwritten by ctrans(a)*x.
-           40 continue
-           j = stdlib_icmax1( n, x, 1 )
-           iter = 2
-           ! main loop - iterations 2,3,...,itmax.
-           50 continue
-           do i = 1, n
-              x( i ) = czero
-           end do
-           x( j ) = cone
-           kase = 1
-           jump = 3
-           return
-           ! ................ entry   (jump = 3)
-           ! x has been overwritten by a*x.
-           70 continue
-           call stdlib_ccopy( n, x, 1, v, 1 )
-           estold = est
-           est = stdlib_scsum1( n, v, 1 )
-           ! test for cycling.
-           if( est<=estold )go to 100
-           do i = 1, n
-              absxi = abs( x( i ) )
-              if( absxi>safmin ) then
-                 x( i ) = cmplx( real( x( i ),KIND=sp) / absxi,aimag( x( i ) ) / absxi,KIND=sp)
-                           
-              else
-                 x( i ) = cone
-              end if
-           end do
-           kase = 2
-           jump = 4
-           return
-           ! ................ entry   (jump = 4)
-           ! x has been overwritten by ctrans(a)*x.
-           90 continue
-           jlast = j
-           j = stdlib_icmax1( n, x, 1 )
-           if( ( abs( x( jlast ) )/=abs( x( j ) ) ) .and.( iter<itmax ) ) then
-              iter = iter + 1
-              go to 50
-           end if
-           ! iteration complete.  final stage.
-           100 continue
-           altsgn = one
-           do i = 1, n
-              x( i ) = cmplx( altsgn*( one+real( i-1,KIND=sp) / real( n-1,KIND=sp) ),KIND=sp)
-                        
-              altsgn = -altsgn
-           end do
-           kase = 1
-           jump = 5
-           return
-           ! ................ entry   (jump = 5)
-           ! x has been overwritten by a*x.
-           120 continue
-           temp = two*( stdlib_scsum1( n, x, 1 ) / real( 3*n,KIND=sp) )
-           if( temp>est ) then
-              call stdlib_ccopy( n, x, 1, v, 1 )
-              est = temp
-           end if
-           130 continue
-           kase = 0
-           return
-     end subroutine stdlib_clacon
+     end subroutine stdlib_cla_lin_berr
 
-     module subroutine stdlib_zlacon( n, v, x, est, kase )
-     !! ZLACON estimates the 1-norm of a square, complex matrix A.
-     !! Reverse communication is used for evaluating matrix-vector products.
-        ! -- lapack auxiliary routine --
+     module pure subroutine stdlib_zla_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! ZLA_LIN_BERR computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(inout) :: kase
-           integer(ilp), intent(in) :: n
-           real(dp), intent(inout) :: est
+           integer(ilp), intent(in) :: n, nz, nrhs
            ! Array Arguments 
-           complex(dp), intent(out) :: v(n)
-           complex(dp), intent(inout) :: x(n)
+           real(dp), intent(in) :: ayb(n,nrhs)
+           real(dp), intent(out) :: berr(nrhs)
+           complex(dp), intent(in) :: res(n,nrhs)
         ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: itmax = 5
-           
-           
-           
            ! Local Scalars 
-           integer(ilp) :: i, iter, j, jlast, jump
-           real(dp) :: absxi, altsgn, estold, safmin, temp
+           real(dp) :: tmp,safe1
+           integer(ilp) :: i, j
+           complex(dp) :: cdum
            ! Intrinsic Functions 
-           ! Save Statement 
-           save
+           ! Statement Functions 
+           complex(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=dp) ) + abs( aimag( cdum ) )
            ! Executable Statements 
-           safmin = stdlib_dlamch( 'SAFE MINIMUM' )
-           if( kase==0 ) then
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the cla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
               do i = 1, n
-                 x( i ) = cmplx( one / real( n,KIND=dp),KIND=dp)
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_dp (and if computed by cla_yyamv), then we know
+           ! the true residual also must be exactly zero.
               end do
-              kase = 1
-              jump = 1
-              return
-           end if
-           go to ( 20, 40, 70, 90, 120 )jump
-           ! ................ entry   (jump = 1)
-           ! first iteration.  x has been overwritten by a*x.
-           20 continue
-           if( n==1 ) then
-              v( 1 ) = x( 1 )
-              est = abs( v( 1 ) )
-              ! ... quit
-              go to 130
-           end if
-           est = stdlib_dzsum1( n, x, 1 )
-           do i = 1, n
-              absxi = abs( x( i ) )
-              if( absxi>safmin ) then
-                 x( i ) = cmplx( real( x( i ),KIND=dp) / absxi,aimag( x( i ) ) / absxi,KIND=dp)
-                           
-              else
-                 x( i ) = cone
-              end if
            end do
-           kase = 2
-           jump = 2
-           return
-           ! ................ entry   (jump = 2)
-           ! first iteration.  x has been overwritten by ctrans(a)*x.
-           40 continue
-           j = stdlib_izmax1( n, x, 1 )
-           iter = 2
-           ! main loop - iterations 2,3,...,itmax.
-           50 continue
-           do i = 1, n
-              x( i ) = czero
-           end do
-           x( j ) = cone
-           kase = 1
-           jump = 3
-           return
-           ! ................ entry   (jump = 3)
-           ! x has been overwritten by a*x.
-           70 continue
-           call stdlib_zcopy( n, x, 1, v, 1 )
-           estold = est
-           est = stdlib_dzsum1( n, v, 1 )
-           ! test for cycling.
-           if( est<=estold )go to 100
-           do i = 1, n
-              absxi = abs( x( i ) )
-              if( absxi>safmin ) then
-                 x( i ) = cmplx( real( x( i ),KIND=dp) / absxi,aimag( x( i ) ) / absxi,KIND=dp)
-                           
-              else
-                 x( i ) = cone
-              end if
-           end do
-           kase = 2
-           jump = 4
-           return
-           ! ................ entry   (jump = 4)
-           ! x has been overwritten by ctrans(a)*x.
-           90 continue
-           jlast = j
-           j = stdlib_izmax1( n, x, 1 )
-           if( ( abs( x( jlast ) )/=abs( x( j ) ) ) .and.( iter<itmax ) ) then
-              iter = iter + 1
-              go to 50
-           end if
-           ! iteration complete.  final stage.
-           100 continue
-           altsgn = one
-           do i = 1, n
-              x( i ) = cmplx( altsgn*( one+real( i-1,KIND=dp) / real( n-1,KIND=dp) ),KIND=dp)
-                        
-              altsgn = -altsgn
-           end do
-           kase = 1
-           jump = 5
-           return
-           ! ................ entry   (jump = 5)
-           ! x has been overwritten by a*x.
-           120 continue
-           temp = two*( stdlib_dzsum1( n, x, 1 ) / real( 3*n,KIND=dp) )
-           if( temp>est ) then
-              call stdlib_zcopy( n, x, 1, v, 1 )
-              est = temp
-           end if
-           130 continue
-           kase = 0
-           return
-     end subroutine stdlib_zlacon
+     end subroutine stdlib_zla_lin_berr
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module subroutine stdlib_${ci}$lacon( n, v, x, est, kase )
-     !! ZLACON: estimates the 1-norm of a square, complex matrix A.
-     !! Reverse communication is used for evaluating matrix-vector products.
-        ! -- lapack auxiliary routine --
+     module pure subroutine stdlib_${ci}$la_lin_berr( n, nz, nrhs, res, ayb, berr )
+     !! ZLA_LIN_BERR: computes componentwise relative backward error from
+     !! the formula
+     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
+     !! where abs(Z) is the componentwise absolute value of the matrix
+     !! or vector Z.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(inout) :: kase
-           integer(ilp), intent(in) :: n
-           real(${ck}$), intent(inout) :: est
+           integer(ilp), intent(in) :: n, nz, nrhs
            ! Array Arguments 
-           complex(${ck}$), intent(out) :: v(n)
-           complex(${ck}$), intent(inout) :: x(n)
+           real(${ck}$), intent(in) :: ayb(n,nrhs)
+           real(${ck}$), intent(out) :: berr(nrhs)
+           complex(${ck}$), intent(in) :: res(n,nrhs)
         ! =====================================================================
-           ! Parameters 
-           integer(ilp), parameter :: itmax = 5
-           
-           
-           
            ! Local Scalars 
-           integer(ilp) :: i, iter, j, jlast, jump
-           real(${ck}$) :: absxi, altsgn, estold, safmin, temp
+           real(${ck}$) :: tmp,safe1
+           integer(ilp) :: i, j
+           complex(${ck}$) :: cdum
            ! Intrinsic Functions 
-           ! Save Statement 
-           save
+           ! Statement Functions 
+           complex(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=${ck}$) ) + abs( aimag( cdum ) )
            ! Executable Statements 
-           safmin = stdlib_${c2ri(ci)}$lamch( 'SAFE MINIMUM' )
-           if( kase==0 ) then
+           ! adding safe1 to the numerator guards against spuriously zero
+           ! residuals.  a similar safeguard is in the cla_yyamv routine used
+           ! to compute ayb.
+           safe1 = stdlib_${c2ri(ci)}$lamch( 'SAFE MINIMUM' )
+           safe1 = (nz+1)*safe1
+           do j = 1, nrhs
+              berr(j) = zero
               do i = 1, n
-                 x( i ) = cmplx( one / real( n,KIND=${ck}$),KIND=${ck}$)
+                 if (ayb(i,j) /= zero) then
+                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
+                    berr(j) = max( berr(j), tmp )
+                 end if
+           ! if ayb is exactly 0.0_${ck}$ (and if computed by cla_yyamv), then we know
+           ! the true residual also must be exactly zero.
               end do
-              kase = 1
-              jump = 1
-              return
-           end if
-           go to ( 20, 40, 70, 90, 120 )jump
-           ! ................ entry   (jump = 1)
-           ! first iteration.  x has been overwritten by a*x.
-           20 continue
-           if( n==1 ) then
-              v( 1 ) = x( 1 )
-              est = abs( v( 1 ) )
-              ! ... quit
-              go to 130
-           end if
-           est = stdlib_${c2ri(ci)}$zsum1( n, x, 1 )
-           do i = 1, n
-              absxi = abs( x( i ) )
-              if( absxi>safmin ) then
-                 x( i ) = cmplx( real( x( i ),KIND=${ck}$) / absxi,aimag( x( i ) ) / absxi,KIND=${ck}$)
-                           
-              else
-                 x( i ) = cone
-              end if
            end do
-           kase = 2
-           jump = 2
-           return
-           ! ................ entry   (jump = 2)
-           ! first iteration.  x has been overwritten by ctrans(a)*x.
-           40 continue
-           j = stdlib_i${ci}$max1( n, x, 1 )
-           iter = 2
-           ! main loop - iterations 2,3,...,itmax.
-           50 continue
-           do i = 1, n
-              x( i ) = czero
-           end do
-           x( j ) = cone
-           kase = 1
-           jump = 3
-           return
-           ! ................ entry   (jump = 3)
-           ! x has been overwritten by a*x.
-           70 continue
-           call stdlib_${ci}$copy( n, x, 1, v, 1 )
-           estold = est
-           est = stdlib_${c2ri(ci)}$zsum1( n, v, 1 )
-           ! test for cycling.
-           if( est<=estold )go to 100
-           do i = 1, n
-              absxi = abs( x( i ) )
-              if( absxi>safmin ) then
-                 x( i ) = cmplx( real( x( i ),KIND=${ck}$) / absxi,aimag( x( i ) ) / absxi,KIND=${ck}$)
-                           
-              else
-                 x( i ) = cone
-              end if
-           end do
-           kase = 2
-           jump = 4
-           return
-           ! ................ entry   (jump = 4)
-           ! x has been overwritten by ctrans(a)*x.
-           90 continue
-           jlast = j
-           j = stdlib_i${ci}$max1( n, x, 1 )
-           if( ( abs( x( jlast ) )/=abs( x( j ) ) ) .and.( iter<itmax ) ) then
-              iter = iter + 1
-              go to 50
-           end if
-           ! iteration complete.  final stage.
-           100 continue
-           altsgn = one
-           do i = 1, n
-              x( i ) = cmplx( altsgn*( one+real( i-1,KIND=${ck}$) / real( n-1,KIND=${ck}$) ),KIND=${ck}$)
-                        
-              altsgn = -altsgn
-           end do
-           kase = 1
-           jump = 5
-           return
-           ! ................ entry   (jump = 5)
-           ! x has been overwritten by a*x.
-           120 continue
-           temp = two*( stdlib_${c2ri(ci)}$zsum1( n, x, 1 ) / real( 3*n,KIND=${ck}$) )
-           if( temp>est ) then
-              call stdlib_${ci}$copy( n, x, 1, v, 1 )
-              est = temp
-           end if
-           130 continue
-           kase = 0
-           return
-     end subroutine stdlib_${ci}$lacon
+     end subroutine stdlib_${ci}$la_lin_berr
 
 #:endif
 #:endfor
@@ -1541,267 +1058,750 @@ submodule(stdlib_lapack) stdlib_lapack_solve_aux
 
 
 
-     module pure subroutine stdlib_sla_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! SLA_LIN_BERR computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
+     module subroutine stdlib_slacon( n, v, x, isgn, est, kase )
+     !! SLACON estimates the 1-norm of a square, real matrix A.
+     !! Reverse communication is used for evaluating matrix-vector products.
+        ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
+           integer(ilp), intent(inout) :: kase
+           integer(ilp), intent(in) :: n
+           real(sp), intent(inout) :: est
            ! Array Arguments 
-           real(sp), intent(in) :: ayb(n,nrhs)
-           real(sp), intent(out) :: berr(nrhs)
-           real(sp), intent(in) :: res(n,nrhs)
+           integer(ilp), intent(out) :: isgn(*)
+           real(sp), intent(out) :: v(*)
+           real(sp), intent(inout) :: x(*)
         ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: itmax = 5
+           
+           
            ! Local Scalars 
-           real(sp) :: tmp,safe1
-           integer(ilp) :: i, j
+           integer(ilp) :: i, iter, j, jlast, jump
+           real(sp) :: altsgn, estold, temp
            ! Intrinsic Functions 
+           ! Save Statement 
+           save
            ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the sla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
+           if( kase==0 ) then
               do i = 1, n
-                 if (ayb(i,j) /= 0.0_sp) then
-                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_sp (and if computed by sla_yyamv), then we know
-           ! the true residual also must be exactly zero.
+                 x( i ) = one / real( n,KIND=sp)
               end do
+              kase = 1
+              jump = 1
+              return
+           end if
+           go to ( 20, 40, 70, 110, 140 )jump
+           ! ................ entry   (jump = 1)
+           ! first iteration.  x has been overwritten by a*x.
+           20 continue
+           if( n==1 ) then
+              v( 1 ) = x( 1 )
+              est = abs( v( 1 ) )
+              ! ... quit
+              go to 150
+           end if
+           est = stdlib_sasum( n, x, 1 )
+           do i = 1, n
+              x( i ) = sign( one, x( i ) )
+              isgn( i ) = nint( x( i ),KIND=ilp)
            end do
-     end subroutine stdlib_sla_lin_berr
+           kase = 2
+           jump = 2
+           return
+           ! ................ entry   (jump = 2)
+           ! first iteration.  x has been overwritten by transpose(a)*x.
+           40 continue
+           j = stdlib_isamax( n, x, 1 )
+           iter = 2
+           ! main loop - iterations 2,3,...,itmax.
+           50 continue
+           do i = 1, n
+              x( i ) = zero
+           end do
+           x( j ) = one
+           kase = 1
+           jump = 3
+           return
+           ! ................ entry   (jump = 3)
+           ! x has been overwritten by a*x.
+           70 continue
+           call stdlib_scopy( n, x, 1, v, 1 )
+           estold = est
+           est = stdlib_sasum( n, v, 1 )
+           do i = 1, n
+              if( nint( sign( one, x( i ) ),KIND=ilp)/=isgn( i ) )go to 90
+           end do
+           ! repeated sign vector detected, hence algorithm has converged.
+           go to 120
+           90 continue
+           ! test for cycling.
+           if( est<=estold )go to 120
+           do i = 1, n
+              x( i ) = sign( one, x( i ) )
+              isgn( i ) = nint( x( i ),KIND=ilp)
+           end do
+           kase = 2
+           jump = 4
+           return
+           ! ................ entry   (jump = 4)
+           ! x has been overwritten by transpose(a)*x.
+           110 continue
+           jlast = j
+           j = stdlib_isamax( n, x, 1 )
+           if( ( x( jlast )/=abs( x( j ) ) ) .and. ( iter<itmax ) ) then
+              iter = iter + 1
+              go to 50
+           end if
+           ! iteration complete.  final stage.
+           120 continue
+           altsgn = one
+           do i = 1, n
+              x( i ) = altsgn*( one+real( i-1,KIND=sp) / real( n-1,KIND=sp) )
+              altsgn = -altsgn
+           end do
+           kase = 1
+           jump = 5
+           return
+           ! ................ entry   (jump = 5)
+           ! x has been overwritten by a*x.
+           140 continue
+           temp = two*( stdlib_sasum( n, x, 1 ) / real( 3*n,KIND=sp) )
+           if( temp>est ) then
+              call stdlib_scopy( n, x, 1, v, 1 )
+              est = temp
+           end if
+           150 continue
+           kase = 0
+           return
+     end subroutine stdlib_slacon
 
-     module pure subroutine stdlib_dla_lin_berr ( n, nz, nrhs, res, ayb, berr )
-     !! DLA_LIN_BERR computes component-wise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the component-wise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
+     module subroutine stdlib_dlacon( n, v, x, isgn, est, kase )
+     !! DLACON estimates the 1-norm of a square, real matrix A.
+     !! Reverse communication is used for evaluating matrix-vector products.
+        ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
+           integer(ilp), intent(inout) :: kase
+           integer(ilp), intent(in) :: n
+           real(dp), intent(inout) :: est
            ! Array Arguments 
-           real(dp), intent(in) :: ayb(n,nrhs)
-           real(dp), intent(out) :: berr(nrhs)
-           real(dp), intent(in) :: res(n,nrhs)
+           integer(ilp), intent(out) :: isgn(*)
+           real(dp), intent(out) :: v(*)
+           real(dp), intent(inout) :: x(*)
         ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: itmax = 5
+           
+           
            ! Local Scalars 
-           real(dp) :: tmp,safe1
-           integer(ilp) :: i, j
+           integer(ilp) :: i, iter, j, jlast, jump
+           real(dp) :: altsgn, estold, temp
            ! Intrinsic Functions 
+           ! Save Statement 
+           save
            ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the sla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
+           if( kase==0 ) then
               do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_dp (and if computed by sla_yyamv), then we know
-           ! the true residual also must be exactly zero.
+                 x( i ) = one / real( n,KIND=dp)
               end do
+              kase = 1
+              jump = 1
+              return
+           end if
+           go to ( 20, 40, 70, 110, 140 )jump
+           ! ................ entry   (jump = 1)
+           ! first iteration.  x has been overwritten by a*x.
+           20 continue
+           if( n==1 ) then
+              v( 1 ) = x( 1 )
+              est = abs( v( 1 ) )
+              ! ... quit
+              go to 150
+           end if
+           est = stdlib_dasum( n, x, 1 )
+           do i = 1, n
+              x( i ) = sign( one, x( i ) )
+              isgn( i ) = nint( x( i ),KIND=ilp)
            end do
-     end subroutine stdlib_dla_lin_berr
+           kase = 2
+           jump = 2
+           return
+           ! ................ entry   (jump = 2)
+           ! first iteration.  x has been overwritten by transpose(a)*x.
+           40 continue
+           j = stdlib_idamax( n, x, 1 )
+           iter = 2
+           ! main loop - iterations 2,3,...,itmax.
+           50 continue
+           do i = 1, n
+              x( i ) = zero
+           end do
+           x( j ) = one
+           kase = 1
+           jump = 3
+           return
+           ! ................ entry   (jump = 3)
+           ! x has been overwritten by a*x.
+           70 continue
+           call stdlib_dcopy( n, x, 1, v, 1 )
+           estold = est
+           est = stdlib_dasum( n, v, 1 )
+           do i = 1, n
+              if( nint( sign( one, x( i ) ),KIND=ilp)/=isgn( i ) )go to 90
+           end do
+           ! repeated sign vector detected, hence algorithm has converged.
+           go to 120
+           90 continue
+           ! test for cycling.
+           if( est<=estold )go to 120
+           do i = 1, n
+              x( i ) = sign( one, x( i ) )
+              isgn( i ) = nint( x( i ),KIND=ilp)
+           end do
+           kase = 2
+           jump = 4
+           return
+           ! ................ entry   (jump = 4)
+           ! x has been overwritten by transpose(a)*x.
+           110 continue
+           jlast = j
+           j = stdlib_idamax( n, x, 1 )
+           if( ( x( jlast )/=abs( x( j ) ) ) .and. ( iter<itmax ) ) then
+              iter = iter + 1
+              go to 50
+           end if
+           ! iteration complete.  final stage.
+           120 continue
+           altsgn = one
+           do i = 1, n
+              x( i ) = altsgn*( one+real( i-1,KIND=dp) / real( n-1,KIND=dp) )
+              altsgn = -altsgn
+           end do
+           kase = 1
+           jump = 5
+           return
+           ! ................ entry   (jump = 5)
+           ! x has been overwritten by a*x.
+           140 continue
+           temp = two*( stdlib_dasum( n, x, 1 ) / real( 3*n,KIND=dp) )
+           if( temp>est ) then
+              call stdlib_dcopy( n, x, 1, v, 1 )
+              est = temp
+           end if
+           150 continue
+           kase = 0
+           return
+     end subroutine stdlib_dlacon
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$la_lin_berr ( n, nz, nrhs, res, ayb, berr )
-     !! DLA_LIN_BERR: computes component-wise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the component-wise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
+     module subroutine stdlib_${ri}$lacon( n, v, x, isgn, est, kase )
+     !! DLACON: estimates the 1-norm of a square, real matrix A.
+     !! Reverse communication is used for evaluating matrix-vector products.
+        ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
+           integer(ilp), intent(inout) :: kase
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(inout) :: est
            ! Array Arguments 
-           real(${rk}$), intent(in) :: ayb(n,nrhs)
-           real(${rk}$), intent(out) :: berr(nrhs)
-           real(${rk}$), intent(in) :: res(n,nrhs)
+           integer(ilp), intent(out) :: isgn(*)
+           real(${rk}$), intent(out) :: v(*)
+           real(${rk}$), intent(inout) :: x(*)
         ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: itmax = 5
+           
+           
            ! Local Scalars 
-           real(${rk}$) :: tmp,safe1
-           integer(ilp) :: i, j
+           integer(ilp) :: i, iter, j, jlast, jump
+           real(${rk}$) :: altsgn, estold, temp
            ! Intrinsic Functions 
+           ! Save Statement 
+           save
            ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the sla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
+           if( kase==0 ) then
               do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1+abs(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_${rk}$ (and if computed by sla_yyamv), then we know
-           ! the true residual also must be exactly zero.
+                 x( i ) = one / real( n,KIND=${rk}$)
               end do
+              kase = 1
+              jump = 1
+              return
+           end if
+           go to ( 20, 40, 70, 110, 140 )jump
+           ! ................ entry   (jump = 1)
+           ! first iteration.  x has been overwritten by a*x.
+           20 continue
+           if( n==1 ) then
+              v( 1 ) = x( 1 )
+              est = abs( v( 1 ) )
+              ! ... quit
+              go to 150
+           end if
+           est = stdlib_${ri}$asum( n, x, 1 )
+           do i = 1, n
+              x( i ) = sign( one, x( i ) )
+              isgn( i ) = nint( x( i ),KIND=ilp)
            end do
-     end subroutine stdlib_${ri}$la_lin_berr
+           kase = 2
+           jump = 2
+           return
+           ! ................ entry   (jump = 2)
+           ! first iteration.  x has been overwritten by transpose(a)*x.
+           40 continue
+           j = stdlib_i${ri}$amax( n, x, 1 )
+           iter = 2
+           ! main loop - iterations 2,3,...,itmax.
+           50 continue
+           do i = 1, n
+              x( i ) = zero
+           end do
+           x( j ) = one
+           kase = 1
+           jump = 3
+           return
+           ! ................ entry   (jump = 3)
+           ! x has been overwritten by a*x.
+           70 continue
+           call stdlib_${ri}$copy( n, x, 1, v, 1 )
+           estold = est
+           est = stdlib_${ri}$asum( n, v, 1 )
+           do i = 1, n
+              if( nint( sign( one, x( i ) ),KIND=ilp)/=isgn( i ) )go to 90
+           end do
+           ! repeated sign vector detected, hence algorithm has converged.
+           go to 120
+           90 continue
+           ! test for cycling.
+           if( est<=estold )go to 120
+           do i = 1, n
+              x( i ) = sign( one, x( i ) )
+              isgn( i ) = nint( x( i ),KIND=ilp)
+           end do
+           kase = 2
+           jump = 4
+           return
+           ! ................ entry   (jump = 4)
+           ! x has been overwritten by transpose(a)*x.
+           110 continue
+           jlast = j
+           j = stdlib_i${ri}$amax( n, x, 1 )
+           if( ( x( jlast )/=abs( x( j ) ) ) .and. ( iter<itmax ) ) then
+              iter = iter + 1
+              go to 50
+           end if
+           ! iteration complete.  final stage.
+           120 continue
+           altsgn = one
+           do i = 1, n
+              x( i ) = altsgn*( one+real( i-1,KIND=${rk}$) / real( n-1,KIND=${rk}$) )
+              altsgn = -altsgn
+           end do
+           kase = 1
+           jump = 5
+           return
+           ! ................ entry   (jump = 5)
+           ! x has been overwritten by a*x.
+           140 continue
+           temp = two*( stdlib_${ri}$asum( n, x, 1 ) / real( 3*n,KIND=${rk}$) )
+           if( temp>est ) then
+              call stdlib_${ri}$copy( n, x, 1, v, 1 )
+              est = temp
+           end if
+           150 continue
+           kase = 0
+           return
+     end subroutine stdlib_${ri}$lacon
 
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cla_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! CLA_LIN_BERR computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
+     module subroutine stdlib_clacon( n, v, x, est, kase )
+     !! CLACON estimates the 1-norm of a square, complex matrix A.
+     !! Reverse communication is used for evaluating matrix-vector products.
+        ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
+           integer(ilp), intent(inout) :: kase
+           integer(ilp), intent(in) :: n
+           real(sp), intent(inout) :: est
            ! Array Arguments 
-           real(sp), intent(in) :: ayb(n,nrhs)
-           real(sp), intent(out) :: berr(nrhs)
-           complex(sp), intent(in) :: res(n,nrhs)
+           complex(sp), intent(out) :: v(n)
+           complex(sp), intent(inout) :: x(n)
         ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: itmax = 5
+           
+           
+           
            ! Local Scalars 
-           real(sp) :: tmp,safe1
-           integer(ilp) :: i, j
-           complex(sp) :: cdum
+           integer(ilp) :: i, iter, j, jlast, jump
+           real(sp) :: absxi, altsgn, estold, safmin, temp
            ! Intrinsic Functions 
-           ! Statement Functions 
-           complex(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=sp) ) + abs( aimag( cdum ) )
+           ! Save Statement 
+           save
            ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the cla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_slamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
+           safmin = stdlib_slamch( 'SAFE MINIMUM' )
+           if( kase==0 ) then
               do i = 1, n
-                 if (ayb(i,j) /= 0.0_sp) then
-                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_sp (and if computed by cla_yyamv), then we know
-           ! the true residual also must be exactly zero.
+                 x( i ) = cmplx( one / real( n,KIND=sp),KIND=sp)
               end do
+              kase = 1
+              jump = 1
+              return
+           end if
+           go to ( 20, 40, 70, 90, 120 )jump
+           ! ................ entry   (jump = 1)
+           ! first iteration.  x has been overwritten by a*x.
+           20 continue
+           if( n==1 ) then
+              v( 1 ) = x( 1 )
+              est = abs( v( 1 ) )
+              ! ... quit
+              go to 130
+           end if
+           est = stdlib_scsum1( n, x, 1 )
+           do i = 1, n
+              absxi = abs( x( i ) )
+              if( absxi>safmin ) then
+                 x( i ) = cmplx( real( x( i ),KIND=sp) / absxi,aimag( x( i ) ) / absxi,KIND=sp)
+                           
+              else
+                 x( i ) = cone
+              end if
            end do
-     end subroutine stdlib_cla_lin_berr
+           kase = 2
+           jump = 2
+           return
+           ! ................ entry   (jump = 2)
+           ! first iteration.  x has been overwritten by ctrans(a)*x.
+           40 continue
+           j = stdlib_icmax1( n, x, 1 )
+           iter = 2
+           ! main loop - iterations 2,3,...,itmax.
+           50 continue
+           do i = 1, n
+              x( i ) = czero
+           end do
+           x( j ) = cone
+           kase = 1
+           jump = 3
+           return
+           ! ................ entry   (jump = 3)
+           ! x has been overwritten by a*x.
+           70 continue
+           call stdlib_ccopy( n, x, 1, v, 1 )
+           estold = est
+           est = stdlib_scsum1( n, v, 1 )
+           ! test for cycling.
+           if( est<=estold )go to 100
+           do i = 1, n
+              absxi = abs( x( i ) )
+              if( absxi>safmin ) then
+                 x( i ) = cmplx( real( x( i ),KIND=sp) / absxi,aimag( x( i ) ) / absxi,KIND=sp)
+                           
+              else
+                 x( i ) = cone
+              end if
+           end do
+           kase = 2
+           jump = 4
+           return
+           ! ................ entry   (jump = 4)
+           ! x has been overwritten by ctrans(a)*x.
+           90 continue
+           jlast = j
+           j = stdlib_icmax1( n, x, 1 )
+           if( ( abs( x( jlast ) )/=abs( x( j ) ) ) .and.( iter<itmax ) ) then
+              iter = iter + 1
+              go to 50
+           end if
+           ! iteration complete.  final stage.
+           100 continue
+           altsgn = one
+           do i = 1, n
+              x( i ) = cmplx( altsgn*( one+real( i-1,KIND=sp) / real( n-1,KIND=sp) ),KIND=sp)
+                        
+              altsgn = -altsgn
+           end do
+           kase = 1
+           jump = 5
+           return
+           ! ................ entry   (jump = 5)
+           ! x has been overwritten by a*x.
+           120 continue
+           temp = two*( stdlib_scsum1( n, x, 1 ) / real( 3*n,KIND=sp) )
+           if( temp>est ) then
+              call stdlib_ccopy( n, x, 1, v, 1 )
+              est = temp
+           end if
+           130 continue
+           kase = 0
+           return
+     end subroutine stdlib_clacon
 
-     module pure subroutine stdlib_zla_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! ZLA_LIN_BERR computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
+     module subroutine stdlib_zlacon( n, v, x, est, kase )
+     !! ZLACON estimates the 1-norm of a square, complex matrix A.
+     !! Reverse communication is used for evaluating matrix-vector products.
+        ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
+           integer(ilp), intent(inout) :: kase
+           integer(ilp), intent(in) :: n
+           real(dp), intent(inout) :: est
            ! Array Arguments 
-           real(dp), intent(in) :: ayb(n,nrhs)
-           real(dp), intent(out) :: berr(nrhs)
-           complex(dp), intent(in) :: res(n,nrhs)
+           complex(dp), intent(out) :: v(n)
+           complex(dp), intent(inout) :: x(n)
         ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: itmax = 5
+           
+           
+           
            ! Local Scalars 
-           real(dp) :: tmp,safe1
-           integer(ilp) :: i, j
-           complex(dp) :: cdum
+           integer(ilp) :: i, iter, j, jlast, jump
+           real(dp) :: absxi, altsgn, estold, safmin, temp
            ! Intrinsic Functions 
-           ! Statement Functions 
-           complex(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=dp) ) + abs( aimag( cdum ) )
+           ! Save Statement 
+           save
            ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the cla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_dlamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
+           safmin = stdlib_dlamch( 'SAFE MINIMUM' )
+           if( kase==0 ) then
               do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_dp (and if computed by cla_yyamv), then we know
-           ! the true residual also must be exactly zero.
+                 x( i ) = cmplx( one / real( n,KIND=dp),KIND=dp)
               end do
+              kase = 1
+              jump = 1
+              return
+           end if
+           go to ( 20, 40, 70, 90, 120 )jump
+           ! ................ entry   (jump = 1)
+           ! first iteration.  x has been overwritten by a*x.
+           20 continue
+           if( n==1 ) then
+              v( 1 ) = x( 1 )
+              est = abs( v( 1 ) )
+              ! ... quit
+              go to 130
+           end if
+           est = stdlib_dzsum1( n, x, 1 )
+           do i = 1, n
+              absxi = abs( x( i ) )
+              if( absxi>safmin ) then
+                 x( i ) = cmplx( real( x( i ),KIND=dp) / absxi,aimag( x( i ) ) / absxi,KIND=dp)
+                           
+              else
+                 x( i ) = cone
+              end if
            end do
-     end subroutine stdlib_zla_lin_berr
+           kase = 2
+           jump = 2
+           return
+           ! ................ entry   (jump = 2)
+           ! first iteration.  x has been overwritten by ctrans(a)*x.
+           40 continue
+           j = stdlib_izmax1( n, x, 1 )
+           iter = 2
+           ! main loop - iterations 2,3,...,itmax.
+           50 continue
+           do i = 1, n
+              x( i ) = czero
+           end do
+           x( j ) = cone
+           kase = 1
+           jump = 3
+           return
+           ! ................ entry   (jump = 3)
+           ! x has been overwritten by a*x.
+           70 continue
+           call stdlib_zcopy( n, x, 1, v, 1 )
+           estold = est
+           est = stdlib_dzsum1( n, v, 1 )
+           ! test for cycling.
+           if( est<=estold )go to 100
+           do i = 1, n
+              absxi = abs( x( i ) )
+              if( absxi>safmin ) then
+                 x( i ) = cmplx( real( x( i ),KIND=dp) / absxi,aimag( x( i ) ) / absxi,KIND=dp)
+                           
+              else
+                 x( i ) = cone
+              end if
+           end do
+           kase = 2
+           jump = 4
+           return
+           ! ................ entry   (jump = 4)
+           ! x has been overwritten by ctrans(a)*x.
+           90 continue
+           jlast = j
+           j = stdlib_izmax1( n, x, 1 )
+           if( ( abs( x( jlast ) )/=abs( x( j ) ) ) .and.( iter<itmax ) ) then
+              iter = iter + 1
+              go to 50
+           end if
+           ! iteration complete.  final stage.
+           100 continue
+           altsgn = one
+           do i = 1, n
+              x( i ) = cmplx( altsgn*( one+real( i-1,KIND=dp) / real( n-1,KIND=dp) ),KIND=dp)
+                        
+              altsgn = -altsgn
+           end do
+           kase = 1
+           jump = 5
+           return
+           ! ................ entry   (jump = 5)
+           ! x has been overwritten by a*x.
+           120 continue
+           temp = two*( stdlib_dzsum1( n, x, 1 ) / real( 3*n,KIND=dp) )
+           if( temp>est ) then
+              call stdlib_zcopy( n, x, 1, v, 1 )
+              est = temp
+           end if
+           130 continue
+           kase = 0
+           return
+     end subroutine stdlib_zlacon
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$la_lin_berr( n, nz, nrhs, res, ayb, berr )
-     !! ZLA_LIN_BERR: computes componentwise relative backward error from
-     !! the formula
-     !! max(i) ( abs(R(i)) / ( abs(op(A_s))*abs(Y) + abs(B_s) )(i) )
-     !! where abs(Z) is the componentwise absolute value of the matrix
-     !! or vector Z.
-        ! -- lapack computational routine --
+     module subroutine stdlib_${ci}$lacon( n, v, x, est, kase )
+     !! ZLACON: estimates the 1-norm of a square, complex matrix A.
+     !! Reverse communication is used for evaluating matrix-vector products.
+        ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: n, nz, nrhs
+           integer(ilp), intent(inout) :: kase
+           integer(ilp), intent(in) :: n
+           real(${ck}$), intent(inout) :: est
            ! Array Arguments 
-           real(${ck}$), intent(in) :: ayb(n,nrhs)
-           real(${ck}$), intent(out) :: berr(nrhs)
-           complex(${ck}$), intent(in) :: res(n,nrhs)
+           complex(${ck}$), intent(out) :: v(n)
+           complex(${ck}$), intent(inout) :: x(n)
         ! =====================================================================
+           ! Parameters 
+           integer(ilp), parameter :: itmax = 5
+           
+           
+           
            ! Local Scalars 
-           real(${ck}$) :: tmp,safe1
-           integer(ilp) :: i, j
-           complex(${ck}$) :: cdum
+           integer(ilp) :: i, iter, j, jlast, jump
+           real(${ck}$) :: absxi, altsgn, estold, safmin, temp
            ! Intrinsic Functions 
-           ! Statement Functions 
-           complex(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=${ck}$) ) + abs( aimag( cdum ) )
+           ! Save Statement 
+           save
            ! Executable Statements 
-           ! adding safe1 to the numerator guards against spuriously zero
-           ! residuals.  a similar safeguard is in the cla_yyamv routine used
-           ! to compute ayb.
-           safe1 = stdlib_${c2ri(ci)}$lamch( 'SAFE MINIMUM' )
-           safe1 = (nz+1)*safe1
-           do j = 1, nrhs
-              berr(j) = zero
+           safmin = stdlib_${c2ri(ci)}$lamch( 'SAFE MINIMUM' )
+           if( kase==0 ) then
               do i = 1, n
-                 if (ayb(i,j) /= zero) then
-                    tmp = (safe1 + cabs1(res(i,j)))/ayb(i,j)
-                    berr(j) = max( berr(j), tmp )
-                 end if
-           ! if ayb is exactly 0.0_${ck}$ (and if computed by cla_yyamv), then we know
-           ! the true residual also must be exactly zero.
+                 x( i ) = cmplx( one / real( n,KIND=${ck}$),KIND=${ck}$)
               end do
+              kase = 1
+              jump = 1
+              return
+           end if
+           go to ( 20, 40, 70, 90, 120 )jump
+           ! ................ entry   (jump = 1)
+           ! first iteration.  x has been overwritten by a*x.
+           20 continue
+           if( n==1 ) then
+              v( 1 ) = x( 1 )
+              est = abs( v( 1 ) )
+              ! ... quit
+              go to 130
+           end if
+           est = stdlib_${c2ri(ci)}$zsum1( n, x, 1 )
+           do i = 1, n
+              absxi = abs( x( i ) )
+              if( absxi>safmin ) then
+                 x( i ) = cmplx( real( x( i ),KIND=${ck}$) / absxi,aimag( x( i ) ) / absxi,KIND=${ck}$)
+                           
+              else
+                 x( i ) = cone
+              end if
            end do
-     end subroutine stdlib_${ci}$la_lin_berr
+           kase = 2
+           jump = 2
+           return
+           ! ................ entry   (jump = 2)
+           ! first iteration.  x has been overwritten by ctrans(a)*x.
+           40 continue
+           j = stdlib_i${ci}$max1( n, x, 1 )
+           iter = 2
+           ! main loop - iterations 2,3,...,itmax.
+           50 continue
+           do i = 1, n
+              x( i ) = czero
+           end do
+           x( j ) = cone
+           kase = 1
+           jump = 3
+           return
+           ! ................ entry   (jump = 3)
+           ! x has been overwritten by a*x.
+           70 continue
+           call stdlib_${ci}$copy( n, x, 1, v, 1 )
+           estold = est
+           est = stdlib_${c2ri(ci)}$zsum1( n, v, 1 )
+           ! test for cycling.
+           if( est<=estold )go to 100
+           do i = 1, n
+              absxi = abs( x( i ) )
+              if( absxi>safmin ) then
+                 x( i ) = cmplx( real( x( i ),KIND=${ck}$) / absxi,aimag( x( i ) ) / absxi,KIND=${ck}$)
+                           
+              else
+                 x( i ) = cone
+              end if
+           end do
+           kase = 2
+           jump = 4
+           return
+           ! ................ entry   (jump = 4)
+           ! x has been overwritten by ctrans(a)*x.
+           90 continue
+           jlast = j
+           j = stdlib_i${ci}$max1( n, x, 1 )
+           if( ( abs( x( jlast ) )/=abs( x( j ) ) ) .and.( iter<itmax ) ) then
+              iter = iter + 1
+              go to 50
+           end if
+           ! iteration complete.  final stage.
+           100 continue
+           altsgn = one
+           do i = 1, n
+              x( i ) = cmplx( altsgn*( one+real( i-1,KIND=${ck}$) / real( n-1,KIND=${ck}$) ),KIND=${ck}$)
+                        
+              altsgn = -altsgn
+           end do
+           kase = 1
+           jump = 5
+           return
+           ! ................ entry   (jump = 5)
+           ! x has been overwritten by a*x.
+           120 continue
+           temp = two*( stdlib_${c2ri(ci)}$zsum1( n, x, 1 ) / real( 3*n,KIND=${ck}$) )
+           if( temp>est ) then
+              call stdlib_${ci}$copy( n, x, 1, v, 1 )
+              est = temp
+           end if
+           130 continue
+           kase = 0
+           return
+     end subroutine stdlib_${ci}$lacon
 
 #:endif
 #:endfor
