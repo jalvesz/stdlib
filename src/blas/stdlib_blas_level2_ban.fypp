@@ -5,7 +5,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
 
   contains
 
-     module pure subroutine stdlib_sgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_sgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_sp
      !! SGBMV performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
@@ -160,7 +160,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
            return
      end subroutine stdlib_sgbmv
 
-     module pure subroutine stdlib_dgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_dgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_dp
      !! DGBMV performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
@@ -317,7 +317,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_${ri}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_${rk}$
      !! DGBMV:  performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
@@ -475,7 +475,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_cgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_sp
      !! CGBMV performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
@@ -647,7 +647,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
            return
      end subroutine stdlib_cgbmv
 
-     module pure subroutine stdlib_zgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_zgbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_dp
      !! ZGBMV performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
@@ -821,7 +821,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_${ci}$gbmv(trans,m,n,kl,ku,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_${ck}$
      !! ZGBMV:  performs one of the matrix-vector operations
      !! y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,   or
@@ -998,7 +998,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
 
 
 
-     module pure subroutine stdlib_chbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_chbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_sp
      !! CHBMV performs the matrix-vector  operation
      !! y := alpha*A*x + beta*y,
@@ -1161,7 +1161,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
            return
      end subroutine stdlib_chbmv
 
-     module pure subroutine stdlib_zhbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_zhbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_dp
      !! ZHBMV performs the matrix-vector  operation
      !! y := alpha*A*x + beta*y,
@@ -1326,7 +1326,7 @@ submodule(stdlib_blas) stdlib_blas_level2_ban
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$hbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_${ci}$hbmv(uplo,n,k,alpha,a,lda,x,incx,beta,y,incy)
      use stdlib_blas_constants_${ck}$
      !! ZHBMV:  performs the matrix-vector  operation
      !! y := alpha*A*x + beta*y,

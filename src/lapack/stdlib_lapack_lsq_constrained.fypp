@@ -5,7 +5,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 
   contains
 
-     module pure subroutine stdlib_sgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
+     pure module subroutine stdlib_sgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
      !! SGGLSE solves the linear equality-constrained least squares (LSE)
      !! problem:
      !! minimize || c - A*x ||_2   subject to   B*x = d
@@ -136,7 +136,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
            return
      end subroutine stdlib_sgglse
 
-     module pure subroutine stdlib_dgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
+     pure module subroutine stdlib_dgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
      !! DGGLSE solves the linear equality-constrained least squares (LSE)
      !! problem:
      !! minimize || c - A*x ||_2   subject to   B*x = d
@@ -269,7 +269,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$gglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
+     pure module subroutine stdlib_${ri}$gglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
      !! DGGLSE: solves the linear equality-constrained least squares (LSE)
      !! problem:
      !! minimize || c - A*x ||_2   subject to   B*x = d
@@ -403,7 +403,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
+     pure module subroutine stdlib_cgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
      !! CGGLSE solves the linear equality-constrained least squares (LSE)
      !! problem:
      !! minimize || c - A*x ||_2   subject to   B*x = d
@@ -534,7 +534,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
            return
      end subroutine stdlib_cgglse
 
-     module pure subroutine stdlib_zgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
+     pure module subroutine stdlib_zgglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
      !! ZGGLSE solves the linear equality-constrained least squares (LSE)
      !! problem:
      !! minimize || c - A*x ||_2   subject to   B*x = d
@@ -667,7 +667,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$gglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
+     pure module subroutine stdlib_${ci}$gglse( m, n, p, a, lda, b, ldb, c, d, x, work, lwork,info )
      !! ZGGLSE: solves the linear equality-constrained least squares (LSE)
      !! problem:
      !! minimize || c - A*x ||_2   subject to   B*x = d
@@ -803,7 +803,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 
 
 
-     module pure subroutine stdlib_sggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
+     pure module subroutine stdlib_sggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
      !! SGGGLM solves a general Gauss-Markov linear model (GLM) problem:
      !! minimize || y ||_2   subject to   d = A*x + B*y
      !! x
@@ -938,7 +938,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
            return
      end subroutine stdlib_sggglm
 
-     module pure subroutine stdlib_dggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
+     pure module subroutine stdlib_dggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
      !! DGGGLM solves a general Gauss-Markov linear model (GLM) problem:
      !! minimize || y ||_2   subject to   d = A*x + B*y
      !! x
@@ -1075,7 +1075,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$ggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
+     pure module subroutine stdlib_${ri}$ggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
      !! DGGGLM: solves a general Gauss-Markov linear model (GLM) problem:
      !! minimize || y ||_2   subject to   d = A*x + B*y
      !! x
@@ -1213,7 +1213,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
+     pure module subroutine stdlib_cggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
      !! CGGGLM solves a general Gauss-Markov linear model (GLM) problem:
      !! minimize || y ||_2   subject to   d = A*x + B*y
      !! x
@@ -1348,7 +1348,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
            return
      end subroutine stdlib_cggglm
 
-     module pure subroutine stdlib_zggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
+     pure module subroutine stdlib_zggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
      !! ZGGGLM solves a general Gauss-Markov linear model (GLM) problem:
      !! minimize || y ||_2   subject to   d = A*x + B*y
      !! x
@@ -1485,7 +1485,7 @@ submodule(stdlib_lapack) stdlib_lapack_lsq_constrained
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$ggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
+     pure module subroutine stdlib_${ci}$ggglm( n, m, p, a, lda, b, ldb, d, x, y, work, lwork,info )
      !! ZGGGLM: solves a general Gauss-Markov linear model (GLM) problem:
      !! minimize || y ||_2   subject to   d = A*x + B*y
      !! x

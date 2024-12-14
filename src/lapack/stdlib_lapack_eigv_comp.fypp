@@ -5,7 +5,1807 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
   contains
 
-     module pure subroutine stdlib_sgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_sggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
+     !! SGGBAL balances a pair of general real matrices (A,B).  This
+     !! involves, first, permuting A and B by similarity transformations to
+     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
+     !! elements on the diagonal; and second, applying a diagonal similarity
+     !! transformation to rows and columns ILO to IHI to make the rows
+     !! and columns as close in norm as possible. Both steps are optional.
+     !! Balancing may reduce the 1-norm of the matrices, and improve the
+     !! accuracy of the computed eigenvalues and/or eigenvectors in the
+     !! generalized eigenvalue problem A*x = lambda*B*x.
+               
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: job
+           integer(ilp), intent(out) :: ihi, ilo, info
+           integer(ilp), intent(in) :: lda, ldb, n
+           ! Array Arguments 
+           real(sp), intent(inout) :: a(lda,*), b(ldb,*)
+           real(sp), intent(out) :: lscale(*), rscale(*), work(*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: sclfac = 1.0e+1_sp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
+                     lrab, lsfmax, lsfmin, m, nr, nrp2
+           real(sp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
+                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters
+           info = 0
+           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
+                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SGGBAL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 ) then
+              ilo = 1
+              ihi = n
+              return
+           end if
+           if( n==1 ) then
+              ilo = 1
+              ihi = n
+              lscale( 1 ) = one
+              rscale( 1 ) = one
+              return
+           end if
+           if( stdlib_lsame( job, 'N' ) ) then
+              ilo = 1
+              ihi = n
+              do i = 1, n
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           k = 1
+           l = n
+           if( stdlib_lsame( job, 'S' ) )go to 190
+           go to 30
+           ! permute the matrices a and b to isolate the eigenvalues.
+           ! find row with one nonzero in columns 1 through l
+           20 continue
+           l = lm1
+           if( l/=1 )go to 30
+           rscale( 1 ) = one
+           lscale( 1 ) = one
+           go to 190
+           30 continue
+           lm1 = l - 1
+           loop_80: do i = l, 1, -1
+              do j = 1, lm1
+                 jp1 = j + 1
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 50
+              end do
+              j = l
+              go to 70
+              50 continue
+              do j = jp1, l
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_80
+              end do
+              j = jp1 - 1
+              70 continue
+              m = l
+              iflow = 1
+              go to 160
+           end do loop_80
+           go to 100
+           ! find column with one nonzero in rows k through n
+           90 continue
+           k = k + 1
+           100 continue
+           loop_150: do j = k, l
+              do i = k, lm1
+                 ip1 = i + 1
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 120
+              end do
+              i = l
+              go to 140
+              120 continue
+              do i = ip1, l
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_150
+              end do
+              i = ip1 - 1
+              140 continue
+              m = k
+              iflow = 2
+              go to 160
+           end do loop_150
+           go to 190
+           ! permute rows m and i
+           160 continue
+           lscale( m ) = i
+           if( i==m )go to 170
+           call stdlib_sswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
+           call stdlib_sswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
+           ! permute columns m and j
+           170 continue
+           rscale( m ) = j
+           if( j==m )go to 180
+           call stdlib_sswap( l, a( 1, j ), 1, a( 1, m ), 1 )
+           call stdlib_sswap( l, b( 1, j ), 1, b( 1, m ), 1 )
+           180 continue
+           go to ( 20, 90 )iflow
+           190 continue
+           ilo = k
+           ihi = l
+           if( stdlib_lsame( job, 'P' ) ) then
+              do i = ilo, ihi
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           if( ilo==ihi )return
+           ! balance the submatrix in rows ilo to ihi.
+           nr = ihi - ilo + 1
+           do i = ilo, ihi
+              rscale( i ) = zero
+              lscale( i ) = zero
+              work( i ) = zero
+              work( i+n ) = zero
+              work( i+2*n ) = zero
+              work( i+3*n ) = zero
+              work( i+4*n ) = zero
+              work( i+5*n ) = zero
+           end do
+           ! compute right side vector in resulting linear equations
+           basl = log10( sclfac )
+           do i = ilo, ihi
+              do j = ilo, ihi
+                 tb = b( i, j )
+                 ta = a( i, j )
+                 if( ta==zero )go to 210
+                 ta = log10( abs( ta ) ) / basl
+                 210 continue
+                 if( tb==zero )go to 220
+                 tb = log10( abs( tb ) ) / basl
+                 220 continue
+                 work( i+4*n ) = work( i+4*n ) - ta - tb
+                 work( j+5*n ) = work( j+5*n ) - ta - tb
+              end do
+           end do
+           coef = one / real( 2*nr,KIND=sp)
+           coef2 = coef*coef
+           coef5 = half*coef2
+           nrp2 = nr + 2
+           beta = zero
+           it = 1
+           ! start generalized conjugate gradient iteration
+           250 continue
+           gamma = stdlib_sdot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_sdot( nr, &
+                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
+           ew = zero
+           ewc = zero
+           do i = ilo, ihi
+              ew = ew + work( i+4*n )
+              ewc = ewc + work( i+5*n )
+           end do
+           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
+           if( gamma==zero )go to 350
+           if( it/=1 )beta = gamma / pgamma
+           t = coef5*( ewc-three*ew )
+           tc = coef5*( ew-three*ewc )
+           call stdlib_sscal( nr, beta, work( ilo ), 1 )
+           call stdlib_sscal( nr, beta, work( ilo+n ), 1 )
+           call stdlib_saxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
+           call stdlib_saxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
+           do i = ilo, ihi
+              work( i ) = work( i ) + tc
+              work( i+n ) = work( i+n ) + t
+           end do
+           ! apply matrix to vector
+           do i = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_290: do j = ilo, ihi
+                 if( a( i, j )==zero )go to 280
+                 kount = kount + 1
+                 sum = sum + work( j )
+                 280 continue
+                 if( b( i, j )==zero )cycle loop_290
+                 kount = kount + 1
+                 sum = sum + work( j )
+              end do loop_290
+              work( i+2*n ) = real( kount,KIND=sp)*work( i+n ) + sum
+           end do
+           do j = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_320: do i = ilo, ihi
+                 if( a( i, j )==zero )go to 310
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+                 310 continue
+                 if( b( i, j )==zero )cycle loop_320
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+              end do loop_320
+              work( j+3*n ) = real( kount,KIND=sp)*work( j ) + sum
+           end do
+           sum = stdlib_sdot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_sdot( nr, work( &
+                     ilo ), 1, work( ilo+3*n ), 1 )
+           alpha = gamma / sum
+           ! determine correction to current iteration
+           cmax = zero
+           do i = ilo, ihi
+              cor = alpha*work( i+n )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              lscale( i ) = lscale( i ) + cor
+              cor = alpha*work( i )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              rscale( i ) = rscale( i ) + cor
+           end do
+           if( cmax<half )go to 350
+           call stdlib_saxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
+           call stdlib_saxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
+           pgamma = gamma
+           it = it + 1
+           if( it<=nrp2 )go to 250
+           ! end generalized conjugate gradient iteration
+           350 continue
+           sfmin = stdlib_slamch( 'S' )
+           sfmax = one / sfmin
+           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
+           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
+           do i = ilo, ihi
+              irab = stdlib_isamax( n-ilo+1, a( i, ilo ), lda )
+              rab = abs( a( i, irab+ilo-1 ) )
+              irab = stdlib_isamax( n-ilo+1, b( i, ilo ), ldb )
+              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
+              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
+              ir = lscale( i ) + sign( half, lscale( i ) )
+              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
+              lscale( i ) = sclfac**ir
+              icab = stdlib_isamax( ihi, a( 1, i ), 1 )
+              cab = abs( a( icab, i ) )
+              icab = stdlib_isamax( ihi, b( 1, i ), 1 )
+              cab = max( cab, abs( b( icab, i ) ) )
+              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
+              jc = rscale( i ) + sign( half, rscale( i ) )
+              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
+              rscale( i ) = sclfac**jc
+           end do
+           ! row scaling of matrices a and b
+           do i = ilo, ihi
+              call stdlib_sscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
+              call stdlib_sscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
+           end do
+           ! column scaling of matrices a and b
+           do j = ilo, ihi
+              call stdlib_sscal( ihi, rscale( j ), a( 1, j ), 1 )
+              call stdlib_sscal( ihi, rscale( j ), b( 1, j ), 1 )
+           end do
+           return
+     end subroutine stdlib_sggbal
+
+     pure module subroutine stdlib_dggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
+     !! DGGBAL balances a pair of general real matrices (A,B).  This
+     !! involves, first, permuting A and B by similarity transformations to
+     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
+     !! elements on the diagonal; and second, applying a diagonal similarity
+     !! transformation to rows and columns ILO to IHI to make the rows
+     !! and columns as close in norm as possible. Both steps are optional.
+     !! Balancing may reduce the 1-norm of the matrices, and improve the
+     !! accuracy of the computed eigenvalues and/or eigenvectors in the
+     !! generalized eigenvalue problem A*x = lambda*B*x.
+               
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: job
+           integer(ilp), intent(out) :: ihi, ilo, info
+           integer(ilp), intent(in) :: lda, ldb, n
+           ! Array Arguments 
+           real(dp), intent(inout) :: a(lda,*), b(ldb,*)
+           real(dp), intent(out) :: lscale(*), rscale(*), work(*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: sclfac = 1.0e+1_dp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
+                     lrab, lsfmax, lsfmin, m, nr, nrp2
+           real(dp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
+                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters
+           info = 0
+           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
+                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGGBAL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 ) then
+              ilo = 1
+              ihi = n
+              return
+           end if
+           if( n==1 ) then
+              ilo = 1
+              ihi = n
+              lscale( 1 ) = one
+              rscale( 1 ) = one
+              return
+           end if
+           if( stdlib_lsame( job, 'N' ) ) then
+              ilo = 1
+              ihi = n
+              do i = 1, n
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           k = 1
+           l = n
+           if( stdlib_lsame( job, 'S' ) )go to 190
+           go to 30
+           ! permute the matrices a and b to isolate the eigenvalues.
+           ! find row with one nonzero in columns 1 through l
+           20 continue
+           l = lm1
+           if( l/=1 )go to 30
+           rscale( 1 ) = one
+           lscale( 1 ) = one
+           go to 190
+           30 continue
+           lm1 = l - 1
+           loop_80: do i = l, 1, -1
+              do j = 1, lm1
+                 jp1 = j + 1
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 50
+              end do
+              j = l
+              go to 70
+              50 continue
+              do j = jp1, l
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_80
+              end do
+              j = jp1 - 1
+              70 continue
+              m = l
+              iflow = 1
+              go to 160
+           end do loop_80
+           go to 100
+           ! find column with one nonzero in rows k through n
+           90 continue
+           k = k + 1
+           100 continue
+           loop_150: do j = k, l
+              do i = k, lm1
+                 ip1 = i + 1
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 120
+              end do
+              i = l
+              go to 140
+              120 continue
+              do i = ip1, l
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_150
+              end do
+              i = ip1 - 1
+              140 continue
+              m = k
+              iflow = 2
+              go to 160
+           end do loop_150
+           go to 190
+           ! permute rows m and i
+           160 continue
+           lscale( m ) = i
+           if( i==m )go to 170
+           call stdlib_dswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
+           call stdlib_dswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
+           ! permute columns m and j
+           170 continue
+           rscale( m ) = j
+           if( j==m )go to 180
+           call stdlib_dswap( l, a( 1, j ), 1, a( 1, m ), 1 )
+           call stdlib_dswap( l, b( 1, j ), 1, b( 1, m ), 1 )
+           180 continue
+           go to ( 20, 90 )iflow
+           190 continue
+           ilo = k
+           ihi = l
+           if( stdlib_lsame( job, 'P' ) ) then
+              do i = ilo, ihi
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           if( ilo==ihi )return
+           ! balance the submatrix in rows ilo to ihi.
+           nr = ihi - ilo + 1
+           do i = ilo, ihi
+              rscale( i ) = zero
+              lscale( i ) = zero
+              work( i ) = zero
+              work( i+n ) = zero
+              work( i+2*n ) = zero
+              work( i+3*n ) = zero
+              work( i+4*n ) = zero
+              work( i+5*n ) = zero
+           end do
+           ! compute right side vector in resulting linear equations
+           basl = log10( sclfac )
+           do i = ilo, ihi
+              do j = ilo, ihi
+                 tb = b( i, j )
+                 ta = a( i, j )
+                 if( ta==zero )go to 210
+                 ta = log10( abs( ta ) ) / basl
+                 210 continue
+                 if( tb==zero )go to 220
+                 tb = log10( abs( tb ) ) / basl
+                 220 continue
+                 work( i+4*n ) = work( i+4*n ) - ta - tb
+                 work( j+5*n ) = work( j+5*n ) - ta - tb
+              end do
+           end do
+           coef = one / real( 2*nr,KIND=dp)
+           coef2 = coef*coef
+           coef5 = half*coef2
+           nrp2 = nr + 2
+           beta = zero
+           it = 1
+           ! start generalized conjugate gradient iteration
+           250 continue
+           gamma = stdlib_ddot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_ddot( nr, &
+                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
+           ew = zero
+           ewc = zero
+           do i = ilo, ihi
+              ew = ew + work( i+4*n )
+              ewc = ewc + work( i+5*n )
+           end do
+           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
+           if( gamma==zero )go to 350
+           if( it/=1 )beta = gamma / pgamma
+           t = coef5*( ewc-three*ew )
+           tc = coef5*( ew-three*ewc )
+           call stdlib_dscal( nr, beta, work( ilo ), 1 )
+           call stdlib_dscal( nr, beta, work( ilo+n ), 1 )
+           call stdlib_daxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
+           call stdlib_daxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
+           do i = ilo, ihi
+              work( i ) = work( i ) + tc
+              work( i+n ) = work( i+n ) + t
+           end do
+           ! apply matrix to vector
+           do i = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_290: do j = ilo, ihi
+                 if( a( i, j )==zero )go to 280
+                 kount = kount + 1
+                 sum = sum + work( j )
+                 280 continue
+                 if( b( i, j )==zero )cycle loop_290
+                 kount = kount + 1
+                 sum = sum + work( j )
+              end do loop_290
+              work( i+2*n ) = real( kount,KIND=dp)*work( i+n ) + sum
+           end do
+           do j = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_320: do i = ilo, ihi
+                 if( a( i, j )==zero )go to 310
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+                 310 continue
+                 if( b( i, j )==zero )cycle loop_320
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+              end do loop_320
+              work( j+3*n ) = real( kount,KIND=dp)*work( j ) + sum
+           end do
+           sum = stdlib_ddot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_ddot( nr, work( &
+                     ilo ), 1, work( ilo+3*n ), 1 )
+           alpha = gamma / sum
+           ! determine correction to current iteration
+           cmax = zero
+           do i = ilo, ihi
+              cor = alpha*work( i+n )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              lscale( i ) = lscale( i ) + cor
+              cor = alpha*work( i )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              rscale( i ) = rscale( i ) + cor
+           end do
+           if( cmax<half )go to 350
+           call stdlib_daxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
+           call stdlib_daxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
+           pgamma = gamma
+           it = it + 1
+           if( it<=nrp2 )go to 250
+           ! end generalized conjugate gradient iteration
+           350 continue
+           sfmin = stdlib_dlamch( 'S' )
+           sfmax = one / sfmin
+           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
+           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
+           do i = ilo, ihi
+              irab = stdlib_idamax( n-ilo+1, a( i, ilo ), lda )
+              rab = abs( a( i, irab+ilo-1 ) )
+              irab = stdlib_idamax( n-ilo+1, b( i, ilo ), ldb )
+              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
+              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
+              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
+              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
+              lscale( i ) = sclfac**ir
+              icab = stdlib_idamax( ihi, a( 1, i ), 1 )
+              cab = abs( a( icab, i ) )
+              icab = stdlib_idamax( ihi, b( 1, i ), 1 )
+              cab = max( cab, abs( b( icab, i ) ) )
+              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
+              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
+              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
+              rscale( i ) = sclfac**jc
+           end do
+           ! row scaling of matrices a and b
+           do i = ilo, ihi
+              call stdlib_dscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
+              call stdlib_dscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
+           end do
+           ! column scaling of matrices a and b
+           do j = ilo, ihi
+              call stdlib_dscal( ihi, rscale( j ), a( 1, j ), 1 )
+              call stdlib_dscal( ihi, rscale( j ), b( 1, j ), 1 )
+           end do
+           return
+     end subroutine stdlib_dggbal
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$ggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
+     !! DGGBAL: balances a pair of general real matrices (A,B).  This
+     !! involves, first, permuting A and B by similarity transformations to
+     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
+     !! elements on the diagonal; and second, applying a diagonal similarity
+     !! transformation to rows and columns ILO to IHI to make the rows
+     !! and columns as close in norm as possible. Both steps are optional.
+     !! Balancing may reduce the 1-norm of the matrices, and improve the
+     !! accuracy of the computed eigenvalues and/or eigenvectors in the
+     !! generalized eigenvalue problem A*x = lambda*B*x.
+               
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: job
+           integer(ilp), intent(out) :: ihi, ilo, info
+           integer(ilp), intent(in) :: lda, ldb, n
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: a(lda,*), b(ldb,*)
+           real(${rk}$), intent(out) :: lscale(*), rscale(*), work(*)
+        ! =====================================================================
+           ! Parameters 
+           real(${rk}$), parameter :: sclfac = 1.0e+1_${rk}$
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
+                     lrab, lsfmax, lsfmin, m, nr, nrp2
+           real(${rk}$) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
+                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters
+           info = 0
+           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
+                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DGGBAL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 ) then
+              ilo = 1
+              ihi = n
+              return
+           end if
+           if( n==1 ) then
+              ilo = 1
+              ihi = n
+              lscale( 1 ) = one
+              rscale( 1 ) = one
+              return
+           end if
+           if( stdlib_lsame( job, 'N' ) ) then
+              ilo = 1
+              ihi = n
+              do i = 1, n
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           k = 1
+           l = n
+           if( stdlib_lsame( job, 'S' ) )go to 190
+           go to 30
+           ! permute the matrices a and b to isolate the eigenvalues.
+           ! find row with one nonzero in columns 1 through l
+           20 continue
+           l = lm1
+           if( l/=1 )go to 30
+           rscale( 1 ) = one
+           lscale( 1 ) = one
+           go to 190
+           30 continue
+           lm1 = l - 1
+           loop_80: do i = l, 1, -1
+              do j = 1, lm1
+                 jp1 = j + 1
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 50
+              end do
+              j = l
+              go to 70
+              50 continue
+              do j = jp1, l
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_80
+              end do
+              j = jp1 - 1
+              70 continue
+              m = l
+              iflow = 1
+              go to 160
+           end do loop_80
+           go to 100
+           ! find column with one nonzero in rows k through n
+           90 continue
+           k = k + 1
+           100 continue
+           loop_150: do j = k, l
+              do i = k, lm1
+                 ip1 = i + 1
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 120
+              end do
+              i = l
+              go to 140
+              120 continue
+              do i = ip1, l
+                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_150
+              end do
+              i = ip1 - 1
+              140 continue
+              m = k
+              iflow = 2
+              go to 160
+           end do loop_150
+           go to 190
+           ! permute rows m and i
+           160 continue
+           lscale( m ) = i
+           if( i==m )go to 170
+           call stdlib_${ri}$swap( n-k+1, a( i, k ), lda, a( m, k ), lda )
+           call stdlib_${ri}$swap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
+           ! permute columns m and j
+           170 continue
+           rscale( m ) = j
+           if( j==m )go to 180
+           call stdlib_${ri}$swap( l, a( 1, j ), 1, a( 1, m ), 1 )
+           call stdlib_${ri}$swap( l, b( 1, j ), 1, b( 1, m ), 1 )
+           180 continue
+           go to ( 20, 90 )iflow
+           190 continue
+           ilo = k
+           ihi = l
+           if( stdlib_lsame( job, 'P' ) ) then
+              do i = ilo, ihi
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           if( ilo==ihi )return
+           ! balance the submatrix in rows ilo to ihi.
+           nr = ihi - ilo + 1
+           do i = ilo, ihi
+              rscale( i ) = zero
+              lscale( i ) = zero
+              work( i ) = zero
+              work( i+n ) = zero
+              work( i+2*n ) = zero
+              work( i+3*n ) = zero
+              work( i+4*n ) = zero
+              work( i+5*n ) = zero
+           end do
+           ! compute right side vector in resulting linear equations
+           basl = log10( sclfac )
+           do i = ilo, ihi
+              do j = ilo, ihi
+                 tb = b( i, j )
+                 ta = a( i, j )
+                 if( ta==zero )go to 210
+                 ta = log10( abs( ta ) ) / basl
+                 210 continue
+                 if( tb==zero )go to 220
+                 tb = log10( abs( tb ) ) / basl
+                 220 continue
+                 work( i+4*n ) = work( i+4*n ) - ta - tb
+                 work( j+5*n ) = work( j+5*n ) - ta - tb
+              end do
+           end do
+           coef = one / real( 2*nr,KIND=${rk}$)
+           coef2 = coef*coef
+           coef5 = half*coef2
+           nrp2 = nr + 2
+           beta = zero
+           it = 1
+           ! start generalized conjugate gradient iteration
+           250 continue
+           gamma = stdlib_${ri}$dot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_${ri}$dot( nr, &
+                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
+           ew = zero
+           ewc = zero
+           do i = ilo, ihi
+              ew = ew + work( i+4*n )
+              ewc = ewc + work( i+5*n )
+           end do
+           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
+           if( gamma==zero )go to 350
+           if( it/=1 )beta = gamma / pgamma
+           t = coef5*( ewc-three*ew )
+           tc = coef5*( ew-three*ewc )
+           call stdlib_${ri}$scal( nr, beta, work( ilo ), 1 )
+           call stdlib_${ri}$scal( nr, beta, work( ilo+n ), 1 )
+           call stdlib_${ri}$axpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
+           call stdlib_${ri}$axpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
+           do i = ilo, ihi
+              work( i ) = work( i ) + tc
+              work( i+n ) = work( i+n ) + t
+           end do
+           ! apply matrix to vector
+           do i = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_290: do j = ilo, ihi
+                 if( a( i, j )==zero )go to 280
+                 kount = kount + 1
+                 sum = sum + work( j )
+                 280 continue
+                 if( b( i, j )==zero )cycle loop_290
+                 kount = kount + 1
+                 sum = sum + work( j )
+              end do loop_290
+              work( i+2*n ) = real( kount,KIND=${rk}$)*work( i+n ) + sum
+           end do
+           do j = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_320: do i = ilo, ihi
+                 if( a( i, j )==zero )go to 310
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+                 310 continue
+                 if( b( i, j )==zero )cycle loop_320
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+              end do loop_320
+              work( j+3*n ) = real( kount,KIND=${rk}$)*work( j ) + sum
+           end do
+           sum = stdlib_${ri}$dot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_${ri}$dot( nr, work( &
+                     ilo ), 1, work( ilo+3*n ), 1 )
+           alpha = gamma / sum
+           ! determine correction to current iteration
+           cmax = zero
+           do i = ilo, ihi
+              cor = alpha*work( i+n )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              lscale( i ) = lscale( i ) + cor
+              cor = alpha*work( i )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              rscale( i ) = rscale( i ) + cor
+           end do
+           if( cmax<half )go to 350
+           call stdlib_${ri}$axpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
+           call stdlib_${ri}$axpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
+           pgamma = gamma
+           it = it + 1
+           if( it<=nrp2 )go to 250
+           ! end generalized conjugate gradient iteration
+           350 continue
+           sfmin = stdlib_${ri}$lamch( 'S' )
+           sfmax = one / sfmin
+           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
+           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
+           do i = ilo, ihi
+              irab = stdlib_i${ri}$amax( n-ilo+1, a( i, ilo ), lda )
+              rab = abs( a( i, irab+ilo-1 ) )
+              irab = stdlib_i${ri}$amax( n-ilo+1, b( i, ilo ), ldb )
+              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
+              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
+              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
+              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
+              lscale( i ) = sclfac**ir
+              icab = stdlib_i${ri}$amax( ihi, a( 1, i ), 1 )
+              cab = abs( a( icab, i ) )
+              icab = stdlib_i${ri}$amax( ihi, b( 1, i ), 1 )
+              cab = max( cab, abs( b( icab, i ) ) )
+              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
+              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
+              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
+              rscale( i ) = sclfac**jc
+           end do
+           ! row scaling of matrices a and b
+           do i = ilo, ihi
+              call stdlib_${ri}$scal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
+              call stdlib_${ri}$scal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
+           end do
+           ! column scaling of matrices a and b
+           do j = ilo, ihi
+              call stdlib_${ri}$scal( ihi, rscale( j ), a( 1, j ), 1 )
+              call stdlib_${ri}$scal( ihi, rscale( j ), b( 1, j ), 1 )
+           end do
+           return
+     end subroutine stdlib_${ri}$ggbal
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_cggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
+     !! CGGBAL balances a pair of general complex matrices (A,B).  This
+     !! involves, first, permuting A and B by similarity transformations to
+     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
+     !! elements on the diagonal; and second, applying a diagonal similarity
+     !! transformation to rows and columns ILO to IHI to make the rows
+     !! and columns as close in norm as possible. Both steps are optional.
+     !! Balancing may reduce the 1-norm of the matrices, and improve the
+     !! accuracy of the computed eigenvalues and/or eigenvectors in the
+     !! generalized eigenvalue problem A*x = lambda*B*x.
+               
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: job
+           integer(ilp), intent(out) :: ihi, ilo, info
+           integer(ilp), intent(in) :: lda, ldb, n
+           ! Array Arguments 
+           real(sp), intent(out) :: lscale(*), rscale(*), work(*)
+           complex(sp), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: sclfac = 1.0e+1_sp
+           
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
+                     lrab, lsfmax, lsfmin, m, nr, nrp2
+           real(sp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
+                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
+           complex(sp) :: cdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(sp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=sp) ) + abs( aimag( cdum ) )
+           ! Executable Statements 
+           ! test the input parameters
+           info = 0
+           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
+                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'CGGBAL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 ) then
+              ilo = 1
+              ihi = n
+              return
+           end if
+           if( n==1 ) then
+              ilo = 1
+              ihi = n
+              lscale( 1 ) = one
+              rscale( 1 ) = one
+              return
+           end if
+           if( stdlib_lsame( job, 'N' ) ) then
+              ilo = 1
+              ihi = n
+              do i = 1, n
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           k = 1
+           l = n
+           if( stdlib_lsame( job, 'S' ) )go to 190
+           go to 30
+           ! permute the matrices a and b to isolate the eigenvalues.
+           ! find row with one nonzero in columns 1 through l
+           20 continue
+           l = lm1
+           if( l/=1 )go to 30
+           rscale( 1 ) = one
+           lscale( 1 ) = one
+           go to 190
+           30 continue
+           lm1 = l - 1
+           loop_80: do i = l, 1, -1
+              do j = 1, lm1
+                 jp1 = j + 1
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 50
+              end do
+              j = l
+              go to 70
+              50 continue
+              do j = jp1, l
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_80
+              end do
+              j = jp1 - 1
+              70 continue
+              m = l
+              iflow = 1
+              go to 160
+           end do loop_80
+           go to 100
+           ! find column with one nonzero in rows k through n
+           90 continue
+           k = k + 1
+           100 continue
+           loop_150: do j = k, l
+              do i = k, lm1
+                 ip1 = i + 1
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 120
+              end do
+              i = l
+              go to 140
+              120 continue
+              do i = ip1, l
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_150
+              end do
+              i = ip1 - 1
+              140 continue
+              m = k
+              iflow = 2
+              go to 160
+           end do loop_150
+           go to 190
+           ! permute rows m and i
+           160 continue
+           lscale( m ) = i
+           if( i==m )go to 170
+           call stdlib_cswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
+           call stdlib_cswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
+           ! permute columns m and j
+           170 continue
+           rscale( m ) = j
+           if( j==m )go to 180
+           call stdlib_cswap( l, a( 1, j ), 1, a( 1, m ), 1 )
+           call stdlib_cswap( l, b( 1, j ), 1, b( 1, m ), 1 )
+           180 continue
+           go to ( 20, 90 )iflow
+           190 continue
+           ilo = k
+           ihi = l
+           if( stdlib_lsame( job, 'P' ) ) then
+              do i = ilo, ihi
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           if( ilo==ihi )return
+           ! balance the submatrix in rows ilo to ihi.
+           nr = ihi - ilo + 1
+           do i = ilo, ihi
+              rscale( i ) = zero
+              lscale( i ) = zero
+              work( i ) = zero
+              work( i+n ) = zero
+              work( i+2*n ) = zero
+              work( i+3*n ) = zero
+              work( i+4*n ) = zero
+              work( i+5*n ) = zero
+           end do
+           ! compute right side vector in resulting linear equations
+           basl = log10( sclfac )
+           do i = ilo, ihi
+              do j = ilo, ihi
+                 if( a( i, j )==czero ) then
+                    ta = zero
+                    go to 210
+                 end if
+                 ta = log10( cabs1( a( i, j ) ) ) / basl
+                 210 continue
+                 if( b( i, j )==czero ) then
+                    tb = zero
+                    go to 220
+                 end if
+                 tb = log10( cabs1( b( i, j ) ) ) / basl
+                 220 continue
+                 work( i+4*n ) = work( i+4*n ) - ta - tb
+                 work( j+5*n ) = work( j+5*n ) - ta - tb
+              end do
+           end do
+           coef = one / real( 2*nr,KIND=sp)
+           coef2 = coef*coef
+           coef5 = half*coef2
+           nrp2 = nr + 2
+           beta = zero
+           it = 1
+           ! start generalized conjugate gradient iteration
+           250 continue
+           gamma = stdlib_sdot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_sdot( nr, &
+                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
+           ew = zero
+           ewc = zero
+           do i = ilo, ihi
+              ew = ew + work( i+4*n )
+              ewc = ewc + work( i+5*n )
+           end do
+           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
+           if( gamma==zero )go to 350
+           if( it/=1 )beta = gamma / pgamma
+           t = coef5*( ewc-three*ew )
+           tc = coef5*( ew-three*ewc )
+           call stdlib_sscal( nr, beta, work( ilo ), 1 )
+           call stdlib_sscal( nr, beta, work( ilo+n ), 1 )
+           call stdlib_saxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
+           call stdlib_saxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
+           do i = ilo, ihi
+              work( i ) = work( i ) + tc
+              work( i+n ) = work( i+n ) + t
+           end do
+           ! apply matrix to vector
+           do i = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_290: do j = ilo, ihi
+                 if( a( i, j )==czero )go to 280
+                 kount = kount + 1
+                 sum = sum + work( j )
+                 280 continue
+                 if( b( i, j )==czero )cycle loop_290
+                 kount = kount + 1
+                 sum = sum + work( j )
+              end do loop_290
+              work( i+2*n ) = real( kount,KIND=sp)*work( i+n ) + sum
+           end do
+           do j = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_320: do i = ilo, ihi
+                 if( a( i, j )==czero )go to 310
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+                 310 continue
+                 if( b( i, j )==czero )cycle loop_320
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+              end do loop_320
+              work( j+3*n ) = real( kount,KIND=sp)*work( j ) + sum
+           end do
+           sum = stdlib_sdot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_sdot( nr, work( &
+                     ilo ), 1, work( ilo+3*n ), 1 )
+           alpha = gamma / sum
+           ! determine correction to current iteration
+           cmax = zero
+           do i = ilo, ihi
+              cor = alpha*work( i+n )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              lscale( i ) = lscale( i ) + cor
+              cor = alpha*work( i )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              rscale( i ) = rscale( i ) + cor
+           end do
+           if( cmax<half )go to 350
+           call stdlib_saxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
+           call stdlib_saxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
+           pgamma = gamma
+           it = it + 1
+           if( it<=nrp2 )go to 250
+           ! end generalized conjugate gradient iteration
+           350 continue
+           sfmin = stdlib_slamch( 'S' )
+           sfmax = one / sfmin
+           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
+           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
+           do i = ilo, ihi
+              irab = stdlib_icamax( n-ilo+1, a( i, ilo ), lda )
+              rab = abs( a( i, irab+ilo-1 ) )
+              irab = stdlib_icamax( n-ilo+1, b( i, ilo ), ldb )
+              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
+              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
+              ir = lscale( i ) + sign( half, lscale( i ) )
+              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
+              lscale( i ) = sclfac**ir
+              icab = stdlib_icamax( ihi, a( 1, i ), 1 )
+              cab = abs( a( icab, i ) )
+              icab = stdlib_icamax( ihi, b( 1, i ), 1 )
+              cab = max( cab, abs( b( icab, i ) ) )
+              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
+              jc = rscale( i ) + sign( half, rscale( i ) )
+              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
+              rscale( i ) = sclfac**jc
+           end do
+           ! row scaling of matrices a and b
+           do i = ilo, ihi
+              call stdlib_csscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
+              call stdlib_csscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
+           end do
+           ! column scaling of matrices a and b
+           do j = ilo, ihi
+              call stdlib_csscal( ihi, rscale( j ), a( 1, j ), 1 )
+              call stdlib_csscal( ihi, rscale( j ), b( 1, j ), 1 )
+           end do
+           return
+     end subroutine stdlib_cggbal
+
+     pure module subroutine stdlib_zggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
+     !! ZGGBAL balances a pair of general complex matrices (A,B).  This
+     !! involves, first, permuting A and B by similarity transformations to
+     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
+     !! elements on the diagonal; and second, applying a diagonal similarity
+     !! transformation to rows and columns ILO to IHI to make the rows
+     !! and columns as close in norm as possible. Both steps are optional.
+     !! Balancing may reduce the 1-norm of the matrices, and improve the
+     !! accuracy of the computed eigenvalues and/or eigenvectors in the
+     !! generalized eigenvalue problem A*x = lambda*B*x.
+               
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: job
+           integer(ilp), intent(out) :: ihi, ilo, info
+           integer(ilp), intent(in) :: lda, ldb, n
+           ! Array Arguments 
+           real(dp), intent(out) :: lscale(*), rscale(*), work(*)
+           complex(dp), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: sclfac = 1.0e+1_dp
+           
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
+                     lrab, lsfmax, lsfmin, m, nr, nrp2
+           real(dp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
+                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
+           complex(dp) :: cdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(dp) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=dp) ) + abs( aimag( cdum ) )
+           ! Executable Statements 
+           ! test the input parameters
+           info = 0
+           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
+                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGGBAL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 ) then
+              ilo = 1
+              ihi = n
+              return
+           end if
+           if( n==1 ) then
+              ilo = 1
+              ihi = n
+              lscale( 1 ) = one
+              rscale( 1 ) = one
+              return
+           end if
+           if( stdlib_lsame( job, 'N' ) ) then
+              ilo = 1
+              ihi = n
+              do i = 1, n
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           k = 1
+           l = n
+           if( stdlib_lsame( job, 'S' ) )go to 190
+           go to 30
+           ! permute the matrices a and b to isolate the eigenvalues.
+           ! find row with one nonzero in columns 1 through l
+           20 continue
+           l = lm1
+           if( l/=1 )go to 30
+           rscale( 1 ) = 1
+           lscale( 1 ) = 1
+           go to 190
+           30 continue
+           lm1 = l - 1
+           loop_80: do i = l, 1, -1
+              do j = 1, lm1
+                 jp1 = j + 1
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 50
+              end do
+              j = l
+              go to 70
+              50 continue
+              do j = jp1, l
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_80
+              end do
+              j = jp1 - 1
+              70 continue
+              m = l
+              iflow = 1
+              go to 160
+           end do loop_80
+           go to 100
+           ! find column with one nonzero in rows k through n
+           90 continue
+           k = k + 1
+           100 continue
+           loop_150: do j = k, l
+              do i = k, lm1
+                 ip1 = i + 1
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 120
+              end do
+              i = l
+              go to 140
+              120 continue
+              do i = ip1, l
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_150
+              end do
+              i = ip1 - 1
+              140 continue
+              m = k
+              iflow = 2
+              go to 160
+           end do loop_150
+           go to 190
+           ! permute rows m and i
+           160 continue
+           lscale( m ) = i
+           if( i==m )go to 170
+           call stdlib_zswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
+           call stdlib_zswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
+           ! permute columns m and j
+           170 continue
+           rscale( m ) = j
+           if( j==m )go to 180
+           call stdlib_zswap( l, a( 1, j ), 1, a( 1, m ), 1 )
+           call stdlib_zswap( l, b( 1, j ), 1, b( 1, m ), 1 )
+           180 continue
+           go to ( 20, 90 )iflow
+           190 continue
+           ilo = k
+           ihi = l
+           if( stdlib_lsame( job, 'P' ) ) then
+              do i = ilo, ihi
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           if( ilo==ihi )return
+           ! balance the submatrix in rows ilo to ihi.
+           nr = ihi - ilo + 1
+           do i = ilo, ihi
+              rscale( i ) = zero
+              lscale( i ) = zero
+              work( i ) = zero
+              work( i+n ) = zero
+              work( i+2*n ) = zero
+              work( i+3*n ) = zero
+              work( i+4*n ) = zero
+              work( i+5*n ) = zero
+           end do
+           ! compute right side vector in resulting linear equations
+           basl = log10( sclfac )
+           do i = ilo, ihi
+              do j = ilo, ihi
+                 if( a( i, j )==czero ) then
+                    ta = zero
+                    go to 210
+                 end if
+                 ta = log10( cabs1( a( i, j ) ) ) / basl
+                 210 continue
+                 if( b( i, j )==czero ) then
+                    tb = zero
+                    go to 220
+                 end if
+                 tb = log10( cabs1( b( i, j ) ) ) / basl
+                 220 continue
+                 work( i+4*n ) = work( i+4*n ) - ta - tb
+                 work( j+5*n ) = work( j+5*n ) - ta - tb
+              end do
+           end do
+           coef = one / real( 2*nr,KIND=dp)
+           coef2 = coef*coef
+           coef5 = half*coef2
+           nrp2 = nr + 2
+           beta = zero
+           it = 1
+           ! start generalized conjugate gradient iteration
+           250 continue
+           gamma = stdlib_ddot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_ddot( nr, &
+                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
+           ew = zero
+           ewc = zero
+           do i = ilo, ihi
+              ew = ew + work( i+4*n )
+              ewc = ewc + work( i+5*n )
+           end do
+           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
+           if( gamma==zero )go to 350
+           if( it/=1 )beta = gamma / pgamma
+           t = coef5*( ewc-three*ew )
+           tc = coef5*( ew-three*ewc )
+           call stdlib_dscal( nr, beta, work( ilo ), 1 )
+           call stdlib_dscal( nr, beta, work( ilo+n ), 1 )
+           call stdlib_daxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
+           call stdlib_daxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
+           do i = ilo, ihi
+              work( i ) = work( i ) + tc
+              work( i+n ) = work( i+n ) + t
+           end do
+           ! apply matrix to vector
+           do i = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_290: do j = ilo, ihi
+                 if( a( i, j )==czero )go to 280
+                 kount = kount + 1
+                 sum = sum + work( j )
+                 280 continue
+                 if( b( i, j )==czero )cycle loop_290
+                 kount = kount + 1
+                 sum = sum + work( j )
+              end do loop_290
+              work( i+2*n ) = real( kount,KIND=dp)*work( i+n ) + sum
+           end do
+           do j = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_320: do i = ilo, ihi
+                 if( a( i, j )==czero )go to 310
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+                 310 continue
+                 if( b( i, j )==czero )cycle loop_320
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+              end do loop_320
+              work( j+3*n ) = real( kount,KIND=dp)*work( j ) + sum
+           end do
+           sum = stdlib_ddot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_ddot( nr, work( &
+                     ilo ), 1, work( ilo+3*n ), 1 )
+           alpha = gamma / sum
+           ! determine correction to current iteration
+           cmax = zero
+           do i = ilo, ihi
+              cor = alpha*work( i+n )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              lscale( i ) = lscale( i ) + cor
+              cor = alpha*work( i )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              rscale( i ) = rscale( i ) + cor
+           end do
+           if( cmax<half )go to 350
+           call stdlib_daxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
+           call stdlib_daxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
+           pgamma = gamma
+           it = it + 1
+           if( it<=nrp2 )go to 250
+           ! end generalized conjugate gradient iteration
+           350 continue
+           sfmin = stdlib_dlamch( 'S' )
+           sfmax = one / sfmin
+           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
+           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
+           do i = ilo, ihi
+              irab = stdlib_izamax( n-ilo+1, a( i, ilo ), lda )
+              rab = abs( a( i, irab+ilo-1 ) )
+              irab = stdlib_izamax( n-ilo+1, b( i, ilo ), ldb )
+              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
+              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
+              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
+              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
+              lscale( i ) = sclfac**ir
+              icab = stdlib_izamax( ihi, a( 1, i ), 1 )
+              cab = abs( a( icab, i ) )
+              icab = stdlib_izamax( ihi, b( 1, i ), 1 )
+              cab = max( cab, abs( b( icab, i ) ) )
+              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
+              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
+              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
+              rscale( i ) = sclfac**jc
+           end do
+           ! row scaling of matrices a and b
+           do i = ilo, ihi
+              call stdlib_zdscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
+              call stdlib_zdscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
+           end do
+           ! column scaling of matrices a and b
+           do j = ilo, ihi
+              call stdlib_zdscal( ihi, rscale( j ), a( 1, j ), 1 )
+              call stdlib_zdscal( ihi, rscale( j ), b( 1, j ), 1 )
+           end do
+           return
+     end subroutine stdlib_zggbal
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$ggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
+     !! ZGGBAL: balances a pair of general complex matrices (A,B).  This
+     !! involves, first, permuting A and B by similarity transformations to
+     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
+     !! elements on the diagonal; and second, applying a diagonal similarity
+     !! transformation to rows and columns ILO to IHI to make the rows
+     !! and columns as close in norm as possible. Both steps are optional.
+     !! Balancing may reduce the 1-norm of the matrices, and improve the
+     !! accuracy of the computed eigenvalues and/or eigenvectors in the
+     !! generalized eigenvalue problem A*x = lambda*B*x.
+               
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: job
+           integer(ilp), intent(out) :: ihi, ilo, info
+           integer(ilp), intent(in) :: lda, ldb, n
+           ! Array Arguments 
+           real(${ck}$), intent(out) :: lscale(*), rscale(*), work(*)
+           complex(${ck}$), intent(inout) :: a(lda,*), b(ldb,*)
+        ! =====================================================================
+           ! Parameters 
+           real(${ck}$), parameter :: sclfac = 1.0e+1_${ck}$
+           
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
+                     lrab, lsfmax, lsfmin, m, nr, nrp2
+           real(${ck}$) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
+                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
+           complex(${ck}$) :: cdum
+           ! Intrinsic Functions 
+           ! Statement Functions 
+           real(${ck}$) :: cabs1
+           ! Statement Function Definitions 
+           cabs1( cdum ) = abs( real( cdum,KIND=${ck}$) ) + abs( aimag( cdum ) )
+           ! Executable Statements 
+           ! test the input parameters
+           info = 0
+           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
+                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
+              info = -1
+           else if( n<0 ) then
+              info = -2
+           else if( lda<max( 1, n ) ) then
+              info = -4
+           else if( ldb<max( 1, n ) ) then
+              info = -6
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'ZGGBAL', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 ) then
+              ilo = 1
+              ihi = n
+              return
+           end if
+           if( n==1 ) then
+              ilo = 1
+              ihi = n
+              lscale( 1 ) = one
+              rscale( 1 ) = one
+              return
+           end if
+           if( stdlib_lsame( job, 'N' ) ) then
+              ilo = 1
+              ihi = n
+              do i = 1, n
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           k = 1
+           l = n
+           if( stdlib_lsame( job, 'S' ) )go to 190
+           go to 30
+           ! permute the matrices a and b to isolate the eigenvalues.
+           ! find row with one nonzero in columns 1 through l
+           20 continue
+           l = lm1
+           if( l/=1 )go to 30
+           rscale( 1 ) = 1
+           lscale( 1 ) = 1
+           go to 190
+           30 continue
+           lm1 = l - 1
+           loop_80: do i = l, 1, -1
+              do j = 1, lm1
+                 jp1 = j + 1
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 50
+              end do
+              j = l
+              go to 70
+              50 continue
+              do j = jp1, l
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_80
+              end do
+              j = jp1 - 1
+              70 continue
+              m = l
+              iflow = 1
+              go to 160
+           end do loop_80
+           go to 100
+           ! find column with one nonzero in rows k through n
+           90 continue
+           k = k + 1
+           100 continue
+           loop_150: do j = k, l
+              do i = k, lm1
+                 ip1 = i + 1
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 120
+              end do
+              i = l
+              go to 140
+              120 continue
+              do i = ip1, l
+                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_150
+              end do
+              i = ip1 - 1
+              140 continue
+              m = k
+              iflow = 2
+              go to 160
+           end do loop_150
+           go to 190
+           ! permute rows m and i
+           160 continue
+           lscale( m ) = i
+           if( i==m )go to 170
+           call stdlib_${ci}$swap( n-k+1, a( i, k ), lda, a( m, k ), lda )
+           call stdlib_${ci}$swap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
+           ! permute columns m and j
+           170 continue
+           rscale( m ) = j
+           if( j==m )go to 180
+           call stdlib_${ci}$swap( l, a( 1, j ), 1, a( 1, m ), 1 )
+           call stdlib_${ci}$swap( l, b( 1, j ), 1, b( 1, m ), 1 )
+           180 continue
+           go to ( 20, 90 )iflow
+           190 continue
+           ilo = k
+           ihi = l
+           if( stdlib_lsame( job, 'P' ) ) then
+              do i = ilo, ihi
+                 lscale( i ) = one
+                 rscale( i ) = one
+              end do
+              return
+           end if
+           if( ilo==ihi )return
+           ! balance the submatrix in rows ilo to ihi.
+           nr = ihi - ilo + 1
+           do i = ilo, ihi
+              rscale( i ) = zero
+              lscale( i ) = zero
+              work( i ) = zero
+              work( i+n ) = zero
+              work( i+2*n ) = zero
+              work( i+3*n ) = zero
+              work( i+4*n ) = zero
+              work( i+5*n ) = zero
+           end do
+           ! compute right side vector in resulting linear equations
+           basl = log10( sclfac )
+           do i = ilo, ihi
+              do j = ilo, ihi
+                 if( a( i, j )==czero ) then
+                    ta = zero
+                    go to 210
+                 end if
+                 ta = log10( cabs1( a( i, j ) ) ) / basl
+                 210 continue
+                 if( b( i, j )==czero ) then
+                    tb = zero
+                    go to 220
+                 end if
+                 tb = log10( cabs1( b( i, j ) ) ) / basl
+                 220 continue
+                 work( i+4*n ) = work( i+4*n ) - ta - tb
+                 work( j+5*n ) = work( j+5*n ) - ta - tb
+              end do
+           end do
+           coef = one / real( 2*nr,KIND=${ck}$)
+           coef2 = coef*coef
+           coef5 = half*coef2
+           nrp2 = nr + 2
+           beta = zero
+           it = 1
+           ! start generalized conjugate gradient iteration
+           250 continue
+           gamma = stdlib_${c2ri(ci)}$dot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_${c2ri(ci)}$dot( nr, &
+                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
+           ew = zero
+           ewc = zero
+           do i = ilo, ihi
+              ew = ew + work( i+4*n )
+              ewc = ewc + work( i+5*n )
+           end do
+           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
+           if( gamma==zero )go to 350
+           if( it/=1 )beta = gamma / pgamma
+           t = coef5*( ewc-three*ew )
+           tc = coef5*( ew-three*ewc )
+           call stdlib_${c2ri(ci)}$scal( nr, beta, work( ilo ), 1 )
+           call stdlib_${c2ri(ci)}$scal( nr, beta, work( ilo+n ), 1 )
+           call stdlib_${c2ri(ci)}$axpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
+           call stdlib_${c2ri(ci)}$axpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
+           do i = ilo, ihi
+              work( i ) = work( i ) + tc
+              work( i+n ) = work( i+n ) + t
+           end do
+           ! apply matrix to vector
+           do i = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_290: do j = ilo, ihi
+                 if( a( i, j )==czero )go to 280
+                 kount = kount + 1
+                 sum = sum + work( j )
+                 280 continue
+                 if( b( i, j )==czero )cycle loop_290
+                 kount = kount + 1
+                 sum = sum + work( j )
+              end do loop_290
+              work( i+2*n ) = real( kount,KIND=${ck}$)*work( i+n ) + sum
+           end do
+           do j = ilo, ihi
+              kount = 0
+              sum = zero
+              loop_320: do i = ilo, ihi
+                 if( a( i, j )==czero )go to 310
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+                 310 continue
+                 if( b( i, j )==czero )cycle loop_320
+                 kount = kount + 1
+                 sum = sum + work( i+n )
+              end do loop_320
+              work( j+3*n ) = real( kount,KIND=${ck}$)*work( j ) + sum
+           end do
+           sum = stdlib_${c2ri(ci)}$dot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_${c2ri(ci)}$dot( nr, work( &
+                     ilo ), 1, work( ilo+3*n ), 1 )
+           alpha = gamma / sum
+           ! determine correction to current iteration
+           cmax = zero
+           do i = ilo, ihi
+              cor = alpha*work( i+n )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              lscale( i ) = lscale( i ) + cor
+              cor = alpha*work( i )
+              if( abs( cor )>cmax )cmax = abs( cor )
+              rscale( i ) = rscale( i ) + cor
+           end do
+           if( cmax<half )go to 350
+           call stdlib_${c2ri(ci)}$axpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
+           call stdlib_${c2ri(ci)}$axpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
+           pgamma = gamma
+           it = it + 1
+           if( it<=nrp2 )go to 250
+           ! end generalized conjugate gradient iteration
+           350 continue
+           sfmin = stdlib_${c2ri(ci)}$lamch( 'S' )
+           sfmax = one / sfmin
+           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
+           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
+           do i = ilo, ihi
+              irab = stdlib_i${ci}$amax( n-ilo+1, a( i, ilo ), lda )
+              rab = abs( a( i, irab+ilo-1 ) )
+              irab = stdlib_i${ci}$amax( n-ilo+1, b( i, ilo ), ldb )
+              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
+              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
+              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
+              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
+              lscale( i ) = sclfac**ir
+              icab = stdlib_i${ci}$amax( ihi, a( 1, i ), 1 )
+              cab = abs( a( icab, i ) )
+              icab = stdlib_i${ci}$amax( ihi, b( 1, i ), 1 )
+              cab = max( cab, abs( b( icab, i ) ) )
+              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
+              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
+              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
+              rscale( i ) = sclfac**jc
+           end do
+           ! row scaling of matrices a and b
+           do i = ilo, ihi
+              call stdlib_${ci}$dscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
+              call stdlib_${ci}$dscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
+           end do
+           ! column scaling of matrices a and b
+           do j = ilo, ihi
+              call stdlib_${ci}$dscal( ihi, rscale( j ), a( 1, j ), 1 )
+              call stdlib_${ci}$dscal( ihi, rscale( j ), b( 1, j ), 1 )
+           end do
+           return
+     end subroutine stdlib_${ci}$ggbal
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_sgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! SGGHD3 reduces a pair of real matrices (A,B) to generalized upper
      !! Hessenberg form using orthogonal transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -531,7 +2331,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
            return
      end subroutine stdlib_sgghd3
 
-     module pure subroutine stdlib_dgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_dgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! DGGHD3 reduces a pair of real matrices (A,B) to generalized upper
      !! Hessenberg form using orthogonal transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -1059,7 +2859,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$gghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_${ri}$gghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! DGGHD3: reduces a pair of real matrices (A,B) to generalized upper
      !! Hessenberg form using orthogonal transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -1588,7 +3388,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_cgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! CGGHD3 reduces a pair of complex matrices (A,B) to generalized upper
      !! Hessenberg form using unitary transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -2117,7 +3917,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
            return
      end subroutine stdlib_cgghd3
 
-     module pure subroutine stdlib_zgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_zgghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! ZGGHD3 reduces a pair of complex matrices (A,B) to generalized upper
      !! Hessenberg form using unitary transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -2648,7 +4448,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$gghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_${ci}$gghd3( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! ZGGHD3: reduces a pair of complex matrices (A,B) to generalized upper
      !! Hessenberg form using unitary transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -7313,7 +9113,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 
 
-     module pure subroutine stdlib_sggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
+     pure module subroutine stdlib_sggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
      !! SGGBAK forms the right or left eigenvectors of a real generalized
      !! eigenvalue problem A*x = lambda*B*x, by backward transformation on
      !! the computed eigenvectors of the balanced pair of matrices output by
@@ -7425,7 +9225,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
            return
      end subroutine stdlib_sggbak
 
-     module pure subroutine stdlib_dggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
+     pure module subroutine stdlib_dggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
      !! DGGBAK forms the right or left eigenvectors of a real generalized
      !! eigenvalue problem A*x = lambda*B*x, by backward transformation on
      !! the computed eigenvectors of the balanced pair of matrices output by
@@ -7539,7 +9339,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$ggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
+     pure module subroutine stdlib_${ri}$ggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
      !! DGGBAK: forms the right or left eigenvectors of a real generalized
      !! eigenvalue problem A*x = lambda*B*x, by backward transformation on
      !! the computed eigenvectors of the balanced pair of matrices output by
@@ -7654,7 +9454,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
+     pure module subroutine stdlib_cggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
      !! CGGBAK forms the right or left eigenvectors of a complex generalized
      !! eigenvalue problem A*x = lambda*B*x, by backward transformation on
      !! the computed eigenvectors of the balanced pair of matrices output by
@@ -7766,7 +9566,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
            return
      end subroutine stdlib_cggbak
 
-     module pure subroutine stdlib_zggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
+     pure module subroutine stdlib_zggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
      !! ZGGBAK forms the right or left eigenvectors of a complex generalized
      !! eigenvalue problem A*x = lambda*B*x, by backward transformation on
      !! the computed eigenvectors of the balanced pair of matrices output by
@@ -7880,7 +9680,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$ggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
+     pure module subroutine stdlib_${ci}$ggbak( job, side, n, ilo, ihi, lscale, rscale, m, v,ldv, info )
      !! ZGGBAK: forms the right or left eigenvectors of a complex generalized
      !! eigenvalue problem A*x = lambda*B*x, by backward transformation on
      !! the computed eigenvectors of the balanced pair of matrices output by
@@ -7997,1807 +9797,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 
 
-     module pure subroutine stdlib_sggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
-     !! SGGBAL balances a pair of general real matrices (A,B).  This
-     !! involves, first, permuting A and B by similarity transformations to
-     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
-     !! elements on the diagonal; and second, applying a diagonal similarity
-     !! transformation to rows and columns ILO to IHI to make the rows
-     !! and columns as close in norm as possible. Both steps are optional.
-     !! Balancing may reduce the 1-norm of the matrices, and improve the
-     !! accuracy of the computed eigenvalues and/or eigenvectors in the
-     !! generalized eigenvalue problem A*x = lambda*B*x.
-               
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: job
-           integer(ilp), intent(out) :: ihi, ilo, info
-           integer(ilp), intent(in) :: lda, ldb, n
-           ! Array Arguments 
-           real(sp), intent(inout) :: a(lda,*), b(ldb,*)
-           real(sp), intent(out) :: lscale(*), rscale(*), work(*)
-        ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: sclfac = 1.0e+1_sp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
-                     lrab, lsfmax, lsfmin, m, nr, nrp2
-           real(sp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
-                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters
-           info = 0
-           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
-                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldb<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'SGGBAL', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 ) then
-              ilo = 1
-              ihi = n
-              return
-           end if
-           if( n==1 ) then
-              ilo = 1
-              ihi = n
-              lscale( 1 ) = one
-              rscale( 1 ) = one
-              return
-           end if
-           if( stdlib_lsame( job, 'N' ) ) then
-              ilo = 1
-              ihi = n
-              do i = 1, n
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           k = 1
-           l = n
-           if( stdlib_lsame( job, 'S' ) )go to 190
-           go to 30
-           ! permute the matrices a and b to isolate the eigenvalues.
-           ! find row with one nonzero in columns 1 through l
-           20 continue
-           l = lm1
-           if( l/=1 )go to 30
-           rscale( 1 ) = one
-           lscale( 1 ) = one
-           go to 190
-           30 continue
-           lm1 = l - 1
-           loop_80: do i = l, 1, -1
-              do j = 1, lm1
-                 jp1 = j + 1
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 50
-              end do
-              j = l
-              go to 70
-              50 continue
-              do j = jp1, l
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_80
-              end do
-              j = jp1 - 1
-              70 continue
-              m = l
-              iflow = 1
-              go to 160
-           end do loop_80
-           go to 100
-           ! find column with one nonzero in rows k through n
-           90 continue
-           k = k + 1
-           100 continue
-           loop_150: do j = k, l
-              do i = k, lm1
-                 ip1 = i + 1
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 120
-              end do
-              i = l
-              go to 140
-              120 continue
-              do i = ip1, l
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_150
-              end do
-              i = ip1 - 1
-              140 continue
-              m = k
-              iflow = 2
-              go to 160
-           end do loop_150
-           go to 190
-           ! permute rows m and i
-           160 continue
-           lscale( m ) = i
-           if( i==m )go to 170
-           call stdlib_sswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
-           call stdlib_sswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
-           ! permute columns m and j
-           170 continue
-           rscale( m ) = j
-           if( j==m )go to 180
-           call stdlib_sswap( l, a( 1, j ), 1, a( 1, m ), 1 )
-           call stdlib_sswap( l, b( 1, j ), 1, b( 1, m ), 1 )
-           180 continue
-           go to ( 20, 90 )iflow
-           190 continue
-           ilo = k
-           ihi = l
-           if( stdlib_lsame( job, 'P' ) ) then
-              do i = ilo, ihi
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           if( ilo==ihi )return
-           ! balance the submatrix in rows ilo to ihi.
-           nr = ihi - ilo + 1
-           do i = ilo, ihi
-              rscale( i ) = zero
-              lscale( i ) = zero
-              work( i ) = zero
-              work( i+n ) = zero
-              work( i+2*n ) = zero
-              work( i+3*n ) = zero
-              work( i+4*n ) = zero
-              work( i+5*n ) = zero
-           end do
-           ! compute right side vector in resulting linear equations
-           basl = log10( sclfac )
-           do i = ilo, ihi
-              do j = ilo, ihi
-                 tb = b( i, j )
-                 ta = a( i, j )
-                 if( ta==zero )go to 210
-                 ta = log10( abs( ta ) ) / basl
-                 210 continue
-                 if( tb==zero )go to 220
-                 tb = log10( abs( tb ) ) / basl
-                 220 continue
-                 work( i+4*n ) = work( i+4*n ) - ta - tb
-                 work( j+5*n ) = work( j+5*n ) - ta - tb
-              end do
-           end do
-           coef = one / real( 2*nr,KIND=sp)
-           coef2 = coef*coef
-           coef5 = half*coef2
-           nrp2 = nr + 2
-           beta = zero
-           it = 1
-           ! start generalized conjugate gradient iteration
-           250 continue
-           gamma = stdlib_sdot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_sdot( nr, &
-                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
-           ew = zero
-           ewc = zero
-           do i = ilo, ihi
-              ew = ew + work( i+4*n )
-              ewc = ewc + work( i+5*n )
-           end do
-           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
-           if( gamma==zero )go to 350
-           if( it/=1 )beta = gamma / pgamma
-           t = coef5*( ewc-three*ew )
-           tc = coef5*( ew-three*ewc )
-           call stdlib_sscal( nr, beta, work( ilo ), 1 )
-           call stdlib_sscal( nr, beta, work( ilo+n ), 1 )
-           call stdlib_saxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
-           call stdlib_saxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
-           do i = ilo, ihi
-              work( i ) = work( i ) + tc
-              work( i+n ) = work( i+n ) + t
-           end do
-           ! apply matrix to vector
-           do i = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_290: do j = ilo, ihi
-                 if( a( i, j )==zero )go to 280
-                 kount = kount + 1
-                 sum = sum + work( j )
-                 280 continue
-                 if( b( i, j )==zero )cycle loop_290
-                 kount = kount + 1
-                 sum = sum + work( j )
-              end do loop_290
-              work( i+2*n ) = real( kount,KIND=sp)*work( i+n ) + sum
-           end do
-           do j = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_320: do i = ilo, ihi
-                 if( a( i, j )==zero )go to 310
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-                 310 continue
-                 if( b( i, j )==zero )cycle loop_320
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-              end do loop_320
-              work( j+3*n ) = real( kount,KIND=sp)*work( j ) + sum
-           end do
-           sum = stdlib_sdot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_sdot( nr, work( &
-                     ilo ), 1, work( ilo+3*n ), 1 )
-           alpha = gamma / sum
-           ! determine correction to current iteration
-           cmax = zero
-           do i = ilo, ihi
-              cor = alpha*work( i+n )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              lscale( i ) = lscale( i ) + cor
-              cor = alpha*work( i )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              rscale( i ) = rscale( i ) + cor
-           end do
-           if( cmax<half )go to 350
-           call stdlib_saxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
-           call stdlib_saxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
-           pgamma = gamma
-           it = it + 1
-           if( it<=nrp2 )go to 250
-           ! end generalized conjugate gradient iteration
-           350 continue
-           sfmin = stdlib_slamch( 'S' )
-           sfmax = one / sfmin
-           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
-           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
-           do i = ilo, ihi
-              irab = stdlib_isamax( n-ilo+1, a( i, ilo ), lda )
-              rab = abs( a( i, irab+ilo-1 ) )
-              irab = stdlib_isamax( n-ilo+1, b( i, ilo ), ldb )
-              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
-              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
-              ir = lscale( i ) + sign( half, lscale( i ) )
-              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
-              lscale( i ) = sclfac**ir
-              icab = stdlib_isamax( ihi, a( 1, i ), 1 )
-              cab = abs( a( icab, i ) )
-              icab = stdlib_isamax( ihi, b( 1, i ), 1 )
-              cab = max( cab, abs( b( icab, i ) ) )
-              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
-              jc = rscale( i ) + sign( half, rscale( i ) )
-              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
-              rscale( i ) = sclfac**jc
-           end do
-           ! row scaling of matrices a and b
-           do i = ilo, ihi
-              call stdlib_sscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
-              call stdlib_sscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
-           end do
-           ! column scaling of matrices a and b
-           do j = ilo, ihi
-              call stdlib_sscal( ihi, rscale( j ), a( 1, j ), 1 )
-              call stdlib_sscal( ihi, rscale( j ), b( 1, j ), 1 )
-           end do
-           return
-     end subroutine stdlib_sggbal
-
-     module pure subroutine stdlib_dggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
-     !! DGGBAL balances a pair of general real matrices (A,B).  This
-     !! involves, first, permuting A and B by similarity transformations to
-     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
-     !! elements on the diagonal; and second, applying a diagonal similarity
-     !! transformation to rows and columns ILO to IHI to make the rows
-     !! and columns as close in norm as possible. Both steps are optional.
-     !! Balancing may reduce the 1-norm of the matrices, and improve the
-     !! accuracy of the computed eigenvalues and/or eigenvectors in the
-     !! generalized eigenvalue problem A*x = lambda*B*x.
-               
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: job
-           integer(ilp), intent(out) :: ihi, ilo, info
-           integer(ilp), intent(in) :: lda, ldb, n
-           ! Array Arguments 
-           real(dp), intent(inout) :: a(lda,*), b(ldb,*)
-           real(dp), intent(out) :: lscale(*), rscale(*), work(*)
-        ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: sclfac = 1.0e+1_dp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
-                     lrab, lsfmax, lsfmin, m, nr, nrp2
-           real(dp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
-                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters
-           info = 0
-           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
-                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldb<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DGGBAL', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 ) then
-              ilo = 1
-              ihi = n
-              return
-           end if
-           if( n==1 ) then
-              ilo = 1
-              ihi = n
-              lscale( 1 ) = one
-              rscale( 1 ) = one
-              return
-           end if
-           if( stdlib_lsame( job, 'N' ) ) then
-              ilo = 1
-              ihi = n
-              do i = 1, n
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           k = 1
-           l = n
-           if( stdlib_lsame( job, 'S' ) )go to 190
-           go to 30
-           ! permute the matrices a and b to isolate the eigenvalues.
-           ! find row with one nonzero in columns 1 through l
-           20 continue
-           l = lm1
-           if( l/=1 )go to 30
-           rscale( 1 ) = one
-           lscale( 1 ) = one
-           go to 190
-           30 continue
-           lm1 = l - 1
-           loop_80: do i = l, 1, -1
-              do j = 1, lm1
-                 jp1 = j + 1
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 50
-              end do
-              j = l
-              go to 70
-              50 continue
-              do j = jp1, l
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_80
-              end do
-              j = jp1 - 1
-              70 continue
-              m = l
-              iflow = 1
-              go to 160
-           end do loop_80
-           go to 100
-           ! find column with one nonzero in rows k through n
-           90 continue
-           k = k + 1
-           100 continue
-           loop_150: do j = k, l
-              do i = k, lm1
-                 ip1 = i + 1
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 120
-              end do
-              i = l
-              go to 140
-              120 continue
-              do i = ip1, l
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_150
-              end do
-              i = ip1 - 1
-              140 continue
-              m = k
-              iflow = 2
-              go to 160
-           end do loop_150
-           go to 190
-           ! permute rows m and i
-           160 continue
-           lscale( m ) = i
-           if( i==m )go to 170
-           call stdlib_dswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
-           call stdlib_dswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
-           ! permute columns m and j
-           170 continue
-           rscale( m ) = j
-           if( j==m )go to 180
-           call stdlib_dswap( l, a( 1, j ), 1, a( 1, m ), 1 )
-           call stdlib_dswap( l, b( 1, j ), 1, b( 1, m ), 1 )
-           180 continue
-           go to ( 20, 90 )iflow
-           190 continue
-           ilo = k
-           ihi = l
-           if( stdlib_lsame( job, 'P' ) ) then
-              do i = ilo, ihi
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           if( ilo==ihi )return
-           ! balance the submatrix in rows ilo to ihi.
-           nr = ihi - ilo + 1
-           do i = ilo, ihi
-              rscale( i ) = zero
-              lscale( i ) = zero
-              work( i ) = zero
-              work( i+n ) = zero
-              work( i+2*n ) = zero
-              work( i+3*n ) = zero
-              work( i+4*n ) = zero
-              work( i+5*n ) = zero
-           end do
-           ! compute right side vector in resulting linear equations
-           basl = log10( sclfac )
-           do i = ilo, ihi
-              do j = ilo, ihi
-                 tb = b( i, j )
-                 ta = a( i, j )
-                 if( ta==zero )go to 210
-                 ta = log10( abs( ta ) ) / basl
-                 210 continue
-                 if( tb==zero )go to 220
-                 tb = log10( abs( tb ) ) / basl
-                 220 continue
-                 work( i+4*n ) = work( i+4*n ) - ta - tb
-                 work( j+5*n ) = work( j+5*n ) - ta - tb
-              end do
-           end do
-           coef = one / real( 2*nr,KIND=dp)
-           coef2 = coef*coef
-           coef5 = half*coef2
-           nrp2 = nr + 2
-           beta = zero
-           it = 1
-           ! start generalized conjugate gradient iteration
-           250 continue
-           gamma = stdlib_ddot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_ddot( nr, &
-                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
-           ew = zero
-           ewc = zero
-           do i = ilo, ihi
-              ew = ew + work( i+4*n )
-              ewc = ewc + work( i+5*n )
-           end do
-           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
-           if( gamma==zero )go to 350
-           if( it/=1 )beta = gamma / pgamma
-           t = coef5*( ewc-three*ew )
-           tc = coef5*( ew-three*ewc )
-           call stdlib_dscal( nr, beta, work( ilo ), 1 )
-           call stdlib_dscal( nr, beta, work( ilo+n ), 1 )
-           call stdlib_daxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
-           call stdlib_daxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
-           do i = ilo, ihi
-              work( i ) = work( i ) + tc
-              work( i+n ) = work( i+n ) + t
-           end do
-           ! apply matrix to vector
-           do i = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_290: do j = ilo, ihi
-                 if( a( i, j )==zero )go to 280
-                 kount = kount + 1
-                 sum = sum + work( j )
-                 280 continue
-                 if( b( i, j )==zero )cycle loop_290
-                 kount = kount + 1
-                 sum = sum + work( j )
-              end do loop_290
-              work( i+2*n ) = real( kount,KIND=dp)*work( i+n ) + sum
-           end do
-           do j = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_320: do i = ilo, ihi
-                 if( a( i, j )==zero )go to 310
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-                 310 continue
-                 if( b( i, j )==zero )cycle loop_320
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-              end do loop_320
-              work( j+3*n ) = real( kount,KIND=dp)*work( j ) + sum
-           end do
-           sum = stdlib_ddot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_ddot( nr, work( &
-                     ilo ), 1, work( ilo+3*n ), 1 )
-           alpha = gamma / sum
-           ! determine correction to current iteration
-           cmax = zero
-           do i = ilo, ihi
-              cor = alpha*work( i+n )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              lscale( i ) = lscale( i ) + cor
-              cor = alpha*work( i )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              rscale( i ) = rscale( i ) + cor
-           end do
-           if( cmax<half )go to 350
-           call stdlib_daxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
-           call stdlib_daxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
-           pgamma = gamma
-           it = it + 1
-           if( it<=nrp2 )go to 250
-           ! end generalized conjugate gradient iteration
-           350 continue
-           sfmin = stdlib_dlamch( 'S' )
-           sfmax = one / sfmin
-           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
-           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
-           do i = ilo, ihi
-              irab = stdlib_idamax( n-ilo+1, a( i, ilo ), lda )
-              rab = abs( a( i, irab+ilo-1 ) )
-              irab = stdlib_idamax( n-ilo+1, b( i, ilo ), ldb )
-              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
-              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
-              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
-              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
-              lscale( i ) = sclfac**ir
-              icab = stdlib_idamax( ihi, a( 1, i ), 1 )
-              cab = abs( a( icab, i ) )
-              icab = stdlib_idamax( ihi, b( 1, i ), 1 )
-              cab = max( cab, abs( b( icab, i ) ) )
-              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
-              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
-              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
-              rscale( i ) = sclfac**jc
-           end do
-           ! row scaling of matrices a and b
-           do i = ilo, ihi
-              call stdlib_dscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
-              call stdlib_dscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
-           end do
-           ! column scaling of matrices a and b
-           do j = ilo, ihi
-              call stdlib_dscal( ihi, rscale( j ), a( 1, j ), 1 )
-              call stdlib_dscal( ihi, rscale( j ), b( 1, j ), 1 )
-           end do
-           return
-     end subroutine stdlib_dggbal
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$ggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
-     !! DGGBAL: balances a pair of general real matrices (A,B).  This
-     !! involves, first, permuting A and B by similarity transformations to
-     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
-     !! elements on the diagonal; and second, applying a diagonal similarity
-     !! transformation to rows and columns ILO to IHI to make the rows
-     !! and columns as close in norm as possible. Both steps are optional.
-     !! Balancing may reduce the 1-norm of the matrices, and improve the
-     !! accuracy of the computed eigenvalues and/or eigenvectors in the
-     !! generalized eigenvalue problem A*x = lambda*B*x.
-               
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: job
-           integer(ilp), intent(out) :: ihi, ilo, info
-           integer(ilp), intent(in) :: lda, ldb, n
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: a(lda,*), b(ldb,*)
-           real(${rk}$), intent(out) :: lscale(*), rscale(*), work(*)
-        ! =====================================================================
-           ! Parameters 
-           real(${rk}$), parameter :: sclfac = 1.0e+1_${rk}$
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
-                     lrab, lsfmax, lsfmin, m, nr, nrp2
-           real(${rk}$) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
-                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters
-           info = 0
-           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
-                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldb<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DGGBAL', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 ) then
-              ilo = 1
-              ihi = n
-              return
-           end if
-           if( n==1 ) then
-              ilo = 1
-              ihi = n
-              lscale( 1 ) = one
-              rscale( 1 ) = one
-              return
-           end if
-           if( stdlib_lsame( job, 'N' ) ) then
-              ilo = 1
-              ihi = n
-              do i = 1, n
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           k = 1
-           l = n
-           if( stdlib_lsame( job, 'S' ) )go to 190
-           go to 30
-           ! permute the matrices a and b to isolate the eigenvalues.
-           ! find row with one nonzero in columns 1 through l
-           20 continue
-           l = lm1
-           if( l/=1 )go to 30
-           rscale( 1 ) = one
-           lscale( 1 ) = one
-           go to 190
-           30 continue
-           lm1 = l - 1
-           loop_80: do i = l, 1, -1
-              do j = 1, lm1
-                 jp1 = j + 1
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 50
-              end do
-              j = l
-              go to 70
-              50 continue
-              do j = jp1, l
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_80
-              end do
-              j = jp1 - 1
-              70 continue
-              m = l
-              iflow = 1
-              go to 160
-           end do loop_80
-           go to 100
-           ! find column with one nonzero in rows k through n
-           90 continue
-           k = k + 1
-           100 continue
-           loop_150: do j = k, l
-              do i = k, lm1
-                 ip1 = i + 1
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )go to 120
-              end do
-              i = l
-              go to 140
-              120 continue
-              do i = ip1, l
-                 if( a( i, j )/=zero .or. b( i, j )/=zero )cycle loop_150
-              end do
-              i = ip1 - 1
-              140 continue
-              m = k
-              iflow = 2
-              go to 160
-           end do loop_150
-           go to 190
-           ! permute rows m and i
-           160 continue
-           lscale( m ) = i
-           if( i==m )go to 170
-           call stdlib_${ri}$swap( n-k+1, a( i, k ), lda, a( m, k ), lda )
-           call stdlib_${ri}$swap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
-           ! permute columns m and j
-           170 continue
-           rscale( m ) = j
-           if( j==m )go to 180
-           call stdlib_${ri}$swap( l, a( 1, j ), 1, a( 1, m ), 1 )
-           call stdlib_${ri}$swap( l, b( 1, j ), 1, b( 1, m ), 1 )
-           180 continue
-           go to ( 20, 90 )iflow
-           190 continue
-           ilo = k
-           ihi = l
-           if( stdlib_lsame( job, 'P' ) ) then
-              do i = ilo, ihi
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           if( ilo==ihi )return
-           ! balance the submatrix in rows ilo to ihi.
-           nr = ihi - ilo + 1
-           do i = ilo, ihi
-              rscale( i ) = zero
-              lscale( i ) = zero
-              work( i ) = zero
-              work( i+n ) = zero
-              work( i+2*n ) = zero
-              work( i+3*n ) = zero
-              work( i+4*n ) = zero
-              work( i+5*n ) = zero
-           end do
-           ! compute right side vector in resulting linear equations
-           basl = log10( sclfac )
-           do i = ilo, ihi
-              do j = ilo, ihi
-                 tb = b( i, j )
-                 ta = a( i, j )
-                 if( ta==zero )go to 210
-                 ta = log10( abs( ta ) ) / basl
-                 210 continue
-                 if( tb==zero )go to 220
-                 tb = log10( abs( tb ) ) / basl
-                 220 continue
-                 work( i+4*n ) = work( i+4*n ) - ta - tb
-                 work( j+5*n ) = work( j+5*n ) - ta - tb
-              end do
-           end do
-           coef = one / real( 2*nr,KIND=${rk}$)
-           coef2 = coef*coef
-           coef5 = half*coef2
-           nrp2 = nr + 2
-           beta = zero
-           it = 1
-           ! start generalized conjugate gradient iteration
-           250 continue
-           gamma = stdlib_${ri}$dot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_${ri}$dot( nr, &
-                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
-           ew = zero
-           ewc = zero
-           do i = ilo, ihi
-              ew = ew + work( i+4*n )
-              ewc = ewc + work( i+5*n )
-           end do
-           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
-           if( gamma==zero )go to 350
-           if( it/=1 )beta = gamma / pgamma
-           t = coef5*( ewc-three*ew )
-           tc = coef5*( ew-three*ewc )
-           call stdlib_${ri}$scal( nr, beta, work( ilo ), 1 )
-           call stdlib_${ri}$scal( nr, beta, work( ilo+n ), 1 )
-           call stdlib_${ri}$axpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
-           call stdlib_${ri}$axpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
-           do i = ilo, ihi
-              work( i ) = work( i ) + tc
-              work( i+n ) = work( i+n ) + t
-           end do
-           ! apply matrix to vector
-           do i = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_290: do j = ilo, ihi
-                 if( a( i, j )==zero )go to 280
-                 kount = kount + 1
-                 sum = sum + work( j )
-                 280 continue
-                 if( b( i, j )==zero )cycle loop_290
-                 kount = kount + 1
-                 sum = sum + work( j )
-              end do loop_290
-              work( i+2*n ) = real( kount,KIND=${rk}$)*work( i+n ) + sum
-           end do
-           do j = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_320: do i = ilo, ihi
-                 if( a( i, j )==zero )go to 310
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-                 310 continue
-                 if( b( i, j )==zero )cycle loop_320
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-              end do loop_320
-              work( j+3*n ) = real( kount,KIND=${rk}$)*work( j ) + sum
-           end do
-           sum = stdlib_${ri}$dot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_${ri}$dot( nr, work( &
-                     ilo ), 1, work( ilo+3*n ), 1 )
-           alpha = gamma / sum
-           ! determine correction to current iteration
-           cmax = zero
-           do i = ilo, ihi
-              cor = alpha*work( i+n )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              lscale( i ) = lscale( i ) + cor
-              cor = alpha*work( i )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              rscale( i ) = rscale( i ) + cor
-           end do
-           if( cmax<half )go to 350
-           call stdlib_${ri}$axpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
-           call stdlib_${ri}$axpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
-           pgamma = gamma
-           it = it + 1
-           if( it<=nrp2 )go to 250
-           ! end generalized conjugate gradient iteration
-           350 continue
-           sfmin = stdlib_${ri}$lamch( 'S' )
-           sfmax = one / sfmin
-           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
-           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
-           do i = ilo, ihi
-              irab = stdlib_i${ri}$amax( n-ilo+1, a( i, ilo ), lda )
-              rab = abs( a( i, irab+ilo-1 ) )
-              irab = stdlib_i${ri}$amax( n-ilo+1, b( i, ilo ), ldb )
-              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
-              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
-              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
-              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
-              lscale( i ) = sclfac**ir
-              icab = stdlib_i${ri}$amax( ihi, a( 1, i ), 1 )
-              cab = abs( a( icab, i ) )
-              icab = stdlib_i${ri}$amax( ihi, b( 1, i ), 1 )
-              cab = max( cab, abs( b( icab, i ) ) )
-              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
-              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
-              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
-              rscale( i ) = sclfac**jc
-           end do
-           ! row scaling of matrices a and b
-           do i = ilo, ihi
-              call stdlib_${ri}$scal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
-              call stdlib_${ri}$scal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
-           end do
-           ! column scaling of matrices a and b
-           do j = ilo, ihi
-              call stdlib_${ri}$scal( ihi, rscale( j ), a( 1, j ), 1 )
-              call stdlib_${ri}$scal( ihi, rscale( j ), b( 1, j ), 1 )
-           end do
-           return
-     end subroutine stdlib_${ri}$ggbal
-
-#:endif
-#:endfor
-
-     module pure subroutine stdlib_cggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
-     !! CGGBAL balances a pair of general complex matrices (A,B).  This
-     !! involves, first, permuting A and B by similarity transformations to
-     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
-     !! elements on the diagonal; and second, applying a diagonal similarity
-     !! transformation to rows and columns ILO to IHI to make the rows
-     !! and columns as close in norm as possible. Both steps are optional.
-     !! Balancing may reduce the 1-norm of the matrices, and improve the
-     !! accuracy of the computed eigenvalues and/or eigenvectors in the
-     !! generalized eigenvalue problem A*x = lambda*B*x.
-               
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: job
-           integer(ilp), intent(out) :: ihi, ilo, info
-           integer(ilp), intent(in) :: lda, ldb, n
-           ! Array Arguments 
-           real(sp), intent(out) :: lscale(*), rscale(*), work(*)
-           complex(sp), intent(inout) :: a(lda,*), b(ldb,*)
-        ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: sclfac = 1.0e+1_sp
-           
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
-                     lrab, lsfmax, lsfmin, m, nr, nrp2
-           real(sp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
-                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
-           complex(sp) :: cdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(sp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=sp) ) + abs( aimag( cdum ) )
-           ! Executable Statements 
-           ! test the input parameters
-           info = 0
-           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
-                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldb<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'CGGBAL', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 ) then
-              ilo = 1
-              ihi = n
-              return
-           end if
-           if( n==1 ) then
-              ilo = 1
-              ihi = n
-              lscale( 1 ) = one
-              rscale( 1 ) = one
-              return
-           end if
-           if( stdlib_lsame( job, 'N' ) ) then
-              ilo = 1
-              ihi = n
-              do i = 1, n
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           k = 1
-           l = n
-           if( stdlib_lsame( job, 'S' ) )go to 190
-           go to 30
-           ! permute the matrices a and b to isolate the eigenvalues.
-           ! find row with one nonzero in columns 1 through l
-           20 continue
-           l = lm1
-           if( l/=1 )go to 30
-           rscale( 1 ) = one
-           lscale( 1 ) = one
-           go to 190
-           30 continue
-           lm1 = l - 1
-           loop_80: do i = l, 1, -1
-              do j = 1, lm1
-                 jp1 = j + 1
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 50
-              end do
-              j = l
-              go to 70
-              50 continue
-              do j = jp1, l
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_80
-              end do
-              j = jp1 - 1
-              70 continue
-              m = l
-              iflow = 1
-              go to 160
-           end do loop_80
-           go to 100
-           ! find column with one nonzero in rows k through n
-           90 continue
-           k = k + 1
-           100 continue
-           loop_150: do j = k, l
-              do i = k, lm1
-                 ip1 = i + 1
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 120
-              end do
-              i = l
-              go to 140
-              120 continue
-              do i = ip1, l
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_150
-              end do
-              i = ip1 - 1
-              140 continue
-              m = k
-              iflow = 2
-              go to 160
-           end do loop_150
-           go to 190
-           ! permute rows m and i
-           160 continue
-           lscale( m ) = i
-           if( i==m )go to 170
-           call stdlib_cswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
-           call stdlib_cswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
-           ! permute columns m and j
-           170 continue
-           rscale( m ) = j
-           if( j==m )go to 180
-           call stdlib_cswap( l, a( 1, j ), 1, a( 1, m ), 1 )
-           call stdlib_cswap( l, b( 1, j ), 1, b( 1, m ), 1 )
-           180 continue
-           go to ( 20, 90 )iflow
-           190 continue
-           ilo = k
-           ihi = l
-           if( stdlib_lsame( job, 'P' ) ) then
-              do i = ilo, ihi
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           if( ilo==ihi )return
-           ! balance the submatrix in rows ilo to ihi.
-           nr = ihi - ilo + 1
-           do i = ilo, ihi
-              rscale( i ) = zero
-              lscale( i ) = zero
-              work( i ) = zero
-              work( i+n ) = zero
-              work( i+2*n ) = zero
-              work( i+3*n ) = zero
-              work( i+4*n ) = zero
-              work( i+5*n ) = zero
-           end do
-           ! compute right side vector in resulting linear equations
-           basl = log10( sclfac )
-           do i = ilo, ihi
-              do j = ilo, ihi
-                 if( a( i, j )==czero ) then
-                    ta = zero
-                    go to 210
-                 end if
-                 ta = log10( cabs1( a( i, j ) ) ) / basl
-                 210 continue
-                 if( b( i, j )==czero ) then
-                    tb = zero
-                    go to 220
-                 end if
-                 tb = log10( cabs1( b( i, j ) ) ) / basl
-                 220 continue
-                 work( i+4*n ) = work( i+4*n ) - ta - tb
-                 work( j+5*n ) = work( j+5*n ) - ta - tb
-              end do
-           end do
-           coef = one / real( 2*nr,KIND=sp)
-           coef2 = coef*coef
-           coef5 = half*coef2
-           nrp2 = nr + 2
-           beta = zero
-           it = 1
-           ! start generalized conjugate gradient iteration
-           250 continue
-           gamma = stdlib_sdot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_sdot( nr, &
-                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
-           ew = zero
-           ewc = zero
-           do i = ilo, ihi
-              ew = ew + work( i+4*n )
-              ewc = ewc + work( i+5*n )
-           end do
-           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
-           if( gamma==zero )go to 350
-           if( it/=1 )beta = gamma / pgamma
-           t = coef5*( ewc-three*ew )
-           tc = coef5*( ew-three*ewc )
-           call stdlib_sscal( nr, beta, work( ilo ), 1 )
-           call stdlib_sscal( nr, beta, work( ilo+n ), 1 )
-           call stdlib_saxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
-           call stdlib_saxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
-           do i = ilo, ihi
-              work( i ) = work( i ) + tc
-              work( i+n ) = work( i+n ) + t
-           end do
-           ! apply matrix to vector
-           do i = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_290: do j = ilo, ihi
-                 if( a( i, j )==czero )go to 280
-                 kount = kount + 1
-                 sum = sum + work( j )
-                 280 continue
-                 if( b( i, j )==czero )cycle loop_290
-                 kount = kount + 1
-                 sum = sum + work( j )
-              end do loop_290
-              work( i+2*n ) = real( kount,KIND=sp)*work( i+n ) + sum
-           end do
-           do j = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_320: do i = ilo, ihi
-                 if( a( i, j )==czero )go to 310
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-                 310 continue
-                 if( b( i, j )==czero )cycle loop_320
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-              end do loop_320
-              work( j+3*n ) = real( kount,KIND=sp)*work( j ) + sum
-           end do
-           sum = stdlib_sdot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_sdot( nr, work( &
-                     ilo ), 1, work( ilo+3*n ), 1 )
-           alpha = gamma / sum
-           ! determine correction to current iteration
-           cmax = zero
-           do i = ilo, ihi
-              cor = alpha*work( i+n )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              lscale( i ) = lscale( i ) + cor
-              cor = alpha*work( i )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              rscale( i ) = rscale( i ) + cor
-           end do
-           if( cmax<half )go to 350
-           call stdlib_saxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
-           call stdlib_saxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
-           pgamma = gamma
-           it = it + 1
-           if( it<=nrp2 )go to 250
-           ! end generalized conjugate gradient iteration
-           350 continue
-           sfmin = stdlib_slamch( 'S' )
-           sfmax = one / sfmin
-           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
-           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
-           do i = ilo, ihi
-              irab = stdlib_icamax( n-ilo+1, a( i, ilo ), lda )
-              rab = abs( a( i, irab+ilo-1 ) )
-              irab = stdlib_icamax( n-ilo+1, b( i, ilo ), ldb )
-              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
-              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
-              ir = lscale( i ) + sign( half, lscale( i ) )
-              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
-              lscale( i ) = sclfac**ir
-              icab = stdlib_icamax( ihi, a( 1, i ), 1 )
-              cab = abs( a( icab, i ) )
-              icab = stdlib_icamax( ihi, b( 1, i ), 1 )
-              cab = max( cab, abs( b( icab, i ) ) )
-              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
-              jc = rscale( i ) + sign( half, rscale( i ) )
-              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
-              rscale( i ) = sclfac**jc
-           end do
-           ! row scaling of matrices a and b
-           do i = ilo, ihi
-              call stdlib_csscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
-              call stdlib_csscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
-           end do
-           ! column scaling of matrices a and b
-           do j = ilo, ihi
-              call stdlib_csscal( ihi, rscale( j ), a( 1, j ), 1 )
-              call stdlib_csscal( ihi, rscale( j ), b( 1, j ), 1 )
-           end do
-           return
-     end subroutine stdlib_cggbal
-
-     module pure subroutine stdlib_zggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
-     !! ZGGBAL balances a pair of general complex matrices (A,B).  This
-     !! involves, first, permuting A and B by similarity transformations to
-     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
-     !! elements on the diagonal; and second, applying a diagonal similarity
-     !! transformation to rows and columns ILO to IHI to make the rows
-     !! and columns as close in norm as possible. Both steps are optional.
-     !! Balancing may reduce the 1-norm of the matrices, and improve the
-     !! accuracy of the computed eigenvalues and/or eigenvectors in the
-     !! generalized eigenvalue problem A*x = lambda*B*x.
-               
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: job
-           integer(ilp), intent(out) :: ihi, ilo, info
-           integer(ilp), intent(in) :: lda, ldb, n
-           ! Array Arguments 
-           real(dp), intent(out) :: lscale(*), rscale(*), work(*)
-           complex(dp), intent(inout) :: a(lda,*), b(ldb,*)
-        ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: sclfac = 1.0e+1_dp
-           
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
-                     lrab, lsfmax, lsfmin, m, nr, nrp2
-           real(dp) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
-                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
-           complex(dp) :: cdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(dp) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=dp) ) + abs( aimag( cdum ) )
-           ! Executable Statements 
-           ! test the input parameters
-           info = 0
-           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
-                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldb<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZGGBAL', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 ) then
-              ilo = 1
-              ihi = n
-              return
-           end if
-           if( n==1 ) then
-              ilo = 1
-              ihi = n
-              lscale( 1 ) = one
-              rscale( 1 ) = one
-              return
-           end if
-           if( stdlib_lsame( job, 'N' ) ) then
-              ilo = 1
-              ihi = n
-              do i = 1, n
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           k = 1
-           l = n
-           if( stdlib_lsame( job, 'S' ) )go to 190
-           go to 30
-           ! permute the matrices a and b to isolate the eigenvalues.
-           ! find row with one nonzero in columns 1 through l
-           20 continue
-           l = lm1
-           if( l/=1 )go to 30
-           rscale( 1 ) = 1
-           lscale( 1 ) = 1
-           go to 190
-           30 continue
-           lm1 = l - 1
-           loop_80: do i = l, 1, -1
-              do j = 1, lm1
-                 jp1 = j + 1
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 50
-              end do
-              j = l
-              go to 70
-              50 continue
-              do j = jp1, l
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_80
-              end do
-              j = jp1 - 1
-              70 continue
-              m = l
-              iflow = 1
-              go to 160
-           end do loop_80
-           go to 100
-           ! find column with one nonzero in rows k through n
-           90 continue
-           k = k + 1
-           100 continue
-           loop_150: do j = k, l
-              do i = k, lm1
-                 ip1 = i + 1
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 120
-              end do
-              i = l
-              go to 140
-              120 continue
-              do i = ip1, l
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_150
-              end do
-              i = ip1 - 1
-              140 continue
-              m = k
-              iflow = 2
-              go to 160
-           end do loop_150
-           go to 190
-           ! permute rows m and i
-           160 continue
-           lscale( m ) = i
-           if( i==m )go to 170
-           call stdlib_zswap( n-k+1, a( i, k ), lda, a( m, k ), lda )
-           call stdlib_zswap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
-           ! permute columns m and j
-           170 continue
-           rscale( m ) = j
-           if( j==m )go to 180
-           call stdlib_zswap( l, a( 1, j ), 1, a( 1, m ), 1 )
-           call stdlib_zswap( l, b( 1, j ), 1, b( 1, m ), 1 )
-           180 continue
-           go to ( 20, 90 )iflow
-           190 continue
-           ilo = k
-           ihi = l
-           if( stdlib_lsame( job, 'P' ) ) then
-              do i = ilo, ihi
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           if( ilo==ihi )return
-           ! balance the submatrix in rows ilo to ihi.
-           nr = ihi - ilo + 1
-           do i = ilo, ihi
-              rscale( i ) = zero
-              lscale( i ) = zero
-              work( i ) = zero
-              work( i+n ) = zero
-              work( i+2*n ) = zero
-              work( i+3*n ) = zero
-              work( i+4*n ) = zero
-              work( i+5*n ) = zero
-           end do
-           ! compute right side vector in resulting linear equations
-           basl = log10( sclfac )
-           do i = ilo, ihi
-              do j = ilo, ihi
-                 if( a( i, j )==czero ) then
-                    ta = zero
-                    go to 210
-                 end if
-                 ta = log10( cabs1( a( i, j ) ) ) / basl
-                 210 continue
-                 if( b( i, j )==czero ) then
-                    tb = zero
-                    go to 220
-                 end if
-                 tb = log10( cabs1( b( i, j ) ) ) / basl
-                 220 continue
-                 work( i+4*n ) = work( i+4*n ) - ta - tb
-                 work( j+5*n ) = work( j+5*n ) - ta - tb
-              end do
-           end do
-           coef = one / real( 2*nr,KIND=dp)
-           coef2 = coef*coef
-           coef5 = half*coef2
-           nrp2 = nr + 2
-           beta = zero
-           it = 1
-           ! start generalized conjugate gradient iteration
-           250 continue
-           gamma = stdlib_ddot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_ddot( nr, &
-                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
-           ew = zero
-           ewc = zero
-           do i = ilo, ihi
-              ew = ew + work( i+4*n )
-              ewc = ewc + work( i+5*n )
-           end do
-           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
-           if( gamma==zero )go to 350
-           if( it/=1 )beta = gamma / pgamma
-           t = coef5*( ewc-three*ew )
-           tc = coef5*( ew-three*ewc )
-           call stdlib_dscal( nr, beta, work( ilo ), 1 )
-           call stdlib_dscal( nr, beta, work( ilo+n ), 1 )
-           call stdlib_daxpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
-           call stdlib_daxpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
-           do i = ilo, ihi
-              work( i ) = work( i ) + tc
-              work( i+n ) = work( i+n ) + t
-           end do
-           ! apply matrix to vector
-           do i = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_290: do j = ilo, ihi
-                 if( a( i, j )==czero )go to 280
-                 kount = kount + 1
-                 sum = sum + work( j )
-                 280 continue
-                 if( b( i, j )==czero )cycle loop_290
-                 kount = kount + 1
-                 sum = sum + work( j )
-              end do loop_290
-              work( i+2*n ) = real( kount,KIND=dp)*work( i+n ) + sum
-           end do
-           do j = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_320: do i = ilo, ihi
-                 if( a( i, j )==czero )go to 310
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-                 310 continue
-                 if( b( i, j )==czero )cycle loop_320
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-              end do loop_320
-              work( j+3*n ) = real( kount,KIND=dp)*work( j ) + sum
-           end do
-           sum = stdlib_ddot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_ddot( nr, work( &
-                     ilo ), 1, work( ilo+3*n ), 1 )
-           alpha = gamma / sum
-           ! determine correction to current iteration
-           cmax = zero
-           do i = ilo, ihi
-              cor = alpha*work( i+n )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              lscale( i ) = lscale( i ) + cor
-              cor = alpha*work( i )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              rscale( i ) = rscale( i ) + cor
-           end do
-           if( cmax<half )go to 350
-           call stdlib_daxpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
-           call stdlib_daxpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
-           pgamma = gamma
-           it = it + 1
-           if( it<=nrp2 )go to 250
-           ! end generalized conjugate gradient iteration
-           350 continue
-           sfmin = stdlib_dlamch( 'S' )
-           sfmax = one / sfmin
-           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
-           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
-           do i = ilo, ihi
-              irab = stdlib_izamax( n-ilo+1, a( i, ilo ), lda )
-              rab = abs( a( i, irab+ilo-1 ) )
-              irab = stdlib_izamax( n-ilo+1, b( i, ilo ), ldb )
-              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
-              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
-              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
-              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
-              lscale( i ) = sclfac**ir
-              icab = stdlib_izamax( ihi, a( 1, i ), 1 )
-              cab = abs( a( icab, i ) )
-              icab = stdlib_izamax( ihi, b( 1, i ), 1 )
-              cab = max( cab, abs( b( icab, i ) ) )
-              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
-              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
-              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
-              rscale( i ) = sclfac**jc
-           end do
-           ! row scaling of matrices a and b
-           do i = ilo, ihi
-              call stdlib_zdscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
-              call stdlib_zdscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
-           end do
-           ! column scaling of matrices a and b
-           do j = ilo, ihi
-              call stdlib_zdscal( ihi, rscale( j ), a( 1, j ), 1 )
-              call stdlib_zdscal( ihi, rscale( j ), b( 1, j ), 1 )
-           end do
-           return
-     end subroutine stdlib_zggbal
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$ggbal( job, n, a, lda, b, ldb, ilo, ihi, lscale,rscale, work, info )
-     !! ZGGBAL: balances a pair of general complex matrices (A,B).  This
-     !! involves, first, permuting A and B by similarity transformations to
-     !! isolate eigenvalues in the first 1 to ILO$-$1 and last IHI+1 to N
-     !! elements on the diagonal; and second, applying a diagonal similarity
-     !! transformation to rows and columns ILO to IHI to make the rows
-     !! and columns as close in norm as possible. Both steps are optional.
-     !! Balancing may reduce the 1-norm of the matrices, and improve the
-     !! accuracy of the computed eigenvalues and/or eigenvectors in the
-     !! generalized eigenvalue problem A*x = lambda*B*x.
-               
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: job
-           integer(ilp), intent(out) :: ihi, ilo, info
-           integer(ilp), intent(in) :: lda, ldb, n
-           ! Array Arguments 
-           real(${ck}$), intent(out) :: lscale(*), rscale(*), work(*)
-           complex(${ck}$), intent(inout) :: a(lda,*), b(ldb,*)
-        ! =====================================================================
-           ! Parameters 
-           real(${ck}$), parameter :: sclfac = 1.0e+1_${ck}$
-           
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i, icab, iflow, ip1, ir, irab, it, j, jc, jp1, k, kount, l, lcab, lm1, &
-                     lrab, lsfmax, lsfmin, m, nr, nrp2
-           real(${ck}$) :: alpha, basl, beta, cab, cmax, coef, coef2, coef5, cor, ew, ewc, gamma, &
-                     pgamma, rab, sfmax, sfmin, sum, t, ta, tb, tc
-           complex(${ck}$) :: cdum
-           ! Intrinsic Functions 
-           ! Statement Functions 
-           real(${ck}$) :: cabs1
-           ! Statement Function Definitions 
-           cabs1( cdum ) = abs( real( cdum,KIND=${ck}$) ) + abs( aimag( cdum ) )
-           ! Executable Statements 
-           ! test the input parameters
-           info = 0
-           if( .not.stdlib_lsame( job, 'N' ) .and. .not.stdlib_lsame( job, 'P' ) &
-                     .and..not.stdlib_lsame( job, 'S' ) .and. .not.stdlib_lsame( job, 'B' ) ) then
-              info = -1
-           else if( n<0 ) then
-              info = -2
-           else if( lda<max( 1, n ) ) then
-              info = -4
-           else if( ldb<max( 1, n ) ) then
-              info = -6
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'ZGGBAL', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 ) then
-              ilo = 1
-              ihi = n
-              return
-           end if
-           if( n==1 ) then
-              ilo = 1
-              ihi = n
-              lscale( 1 ) = one
-              rscale( 1 ) = one
-              return
-           end if
-           if( stdlib_lsame( job, 'N' ) ) then
-              ilo = 1
-              ihi = n
-              do i = 1, n
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           k = 1
-           l = n
-           if( stdlib_lsame( job, 'S' ) )go to 190
-           go to 30
-           ! permute the matrices a and b to isolate the eigenvalues.
-           ! find row with one nonzero in columns 1 through l
-           20 continue
-           l = lm1
-           if( l/=1 )go to 30
-           rscale( 1 ) = 1
-           lscale( 1 ) = 1
-           go to 190
-           30 continue
-           lm1 = l - 1
-           loop_80: do i = l, 1, -1
-              do j = 1, lm1
-                 jp1 = j + 1
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 50
-              end do
-              j = l
-              go to 70
-              50 continue
-              do j = jp1, l
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_80
-              end do
-              j = jp1 - 1
-              70 continue
-              m = l
-              iflow = 1
-              go to 160
-           end do loop_80
-           go to 100
-           ! find column with one nonzero in rows k through n
-           90 continue
-           k = k + 1
-           100 continue
-           loop_150: do j = k, l
-              do i = k, lm1
-                 ip1 = i + 1
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )go to 120
-              end do
-              i = l
-              go to 140
-              120 continue
-              do i = ip1, l
-                 if( a( i, j )/=czero .or. b( i, j )/=czero )cycle loop_150
-              end do
-              i = ip1 - 1
-              140 continue
-              m = k
-              iflow = 2
-              go to 160
-           end do loop_150
-           go to 190
-           ! permute rows m and i
-           160 continue
-           lscale( m ) = i
-           if( i==m )go to 170
-           call stdlib_${ci}$swap( n-k+1, a( i, k ), lda, a( m, k ), lda )
-           call stdlib_${ci}$swap( n-k+1, b( i, k ), ldb, b( m, k ), ldb )
-           ! permute columns m and j
-           170 continue
-           rscale( m ) = j
-           if( j==m )go to 180
-           call stdlib_${ci}$swap( l, a( 1, j ), 1, a( 1, m ), 1 )
-           call stdlib_${ci}$swap( l, b( 1, j ), 1, b( 1, m ), 1 )
-           180 continue
-           go to ( 20, 90 )iflow
-           190 continue
-           ilo = k
-           ihi = l
-           if( stdlib_lsame( job, 'P' ) ) then
-              do i = ilo, ihi
-                 lscale( i ) = one
-                 rscale( i ) = one
-              end do
-              return
-           end if
-           if( ilo==ihi )return
-           ! balance the submatrix in rows ilo to ihi.
-           nr = ihi - ilo + 1
-           do i = ilo, ihi
-              rscale( i ) = zero
-              lscale( i ) = zero
-              work( i ) = zero
-              work( i+n ) = zero
-              work( i+2*n ) = zero
-              work( i+3*n ) = zero
-              work( i+4*n ) = zero
-              work( i+5*n ) = zero
-           end do
-           ! compute right side vector in resulting linear equations
-           basl = log10( sclfac )
-           do i = ilo, ihi
-              do j = ilo, ihi
-                 if( a( i, j )==czero ) then
-                    ta = zero
-                    go to 210
-                 end if
-                 ta = log10( cabs1( a( i, j ) ) ) / basl
-                 210 continue
-                 if( b( i, j )==czero ) then
-                    tb = zero
-                    go to 220
-                 end if
-                 tb = log10( cabs1( b( i, j ) ) ) / basl
-                 220 continue
-                 work( i+4*n ) = work( i+4*n ) - ta - tb
-                 work( j+5*n ) = work( j+5*n ) - ta - tb
-              end do
-           end do
-           coef = one / real( 2*nr,KIND=${ck}$)
-           coef2 = coef*coef
-           coef5 = half*coef2
-           nrp2 = nr + 2
-           beta = zero
-           it = 1
-           ! start generalized conjugate gradient iteration
-           250 continue
-           gamma = stdlib_${c2ri(ci)}$dot( nr, work( ilo+4*n ), 1, work( ilo+4*n ), 1 ) +stdlib_${c2ri(ci)}$dot( nr, &
-                     work( ilo+5*n ), 1, work( ilo+5*n ), 1 )
-           ew = zero
-           ewc = zero
-           do i = ilo, ihi
-              ew = ew + work( i+4*n )
-              ewc = ewc + work( i+5*n )
-           end do
-           gamma = coef*gamma - coef2*( ew**2+ewc**2 ) - coef5*( ew-ewc )**2
-           if( gamma==zero )go to 350
-           if( it/=1 )beta = gamma / pgamma
-           t = coef5*( ewc-three*ew )
-           tc = coef5*( ew-three*ewc )
-           call stdlib_${c2ri(ci)}$scal( nr, beta, work( ilo ), 1 )
-           call stdlib_${c2ri(ci)}$scal( nr, beta, work( ilo+n ), 1 )
-           call stdlib_${c2ri(ci)}$axpy( nr, coef, work( ilo+4*n ), 1, work( ilo+n ), 1 )
-           call stdlib_${c2ri(ci)}$axpy( nr, coef, work( ilo+5*n ), 1, work( ilo ), 1 )
-           do i = ilo, ihi
-              work( i ) = work( i ) + tc
-              work( i+n ) = work( i+n ) + t
-           end do
-           ! apply matrix to vector
-           do i = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_290: do j = ilo, ihi
-                 if( a( i, j )==czero )go to 280
-                 kount = kount + 1
-                 sum = sum + work( j )
-                 280 continue
-                 if( b( i, j )==czero )cycle loop_290
-                 kount = kount + 1
-                 sum = sum + work( j )
-              end do loop_290
-              work( i+2*n ) = real( kount,KIND=${ck}$)*work( i+n ) + sum
-           end do
-           do j = ilo, ihi
-              kount = 0
-              sum = zero
-              loop_320: do i = ilo, ihi
-                 if( a( i, j )==czero )go to 310
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-                 310 continue
-                 if( b( i, j )==czero )cycle loop_320
-                 kount = kount + 1
-                 sum = sum + work( i+n )
-              end do loop_320
-              work( j+3*n ) = real( kount,KIND=${ck}$)*work( j ) + sum
-           end do
-           sum = stdlib_${c2ri(ci)}$dot( nr, work( ilo+n ), 1, work( ilo+2*n ), 1 ) +stdlib_${c2ri(ci)}$dot( nr, work( &
-                     ilo ), 1, work( ilo+3*n ), 1 )
-           alpha = gamma / sum
-           ! determine correction to current iteration
-           cmax = zero
-           do i = ilo, ihi
-              cor = alpha*work( i+n )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              lscale( i ) = lscale( i ) + cor
-              cor = alpha*work( i )
-              if( abs( cor )>cmax )cmax = abs( cor )
-              rscale( i ) = rscale( i ) + cor
-           end do
-           if( cmax<half )go to 350
-           call stdlib_${c2ri(ci)}$axpy( nr, -alpha, work( ilo+2*n ), 1, work( ilo+4*n ), 1 )
-           call stdlib_${c2ri(ci)}$axpy( nr, -alpha, work( ilo+3*n ), 1, work( ilo+5*n ), 1 )
-           pgamma = gamma
-           it = it + 1
-           if( it<=nrp2 )go to 250
-           ! end generalized conjugate gradient iteration
-           350 continue
-           sfmin = stdlib_${c2ri(ci)}$lamch( 'S' )
-           sfmax = one / sfmin
-           lsfmin = int( log10( sfmin ) / basl+one,KIND=ilp)
-           lsfmax = int( log10( sfmax ) / basl,KIND=ilp)
-           do i = ilo, ihi
-              irab = stdlib_i${ci}$amax( n-ilo+1, a( i, ilo ), lda )
-              rab = abs( a( i, irab+ilo-1 ) )
-              irab = stdlib_i${ci}$amax( n-ilo+1, b( i, ilo ), ldb )
-              rab = max( rab, abs( b( i, irab+ilo-1 ) ) )
-              lrab = int( log10( rab+sfmin ) / basl+one,KIND=ilp)
-              ir = int(lscale( i ) + sign( half, lscale( i ) ),KIND=ilp)
-              ir = min( max( ir, lsfmin ), lsfmax, lsfmax-lrab )
-              lscale( i ) = sclfac**ir
-              icab = stdlib_i${ci}$amax( ihi, a( 1, i ), 1 )
-              cab = abs( a( icab, i ) )
-              icab = stdlib_i${ci}$amax( ihi, b( 1, i ), 1 )
-              cab = max( cab, abs( b( icab, i ) ) )
-              lcab = int( log10( cab+sfmin ) / basl+one,KIND=ilp)
-              jc = int(rscale( i ) + sign( half, rscale( i ) ),KIND=ilp)
-              jc = min( max( jc, lsfmin ), lsfmax, lsfmax-lcab )
-              rscale( i ) = sclfac**jc
-           end do
-           ! row scaling of matrices a and b
-           do i = ilo, ihi
-              call stdlib_${ci}$dscal( n-ilo+1, lscale( i ), a( i, ilo ), lda )
-              call stdlib_${ci}$dscal( n-ilo+1, lscale( i ), b( i, ilo ), ldb )
-           end do
-           ! column scaling of matrices a and b
-           do j = ilo, ihi
-              call stdlib_${ci}$dscal( ihi, rscale( j ), a( 1, j ), 1 )
-              call stdlib_${ci}$dscal( ihi, rscale( j ), b( 1, j ), 1 )
-           end do
-           return
-     end subroutine stdlib_${ci}$ggbal
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_sgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_sgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! SGGHRD reduces a pair of real matrices (A,B) to generalized upper
      !! Hessenberg form using orthogonal transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -9926,7 +9926,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
            return
      end subroutine stdlib_sgghrd
 
-     module pure subroutine stdlib_dgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_dgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! DGGHRD reduces a pair of real matrices (A,B) to generalized upper
      !! Hessenberg form using orthogonal transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -10057,7 +10057,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$gghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_${ri}$gghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! DGGHRD: reduces a pair of real matrices (A,B) to generalized upper
      !! Hessenberg form using orthogonal transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -10189,7 +10189,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_cgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! CGGHRD reduces a pair of complex matrices (A,B) to generalized upper
      !! Hessenberg form using unitary transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the generalized
@@ -10320,7 +10320,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
            return
      end subroutine stdlib_cgghrd
 
-     module pure subroutine stdlib_zgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_zgghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! ZGGHRD reduces a pair of complex matrices (A,B) to generalized upper
      !! Hessenberg form using unitary transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the
@@ -10453,7 +10453,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_comp
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$gghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
+     pure module subroutine stdlib_${ci}$gghrd( compq, compz, n, ilo, ihi, a, lda, b, ldb, q,ldq, z, ldz, &
      !! ZGGHRD: reduces a pair of complex matrices (A,B) to generalized upper
      !! Hessenberg form using unitary transformations, where A is a
      !! general matrix and B is upper triangular.  The form of the

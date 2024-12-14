@@ -5,7 +5,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 
   contains
 
-     module pure subroutine stdlib_strmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_strmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_sp
      !! STRMM performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
@@ -211,7 +211,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
            return
      end subroutine stdlib_strmm
 
-     module pure subroutine stdlib_dtrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_dtrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_dp
      !! DTRMM performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
@@ -419,7 +419,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_${ri}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_${rk}$
      !! DTRMM:  performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A ),
@@ -628,7 +628,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_ctrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_ctrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_sp
      !! CTRMM performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A )
@@ -870,7 +870,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
            return
      end subroutine stdlib_ctrmm
 
-     module pure subroutine stdlib_ztrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_ztrmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_dp
      !! ZTRMM performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A )
@@ -1114,7 +1114,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_${ci}$trmm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_${ck}$
      !! ZTRMM:  performs one of the matrix-matrix operations
      !! B := alpha*op( A )*B,   or   B := alpha*B*op( A )
@@ -1361,7 +1361,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 
 
 
-     module pure subroutine stdlib_strsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_strsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_sp
      !! STRSM solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
@@ -1592,7 +1592,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
            return
      end subroutine stdlib_strsm
 
-     module pure subroutine stdlib_dtrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_dtrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_dp
      !! DTRSM solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
@@ -1825,7 +1825,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_${ri}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_${rk}$
      !! DTRSM:  solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
@@ -2059,7 +2059,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_ctrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_ctrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_sp
      !! CTRSM solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
@@ -2324,7 +2324,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
            return
      end subroutine stdlib_ctrsm
 
-     module pure subroutine stdlib_ztrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_ztrsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_dp
      !! ZTRSM solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
@@ -2591,7 +2591,7 @@ submodule(stdlib_blas) stdlib_blas_level3_tri
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
+     pure module subroutine stdlib_${ci}$trsm(side,uplo,transa,diag,m,n,alpha,a,lda,b,ldb)
      use stdlib_blas_constants_${ck}$
      !! ZTRSM:  solves one of the matrix equations
      !! op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,

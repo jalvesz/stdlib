@@ -274,6 +274,7 @@ for filename in ['stdlib_linalg_blas_s.fypp','stdlib_linalg_blas_d.fypp','stdlib
             match = subroutine_pattern.match(line)
 
             if match:
+                line = re.sub(r'\b(function|subroutine)\b', r'module \1', line)
                 # Save any previous subroutine
                 if subroutine_buffer:
                     subroutines[current_name].extend(subroutine_buffer)
@@ -287,7 +288,7 @@ for filename in ['stdlib_linalg_blas_s.fypp','stdlib_linalg_blas_d.fypp','stdlib
                     aaa = '#:for ck,ct,ci in CMPLX_KINDS_TYPES\n#:if not ck in ["sp","dp"]\n'
                 elif filename == 'stdlib_linalg_blas_q.fypp':
                     aaa = '#:for rk,rt,ri in REAL_KINDS_TYPES\n#:if not rk in ["sp","dp"]\n'
-                subroutine_buffer = [aaa+'     module '+line.strip()+'\n']  # Start collecting a new subroutine
+                subroutine_buffer = [aaa,line]  # Start collecting a new subroutine
 
                 
                 if filename in ['stdlib_linalg_blas_s.fypp','stdlib_linalg_blas_c.fypp']:
@@ -385,6 +386,7 @@ for filename in ['stdlib_linalg_lapack_s.fypp','stdlib_linalg_lapack_d.fypp','st
             match = subroutine_pattern.match(line)
             
             if match:
+                line = re.sub(r'\b(function|subroutine)\b', r'module \1', line)
                 # Save any previous subroutine
                 if subroutine_buffer:
                     subroutines[current_name].extend(subroutine_buffer)
@@ -399,7 +401,7 @@ for filename in ['stdlib_linalg_lapack_s.fypp','stdlib_linalg_lapack_d.fypp','st
                     aaa = '#:for ck,ct,ci in CMPLX_KINDS_TYPES\n#:if not ck in ["sp","dp"]\n'
                 elif filename == 'stdlib_linalg_lapack_q.fypp':
                     aaa = '#:for rk,rt,ri in REAL_KINDS_TYPES\n#:if not rk in ["sp","dp"]\n'
-                subroutine_buffer = [aaa+'     module '+line.strip()+'\n']  # Start collecting a new subroutine
+                subroutine_buffer = [aaa,line]  # Start collecting a new subroutine
 
                 inside_subroutine = True
                 

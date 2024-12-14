@@ -5,9 +5,785 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
 
   contains
 
+     pure module subroutine stdlib_sbdsdc( uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq,work, iwork, &
+     !! SBDSDC computes the singular value decomposition (SVD) of a real
+     !! N-by-N (upper or lower) bidiagonal matrix B:  B = U * S * VT,
+     !! using a divide and conquer method, where S is a diagonal matrix
+     !! with non-negative diagonal elements (the singular values of B), and
+     !! U and VT are orthogonal matrices of left and right singular vectors,
+     !! respectively. SBDSDC can be used to compute all singular values,
+     !! and optionally, singular vectors or singular vectors in compact form.
+     !! This code makes very mild assumptions about floating point
+     !! arithmetic. It will work on machines with a guard digit in
+     !! add/subtract, or on those binary machines without guard digits
+     !! which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2.
+     !! It could conceivably fail on hexadecimal or decimal machines
+     !! without guard digits, but we know of none.  See SLASD3 for details.
+     !! The code currently calls SLASDQ if singular values only are desired.
+     !! However, it can be slightly modified to compute singular values
+     !! using the divide and conquer method.
+               info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: compq, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldu, ldvt, n
+           ! Array Arguments 
+           integer(ilp), intent(out) :: iq(*), iwork(*)
+           real(sp), intent(inout) :: d(*), e(*)
+           real(sp), intent(out) :: q(*), u(ldu,*), vt(ldvt,*), work(*)
+        ! =====================================================================
+        ! changed dimension statement in comment describing e from (n) to
+        ! (n-1).  sven, 17 feb 05.
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: difl, difr, givcol, givnum, givptr, i, ic, icompq, ierr, ii, is, iu, &
+           iuplo, ivt, j, k, kk, mlvl, nm1, nsize, perm, poles, qstart, smlsiz, smlszp, sqre, &
+                     start, wstart, z
+           real(sp) :: cs, eps, orgnrm, p, r, sn
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           iuplo = 0
+           if( stdlib_lsame( uplo, 'U' ) )iuplo = 1
+           if( stdlib_lsame( uplo, 'L' ) )iuplo = 2
+           if( stdlib_lsame( compq, 'N' ) ) then
+              icompq = 0
+           else if( stdlib_lsame( compq, 'P' ) ) then
+              icompq = 1
+           else if( stdlib_lsame( compq, 'I' ) ) then
+              icompq = 2
+           else
+              icompq = -1
+           end if
+           if( iuplo==0 ) then
+              info = -1
+           else if( icompq<0 ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( ( ldu<1 ) .or. ( ( icompq==2 ) .and. ( ldu<n ) ) ) then
+              info = -7
+           else if( ( ldvt<1 ) .or. ( ( icompq==2 ) .and. ( ldvt<n ) ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SBDSDC', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 )return
+           smlsiz = stdlib_ilaenv( 9, 'SBDSDC', ' ', 0, 0, 0, 0 )
+           if( n==1 ) then
+              if( icompq==1 ) then
+                 q( 1 ) = sign( one, d( 1 ) )
+                 q( 1+smlsiz*n ) = one
+              else if( icompq==2 ) then
+                 u( 1, 1 ) = sign( one, d( 1 ) )
+                 vt( 1, 1 ) = one
+              end if
+              d( 1 ) = abs( d( 1 ) )
+              return
+           end if
+           nm1 = n - 1
+           ! if matrix lower bidiagonal, rotate to be upper bidiagonal
+           ! by applying givens rotations on the left
+           wstart = 1
+           qstart = 3
+           if( icompq==1 ) then
+              call stdlib_scopy( n, d, 1, q( 1 ), 1 )
+              call stdlib_scopy( n-1, e, 1, q( n+1 ), 1 )
+           end if
+           if( iuplo==2 ) then
+              qstart = 5
+              if( icompq == 2 ) wstart = 2*n - 1
+              do i = 1, n - 1
+                 call stdlib_slartg( d( i ), e( i ), cs, sn, r )
+                 d( i ) = r
+                 e( i ) = sn*d( i+1 )
+                 d( i+1 ) = cs*d( i+1 )
+                 if( icompq==1 ) then
+                    q( i+2*n ) = cs
+                    q( i+3*n ) = sn
+                 else if( icompq==2 ) then
+                    work( i ) = cs
+                    work( nm1+i ) = -sn
+                 end if
+              end do
+           end if
+           ! if icompq = 0, use stdlib_slasdq to compute the singular values.
+           if( icompq==0 ) then
+              ! ignore wstart, instead using work( 1 ), since the two vectors
+              ! for cs and -sn above are added only if icompq == 2,
+              ! and adding them exceeds documented work size of 4*n.
+              call stdlib_slasdq( 'U', 0, n, 0, 0, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( 1 ), &
+                        info )
+              go to 40
+           end if
+           ! if n is smaller than the minimum divide size smlsiz, then solve
+           ! the problem with another solver.
+           if( n<=smlsiz ) then
+              if( icompq==2 ) then
+                 call stdlib_slaset( 'A', n, n, zero, one, u, ldu )
+                 call stdlib_slaset( 'A', n, n, zero, one, vt, ldvt )
+                 call stdlib_slasdq( 'U', 0, n, n, n, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( &
+                           wstart ), info )
+              else if( icompq==1 ) then
+                 iu = 1
+                 ivt = iu + n
+                 call stdlib_slaset( 'A', n, n, zero, one, q( iu+( qstart-1 )*n ),n )
+                 call stdlib_slaset( 'A', n, n, zero, one, q( ivt+( qstart-1 )*n ),n )
+                 call stdlib_slasdq( 'U', 0, n, n, n, 0, d, e,q( ivt+( qstart-1 )*n ), n,q( iu+( &
+                           qstart-1 )*n ), n,q( iu+( qstart-1 )*n ), n, work( wstart ),info )
+              end if
+              go to 40
+           end if
+           if( icompq==2 ) then
+              call stdlib_slaset( 'A', n, n, zero, one, u, ldu )
+              call stdlib_slaset( 'A', n, n, zero, one, vt, ldvt )
+           end if
+           ! scale.
+           orgnrm = stdlib_slanst( 'M', n, d, e )
+           if( orgnrm==zero )return
+           call stdlib_slascl( 'G', 0, 0, orgnrm, one, n, 1, d, n, ierr )
+           call stdlib_slascl( 'G', 0, 0, orgnrm, one, nm1, 1, e, nm1, ierr )
+           eps = stdlib_slamch( 'EPSILON' )
+           mlvl = int( log( real( n,KIND=sp) / real( smlsiz+1,KIND=sp) ) / log( two ),KIND=ilp) + &
+                     1
+           smlszp = smlsiz + 1
+           if( icompq==1 ) then
+              iu = 1
+              ivt = 1 + smlsiz
+              difl = ivt + smlszp
+              difr = difl + mlvl
+              z = difr + mlvl*2
+              ic = z + mlvl
+              is = ic + 1
+              poles = is + 1
+              givnum = poles + 2*mlvl
+              k = 1
+              givptr = 2
+              perm = 3
+              givcol = perm + mlvl
+           end if
+           do i = 1, n
+              if( abs( d( i ) )<eps ) then
+                 d( i ) = sign( eps, d( i ) )
+              end if
+           end do
+           start = 1
+           sqre = 0
+           loop_30: do i = 1, nm1
+              if( ( abs( e( i ) )<eps ) .or. ( i==nm1 ) ) then
+              ! subproblem found. first determine its size and then
+              ! apply divide and conquer on it.
+                 if( i<nm1 ) then
+              ! a subproblem with e(i) small for i < nm1.
+                    nsize = i - start + 1
+                 else if( abs( e( i ) )>=eps ) then
+              ! a subproblem with e(nm1) not too small but i = nm1.
+                    nsize = n - start + 1
+                 else
+              ! a subproblem with e(nm1) small. this implies an
+              ! 1-by-1 subproblem at d(n). solve this 1-by-1 problem
+              ! first.
+                    nsize = i - start + 1
+                    if( icompq==2 ) then
+                       u( n, n ) = sign( one, d( n ) )
+                       vt( n, n ) = one
+                    else if( icompq==1 ) then
+                       q( n+( qstart-1 )*n ) = sign( one, d( n ) )
+                       q( n+( smlsiz+qstart-1 )*n ) = one
+                    end if
+                    d( n ) = abs( d( n ) )
+                 end if
+                 if( icompq==2 ) then
+                    call stdlib_slasd0( nsize, sqre, d( start ), e( start ),u( start, start ), &
+                              ldu, vt( start, start ),ldvt, smlsiz, iwork, work( wstart ), info )
+                 else
+                    call stdlib_slasda( icompq, smlsiz, nsize, sqre, d( start ),e( start ), q( &
+                    start+( iu+qstart-2 )*n ), n,q( start+( ivt+qstart-2 )*n ),iq( start+k*n ), q(&
+                     start+( difl+qstart-2 )*n ), q( start+( difr+qstart-2 )*n ),q( start+( z+&
+                     qstart-2 )*n ),q( start+( poles+qstart-2 )*n ),iq( start+givptr*n ), iq( &
+                     start+givcol*n ),n, iq( start+perm*n ),q( start+( givnum+qstart-2 )*n ),q( &
+                     start+( ic+qstart-2 )*n ),q( start+( is+qstart-2 )*n ),work( wstart ), iwork,&
+                                info )
+                 end if
+                 if( info/=0 ) then
+                    return
+                 end if
+                 start = i + 1
+              end if
+           end do loop_30
+           ! unscale
+           call stdlib_slascl( 'G', 0, 0, one, orgnrm, n, 1, d, n, ierr )
+           40 continue
+           ! use selection sort to minimize swaps of singular vectors
+           do ii = 2, n
+              i = ii - 1
+              kk = i
+              p = d( i )
+              do j = ii, n
+                 if( d( j )>p ) then
+                    kk = j
+                    p = d( j )
+                 end if
+              end do
+              if( kk/=i ) then
+                 d( kk ) = d( i )
+                 d( i ) = p
+                 if( icompq==1 ) then
+                    iq( i ) = kk
+                 else if( icompq==2 ) then
+                    call stdlib_sswap( n, u( 1, i ), 1, u( 1, kk ), 1 )
+                    call stdlib_sswap( n, vt( i, 1 ), ldvt, vt( kk, 1 ), ldvt )
+                 end if
+              else if( icompq==1 ) then
+                 iq( i ) = i
+              end if
+           end do
+           ! if icompq = 1, use iq(n,1) as the indicator for uplo
+           if( icompq==1 ) then
+              if( iuplo==1 ) then
+                 iq( n ) = 1
+              else
+                 iq( n ) = 0
+              end if
+           end if
+           ! if b is lower bidiagonal, update u by those givens rotations
+           ! which rotated b to be upper bidiagonal
+           if( ( iuplo==2 ) .and. ( icompq==2 ) )call stdlib_slasr( 'L', 'V', 'B', n, n, work( 1 )&
+                     , work( n ), u, ldu )
+           return
+     end subroutine stdlib_sbdsdc
+
+     pure module subroutine stdlib_dbdsdc( uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq,work, iwork, &
+     !! DBDSDC computes the singular value decomposition (SVD) of a real
+     !! N-by-N (upper or lower) bidiagonal matrix B:  B = U * S * VT,
+     !! using a divide and conquer method, where S is a diagonal matrix
+     !! with non-negative diagonal elements (the singular values of B), and
+     !! U and VT are orthogonal matrices of left and right singular vectors,
+     !! respectively. DBDSDC can be used to compute all singular values,
+     !! and optionally, singular vectors or singular vectors in compact form.
+     !! This code makes very mild assumptions about floating point
+     !! arithmetic. It will work on machines with a guard digit in
+     !! add/subtract, or on those binary machines without guard digits
+     !! which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2.
+     !! It could conceivably fail on hexadecimal or decimal machines
+     !! without guard digits, but we know of none.  See DLASD3 for details.
+     !! The code currently calls DLASDQ if singular values only are desired.
+     !! However, it can be slightly modified to compute singular values
+     !! using the divide and conquer method.
+               info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: compq, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldu, ldvt, n
+           ! Array Arguments 
+           integer(ilp), intent(out) :: iq(*), iwork(*)
+           real(dp), intent(inout) :: d(*), e(*)
+           real(dp), intent(out) :: q(*), u(ldu,*), vt(ldvt,*), work(*)
+        ! =====================================================================
+        ! changed dimension statement in comment describing e from (n) to
+        ! (n-1).  sven, 17 feb 05.
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: difl, difr, givcol, givnum, givptr, i, ic, icompq, ierr, ii, is, iu, &
+           iuplo, ivt, j, k, kk, mlvl, nm1, nsize, perm, poles, qstart, smlsiz, smlszp, sqre, &
+                     start, wstart, z
+           real(dp) :: cs, eps, orgnrm, p, r, sn
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           iuplo = 0
+           if( stdlib_lsame( uplo, 'U' ) )iuplo = 1
+           if( stdlib_lsame( uplo, 'L' ) )iuplo = 2
+           if( stdlib_lsame( compq, 'N' ) ) then
+              icompq = 0
+           else if( stdlib_lsame( compq, 'P' ) ) then
+              icompq = 1
+           else if( stdlib_lsame( compq, 'I' ) ) then
+              icompq = 2
+           else
+              icompq = -1
+           end if
+           if( iuplo==0 ) then
+              info = -1
+           else if( icompq<0 ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( ( ldu<1 ) .or. ( ( icompq==2 ) .and. ( ldu<n ) ) ) then
+              info = -7
+           else if( ( ldvt<1 ) .or. ( ( icompq==2 ) .and. ( ldvt<n ) ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DBDSDC', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 )return
+           smlsiz = stdlib_ilaenv( 9, 'DBDSDC', ' ', 0, 0, 0, 0 )
+           if( n==1 ) then
+              if( icompq==1 ) then
+                 q( 1 ) = sign( one, d( 1 ) )
+                 q( 1+smlsiz*n ) = one
+              else if( icompq==2 ) then
+                 u( 1, 1 ) = sign( one, d( 1 ) )
+                 vt( 1, 1 ) = one
+              end if
+              d( 1 ) = abs( d( 1 ) )
+              return
+           end if
+           nm1 = n - 1
+           ! if matrix lower bidiagonal, rotate to be upper bidiagonal
+           ! by applying givens rotations on the left
+           wstart = 1
+           qstart = 3
+           if( icompq==1 ) then
+              call stdlib_dcopy( n, d, 1, q( 1 ), 1 )
+              call stdlib_dcopy( n-1, e, 1, q( n+1 ), 1 )
+           end if
+           if( iuplo==2 ) then
+              qstart = 5
+              if( icompq == 2 ) wstart = 2*n - 1
+              do i = 1, n - 1
+                 call stdlib_dlartg( d( i ), e( i ), cs, sn, r )
+                 d( i ) = r
+                 e( i ) = sn*d( i+1 )
+                 d( i+1 ) = cs*d( i+1 )
+                 if( icompq==1 ) then
+                    q( i+2*n ) = cs
+                    q( i+3*n ) = sn
+                 else if( icompq==2 ) then
+                    work( i ) = cs
+                    work( nm1+i ) = -sn
+                 end if
+              end do
+           end if
+           ! if icompq = 0, use stdlib_dlasdq to compute the singular values.
+           if( icompq==0 ) then
+              ! ignore wstart, instead using work( 1 ), since the two vectors
+              ! for cs and -sn above are added only if icompq == 2,
+              ! and adding them exceeds documented work size of 4*n.
+              call stdlib_dlasdq( 'U', 0, n, 0, 0, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( 1 ), &
+                        info )
+              go to 40
+           end if
+           ! if n is smaller than the minimum divide size smlsiz, then solve
+           ! the problem with another solver.
+           if( n<=smlsiz ) then
+              if( icompq==2 ) then
+                 call stdlib_dlaset( 'A', n, n, zero, one, u, ldu )
+                 call stdlib_dlaset( 'A', n, n, zero, one, vt, ldvt )
+                 call stdlib_dlasdq( 'U', 0, n, n, n, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( &
+                           wstart ), info )
+              else if( icompq==1 ) then
+                 iu = 1
+                 ivt = iu + n
+                 call stdlib_dlaset( 'A', n, n, zero, one, q( iu+( qstart-1 )*n ),n )
+                 call stdlib_dlaset( 'A', n, n, zero, one, q( ivt+( qstart-1 )*n ),n )
+                 call stdlib_dlasdq( 'U', 0, n, n, n, 0, d, e,q( ivt+( qstart-1 )*n ), n,q( iu+( &
+                           qstart-1 )*n ), n,q( iu+( qstart-1 )*n ), n, work( wstart ),info )
+              end if
+              go to 40
+           end if
+           if( icompq==2 ) then
+              call stdlib_dlaset( 'A', n, n, zero, one, u, ldu )
+              call stdlib_dlaset( 'A', n, n, zero, one, vt, ldvt )
+           end if
+           ! scale.
+           orgnrm = stdlib_dlanst( 'M', n, d, e )
+           if( orgnrm==zero )return
+           call stdlib_dlascl( 'G', 0, 0, orgnrm, one, n, 1, d, n, ierr )
+           call stdlib_dlascl( 'G', 0, 0, orgnrm, one, nm1, 1, e, nm1, ierr )
+           eps = (0.9e+0_dp)*stdlib_dlamch( 'EPSILON' )
+           mlvl = int( log( real( n,KIND=dp) / real( smlsiz+1,KIND=dp) ) / log( two ),KIND=ilp) + &
+                     1
+           smlszp = smlsiz + 1
+           if( icompq==1 ) then
+              iu = 1
+              ivt = 1 + smlsiz
+              difl = ivt + smlszp
+              difr = difl + mlvl
+              z = difr + mlvl*2
+              ic = z + mlvl
+              is = ic + 1
+              poles = is + 1
+              givnum = poles + 2*mlvl
+              k = 1
+              givptr = 2
+              perm = 3
+              givcol = perm + mlvl
+           end if
+           do i = 1, n
+              if( abs( d( i ) )<eps ) then
+                 d( i ) = sign( eps, d( i ) )
+              end if
+           end do
+           start = 1
+           sqre = 0
+           loop_30: do i = 1, nm1
+              if( ( abs( e( i ) )<eps ) .or. ( i==nm1 ) ) then
+                 ! subproblem found. first determine its size and then
+                 ! apply divide and conquer on it.
+                 if( i<nm1 ) then
+                    ! a subproblem with e(i) small for i < nm1.
+                    nsize = i - start + 1
+                 else if( abs( e( i ) )>=eps ) then
+                    ! a subproblem with e(nm1) not too small but i = nm1.
+                    nsize = n - start + 1
+                 else
+                    ! a subproblem with e(nm1) small. this implies an
+                    ! 1-by-1 subproblem at d(n). solve this 1-by-1 problem
+                    ! first.
+                    nsize = i - start + 1
+                    if( icompq==2 ) then
+                       u( n, n ) = sign( one, d( n ) )
+                       vt( n, n ) = one
+                    else if( icompq==1 ) then
+                       q( n+( qstart-1 )*n ) = sign( one, d( n ) )
+                       q( n+( smlsiz+qstart-1 )*n ) = one
+                    end if
+                    d( n ) = abs( d( n ) )
+                 end if
+                 if( icompq==2 ) then
+                    call stdlib_dlasd0( nsize, sqre, d( start ), e( start ),u( start, start ), &
+                              ldu, vt( start, start ),ldvt, smlsiz, iwork, work( wstart ), info )
+                 else
+                    call stdlib_dlasda( icompq, smlsiz, nsize, sqre, d( start ),e( start ), q( &
+                    start+( iu+qstart-2 )*n ), n,q( start+( ivt+qstart-2 )*n ),iq( start+k*n ), q(&
+                     start+( difl+qstart-2 )*n ), q( start+( difr+qstart-2 )*n ),q( start+( z+&
+                     qstart-2 )*n ),q( start+( poles+qstart-2 )*n ),iq( start+givptr*n ), iq( &
+                     start+givcol*n ),n, iq( start+perm*n ),q( start+( givnum+qstart-2 )*n ),q( &
+                     start+( ic+qstart-2 )*n ),q( start+( is+qstart-2 )*n ),work( wstart ), iwork,&
+                                info )
+                 end if
+                 if( info/=0 ) then
+                    return
+                 end if
+                 start = i + 1
+              end if
+           end do loop_30
+           ! unscale
+           call stdlib_dlascl( 'G', 0, 0, one, orgnrm, n, 1, d, n, ierr )
+           40 continue
+           ! use selection sort to minimize swaps of singular vectors
+           do ii = 2, n
+              i = ii - 1
+              kk = i
+              p = d( i )
+              do j = ii, n
+                 if( d( j )>p ) then
+                    kk = j
+                    p = d( j )
+                 end if
+              end do
+              if( kk/=i ) then
+                 d( kk ) = d( i )
+                 d( i ) = p
+                 if( icompq==1 ) then
+                    iq( i ) = kk
+                 else if( icompq==2 ) then
+                    call stdlib_dswap( n, u( 1, i ), 1, u( 1, kk ), 1 )
+                    call stdlib_dswap( n, vt( i, 1 ), ldvt, vt( kk, 1 ), ldvt )
+                 end if
+              else if( icompq==1 ) then
+                 iq( i ) = i
+              end if
+           end do
+           ! if icompq = 1, use iq(n,1) as the indicator for uplo
+           if( icompq==1 ) then
+              if( iuplo==1 ) then
+                 iq( n ) = 1
+              else
+                 iq( n ) = 0
+              end if
+           end if
+           ! if b is lower bidiagonal, update u by those givens rotations
+           ! which rotated b to be upper bidiagonal
+           if( ( iuplo==2 ) .and. ( icompq==2 ) )call stdlib_dlasr( 'L', 'V', 'B', n, n, work( 1 )&
+                     , work( n ), u, ldu )
+           return
+     end subroutine stdlib_dbdsdc
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$bdsdc( uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq,work, iwork, &
+     !! DBDSDC: computes the singular value decomposition (SVD) of a real
+     !! N-by-N (upper or lower) bidiagonal matrix B:  B = U * S * VT,
+     !! using a divide and conquer method, where S is a diagonal matrix
+     !! with non-negative diagonal elements (the singular values of B), and
+     !! U and VT are orthogonal matrices of left and right singular vectors,
+     !! respectively. DBDSDC can be used to compute all singular values,
+     !! and optionally, singular vectors or singular vectors in compact form.
+     !! This code makes very mild assumptions about floating point
+     !! arithmetic. It will work on machines with a guard digit in
+     !! add/subtract, or on those binary machines without guard digits
+     !! which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2.
+     !! It could conceivably fail on hexadecimal or decimal machines
+     !! without guard digits, but we know of none.  See DLASD3 for details.
+     !! The code currently calls DLASDQ if singular values only are desired.
+     !! However, it can be slightly modified to compute singular values
+     !! using the divide and conquer method.
+               info )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: compq, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: ldu, ldvt, n
+           ! Array Arguments 
+           integer(ilp), intent(out) :: iq(*), iwork(*)
+           real(${rk}$), intent(inout) :: d(*), e(*)
+           real(${rk}$), intent(out) :: q(*), u(ldu,*), vt(ldvt,*), work(*)
+        ! =====================================================================
+        ! changed dimension statement in comment describing e from (n) to
+        ! (n-1).  sven, 17 feb 05.
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: difl, difr, givcol, givnum, givptr, i, ic, icompq, ierr, ii, is, iu, &
+           iuplo, ivt, j, k, kk, mlvl, nm1, nsize, perm, poles, qstart, smlsiz, smlszp, sqre, &
+                     start, wstart, z
+           real(${rk}$) :: cs, eps, orgnrm, p, r, sn
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! test the input parameters.
+           info = 0
+           iuplo = 0
+           if( stdlib_lsame( uplo, 'U' ) )iuplo = 1
+           if( stdlib_lsame( uplo, 'L' ) )iuplo = 2
+           if( stdlib_lsame( compq, 'N' ) ) then
+              icompq = 0
+           else if( stdlib_lsame( compq, 'P' ) ) then
+              icompq = 1
+           else if( stdlib_lsame( compq, 'I' ) ) then
+              icompq = 2
+           else
+              icompq = -1
+           end if
+           if( iuplo==0 ) then
+              info = -1
+           else if( icompq<0 ) then
+              info = -2
+           else if( n<0 ) then
+              info = -3
+           else if( ( ldu<1 ) .or. ( ( icompq==2 ) .and. ( ldu<n ) ) ) then
+              info = -7
+           else if( ( ldvt<1 ) .or. ( ( icompq==2 ) .and. ( ldvt<n ) ) ) then
+              info = -9
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DBDSDC', -info )
+              return
+           end if
+           ! quick return if possible
+           if( n==0 )return
+           smlsiz = stdlib_ilaenv( 9, 'DBDSDC', ' ', 0, 0, 0, 0 )
+           if( n==1 ) then
+              if( icompq==1 ) then
+                 q( 1 ) = sign( one, d( 1 ) )
+                 q( 1+smlsiz*n ) = one
+              else if( icompq==2 ) then
+                 u( 1, 1 ) = sign( one, d( 1 ) )
+                 vt( 1, 1 ) = one
+              end if
+              d( 1 ) = abs( d( 1 ) )
+              return
+           end if
+           nm1 = n - 1
+           ! if matrix lower bidiagonal, rotate to be upper bidiagonal
+           ! by applying givens rotations on the left
+           wstart = 1
+           qstart = 3
+           if( icompq==1 ) then
+              call stdlib_${ri}$copy( n, d, 1, q( 1 ), 1 )
+              call stdlib_${ri}$copy( n-1, e, 1, q( n+1 ), 1 )
+           end if
+           if( iuplo==2 ) then
+              qstart = 5
+              if( icompq == 2 ) wstart = 2*n - 1
+              do i = 1, n - 1
+                 call stdlib_${ri}$lartg( d( i ), e( i ), cs, sn, r )
+                 d( i ) = r
+                 e( i ) = sn*d( i+1 )
+                 d( i+1 ) = cs*d( i+1 )
+                 if( icompq==1 ) then
+                    q( i+2*n ) = cs
+                    q( i+3*n ) = sn
+                 else if( icompq==2 ) then
+                    work( i ) = cs
+                    work( nm1+i ) = -sn
+                 end if
+              end do
+           end if
+           ! if icompq = 0, use stdlib_${ri}$lasdq to compute the singular values.
+           if( icompq==0 ) then
+              ! ignore wstart, instead using work( 1 ), since the two vectors
+              ! for cs and -sn above are added only if icompq == 2,
+              ! and adding them exceeds documented work size of 4*n.
+              call stdlib_${ri}$lasdq( 'U', 0, n, 0, 0, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( 1 ), &
+                        info )
+              go to 40
+           end if
+           ! if n is smaller than the minimum divide size smlsiz, then solve
+           ! the problem with another solver.
+           if( n<=smlsiz ) then
+              if( icompq==2 ) then
+                 call stdlib_${ri}$laset( 'A', n, n, zero, one, u, ldu )
+                 call stdlib_${ri}$laset( 'A', n, n, zero, one, vt, ldvt )
+                 call stdlib_${ri}$lasdq( 'U', 0, n, n, n, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( &
+                           wstart ), info )
+              else if( icompq==1 ) then
+                 iu = 1
+                 ivt = iu + n
+                 call stdlib_${ri}$laset( 'A', n, n, zero, one, q( iu+( qstart-1 )*n ),n )
+                 call stdlib_${ri}$laset( 'A', n, n, zero, one, q( ivt+( qstart-1 )*n ),n )
+                 call stdlib_${ri}$lasdq( 'U', 0, n, n, n, 0, d, e,q( ivt+( qstart-1 )*n ), n,q( iu+( &
+                           qstart-1 )*n ), n,q( iu+( qstart-1 )*n ), n, work( wstart ),info )
+              end if
+              go to 40
+           end if
+           if( icompq==2 ) then
+              call stdlib_${ri}$laset( 'A', n, n, zero, one, u, ldu )
+              call stdlib_${ri}$laset( 'A', n, n, zero, one, vt, ldvt )
+           end if
+           ! scale.
+           orgnrm = stdlib_${ri}$lanst( 'M', n, d, e )
+           if( orgnrm==zero )return
+           call stdlib_${ri}$lascl( 'G', 0, 0, orgnrm, one, n, 1, d, n, ierr )
+           call stdlib_${ri}$lascl( 'G', 0, 0, orgnrm, one, nm1, 1, e, nm1, ierr )
+           eps = (0.9e+0_${rk}$)*stdlib_${ri}$lamch( 'EPSILON' )
+           mlvl = int( log( real( n,KIND=${rk}$) / real( smlsiz+1,KIND=${rk}$) ) / log( two ),KIND=ilp) + &
+                     1
+           smlszp = smlsiz + 1
+           if( icompq==1 ) then
+              iu = 1
+              ivt = 1 + smlsiz
+              difl = ivt + smlszp
+              difr = difl + mlvl
+              z = difr + mlvl*2
+              ic = z + mlvl
+              is = ic + 1
+              poles = is + 1
+              givnum = poles + 2*mlvl
+              k = 1
+              givptr = 2
+              perm = 3
+              givcol = perm + mlvl
+           end if
+           do i = 1, n
+              if( abs( d( i ) )<eps ) then
+                 d( i ) = sign( eps, d( i ) )
+              end if
+           end do
+           start = 1
+           sqre = 0
+           loop_30: do i = 1, nm1
+              if( ( abs( e( i ) )<eps ) .or. ( i==nm1 ) ) then
+                 ! subproblem found. first determine its size and then
+                 ! apply divide and conquer on it.
+                 if( i<nm1 ) then
+                    ! a subproblem with e(i) small for i < nm1.
+                    nsize = i - start + 1
+                 else if( abs( e( i ) )>=eps ) then
+                    ! a subproblem with e(nm1) not too small but i = nm1.
+                    nsize = n - start + 1
+                 else
+                    ! a subproblem with e(nm1) small. this implies an
+                    ! 1-by-1 subproblem at d(n). solve this 1-by-1 problem
+                    ! first.
+                    nsize = i - start + 1
+                    if( icompq==2 ) then
+                       u( n, n ) = sign( one, d( n ) )
+                       vt( n, n ) = one
+                    else if( icompq==1 ) then
+                       q( n+( qstart-1 )*n ) = sign( one, d( n ) )
+                       q( n+( smlsiz+qstart-1 )*n ) = one
+                    end if
+                    d( n ) = abs( d( n ) )
+                 end if
+                 if( icompq==2 ) then
+                    call stdlib_${ri}$lasd0( nsize, sqre, d( start ), e( start ),u( start, start ), &
+                              ldu, vt( start, start ),ldvt, smlsiz, iwork, work( wstart ), info )
+                 else
+                    call stdlib_${ri}$lasda( icompq, smlsiz, nsize, sqre, d( start ),e( start ), q( &
+                    start+( iu+qstart-2 )*n ), n,q( start+( ivt+qstart-2 )*n ),iq( start+k*n ), q(&
+                     start+( difl+qstart-2 )*n ), q( start+( difr+qstart-2 )*n ),q( start+( z+&
+                     qstart-2 )*n ),q( start+( poles+qstart-2 )*n ),iq( start+givptr*n ), iq( &
+                     start+givcol*n ),n, iq( start+perm*n ),q( start+( givnum+qstart-2 )*n ),q( &
+                     start+( ic+qstart-2 )*n ),q( start+( is+qstart-2 )*n ),work( wstart ), iwork,&
+                                info )
+                 end if
+                 if( info/=0 ) then
+                    return
+                 end if
+                 start = i + 1
+              end if
+           end do loop_30
+           ! unscale
+           call stdlib_${ri}$lascl( 'G', 0, 0, one, orgnrm, n, 1, d, n, ierr )
+           40 continue
+           ! use selection sort to minimize swaps of singular vectors
+           do ii = 2, n
+              i = ii - 1
+              kk = i
+              p = d( i )
+              do j = ii, n
+                 if( d( j )>p ) then
+                    kk = j
+                    p = d( j )
+                 end if
+              end do
+              if( kk/=i ) then
+                 d( kk ) = d( i )
+                 d( i ) = p
+                 if( icompq==1 ) then
+                    iq( i ) = kk
+                 else if( icompq==2 ) then
+                    call stdlib_${ri}$swap( n, u( 1, i ), 1, u( 1, kk ), 1 )
+                    call stdlib_${ri}$swap( n, vt( i, 1 ), ldvt, vt( kk, 1 ), ldvt )
+                 end if
+              else if( icompq==1 ) then
+                 iq( i ) = i
+              end if
+           end do
+           ! if icompq = 1, use iq(n,1) as the indicator for uplo
+           if( icompq==1 ) then
+              if( iuplo==1 ) then
+                 iq( n ) = 1
+              else
+                 iq( n ) = 0
+              end if
+           end if
+           ! if b is lower bidiagonal, update u by those givens rotations
+           ! which rotated b to be upper bidiagonal
+           if( ( iuplo==2 ) .and. ( icompq==2 ) )call stdlib_${ri}$lasr( 'L', 'V', 'B', n, n, work( 1 )&
+                     , work( n ), u, ldu )
+           return
+     end subroutine stdlib_${ri}$bdsdc
+
+#:endif
+#:endfor
 
 
-     module pure subroutine stdlib_sbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, work, &
+
+     pure module subroutine stdlib_sbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, work, &
      !! SBDSQR computes the singular values and, optionally, the right and/or
      !! left singular vectors from the singular value decomposition (SVD) of
      !! a real N-by-N (upper or lower) bidiagonal matrix B using the implicit
@@ -472,7 +1248,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
            return
      end subroutine stdlib_sbdsqr
 
-     module pure subroutine stdlib_dbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, work, &
+     pure module subroutine stdlib_dbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, work, &
      !! DBDSQR computes the singular values and, optionally, the right and/or
      !! left singular vectors from the singular value decomposition (SVD) of
      !! a real N-by-N (upper or lower) bidiagonal matrix B using the implicit
@@ -939,7 +1715,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$bdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, work, &
+     pure module subroutine stdlib_${ri}$bdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, work, &
      !! DBDSQR: computes the singular values and, optionally, the right and/or
      !! left singular vectors from the singular value decomposition (SVD) of
      !! a real N-by-N (upper or lower) bidiagonal matrix B using the implicit
@@ -1407,7 +2183,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_cbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, rwork,&
+     pure module subroutine stdlib_cbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, rwork,&
      !! CBDSQR computes the singular values and, optionally, the right and/or
      !! left singular vectors from the singular value decomposition (SVD) of
      !! a real N-by-N (upper or lower) bidiagonal matrix B using the implicit
@@ -1869,7 +2645,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
            return
      end subroutine stdlib_cbdsqr
 
-     module pure subroutine stdlib_zbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, rwork,&
+     pure module subroutine stdlib_zbdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, rwork,&
      !! ZBDSQR computes the singular values and, optionally, the right and/or
      !! left singular vectors from the singular value decomposition (SVD) of
      !! a real N-by-N (upper or lower) bidiagonal matrix B using the implicit
@@ -2333,7 +3109,7 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$bdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, rwork,&
+     pure module subroutine stdlib_${ci}$bdsqr( uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u,ldu, c, ldc, rwork,&
      !! ZBDSQR: computes the singular values and, optionally, the right and/or
      !! left singular vectors from the singular value decomposition (SVD) of
      !! a real N-by-N (upper or lower) bidiagonal matrix B using the implicit
@@ -2799,782 +3575,6 @@ submodule(stdlib_lapack) stdlib_lapack_eigv_svd_drivers3
 #:endfor
 
 
-
-     module pure subroutine stdlib_sbdsdc( uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq,work, iwork, &
-     !! SBDSDC computes the singular value decomposition (SVD) of a real
-     !! N-by-N (upper or lower) bidiagonal matrix B:  B = U * S * VT,
-     !! using a divide and conquer method, where S is a diagonal matrix
-     !! with non-negative diagonal elements (the singular values of B), and
-     !! U and VT are orthogonal matrices of left and right singular vectors,
-     !! respectively. SBDSDC can be used to compute all singular values,
-     !! and optionally, singular vectors or singular vectors in compact form.
-     !! This code makes very mild assumptions about floating point
-     !! arithmetic. It will work on machines with a guard digit in
-     !! add/subtract, or on those binary machines without guard digits
-     !! which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2.
-     !! It could conceivably fail on hexadecimal or decimal machines
-     !! without guard digits, but we know of none.  See SLASD3 for details.
-     !! The code currently calls SLASDQ if singular values only are desired.
-     !! However, it can be slightly modified to compute singular values
-     !! using the divide and conquer method.
-               info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: compq, uplo
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldu, ldvt, n
-           ! Array Arguments 
-           integer(ilp), intent(out) :: iq(*), iwork(*)
-           real(sp), intent(inout) :: d(*), e(*)
-           real(sp), intent(out) :: q(*), u(ldu,*), vt(ldvt,*), work(*)
-        ! =====================================================================
-        ! changed dimension statement in comment describing e from (n) to
-        ! (n-1).  sven, 17 feb 05.
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: difl, difr, givcol, givnum, givptr, i, ic, icompq, ierr, ii, is, iu, &
-           iuplo, ivt, j, k, kk, mlvl, nm1, nsize, perm, poles, qstart, smlsiz, smlszp, sqre, &
-                     start, wstart, z
-           real(sp) :: cs, eps, orgnrm, p, r, sn
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           iuplo = 0
-           if( stdlib_lsame( uplo, 'U' ) )iuplo = 1
-           if( stdlib_lsame( uplo, 'L' ) )iuplo = 2
-           if( stdlib_lsame( compq, 'N' ) ) then
-              icompq = 0
-           else if( stdlib_lsame( compq, 'P' ) ) then
-              icompq = 1
-           else if( stdlib_lsame( compq, 'I' ) ) then
-              icompq = 2
-           else
-              icompq = -1
-           end if
-           if( iuplo==0 ) then
-              info = -1
-           else if( icompq<0 ) then
-              info = -2
-           else if( n<0 ) then
-              info = -3
-           else if( ( ldu<1 ) .or. ( ( icompq==2 ) .and. ( ldu<n ) ) ) then
-              info = -7
-           else if( ( ldvt<1 ) .or. ( ( icompq==2 ) .and. ( ldvt<n ) ) ) then
-              info = -9
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'SBDSDC', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 )return
-           smlsiz = stdlib_ilaenv( 9, 'SBDSDC', ' ', 0, 0, 0, 0 )
-           if( n==1 ) then
-              if( icompq==1 ) then
-                 q( 1 ) = sign( one, d( 1 ) )
-                 q( 1+smlsiz*n ) = one
-              else if( icompq==2 ) then
-                 u( 1, 1 ) = sign( one, d( 1 ) )
-                 vt( 1, 1 ) = one
-              end if
-              d( 1 ) = abs( d( 1 ) )
-              return
-           end if
-           nm1 = n - 1
-           ! if matrix lower bidiagonal, rotate to be upper bidiagonal
-           ! by applying givens rotations on the left
-           wstart = 1
-           qstart = 3
-           if( icompq==1 ) then
-              call stdlib_scopy( n, d, 1, q( 1 ), 1 )
-              call stdlib_scopy( n-1, e, 1, q( n+1 ), 1 )
-           end if
-           if( iuplo==2 ) then
-              qstart = 5
-              if( icompq == 2 ) wstart = 2*n - 1
-              do i = 1, n - 1
-                 call stdlib_slartg( d( i ), e( i ), cs, sn, r )
-                 d( i ) = r
-                 e( i ) = sn*d( i+1 )
-                 d( i+1 ) = cs*d( i+1 )
-                 if( icompq==1 ) then
-                    q( i+2*n ) = cs
-                    q( i+3*n ) = sn
-                 else if( icompq==2 ) then
-                    work( i ) = cs
-                    work( nm1+i ) = -sn
-                 end if
-              end do
-           end if
-           ! if icompq = 0, use stdlib_slasdq to compute the singular values.
-           if( icompq==0 ) then
-              ! ignore wstart, instead using work( 1 ), since the two vectors
-              ! for cs and -sn above are added only if icompq == 2,
-              ! and adding them exceeds documented work size of 4*n.
-              call stdlib_slasdq( 'U', 0, n, 0, 0, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( 1 ), &
-                        info )
-              go to 40
-           end if
-           ! if n is smaller than the minimum divide size smlsiz, then solve
-           ! the problem with another solver.
-           if( n<=smlsiz ) then
-              if( icompq==2 ) then
-                 call stdlib_slaset( 'A', n, n, zero, one, u, ldu )
-                 call stdlib_slaset( 'A', n, n, zero, one, vt, ldvt )
-                 call stdlib_slasdq( 'U', 0, n, n, n, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( &
-                           wstart ), info )
-              else if( icompq==1 ) then
-                 iu = 1
-                 ivt = iu + n
-                 call stdlib_slaset( 'A', n, n, zero, one, q( iu+( qstart-1 )*n ),n )
-                 call stdlib_slaset( 'A', n, n, zero, one, q( ivt+( qstart-1 )*n ),n )
-                 call stdlib_slasdq( 'U', 0, n, n, n, 0, d, e,q( ivt+( qstart-1 )*n ), n,q( iu+( &
-                           qstart-1 )*n ), n,q( iu+( qstart-1 )*n ), n, work( wstart ),info )
-              end if
-              go to 40
-           end if
-           if( icompq==2 ) then
-              call stdlib_slaset( 'A', n, n, zero, one, u, ldu )
-              call stdlib_slaset( 'A', n, n, zero, one, vt, ldvt )
-           end if
-           ! scale.
-           orgnrm = stdlib_slanst( 'M', n, d, e )
-           if( orgnrm==zero )return
-           call stdlib_slascl( 'G', 0, 0, orgnrm, one, n, 1, d, n, ierr )
-           call stdlib_slascl( 'G', 0, 0, orgnrm, one, nm1, 1, e, nm1, ierr )
-           eps = stdlib_slamch( 'EPSILON' )
-           mlvl = int( log( real( n,KIND=sp) / real( smlsiz+1,KIND=sp) ) / log( two ),KIND=ilp) + &
-                     1
-           smlszp = smlsiz + 1
-           if( icompq==1 ) then
-              iu = 1
-              ivt = 1 + smlsiz
-              difl = ivt + smlszp
-              difr = difl + mlvl
-              z = difr + mlvl*2
-              ic = z + mlvl
-              is = ic + 1
-              poles = is + 1
-              givnum = poles + 2*mlvl
-              k = 1
-              givptr = 2
-              perm = 3
-              givcol = perm + mlvl
-           end if
-           do i = 1, n
-              if( abs( d( i ) )<eps ) then
-                 d( i ) = sign( eps, d( i ) )
-              end if
-           end do
-           start = 1
-           sqre = 0
-           loop_30: do i = 1, nm1
-              if( ( abs( e( i ) )<eps ) .or. ( i==nm1 ) ) then
-              ! subproblem found. first determine its size and then
-              ! apply divide and conquer on it.
-                 if( i<nm1 ) then
-              ! a subproblem with e(i) small for i < nm1.
-                    nsize = i - start + 1
-                 else if( abs( e( i ) )>=eps ) then
-              ! a subproblem with e(nm1) not too small but i = nm1.
-                    nsize = n - start + 1
-                 else
-              ! a subproblem with e(nm1) small. this implies an
-              ! 1-by-1 subproblem at d(n). solve this 1-by-1 problem
-              ! first.
-                    nsize = i - start + 1
-                    if( icompq==2 ) then
-                       u( n, n ) = sign( one, d( n ) )
-                       vt( n, n ) = one
-                    else if( icompq==1 ) then
-                       q( n+( qstart-1 )*n ) = sign( one, d( n ) )
-                       q( n+( smlsiz+qstart-1 )*n ) = one
-                    end if
-                    d( n ) = abs( d( n ) )
-                 end if
-                 if( icompq==2 ) then
-                    call stdlib_slasd0( nsize, sqre, d( start ), e( start ),u( start, start ), &
-                              ldu, vt( start, start ),ldvt, smlsiz, iwork, work( wstart ), info )
-                 else
-                    call stdlib_slasda( icompq, smlsiz, nsize, sqre, d( start ),e( start ), q( &
-                    start+( iu+qstart-2 )*n ), n,q( start+( ivt+qstart-2 )*n ),iq( start+k*n ), q(&
-                     start+( difl+qstart-2 )*n ), q( start+( difr+qstart-2 )*n ),q( start+( z+&
-                     qstart-2 )*n ),q( start+( poles+qstart-2 )*n ),iq( start+givptr*n ), iq( &
-                     start+givcol*n ),n, iq( start+perm*n ),q( start+( givnum+qstart-2 )*n ),q( &
-                     start+( ic+qstart-2 )*n ),q( start+( is+qstart-2 )*n ),work( wstart ), iwork,&
-                                info )
-                 end if
-                 if( info/=0 ) then
-                    return
-                 end if
-                 start = i + 1
-              end if
-           end do loop_30
-           ! unscale
-           call stdlib_slascl( 'G', 0, 0, one, orgnrm, n, 1, d, n, ierr )
-           40 continue
-           ! use selection sort to minimize swaps of singular vectors
-           do ii = 2, n
-              i = ii - 1
-              kk = i
-              p = d( i )
-              do j = ii, n
-                 if( d( j )>p ) then
-                    kk = j
-                    p = d( j )
-                 end if
-              end do
-              if( kk/=i ) then
-                 d( kk ) = d( i )
-                 d( i ) = p
-                 if( icompq==1 ) then
-                    iq( i ) = kk
-                 else if( icompq==2 ) then
-                    call stdlib_sswap( n, u( 1, i ), 1, u( 1, kk ), 1 )
-                    call stdlib_sswap( n, vt( i, 1 ), ldvt, vt( kk, 1 ), ldvt )
-                 end if
-              else if( icompq==1 ) then
-                 iq( i ) = i
-              end if
-           end do
-           ! if icompq = 1, use iq(n,1) as the indicator for uplo
-           if( icompq==1 ) then
-              if( iuplo==1 ) then
-                 iq( n ) = 1
-              else
-                 iq( n ) = 0
-              end if
-           end if
-           ! if b is lower bidiagonal, update u by those givens rotations
-           ! which rotated b to be upper bidiagonal
-           if( ( iuplo==2 ) .and. ( icompq==2 ) )call stdlib_slasr( 'L', 'V', 'B', n, n, work( 1 )&
-                     , work( n ), u, ldu )
-           return
-     end subroutine stdlib_sbdsdc
-
-     module pure subroutine stdlib_dbdsdc( uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq,work, iwork, &
-     !! DBDSDC computes the singular value decomposition (SVD) of a real
-     !! N-by-N (upper or lower) bidiagonal matrix B:  B = U * S * VT,
-     !! using a divide and conquer method, where S is a diagonal matrix
-     !! with non-negative diagonal elements (the singular values of B), and
-     !! U and VT are orthogonal matrices of left and right singular vectors,
-     !! respectively. DBDSDC can be used to compute all singular values,
-     !! and optionally, singular vectors or singular vectors in compact form.
-     !! This code makes very mild assumptions about floating point
-     !! arithmetic. It will work on machines with a guard digit in
-     !! add/subtract, or on those binary machines without guard digits
-     !! which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2.
-     !! It could conceivably fail on hexadecimal or decimal machines
-     !! without guard digits, but we know of none.  See DLASD3 for details.
-     !! The code currently calls DLASDQ if singular values only are desired.
-     !! However, it can be slightly modified to compute singular values
-     !! using the divide and conquer method.
-               info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: compq, uplo
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldu, ldvt, n
-           ! Array Arguments 
-           integer(ilp), intent(out) :: iq(*), iwork(*)
-           real(dp), intent(inout) :: d(*), e(*)
-           real(dp), intent(out) :: q(*), u(ldu,*), vt(ldvt,*), work(*)
-        ! =====================================================================
-        ! changed dimension statement in comment describing e from (n) to
-        ! (n-1).  sven, 17 feb 05.
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: difl, difr, givcol, givnum, givptr, i, ic, icompq, ierr, ii, is, iu, &
-           iuplo, ivt, j, k, kk, mlvl, nm1, nsize, perm, poles, qstart, smlsiz, smlszp, sqre, &
-                     start, wstart, z
-           real(dp) :: cs, eps, orgnrm, p, r, sn
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           iuplo = 0
-           if( stdlib_lsame( uplo, 'U' ) )iuplo = 1
-           if( stdlib_lsame( uplo, 'L' ) )iuplo = 2
-           if( stdlib_lsame( compq, 'N' ) ) then
-              icompq = 0
-           else if( stdlib_lsame( compq, 'P' ) ) then
-              icompq = 1
-           else if( stdlib_lsame( compq, 'I' ) ) then
-              icompq = 2
-           else
-              icompq = -1
-           end if
-           if( iuplo==0 ) then
-              info = -1
-           else if( icompq<0 ) then
-              info = -2
-           else if( n<0 ) then
-              info = -3
-           else if( ( ldu<1 ) .or. ( ( icompq==2 ) .and. ( ldu<n ) ) ) then
-              info = -7
-           else if( ( ldvt<1 ) .or. ( ( icompq==2 ) .and. ( ldvt<n ) ) ) then
-              info = -9
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DBDSDC', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 )return
-           smlsiz = stdlib_ilaenv( 9, 'DBDSDC', ' ', 0, 0, 0, 0 )
-           if( n==1 ) then
-              if( icompq==1 ) then
-                 q( 1 ) = sign( one, d( 1 ) )
-                 q( 1+smlsiz*n ) = one
-              else if( icompq==2 ) then
-                 u( 1, 1 ) = sign( one, d( 1 ) )
-                 vt( 1, 1 ) = one
-              end if
-              d( 1 ) = abs( d( 1 ) )
-              return
-           end if
-           nm1 = n - 1
-           ! if matrix lower bidiagonal, rotate to be upper bidiagonal
-           ! by applying givens rotations on the left
-           wstart = 1
-           qstart = 3
-           if( icompq==1 ) then
-              call stdlib_dcopy( n, d, 1, q( 1 ), 1 )
-              call stdlib_dcopy( n-1, e, 1, q( n+1 ), 1 )
-           end if
-           if( iuplo==2 ) then
-              qstart = 5
-              if( icompq == 2 ) wstart = 2*n - 1
-              do i = 1, n - 1
-                 call stdlib_dlartg( d( i ), e( i ), cs, sn, r )
-                 d( i ) = r
-                 e( i ) = sn*d( i+1 )
-                 d( i+1 ) = cs*d( i+1 )
-                 if( icompq==1 ) then
-                    q( i+2*n ) = cs
-                    q( i+3*n ) = sn
-                 else if( icompq==2 ) then
-                    work( i ) = cs
-                    work( nm1+i ) = -sn
-                 end if
-              end do
-           end if
-           ! if icompq = 0, use stdlib_dlasdq to compute the singular values.
-           if( icompq==0 ) then
-              ! ignore wstart, instead using work( 1 ), since the two vectors
-              ! for cs and -sn above are added only if icompq == 2,
-              ! and adding them exceeds documented work size of 4*n.
-              call stdlib_dlasdq( 'U', 0, n, 0, 0, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( 1 ), &
-                        info )
-              go to 40
-           end if
-           ! if n is smaller than the minimum divide size smlsiz, then solve
-           ! the problem with another solver.
-           if( n<=smlsiz ) then
-              if( icompq==2 ) then
-                 call stdlib_dlaset( 'A', n, n, zero, one, u, ldu )
-                 call stdlib_dlaset( 'A', n, n, zero, one, vt, ldvt )
-                 call stdlib_dlasdq( 'U', 0, n, n, n, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( &
-                           wstart ), info )
-              else if( icompq==1 ) then
-                 iu = 1
-                 ivt = iu + n
-                 call stdlib_dlaset( 'A', n, n, zero, one, q( iu+( qstart-1 )*n ),n )
-                 call stdlib_dlaset( 'A', n, n, zero, one, q( ivt+( qstart-1 )*n ),n )
-                 call stdlib_dlasdq( 'U', 0, n, n, n, 0, d, e,q( ivt+( qstart-1 )*n ), n,q( iu+( &
-                           qstart-1 )*n ), n,q( iu+( qstart-1 )*n ), n, work( wstart ),info )
-              end if
-              go to 40
-           end if
-           if( icompq==2 ) then
-              call stdlib_dlaset( 'A', n, n, zero, one, u, ldu )
-              call stdlib_dlaset( 'A', n, n, zero, one, vt, ldvt )
-           end if
-           ! scale.
-           orgnrm = stdlib_dlanst( 'M', n, d, e )
-           if( orgnrm==zero )return
-           call stdlib_dlascl( 'G', 0, 0, orgnrm, one, n, 1, d, n, ierr )
-           call stdlib_dlascl( 'G', 0, 0, orgnrm, one, nm1, 1, e, nm1, ierr )
-           eps = (0.9e+0_dp)*stdlib_dlamch( 'EPSILON' )
-           mlvl = int( log( real( n,KIND=dp) / real( smlsiz+1,KIND=dp) ) / log( two ),KIND=ilp) + &
-                     1
-           smlszp = smlsiz + 1
-           if( icompq==1 ) then
-              iu = 1
-              ivt = 1 + smlsiz
-              difl = ivt + smlszp
-              difr = difl + mlvl
-              z = difr + mlvl*2
-              ic = z + mlvl
-              is = ic + 1
-              poles = is + 1
-              givnum = poles + 2*mlvl
-              k = 1
-              givptr = 2
-              perm = 3
-              givcol = perm + mlvl
-           end if
-           do i = 1, n
-              if( abs( d( i ) )<eps ) then
-                 d( i ) = sign( eps, d( i ) )
-              end if
-           end do
-           start = 1
-           sqre = 0
-           loop_30: do i = 1, nm1
-              if( ( abs( e( i ) )<eps ) .or. ( i==nm1 ) ) then
-                 ! subproblem found. first determine its size and then
-                 ! apply divide and conquer on it.
-                 if( i<nm1 ) then
-                    ! a subproblem with e(i) small for i < nm1.
-                    nsize = i - start + 1
-                 else if( abs( e( i ) )>=eps ) then
-                    ! a subproblem with e(nm1) not too small but i = nm1.
-                    nsize = n - start + 1
-                 else
-                    ! a subproblem with e(nm1) small. this implies an
-                    ! 1-by-1 subproblem at d(n). solve this 1-by-1 problem
-                    ! first.
-                    nsize = i - start + 1
-                    if( icompq==2 ) then
-                       u( n, n ) = sign( one, d( n ) )
-                       vt( n, n ) = one
-                    else if( icompq==1 ) then
-                       q( n+( qstart-1 )*n ) = sign( one, d( n ) )
-                       q( n+( smlsiz+qstart-1 )*n ) = one
-                    end if
-                    d( n ) = abs( d( n ) )
-                 end if
-                 if( icompq==2 ) then
-                    call stdlib_dlasd0( nsize, sqre, d( start ), e( start ),u( start, start ), &
-                              ldu, vt( start, start ),ldvt, smlsiz, iwork, work( wstart ), info )
-                 else
-                    call stdlib_dlasda( icompq, smlsiz, nsize, sqre, d( start ),e( start ), q( &
-                    start+( iu+qstart-2 )*n ), n,q( start+( ivt+qstart-2 )*n ),iq( start+k*n ), q(&
-                     start+( difl+qstart-2 )*n ), q( start+( difr+qstart-2 )*n ),q( start+( z+&
-                     qstart-2 )*n ),q( start+( poles+qstart-2 )*n ),iq( start+givptr*n ), iq( &
-                     start+givcol*n ),n, iq( start+perm*n ),q( start+( givnum+qstart-2 )*n ),q( &
-                     start+( ic+qstart-2 )*n ),q( start+( is+qstart-2 )*n ),work( wstart ), iwork,&
-                                info )
-                 end if
-                 if( info/=0 ) then
-                    return
-                 end if
-                 start = i + 1
-              end if
-           end do loop_30
-           ! unscale
-           call stdlib_dlascl( 'G', 0, 0, one, orgnrm, n, 1, d, n, ierr )
-           40 continue
-           ! use selection sort to minimize swaps of singular vectors
-           do ii = 2, n
-              i = ii - 1
-              kk = i
-              p = d( i )
-              do j = ii, n
-                 if( d( j )>p ) then
-                    kk = j
-                    p = d( j )
-                 end if
-              end do
-              if( kk/=i ) then
-                 d( kk ) = d( i )
-                 d( i ) = p
-                 if( icompq==1 ) then
-                    iq( i ) = kk
-                 else if( icompq==2 ) then
-                    call stdlib_dswap( n, u( 1, i ), 1, u( 1, kk ), 1 )
-                    call stdlib_dswap( n, vt( i, 1 ), ldvt, vt( kk, 1 ), ldvt )
-                 end if
-              else if( icompq==1 ) then
-                 iq( i ) = i
-              end if
-           end do
-           ! if icompq = 1, use iq(n,1) as the indicator for uplo
-           if( icompq==1 ) then
-              if( iuplo==1 ) then
-                 iq( n ) = 1
-              else
-                 iq( n ) = 0
-              end if
-           end if
-           ! if b is lower bidiagonal, update u by those givens rotations
-           ! which rotated b to be upper bidiagonal
-           if( ( iuplo==2 ) .and. ( icompq==2 ) )call stdlib_dlasr( 'L', 'V', 'B', n, n, work( 1 )&
-                     , work( n ), u, ldu )
-           return
-     end subroutine stdlib_dbdsdc
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$bdsdc( uplo, compq, n, d, e, u, ldu, vt, ldvt, q, iq,work, iwork, &
-     !! DBDSDC: computes the singular value decomposition (SVD) of a real
-     !! N-by-N (upper or lower) bidiagonal matrix B:  B = U * S * VT,
-     !! using a divide and conquer method, where S is a diagonal matrix
-     !! with non-negative diagonal elements (the singular values of B), and
-     !! U and VT are orthogonal matrices of left and right singular vectors,
-     !! respectively. DBDSDC can be used to compute all singular values,
-     !! and optionally, singular vectors or singular vectors in compact form.
-     !! This code makes very mild assumptions about floating point
-     !! arithmetic. It will work on machines with a guard digit in
-     !! add/subtract, or on those binary machines without guard digits
-     !! which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2.
-     !! It could conceivably fail on hexadecimal or decimal machines
-     !! without guard digits, but we know of none.  See DLASD3 for details.
-     !! The code currently calls DLASDQ if singular values only are desired.
-     !! However, it can be slightly modified to compute singular values
-     !! using the divide and conquer method.
-               info )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           character, intent(in) :: compq, uplo
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: ldu, ldvt, n
-           ! Array Arguments 
-           integer(ilp), intent(out) :: iq(*), iwork(*)
-           real(${rk}$), intent(inout) :: d(*), e(*)
-           real(${rk}$), intent(out) :: q(*), u(ldu,*), vt(ldvt,*), work(*)
-        ! =====================================================================
-        ! changed dimension statement in comment describing e from (n) to
-        ! (n-1).  sven, 17 feb 05.
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: difl, difr, givcol, givnum, givptr, i, ic, icompq, ierr, ii, is, iu, &
-           iuplo, ivt, j, k, kk, mlvl, nm1, nsize, perm, poles, qstart, smlsiz, smlszp, sqre, &
-                     start, wstart, z
-           real(${rk}$) :: cs, eps, orgnrm, p, r, sn
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           iuplo = 0
-           if( stdlib_lsame( uplo, 'U' ) )iuplo = 1
-           if( stdlib_lsame( uplo, 'L' ) )iuplo = 2
-           if( stdlib_lsame( compq, 'N' ) ) then
-              icompq = 0
-           else if( stdlib_lsame( compq, 'P' ) ) then
-              icompq = 1
-           else if( stdlib_lsame( compq, 'I' ) ) then
-              icompq = 2
-           else
-              icompq = -1
-           end if
-           if( iuplo==0 ) then
-              info = -1
-           else if( icompq<0 ) then
-              info = -2
-           else if( n<0 ) then
-              info = -3
-           else if( ( ldu<1 ) .or. ( ( icompq==2 ) .and. ( ldu<n ) ) ) then
-              info = -7
-           else if( ( ldvt<1 ) .or. ( ( icompq==2 ) .and. ( ldvt<n ) ) ) then
-              info = -9
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DBDSDC', -info )
-              return
-           end if
-           ! quick return if possible
-           if( n==0 )return
-           smlsiz = stdlib_ilaenv( 9, 'DBDSDC', ' ', 0, 0, 0, 0 )
-           if( n==1 ) then
-              if( icompq==1 ) then
-                 q( 1 ) = sign( one, d( 1 ) )
-                 q( 1+smlsiz*n ) = one
-              else if( icompq==2 ) then
-                 u( 1, 1 ) = sign( one, d( 1 ) )
-                 vt( 1, 1 ) = one
-              end if
-              d( 1 ) = abs( d( 1 ) )
-              return
-           end if
-           nm1 = n - 1
-           ! if matrix lower bidiagonal, rotate to be upper bidiagonal
-           ! by applying givens rotations on the left
-           wstart = 1
-           qstart = 3
-           if( icompq==1 ) then
-              call stdlib_${ri}$copy( n, d, 1, q( 1 ), 1 )
-              call stdlib_${ri}$copy( n-1, e, 1, q( n+1 ), 1 )
-           end if
-           if( iuplo==2 ) then
-              qstart = 5
-              if( icompq == 2 ) wstart = 2*n - 1
-              do i = 1, n - 1
-                 call stdlib_${ri}$lartg( d( i ), e( i ), cs, sn, r )
-                 d( i ) = r
-                 e( i ) = sn*d( i+1 )
-                 d( i+1 ) = cs*d( i+1 )
-                 if( icompq==1 ) then
-                    q( i+2*n ) = cs
-                    q( i+3*n ) = sn
-                 else if( icompq==2 ) then
-                    work( i ) = cs
-                    work( nm1+i ) = -sn
-                 end if
-              end do
-           end if
-           ! if icompq = 0, use stdlib_${ri}$lasdq to compute the singular values.
-           if( icompq==0 ) then
-              ! ignore wstart, instead using work( 1 ), since the two vectors
-              ! for cs and -sn above are added only if icompq == 2,
-              ! and adding them exceeds documented work size of 4*n.
-              call stdlib_${ri}$lasdq( 'U', 0, n, 0, 0, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( 1 ), &
-                        info )
-              go to 40
-           end if
-           ! if n is smaller than the minimum divide size smlsiz, then solve
-           ! the problem with another solver.
-           if( n<=smlsiz ) then
-              if( icompq==2 ) then
-                 call stdlib_${ri}$laset( 'A', n, n, zero, one, u, ldu )
-                 call stdlib_${ri}$laset( 'A', n, n, zero, one, vt, ldvt )
-                 call stdlib_${ri}$lasdq( 'U', 0, n, n, n, 0, d, e, vt, ldvt, u, ldu, u,ldu, work( &
-                           wstart ), info )
-              else if( icompq==1 ) then
-                 iu = 1
-                 ivt = iu + n
-                 call stdlib_${ri}$laset( 'A', n, n, zero, one, q( iu+( qstart-1 )*n ),n )
-                 call stdlib_${ri}$laset( 'A', n, n, zero, one, q( ivt+( qstart-1 )*n ),n )
-                 call stdlib_${ri}$lasdq( 'U', 0, n, n, n, 0, d, e,q( ivt+( qstart-1 )*n ), n,q( iu+( &
-                           qstart-1 )*n ), n,q( iu+( qstart-1 )*n ), n, work( wstart ),info )
-              end if
-              go to 40
-           end if
-           if( icompq==2 ) then
-              call stdlib_${ri}$laset( 'A', n, n, zero, one, u, ldu )
-              call stdlib_${ri}$laset( 'A', n, n, zero, one, vt, ldvt )
-           end if
-           ! scale.
-           orgnrm = stdlib_${ri}$lanst( 'M', n, d, e )
-           if( orgnrm==zero )return
-           call stdlib_${ri}$lascl( 'G', 0, 0, orgnrm, one, n, 1, d, n, ierr )
-           call stdlib_${ri}$lascl( 'G', 0, 0, orgnrm, one, nm1, 1, e, nm1, ierr )
-           eps = (0.9e+0_${rk}$)*stdlib_${ri}$lamch( 'EPSILON' )
-           mlvl = int( log( real( n,KIND=${rk}$) / real( smlsiz+1,KIND=${rk}$) ) / log( two ),KIND=ilp) + &
-                     1
-           smlszp = smlsiz + 1
-           if( icompq==1 ) then
-              iu = 1
-              ivt = 1 + smlsiz
-              difl = ivt + smlszp
-              difr = difl + mlvl
-              z = difr + mlvl*2
-              ic = z + mlvl
-              is = ic + 1
-              poles = is + 1
-              givnum = poles + 2*mlvl
-              k = 1
-              givptr = 2
-              perm = 3
-              givcol = perm + mlvl
-           end if
-           do i = 1, n
-              if( abs( d( i ) )<eps ) then
-                 d( i ) = sign( eps, d( i ) )
-              end if
-           end do
-           start = 1
-           sqre = 0
-           loop_30: do i = 1, nm1
-              if( ( abs( e( i ) )<eps ) .or. ( i==nm1 ) ) then
-                 ! subproblem found. first determine its size and then
-                 ! apply divide and conquer on it.
-                 if( i<nm1 ) then
-                    ! a subproblem with e(i) small for i < nm1.
-                    nsize = i - start + 1
-                 else if( abs( e( i ) )>=eps ) then
-                    ! a subproblem with e(nm1) not too small but i = nm1.
-                    nsize = n - start + 1
-                 else
-                    ! a subproblem with e(nm1) small. this implies an
-                    ! 1-by-1 subproblem at d(n). solve this 1-by-1 problem
-                    ! first.
-                    nsize = i - start + 1
-                    if( icompq==2 ) then
-                       u( n, n ) = sign( one, d( n ) )
-                       vt( n, n ) = one
-                    else if( icompq==1 ) then
-                       q( n+( qstart-1 )*n ) = sign( one, d( n ) )
-                       q( n+( smlsiz+qstart-1 )*n ) = one
-                    end if
-                    d( n ) = abs( d( n ) )
-                 end if
-                 if( icompq==2 ) then
-                    call stdlib_${ri}$lasd0( nsize, sqre, d( start ), e( start ),u( start, start ), &
-                              ldu, vt( start, start ),ldvt, smlsiz, iwork, work( wstart ), info )
-                 else
-                    call stdlib_${ri}$lasda( icompq, smlsiz, nsize, sqre, d( start ),e( start ), q( &
-                    start+( iu+qstart-2 )*n ), n,q( start+( ivt+qstart-2 )*n ),iq( start+k*n ), q(&
-                     start+( difl+qstart-2 )*n ), q( start+( difr+qstart-2 )*n ),q( start+( z+&
-                     qstart-2 )*n ),q( start+( poles+qstart-2 )*n ),iq( start+givptr*n ), iq( &
-                     start+givcol*n ),n, iq( start+perm*n ),q( start+( givnum+qstart-2 )*n ),q( &
-                     start+( ic+qstart-2 )*n ),q( start+( is+qstart-2 )*n ),work( wstart ), iwork,&
-                                info )
-                 end if
-                 if( info/=0 ) then
-                    return
-                 end if
-                 start = i + 1
-              end if
-           end do loop_30
-           ! unscale
-           call stdlib_${ri}$lascl( 'G', 0, 0, one, orgnrm, n, 1, d, n, ierr )
-           40 continue
-           ! use selection sort to minimize swaps of singular vectors
-           do ii = 2, n
-              i = ii - 1
-              kk = i
-              p = d( i )
-              do j = ii, n
-                 if( d( j )>p ) then
-                    kk = j
-                    p = d( j )
-                 end if
-              end do
-              if( kk/=i ) then
-                 d( kk ) = d( i )
-                 d( i ) = p
-                 if( icompq==1 ) then
-                    iq( i ) = kk
-                 else if( icompq==2 ) then
-                    call stdlib_${ri}$swap( n, u( 1, i ), 1, u( 1, kk ), 1 )
-                    call stdlib_${ri}$swap( n, vt( i, 1 ), ldvt, vt( kk, 1 ), ldvt )
-                 end if
-              else if( icompq==1 ) then
-                 iq( i ) = i
-              end if
-           end do
-           ! if icompq = 1, use iq(n,1) as the indicator for uplo
-           if( icompq==1 ) then
-              if( iuplo==1 ) then
-                 iq( n ) = 1
-              else
-                 iq( n ) = 0
-              end if
-           end if
-           ! if b is lower bidiagonal, update u by those givens rotations
-           ! which rotated b to be upper bidiagonal
-           if( ( iuplo==2 ) .and. ( icompq==2 ) )call stdlib_${ri}$lasr( 'L', 'V', 'B', n, n, work( 1 )&
-                     , work( n ), u, ldu )
-           return
-     end subroutine stdlib_${ri}$bdsdc
-
-#:endif
-#:endfor
 
 
 end submodule stdlib_lapack_eigv_svd_drivers3

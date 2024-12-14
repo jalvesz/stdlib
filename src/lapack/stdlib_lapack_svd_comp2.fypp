@@ -5,268 +5,1488 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
   contains
 
-     module pure subroutine stdlib_slapll( n, x, incx, y, incy, ssmin )
-     !! Given two column vectors X and Y, let
-     !! A = ( X Y ).
-     !! The subroutine first computes the QR factorization of A = Q*R,
-     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
-     !! The smaller singular value of R is returned in SSMIN, which is used
-     !! as the measurement of the linear dependency of the vectors X and Y.
+     pure module subroutine stdlib_slabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
+     !! SLABRD reduces the first NB rows and columns of a real general
+     !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
+     !! transformation Q**T * A * P, and returns the matrices X and Y which
+     !! are needed to apply the transformation to the unreduced part of A.
+     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
+     !! bidiagonal form.
+     !! This is an auxiliary routine called by SGEBRD
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(out) :: ssmin
+           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
            ! Array Arguments 
-           real(sp), intent(inout) :: x(*), y(*)
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(out) :: d(*), e(*), taup(*), tauq(*), x(ldx,*), y(ldy,*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(sp) :: a11, a12, a22, c, ssmax, tau
+           integer(ilp) :: i
+           ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( n<=1 ) then
-              ssmin = zero
-              return
+           if( m<=0 .or. n<=0 )return
+           if( m>=n ) then
+              ! reduce to upper bidiagonal form
+              loop_10: do i = 1, nb
+                 ! update a(i:m,i)
+                 call stdlib_sgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, a( i, 1 ),lda, y( i, 1 ), &
+                           ldy, one, a( i, i ), 1 )
+                 call stdlib_sgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, x( i, 1 ),ldx, a( 1, i ), 1,&
+                            one, a( i, i ), 1 )
+                 ! generate reflection q(i) to annihilate a(i+1:m,i)
+                 call stdlib_slarfg( m-i+1, a( i, i ), a( min( i+1, m ), i ), 1,tauq( i ) )
+                           
+                 d( i ) = a( i, i )
+                 if( i<n ) then
+                    a( i, i ) = one
+                    ! compute y(i+1:n,i)
+                    call stdlib_sgemv( 'TRANSPOSE', m-i+1, n-i, one, a( i, i+1 ),lda, a( i, i ), &
+                              1, zero, y( i+1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', m-i+1, i-1, one, a( i, 1 ), lda,a( i, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
+                               1, one, y( i+1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', m-i+1, i-1, one, x( i, 1 ), ldx,a( i, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, y( 1, i ), 1,&
+                               one, y( i+1, i ), 1 )
+                    call stdlib_sscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                    ! update a(i,i+1:n)
+                    call stdlib_sgemv( 'NO TRANSPOSE', n-i, i, -one, y( i+1, 1 ),ldy, a( i, 1 ), &
+                              lda, one, a( i, i+1 ), lda )
+                    call stdlib_sgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, x( i, 1 ), &
+                              ldx, one, a( i, i+1 ), lda )
+                    ! generate reflection p(i) to annihilate a(i,i+2:n)
+                    call stdlib_slarfg( n-i, a( i, i+1 ), a( i, min( i+2, n ) ),lda, taup( i ) )
+                              
+                    e( i ) = a( i, i+1 )
+                    a( i, i+1 ) = one
+                    ! compute x(i+1:m,i)
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i, i+&
+                              1 ), lda, zero, x( i+1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', n-i, i, one, y( i+1, 1 ), ldy,a( i, i+1 ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i, -one, a( i+1, 1 ),lda, x( 1, i ), &
+                              1, one, x( i+1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', i-1, n-i, one, a( 1, i+1 ),lda, a( i, i+1 )&
+                              , lda, zero, x( 1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_sscal( m-i, taup( i ), x( i+1, i ), 1 )
+                 end if
+              end do loop_10
+           else
+              ! reduce to lower bidiagonal form
+              loop_20: do i = 1, nb
+                 ! update a(i,i:n)
+                 call stdlib_sgemv( 'NO TRANSPOSE', n-i+1, i-1, -one, y( i, 1 ),ldy, a( i, 1 ), &
+                           lda, one, a( i, i ), lda )
+                 call stdlib_sgemv( 'TRANSPOSE', i-1, n-i+1, -one, a( 1, i ), lda,x( i, 1 ), ldx, &
+                           one, a( i, i ), lda )
+                 ! generate reflection p(i) to annihilate a(i,i+1:n)
+                 call stdlib_slarfg( n-i+1, a( i, i ), a( i, min( i+1, n ) ), lda,taup( i ) )
+                           
+                 d( i ) = a( i, i )
+                 if( i<m ) then
+                    a( i, i ) = one
+                    ! compute x(i+1:m,i)
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, n-i+1, one, a( i+1, i ),lda, a( i, i )&
+                              , lda, zero, x( i+1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', n-i+1, i-1, one, y( i, 1 ), ldy,a( i, i ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', i-1, n-i+1, one, a( 1, i ),lda, a( i, i ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_sscal( m-i, taup( i ), x( i+1, i ), 1 )
+                    ! update a(i+1:m,i)
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, y( i, 1 ),&
+                               ldy, one, a( i+1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i, -one, x( i+1, 1 ),ldx, a( 1, i ), &
+                              1, one, a( i+1, i ), 1 )
+                    ! generate reflection q(i) to annihilate a(i+2:m,i)
+                    call stdlib_slarfg( m-i, a( i+1, i ), a( min( i+2, m ), i ), 1,tauq( i ) )
+                              
+                    e( i ) = a( i+1, i )
+                    a( i+1, i ) = one
+                    ! compute y(i+1:n,i)
+                    call stdlib_sgemv( 'TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i+1, i ),&
+                               1, zero, y( i+1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', m-i, i-1, one, a( i+1, 1 ), lda,a( i+1, i ), &
+                              1, zero, y( 1, i ), 1 )
+                    call stdlib_sgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
+                               1, one, y( i+1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', m-i, i, one, x( i+1, 1 ), ldx,a( i+1, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_sgemv( 'TRANSPOSE', i, n-i, -one, a( 1, i+1 ), lda,y( 1, i ), 1, &
+                              one, y( i+1, i ), 1 )
+                    call stdlib_sscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                 end if
+              end do loop_20
            end if
-           ! compute the qr factorization of the n-by-2 matrix ( x y )
-           call stdlib_slarfg( n, x( 1 ), x( 1+incx ), incx, tau )
-           a11 = x( 1 )
-           x( 1 ) = one
-           c = -tau*stdlib_sdot( n, x, incx, y, incy )
-           call stdlib_saxpy( n, c, x, incx, y, incy )
-           call stdlib_slarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
-           a12 = y( 1 )
-           a22 = y( 1+incy )
-           ! compute the svd of 2-by-2 upper triangular matrix.
-           call stdlib_slas2( a11, a12, a22, ssmin, ssmax )
            return
-     end subroutine stdlib_slapll
+     end subroutine stdlib_slabrd
 
-     module pure subroutine stdlib_dlapll( n, x, incx, y, incy, ssmin )
-     !! Given two column vectors X and Y, let
-     !! A = ( X Y ).
-     !! The subroutine first computes the QR factorization of A = Q*R,
-     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
-     !! The smaller singular value of R is returned in SSMIN, which is used
-     !! as the measurement of the linear dependency of the vectors X and Y.
+     pure module subroutine stdlib_dlabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
+     !! DLABRD reduces the first NB rows and columns of a real general
+     !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
+     !! transformation Q**T * A * P, and returns the matrices X and Y which
+     !! are needed to apply the transformation to the unreduced part of A.
+     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
+     !! bidiagonal form.
+     !! This is an auxiliary routine called by DGEBRD
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(out) :: ssmin
+           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
            ! Array Arguments 
-           real(dp), intent(inout) :: x(*), y(*)
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(out) :: d(*), e(*), taup(*), tauq(*), x(ldx,*), y(ldy,*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(dp) :: a11, a12, a22, c, ssmax, tau
+           integer(ilp) :: i
+           ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( n<=1 ) then
-              ssmin = zero
-              return
+           if( m<=0 .or. n<=0 )return
+           if( m>=n ) then
+              ! reduce to upper bidiagonal form
+              loop_10: do i = 1, nb
+                 ! update a(i:m,i)
+                 call stdlib_dgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, a( i, 1 ),lda, y( i, 1 ), &
+                           ldy, one, a( i, i ), 1 )
+                 call stdlib_dgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, x( i, 1 ),ldx, a( 1, i ), 1,&
+                            one, a( i, i ), 1 )
+                 ! generate reflection q(i) to annihilate a(i+1:m,i)
+                 call stdlib_dlarfg( m-i+1, a( i, i ), a( min( i+1, m ), i ), 1,tauq( i ) )
+                           
+                 d( i ) = a( i, i )
+                 if( i<n ) then
+                    a( i, i ) = one
+                    ! compute y(i+1:n,i)
+                    call stdlib_dgemv( 'TRANSPOSE', m-i+1, n-i, one, a( i, i+1 ),lda, a( i, i ), &
+                              1, zero, y( i+1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', m-i+1, i-1, one, a( i, 1 ), lda,a( i, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
+                               1, one, y( i+1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', m-i+1, i-1, one, x( i, 1 ), ldx,a( i, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, y( 1, i ), 1,&
+                               one, y( i+1, i ), 1 )
+                    call stdlib_dscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                    ! update a(i,i+1:n)
+                    call stdlib_dgemv( 'NO TRANSPOSE', n-i, i, -one, y( i+1, 1 ),ldy, a( i, 1 ), &
+                              lda, one, a( i, i+1 ), lda )
+                    call stdlib_dgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, x( i, 1 ), &
+                              ldx, one, a( i, i+1 ), lda )
+                    ! generate reflection p(i) to annihilate a(i,i+2:n)
+                    call stdlib_dlarfg( n-i, a( i, i+1 ), a( i, min( i+2, n ) ),lda, taup( i ) )
+                              
+                    e( i ) = a( i, i+1 )
+                    a( i, i+1 ) = one
+                    ! compute x(i+1:m,i)
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i, i+&
+                              1 ), lda, zero, x( i+1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', n-i, i, one, y( i+1, 1 ), ldy,a( i, i+1 ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i, -one, a( i+1, 1 ),lda, x( 1, i ), &
+                              1, one, x( i+1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', i-1, n-i, one, a( 1, i+1 ),lda, a( i, i+1 )&
+                              , lda, zero, x( 1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_dscal( m-i, taup( i ), x( i+1, i ), 1 )
+                 end if
+              end do loop_10
+           else
+              ! reduce to lower bidiagonal form
+              loop_20: do i = 1, nb
+                 ! update a(i,i:n)
+                 call stdlib_dgemv( 'NO TRANSPOSE', n-i+1, i-1, -one, y( i, 1 ),ldy, a( i, 1 ), &
+                           lda, one, a( i, i ), lda )
+                 call stdlib_dgemv( 'TRANSPOSE', i-1, n-i+1, -one, a( 1, i ), lda,x( i, 1 ), ldx, &
+                           one, a( i, i ), lda )
+                 ! generate reflection p(i) to annihilate a(i,i+1:n)
+                 call stdlib_dlarfg( n-i+1, a( i, i ), a( i, min( i+1, n ) ), lda,taup( i ) )
+                           
+                 d( i ) = a( i, i )
+                 if( i<m ) then
+                    a( i, i ) = one
+                    ! compute x(i+1:m,i)
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, n-i+1, one, a( i+1, i ),lda, a( i, i )&
+                              , lda, zero, x( i+1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', n-i+1, i-1, one, y( i, 1 ), ldy,a( i, i ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', i-1, n-i+1, one, a( 1, i ),lda, a( i, i ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_dscal( m-i, taup( i ), x( i+1, i ), 1 )
+                    ! update a(i+1:m,i)
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, y( i, 1 ),&
+                               ldy, one, a( i+1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i, -one, x( i+1, 1 ),ldx, a( 1, i ), &
+                              1, one, a( i+1, i ), 1 )
+                    ! generate reflection q(i) to annihilate a(i+2:m,i)
+                    call stdlib_dlarfg( m-i, a( i+1, i ), a( min( i+2, m ), i ), 1,tauq( i ) )
+                              
+                    e( i ) = a( i+1, i )
+                    a( i+1, i ) = one
+                    ! compute y(i+1:n,i)
+                    call stdlib_dgemv( 'TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i+1, i ),&
+                               1, zero, y( i+1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', m-i, i-1, one, a( i+1, 1 ), lda,a( i+1, i ), &
+                              1, zero, y( 1, i ), 1 )
+                    call stdlib_dgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
+                               1, one, y( i+1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', m-i, i, one, x( i+1, 1 ), ldx,a( i+1, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_dgemv( 'TRANSPOSE', i, n-i, -one, a( 1, i+1 ), lda,y( 1, i ), 1, &
+                              one, y( i+1, i ), 1 )
+                    call stdlib_dscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                 end if
+              end do loop_20
            end if
-           ! compute the qr factorization of the n-by-2 matrix ( x y )
-           call stdlib_dlarfg( n, x( 1 ), x( 1+incx ), incx, tau )
-           a11 = x( 1 )
-           x( 1 ) = one
-           c = -tau*stdlib_ddot( n, x, incx, y, incy )
-           call stdlib_daxpy( n, c, x, incx, y, incy )
-           call stdlib_dlarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
-           a12 = y( 1 )
-           a22 = y( 1+incy )
-           ! compute the svd of 2-by-2 upper triangular matrix.
-           call stdlib_dlas2( a11, a12, a22, ssmin, ssmax )
            return
-     end subroutine stdlib_dlapll
+     end subroutine stdlib_dlabrd
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lapll( n, x, incx, y, incy, ssmin )
-     !! Given two column vectors X and Y, let
-     !! A = ( X Y ).
-     !! The subroutine first computes the QR factorization of A = Q*R,
-     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
-     !! The smaller singular value of R is returned in SSMIN, which is used
-     !! as the measurement of the linear dependency of the vectors X and Y.
+     pure module subroutine stdlib_${ri}$labrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
+     !! DLABRD: reduces the first NB rows and columns of a real general
+     !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
+     !! transformation Q**T * A * P, and returns the matrices X and Y which
+     !! are needed to apply the transformation to the unreduced part of A.
+     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
+     !! bidiagonal form.
+     !! This is an auxiliary routine called by DGEBRD
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           real(${rk}$), intent(out) :: ssmin
+           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: x(*), y(*)
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(out) :: d(*), e(*), taup(*), tauq(*), x(ldx,*), y(ldy,*)
         ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: a11, a12, a22, c, ssmax, tau
+           integer(ilp) :: i
+           ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( n<=1 ) then
-              ssmin = zero
-              return
+           if( m<=0 .or. n<=0 )return
+           if( m>=n ) then
+              ! reduce to upper bidiagonal form
+              loop_10: do i = 1, nb
+                 ! update a(i:m,i)
+                 call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -one, a( i, 1 ),lda, y( i, 1 ), &
+                           ldy, one, a( i, i ), 1 )
+                 call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -one, x( i, 1 ),ldx, a( 1, i ), 1,&
+                            one, a( i, i ), 1 )
+                 ! generate reflection q(i) to annihilate a(i+1:m,i)
+                 call stdlib_${ri}$larfg( m-i+1, a( i, i ), a( min( i+1, m ), i ), 1,tauq( i ) )
+                           
+                 d( i ) = a( i, i )
+                 if( i<n ) then
+                    a( i, i ) = one
+                    ! compute y(i+1:n,i)
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i+1, n-i, one, a( i, i+1 ),lda, a( i, i ), &
+                              1, zero, y( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i+1, i-1, one, a( i, 1 ), lda,a( i, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
+                               1, one, y( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i+1, i-1, one, x( i, 1 ), ldx,a( i, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, y( 1, i ), 1,&
+                               one, y( i+1, i ), 1 )
+                    call stdlib_${ri}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
+                    ! update a(i,i+1:n)
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i, i, -one, y( i+1, 1 ),ldy, a( i, 1 ), &
+                              lda, one, a( i, i+1 ), lda )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, x( i, 1 ), &
+                              ldx, one, a( i, i+1 ), lda )
+                    ! generate reflection p(i) to annihilate a(i,i+2:n)
+                    call stdlib_${ri}$larfg( n-i, a( i, i+1 ), a( i, min( i+2, n ) ),lda, taup( i ) )
+                              
+                    e( i ) = a( i, i+1 )
+                    a( i, i+1 ) = one
+                    ! compute x(i+1:m,i)
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i, i+&
+                              1 ), lda, zero, x( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', n-i, i, one, y( i+1, 1 ), ldy,a( i, i+1 ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i, -one, a( i+1, 1 ),lda, x( 1, i ), &
+                              1, one, x( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', i-1, n-i, one, a( 1, i+1 ),lda, a( i, i+1 )&
+                              , lda, zero, x( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_${ri}$scal( m-i, taup( i ), x( i+1, i ), 1 )
+                 end if
+              end do loop_10
+           else
+              ! reduce to lower bidiagonal form
+              loop_20: do i = 1, nb
+                 ! update a(i,i:n)
+                 call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i+1, i-1, -one, y( i, 1 ),ldy, a( i, 1 ), &
+                           lda, one, a( i, i ), lda )
+                 call stdlib_${ri}$gemv( 'TRANSPOSE', i-1, n-i+1, -one, a( 1, i ), lda,x( i, 1 ), ldx, &
+                           one, a( i, i ), lda )
+                 ! generate reflection p(i) to annihilate a(i,i+1:n)
+                 call stdlib_${ri}$larfg( n-i+1, a( i, i ), a( i, min( i+1, n ) ), lda,taup( i ) )
+                           
+                 d( i ) = a( i, i )
+                 if( i<m ) then
+                    a( i, i ) = one
+                    ! compute x(i+1:m,i)
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, n-i+1, one, a( i+1, i ),lda, a( i, i )&
+                              , lda, zero, x( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', n-i+1, i-1, one, y( i, 1 ), ldy,a( i, i ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', i-1, n-i+1, one, a( 1, i ),lda, a( i, i ), &
+                              lda, zero, x( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
+                               1, one, x( i+1, i ), 1 )
+                    call stdlib_${ri}$scal( m-i, taup( i ), x( i+1, i ), 1 )
+                    ! update a(i+1:m,i)
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, y( i, 1 ),&
+                               ldy, one, a( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i, -one, x( i+1, 1 ),ldx, a( 1, i ), &
+                              1, one, a( i+1, i ), 1 )
+                    ! generate reflection q(i) to annihilate a(i+2:m,i)
+                    call stdlib_${ri}$larfg( m-i, a( i+1, i ), a( min( i+2, m ), i ), 1,tauq( i ) )
+                              
+                    e( i ) = a( i+1, i )
+                    a( i+1, i ) = one
+                    ! compute y(i+1:n,i)
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i+1, i ),&
+                               1, zero, y( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i, i-1, one, a( i+1, 1 ), lda,a( i+1, i ), &
+                              1, zero, y( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
+                               1, one, y( i+1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i, i, one, x( i+1, 1 ), ldx,a( i+1, i ), 1, &
+                              zero, y( 1, i ), 1 )
+                    call stdlib_${ri}$gemv( 'TRANSPOSE', i, n-i, -one, a( 1, i+1 ), lda,y( 1, i ), 1, &
+                              one, y( i+1, i ), 1 )
+                    call stdlib_${ri}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
+                 end if
+              end do loop_20
            end if
-           ! compute the qr factorization of the n-by-2 matrix ( x y )
-           call stdlib_${ri}$larfg( n, x( 1 ), x( 1+incx ), incx, tau )
-           a11 = x( 1 )
-           x( 1 ) = one
-           c = -tau*stdlib_${ri}$dot( n, x, incx, y, incy )
-           call stdlib_${ri}$axpy( n, c, x, incx, y, incy )
-           call stdlib_${ri}$larfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
-           a12 = y( 1 )
-           a22 = y( 1+incy )
-           ! compute the svd of 2-by-2 upper triangular matrix.
-           call stdlib_${ri}$las2( a11, a12, a22, ssmin, ssmax )
            return
-     end subroutine stdlib_${ri}$lapll
+     end subroutine stdlib_${ri}$labrd
 
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_clapll( n, x, incx, y, incy, ssmin )
-     !! Given two column vectors X and Y, let
-     !! A = ( X Y ).
-     !! The subroutine first computes the QR factorization of A = Q*R,
-     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
-     !! The smaller singular value of R is returned in SSMIN, which is used
-     !! as the measurement of the linear dependency of the vectors X and Y.
+     pure module subroutine stdlib_clabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
+     !! CLABRD reduces the first NB rows and columns of a complex general
+     !! m by n matrix A to upper or lower real bidiagonal form by a unitary
+     !! transformation Q**H * A * P, and returns the matrices X and Y which
+     !! are needed to apply the transformation to the unreduced part of A.
+     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
+     !! bidiagonal form.
+     !! This is an auxiliary routine called by CGEBRD
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(out) :: ssmin
+           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
            ! Array Arguments 
-           complex(sp), intent(inout) :: x(*), y(*)
+           real(sp), intent(out) :: d(*), e(*)
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(out) :: taup(*), tauq(*), x(ldx,*), y(ldy,*)
         ! =====================================================================
            
-           
            ! Local Scalars 
-           real(sp) :: ssmax
-           complex(sp) :: a11, a12, a22, c, tau
+           integer(ilp) :: i
+           complex(sp) :: alpha
            ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( n<=1 ) then
-              ssmin = zero
-              return
+           if( m<=0 .or. n<=0 )return
+           if( m>=n ) then
+              ! reduce to upper bidiagonal form
+              loop_10: do i = 1, nb
+                 ! update a(i:m,i)
+                 call stdlib_clacgv( i-1, y( i, 1 ), ldy )
+                 call stdlib_cgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, a( i, 1 ),lda, y( i, 1 ), &
+                           ldy, cone, a( i, i ), 1 )
+                 call stdlib_clacgv( i-1, y( i, 1 ), ldy )
+                 call stdlib_cgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, x( i, 1 ),ldx, a( 1, i ), &
+                           1, cone, a( i, i ), 1 )
+                 ! generate reflection q(i) to annihilate a(i+1:m,i)
+                 alpha = a( i, i )
+                 call stdlib_clarfg( m-i+1, alpha, a( min( i+1, m ), i ), 1,tauq( i ) )
+                 d( i ) = real( alpha,KIND=sp)
+                 if( i<n ) then
+                    a( i, i ) = cone
+                    ! compute y(i+1:n,i)
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i+1, n-i, cone,a( i, i+1 ), lda, &
+                              a( i, i ), 1, czero,y( i+1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,a( i, 1 ), lda, a( &
+                              i, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
+                              , 1, cone, y( i+1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,x( i, 1 ), ldx, a( &
+                              i, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, y(&
+                               1, i ), 1, cone,y( i+1, i ), 1 )
+                    call stdlib_cscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                    ! update a(i,i+1:n)
+                    call stdlib_clacgv( n-i, a( i, i+1 ), lda )
+                    call stdlib_clacgv( i, a( i, 1 ), lda )
+                    call stdlib_cgemv( 'NO TRANSPOSE', n-i, i, -cone, y( i+1, 1 ),ldy, a( i, 1 ), &
+                              lda, cone, a( i, i+1 ), lda )
+                    call stdlib_clacgv( i, a( i, 1 ), lda )
+                    call stdlib_clacgv( i-1, x( i, 1 ), ldx )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, x(&
+                               i, 1 ), ldx, cone,a( i, i+1 ), lda )
+                    call stdlib_clacgv( i-1, x( i, 1 ), ldx )
+                    ! generate reflection p(i) to annihilate a(i,i+2:n)
+                    alpha = a( i, i+1 )
+                    call stdlib_clarfg( n-i, alpha, a( i, min( i+2, n ) ),lda, taup( i ) )
+                    e( i ) = real( alpha,KIND=sp)
+                    a( i, i+1 ) = cone
+                    ! compute x(i+1:m,i)
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, n-i, cone, a( i+1, i+1 ),lda, a( i, i+&
+                              1 ), lda, czero, x( i+1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', n-i, i, cone,y( i+1, 1 ), ldy, a( i,&
+                               i+1 ), lda, czero,x( 1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i, -cone, a( i+1, 1 ),lda, x( 1, i ), &
+                              1, cone, x( i+1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', i-1, n-i, cone, a( 1, i+1 ),lda, a( i, i+1 &
+                              ), lda, czero, x( 1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_cscal( m-i, taup( i ), x( i+1, i ), 1 )
+                    call stdlib_clacgv( n-i, a( i, i+1 ), lda )
+                 end if
+              end do loop_10
+           else
+              ! reduce to lower bidiagonal form
+              loop_20: do i = 1, nb
+                 ! update a(i,i:n)
+                 call stdlib_clacgv( n-i+1, a( i, i ), lda )
+                 call stdlib_clacgv( i-1, a( i, 1 ), lda )
+                 call stdlib_cgemv( 'NO TRANSPOSE', n-i+1, i-1, -cone, y( i, 1 ),ldy, a( i, 1 ), &
+                           lda, cone, a( i, i ), lda )
+                 call stdlib_clacgv( i-1, a( i, 1 ), lda )
+                 call stdlib_clacgv( i-1, x( i, 1 ), ldx )
+                 call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i-1, n-i+1, -cone,a( 1, i ), lda, x( i,&
+                            1 ), ldx, cone, a( i, i ),lda )
+                 call stdlib_clacgv( i-1, x( i, 1 ), ldx )
+                 ! generate reflection p(i) to annihilate a(i,i+1:n)
+                 alpha = a( i, i )
+                 call stdlib_clarfg( n-i+1, alpha, a( i, min( i+1, n ) ), lda,taup( i ) )
+                 d( i ) = real( alpha,KIND=sp)
+                 if( i<m ) then
+                    a( i, i ) = cone
+                    ! compute x(i+1:m,i)
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, n-i+1, cone, a( i+1, i ),lda, a( i, i &
+                              ), lda, czero, x( i+1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', n-i+1, i-1, cone,y( i, 1 ), ldy, a( &
+                              i, i ), lda, czero,x( 1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', i-1, n-i+1, cone, a( 1, i ),lda, a( i, i ),&
+                               lda, czero, x( 1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_cscal( m-i, taup( i ), x( i+1, i ), 1 )
+                    call stdlib_clacgv( n-i+1, a( i, i ), lda )
+                    ! update a(i+1:m,i)
+                    call stdlib_clacgv( i-1, y( i, 1 ), ldy )
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, y( i, 1 )&
+                              , ldy, cone, a( i+1, i ), 1 )
+                    call stdlib_clacgv( i-1, y( i, 1 ), ldy )
+                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i, -cone, x( i+1, 1 ),ldx, a( 1, i ), &
+                              1, cone, a( i+1, i ), 1 )
+                    ! generate reflection q(i) to annihilate a(i+2:m,i)
+                    alpha = a( i+1, i )
+                    call stdlib_clarfg( m-i, alpha, a( min( i+2, m ), i ), 1,tauq( i ) )
+                    e( i ) = real( alpha,KIND=sp)
+                    a( i+1, i ) = cone
+                    ! compute y(i+1:n,i)
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i, n-i, cone,a( i+1, i+1 ), lda, &
+                              a( i+1, i ), 1, czero,y( i+1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i, i-1, cone,a( i+1, 1 ), lda, a( &
+                              i+1, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_cgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
+                              , 1, cone, y( i+1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i, i, cone,x( i+1, 1 ), ldx, a( i+&
+                              1, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i, n-i, -cone,a( 1, i+1 ), lda, y( &
+                              1, i ), 1, cone,y( i+1, i ), 1 )
+                    call stdlib_cscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                 else
+                    call stdlib_clacgv( n-i+1, a( i, i ), lda )
+                 end if
+              end do loop_20
            end if
-           ! compute the qr factorization of the n-by-2 matrix ( x y )
-           call stdlib_clarfg( n, x( 1 ), x( 1+incx ), incx, tau )
-           a11 = x( 1 )
-           x( 1 ) = cone
-           c = -conjg( tau )*stdlib_cdotc( n, x, incx, y, incy )
-           call stdlib_caxpy( n, c, x, incx, y, incy )
-           call stdlib_clarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
-           a12 = y( 1 )
-           a22 = y( 1+incy )
-           ! compute the svd of 2-by-2 upper triangular matrix.
-           call stdlib_slas2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
-     end subroutine stdlib_clapll
+     end subroutine stdlib_clabrd
 
-     module pure subroutine stdlib_zlapll( n, x, incx, y, incy, ssmin )
-     !! Given two column vectors X and Y, let
-     !! A = ( X Y ).
-     !! The subroutine first computes the QR factorization of A = Q*R,
-     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
-     !! The smaller singular value of R is returned in SSMIN, which is used
-     !! as the measurement of the linear dependency of the vectors X and Y.
+     pure module subroutine stdlib_zlabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
+     !! ZLABRD reduces the first NB rows and columns of a complex general
+     !! m by n matrix A to upper or lower real bidiagonal form by a unitary
+     !! transformation Q**H * A * P, and returns the matrices X and Y which
+     !! are needed to apply the transformation to the unreduced part of A.
+     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
+     !! bidiagonal form.
+     !! This is an auxiliary routine called by ZGEBRD
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(out) :: ssmin
+           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
            ! Array Arguments 
-           complex(dp), intent(inout) :: x(*), y(*)
+           real(dp), intent(out) :: d(*), e(*)
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(out) :: taup(*), tauq(*), x(ldx,*), y(ldy,*)
         ! =====================================================================
            
-           
            ! Local Scalars 
-           real(dp) :: ssmax
-           complex(dp) :: a11, a12, a22, c, tau
+           integer(ilp) :: i
+           complex(dp) :: alpha
            ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( n<=1 ) then
-              ssmin = zero
-              return
+           if( m<=0 .or. n<=0 )return
+           if( m>=n ) then
+              ! reduce to upper bidiagonal form
+              loop_10: do i = 1, nb
+                 ! update a(i:m,i)
+                 call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
+                 call stdlib_zgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, a( i, 1 ),lda, y( i, 1 ), &
+                           ldy, cone, a( i, i ), 1 )
+                 call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
+                 call stdlib_zgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, x( i, 1 ),ldx, a( 1, i ), &
+                           1, cone, a( i, i ), 1 )
+                 ! generate reflection q(i) to annihilate a(i+1:m,i)
+                 alpha = a( i, i )
+                 call stdlib_zlarfg( m-i+1, alpha, a( min( i+1, m ), i ), 1,tauq( i ) )
+                 d( i ) = real( alpha,KIND=dp)
+                 if( i<n ) then
+                    a( i, i ) = cone
+                    ! compute y(i+1:n,i)
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i+1, n-i, cone,a( i, i+1 ), lda, &
+                              a( i, i ), 1, czero,y( i+1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,a( i, 1 ), lda, a( &
+                              i, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
+                              , 1, cone, y( i+1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,x( i, 1 ), ldx, a( &
+                              i, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, y(&
+                               1, i ), 1, cone,y( i+1, i ), 1 )
+                    call stdlib_zscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                    ! update a(i,i+1:n)
+                    call stdlib_zlacgv( n-i, a( i, i+1 ), lda )
+                    call stdlib_zlacgv( i, a( i, 1 ), lda )
+                    call stdlib_zgemv( 'NO TRANSPOSE', n-i, i, -cone, y( i+1, 1 ),ldy, a( i, 1 ), &
+                              lda, cone, a( i, i+1 ), lda )
+                    call stdlib_zlacgv( i, a( i, 1 ), lda )
+                    call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, x(&
+                               i, 1 ), ldx, cone,a( i, i+1 ), lda )
+                    call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
+                    ! generate reflection p(i) to annihilate a(i,i+2:n)
+                    alpha = a( i, i+1 )
+                    call stdlib_zlarfg( n-i, alpha, a( i, min( i+2, n ) ), lda,taup( i ) )
+                    e( i ) = real( alpha,KIND=dp)
+                    a( i, i+1 ) = cone
+                    ! compute x(i+1:m,i)
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, n-i, cone, a( i+1, i+1 ),lda, a( i, i+&
+                              1 ), lda, czero, x( i+1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', n-i, i, cone,y( i+1, 1 ), ldy, a( i,&
+                               i+1 ), lda, czero,x( 1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i, -cone, a( i+1, 1 ),lda, x( 1, i ), &
+                              1, cone, x( i+1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', i-1, n-i, cone, a( 1, i+1 ),lda, a( i, i+1 &
+                              ), lda, czero, x( 1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_zscal( m-i, taup( i ), x( i+1, i ), 1 )
+                    call stdlib_zlacgv( n-i, a( i, i+1 ), lda )
+                 end if
+              end do loop_10
+           else
+              ! reduce to lower bidiagonal form
+              loop_20: do i = 1, nb
+                 ! update a(i,i:n)
+                 call stdlib_zlacgv( n-i+1, a( i, i ), lda )
+                 call stdlib_zlacgv( i-1, a( i, 1 ), lda )
+                 call stdlib_zgemv( 'NO TRANSPOSE', n-i+1, i-1, -cone, y( i, 1 ),ldy, a( i, 1 ), &
+                           lda, cone, a( i, i ), lda )
+                 call stdlib_zlacgv( i-1, a( i, 1 ), lda )
+                 call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
+                 call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i-1, n-i+1, -cone,a( 1, i ), lda, x( i,&
+                            1 ), ldx, cone, a( i, i ),lda )
+                 call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
+                 ! generate reflection p(i) to annihilate a(i,i+1:n)
+                 alpha = a( i, i )
+                 call stdlib_zlarfg( n-i+1, alpha, a( i, min( i+1, n ) ), lda,taup( i ) )
+                 d( i ) = real( alpha,KIND=dp)
+                 if( i<m ) then
+                    a( i, i ) = cone
+                    ! compute x(i+1:m,i)
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, n-i+1, cone, a( i+1, i ),lda, a( i, i &
+                              ), lda, czero, x( i+1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', n-i+1, i-1, cone,y( i, 1 ), ldy, a( &
+                              i, i ), lda, czero,x( 1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', i-1, n-i+1, cone, a( 1, i ),lda, a( i, i ),&
+                               lda, czero, x( 1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_zscal( m-i, taup( i ), x( i+1, i ), 1 )
+                    call stdlib_zlacgv( n-i+1, a( i, i ), lda )
+                    ! update a(i+1:m,i)
+                    call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, y( i, 1 )&
+                              , ldy, cone, a( i+1, i ), 1 )
+                    call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
+                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i, -cone, x( i+1, 1 ),ldx, a( 1, i ), &
+                              1, cone, a( i+1, i ), 1 )
+                    ! generate reflection q(i) to annihilate a(i+2:m,i)
+                    alpha = a( i+1, i )
+                    call stdlib_zlarfg( m-i, alpha, a( min( i+2, m ), i ), 1,tauq( i ) )
+                    e( i ) = real( alpha,KIND=dp)
+                    a( i+1, i ) = cone
+                    ! compute y(i+1:n,i)
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i, n-i, cone,a( i+1, i+1 ), lda, &
+                              a( i+1, i ), 1, czero,y( i+1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i, i-1, cone,a( i+1, 1 ), lda, a( &
+                              i+1, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_zgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
+                              , 1, cone, y( i+1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i, i, cone,x( i+1, 1 ), ldx, a( i+&
+                              1, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i, n-i, -cone,a( 1, i+1 ), lda, y( &
+                              1, i ), 1, cone,y( i+1, i ), 1 )
+                    call stdlib_zscal( n-i, tauq( i ), y( i+1, i ), 1 )
+                 else
+                    call stdlib_zlacgv( n-i+1, a( i, i ), lda )
+                 end if
+              end do loop_20
            end if
-           ! compute the qr factorization of the n-by-2 matrix ( x y )
-           call stdlib_zlarfg( n, x( 1 ), x( 1+incx ), incx, tau )
-           a11 = x( 1 )
-           x( 1 ) = cone
-           c = -conjg( tau )*stdlib_zdotc( n, x, incx, y, incy )
-           call stdlib_zaxpy( n, c, x, incx, y, incy )
-           call stdlib_zlarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
-           a12 = y( 1 )
-           a22 = y( 1+incy )
-           ! compute the svd of 2-by-2 upper triangular matrix.
-           call stdlib_dlas2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
-     end subroutine stdlib_zlapll
+     end subroutine stdlib_zlabrd
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$lapll( n, x, incx, y, incy, ssmin )
-     !! Given two column vectors X and Y, let
-     !! A = ( X Y ).
-     !! The subroutine first computes the QR factorization of A = Q*R,
-     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
-     !! The smaller singular value of R is returned in SSMIN, which is used
-     !! as the measurement of the linear dependency of the vectors X and Y.
+     pure module subroutine stdlib_${ci}$labrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
+     !! ZLABRD: reduces the first NB rows and columns of a complex general
+     !! m by n matrix A to upper or lower real bidiagonal form by a unitary
+     !! transformation Q**H * A * P, and returns the matrices X and Y which
+     !! are needed to apply the transformation to the unreduced part of A.
+     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
+     !! bidiagonal form.
+     !! This is an auxiliary routine called by ZGEBRD
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: incx, incy, n
-           real(${ck}$), intent(out) :: ssmin
+           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
            ! Array Arguments 
-           complex(${ck}$), intent(inout) :: x(*), y(*)
+           real(${ck}$), intent(out) :: d(*), e(*)
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(out) :: taup(*), tauq(*), x(ldx,*), y(ldy,*)
         ! =====================================================================
            
-           
            ! Local Scalars 
-           real(${ck}$) :: ssmax
-           complex(${ck}$) :: a11, a12, a22, c, tau
+           integer(ilp) :: i
+           complex(${ck}$) :: alpha
            ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( n<=1 ) then
-              ssmin = zero
-              return
+           if( m<=0 .or. n<=0 )return
+           if( m>=n ) then
+              ! reduce to upper bidiagonal form
+              loop_10: do i = 1, nb
+                 ! update a(i:m,i)
+                 call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
+                 call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, a( i, 1 ),lda, y( i, 1 ), &
+                           ldy, cone, a( i, i ), 1 )
+                 call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
+                 call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, x( i, 1 ),ldx, a( 1, i ), &
+                           1, cone, a( i, i ), 1 )
+                 ! generate reflection q(i) to annihilate a(i+1:m,i)
+                 alpha = a( i, i )
+                 call stdlib_${ci}$larfg( m-i+1, alpha, a( min( i+1, m ), i ), 1,tauq( i ) )
+                 d( i ) = real( alpha,KIND=${ck}$)
+                 if( i<n ) then
+                    a( i, i ) = cone
+                    ! compute y(i+1:n,i)
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i+1, n-i, cone,a( i, i+1 ), lda, &
+                              a( i, i ), 1, czero,y( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,a( i, 1 ), lda, a( &
+                              i, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
+                              , 1, cone, y( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,x( i, 1 ), ldx, a( &
+                              i, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, y(&
+                               1, i ), 1, cone,y( i+1, i ), 1 )
+                    call stdlib_${ci}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
+                    ! update a(i,i+1:n)
+                    call stdlib_${ci}$lacgv( n-i, a( i, i+1 ), lda )
+                    call stdlib_${ci}$lacgv( i, a( i, 1 ), lda )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i, i, -cone, y( i+1, 1 ),ldy, a( i, 1 ), &
+                              lda, cone, a( i, i+1 ), lda )
+                    call stdlib_${ci}$lacgv( i, a( i, 1 ), lda )
+                    call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, x(&
+                               i, 1 ), ldx, cone,a( i, i+1 ), lda )
+                    call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
+                    ! generate reflection p(i) to annihilate a(i,i+2:n)
+                    alpha = a( i, i+1 )
+                    call stdlib_${ci}$larfg( n-i, alpha, a( i, min( i+2, n ) ), lda,taup( i ) )
+                    e( i ) = real( alpha,KIND=${ck}$)
+                    a( i, i+1 ) = cone
+                    ! compute x(i+1:m,i)
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, n-i, cone, a( i+1, i+1 ),lda, a( i, i+&
+                              1 ), lda, czero, x( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', n-i, i, cone,y( i+1, 1 ), ldy, a( i,&
+                               i+1 ), lda, czero,x( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i, -cone, a( i+1, 1 ),lda, x( 1, i ), &
+                              1, cone, x( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', i-1, n-i, cone, a( 1, i+1 ),lda, a( i, i+1 &
+                              ), lda, czero, x( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_${ci}$scal( m-i, taup( i ), x( i+1, i ), 1 )
+                    call stdlib_${ci}$lacgv( n-i, a( i, i+1 ), lda )
+                 end if
+              end do loop_10
+           else
+              ! reduce to lower bidiagonal form
+              loop_20: do i = 1, nb
+                 ! update a(i,i:n)
+                 call stdlib_${ci}$lacgv( n-i+1, a( i, i ), lda )
+                 call stdlib_${ci}$lacgv( i-1, a( i, 1 ), lda )
+                 call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i+1, i-1, -cone, y( i, 1 ),ldy, a( i, 1 ), &
+                           lda, cone, a( i, i ), lda )
+                 call stdlib_${ci}$lacgv( i-1, a( i, 1 ), lda )
+                 call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
+                 call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i-1, n-i+1, -cone,a( 1, i ), lda, x( i,&
+                            1 ), ldx, cone, a( i, i ),lda )
+                 call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
+                 ! generate reflection p(i) to annihilate a(i,i+1:n)
+                 alpha = a( i, i )
+                 call stdlib_${ci}$larfg( n-i+1, alpha, a( i, min( i+1, n ) ), lda,taup( i ) )
+                 d( i ) = real( alpha,KIND=${ck}$)
+                 if( i<m ) then
+                    a( i, i ) = cone
+                    ! compute x(i+1:m,i)
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, n-i+1, cone, a( i+1, i ),lda, a( i, i &
+                              ), lda, czero, x( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', n-i+1, i-1, cone,y( i, 1 ), ldy, a( &
+                              i, i ), lda, czero,x( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', i-1, n-i+1, cone, a( 1, i ),lda, a( i, i ),&
+                               lda, czero, x( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
+                              , 1, cone, x( i+1, i ), 1 )
+                    call stdlib_${ci}$scal( m-i, taup( i ), x( i+1, i ), 1 )
+                    call stdlib_${ci}$lacgv( n-i+1, a( i, i ), lda )
+                    ! update a(i+1:m,i)
+                    call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, y( i, 1 )&
+                              , ldy, cone, a( i+1, i ), 1 )
+                    call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i, -cone, x( i+1, 1 ),ldx, a( 1, i ), &
+                              1, cone, a( i+1, i ), 1 )
+                    ! generate reflection q(i) to annihilate a(i+2:m,i)
+                    alpha = a( i+1, i )
+                    call stdlib_${ci}$larfg( m-i, alpha, a( min( i+2, m ), i ), 1,tauq( i ) )
+                    e( i ) = real( alpha,KIND=${ck}$)
+                    a( i+1, i ) = cone
+                    ! compute y(i+1:n,i)
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i, n-i, cone,a( i+1, i+1 ), lda, &
+                              a( i+1, i ), 1, czero,y( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i, i-1, cone,a( i+1, 1 ), lda, a( &
+                              i+1, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
+                              , 1, cone, y( i+1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i, i, cone,x( i+1, 1 ), ldx, a( i+&
+                              1, i ), 1, czero,y( 1, i ), 1 )
+                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i, n-i, -cone,a( 1, i+1 ), lda, y( &
+                              1, i ), 1, cone,y( i+1, i ), 1 )
+                    call stdlib_${ci}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
+                 else
+                    call stdlib_${ci}$lacgv( n-i+1, a( i, i ), lda )
+                 end if
+              end do loop_20
            end if
-           ! compute the qr factorization of the n-by-2 matrix ( x y )
-           call stdlib_${ci}$larfg( n, x( 1 ), x( 1+incx ), incx, tau )
-           a11 = x( 1 )
-           x( 1 ) = cone
-           c = -conjg( tau )*stdlib_${ci}$dotc( n, x, incx, y, incy )
-           call stdlib_${ci}$axpy( n, c, x, incx, y, incy )
-           call stdlib_${ci}$larfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
-           a12 = y( 1 )
-           a22 = y( 1+incy )
-           ! compute the svd of 2-by-2 upper triangular matrix.
-           call stdlib_${c2ri(ci)}$las2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
-     end subroutine stdlib_${ci}$lapll
+     end subroutine stdlib_${ci}$labrd
 
 #:endif
 #:endfor
 
 
 
-     module pure subroutine stdlib_slags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
+     pure module subroutine stdlib_slas2( f, g, h, ssmin, ssmax )
+     !! SLAS2 computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: f, g, h
+           real(sp), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(sp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_slas2
+
+     pure module subroutine stdlib_dlas2( f, g, h, ssmin, ssmax )
+     !! DLAS2 computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: f, g, h
+           real(dp), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(dp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_dlas2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$las2( f, g, h, ssmin, ssmax )
+     !! DLAS2:  computes the singular values of the 2-by-2 matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, SSMIN is the smaller singular value and SSMAX is the
+     !! larger singular value.
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: f, g, h
+           real(${rk}$), intent(out) :: ssmax, ssmin
+        ! ====================================================================
+           
+           
+           
+           ! Local Scalars 
+           real(${rk}$) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           fa = abs( f )
+           ga = abs( g )
+           ha = abs( h )
+           fhmn = min( fa, ha )
+           fhmx = max( fa, ha )
+           if( fhmn==zero ) then
+              ssmin = zero
+              if( fhmx==zero ) then
+                 ssmax = ga
+              else
+                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
+                           
+              end if
+           else
+              if( ga<fhmx ) then
+                 as = one + fhmn / fhmx
+                 at = ( fhmx-fhmn ) / fhmx
+                 au = ( ga / fhmx )**2
+                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
+                 ssmin = fhmn*c
+                 ssmax = fhmx / c
+              else
+                 au = fhmx / ga
+                 if( au==zero ) then
+                    ! avoid possible harmful underflow if exponent range
+                    ! asymmetric (true ssmin may not underflow even if
+                    ! au underflows)
+                    ssmin = ( fhmn*fhmx ) / ga
+                    ssmax = ga
+                 else
+                    as = one + fhmn / fhmx
+                    at = ( fhmx-fhmn ) / fhmx
+                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
+                    ssmin = ( fhmn*c )*au
+                    ssmin = ssmin + ssmin
+                    ssmax = ga / ( c+c )
+                 end if
+              end if
+           end if
+           return
+     end subroutine stdlib_${ri}$las2
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_slasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
+     !! SLASV2 computes the singular value decomposition of a 2-by-2
+     !! triangular matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
+     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
+     !! right singular vectors for abs(SSMAX), giving the decomposition
+     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
+     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
+           real(sp), intent(in) :: f, g, h
+       ! =====================================================================
+           
+           
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: gasmal, swap
+           integer(ilp) :: pmax
+           real(sp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
+                     tsign, tt
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ft = f
+           fa = abs( ft )
+           ht = h
+           ha = abs( h )
+           ! pmax points to the maximum absolute element of matrix
+             ! pmax = 1 if f largest in absolute values
+             ! pmax = 2 if g largest in absolute values
+             ! pmax = 3 if h largest in absolute values
+           pmax = 1
+           swap = ( ha>fa )
+           if( swap ) then
+              pmax = 3
+              temp = ft
+              ft = ht
+              ht = temp
+              temp = fa
+              fa = ha
+              ha = temp
+              ! now fa .ge. ha
+           end if
+           gt = g
+           ga = abs( gt )
+           if( ga==zero ) then
+              ! diagonal matrix
+              ssmin = ha
+              ssmax = fa
+              clt = one
+              crt = one
+              slt = zero
+              srt = zero
+           else
+              gasmal = .true.
+              if( ga>fa ) then
+                 pmax = 2
+                 if( ( fa / ga )<stdlib_slamch( 'EPS' ) ) then
+                    ! case of very large ga
+                    gasmal = .false.
+                    ssmax = ga
+                    if( ha>one ) then
+                       ssmin = fa / ( ga / ha )
+                    else
+                       ssmin = ( fa / ga )*ha
+                    end if
+                    clt = one
+                    slt = ht / gt
+                    srt = one
+                    crt = ft / gt
+                 end if
+              end if
+              if( gasmal ) then
+                 ! normal case
+                 d = fa - ha
+                 if( d==fa ) then
+                    ! copes with infinite f or h
+                    l = one
+                 else
+                    l = d / fa
+                 end if
+                 ! note that 0 .le. l .le. 1
+                 m = gt / ft
+                 ! note that abs(m) .le. 1/macheps
+                 t = two - l
+                 ! note that t .ge. 1
+                 mm = m*m
+                 tt = t*t
+                 s = sqrt( tt+mm )
+                 ! note that 1 .le. s .le. 1 + 1/macheps
+                 if( l==zero ) then
+                    r = abs( m )
+                 else
+                    r = sqrt( l*l+mm )
+                 end if
+                 ! note that 0 .le. r .le. 1 + 1/macheps
+                 a = half*( s+r )
+                 ! note that 1 .le. a .le. 1 + abs(m)
+                 ssmin = ha / a
+                 ssmax = fa*a
+                 if( mm==zero ) then
+                    ! note that m is very tiny
+                    if( l==zero ) then
+                       t = sign( two, ft )*sign( one, gt )
+                    else
+                       t = gt / sign( d, ft ) + m / t
+                    end if
+                 else
+                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
+                 end if
+                 l = sqrt( t*t+four )
+                 crt = two / l
+                 srt = t / l
+                 clt = ( crt+srt*m ) / a
+                 slt = ( ht / ft )*srt / a
+              end if
+           end if
+           if( swap ) then
+              csl = srt
+              snl = crt
+              csr = slt
+              snr = clt
+           else
+              csl = clt
+              snl = slt
+              csr = crt
+              snr = srt
+           end if
+           ! correct signs of ssmax and ssmin
+           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
+           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
+           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
+           ssmax = sign( ssmax, tsign )
+           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
+           return
+     end subroutine stdlib_slasv2
+
+     pure module subroutine stdlib_dlasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
+     !! DLASV2 computes the singular value decomposition of a 2-by-2
+     !! triangular matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
+     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
+     !! right singular vectors for abs(SSMAX), giving the decomposition
+     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
+     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
+           real(dp), intent(in) :: f, g, h
+       ! =====================================================================
+           
+           
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: gasmal, swap
+           integer(ilp) :: pmax
+           real(dp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
+                     tsign, tt
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ft = f
+           fa = abs( ft )
+           ht = h
+           ha = abs( h )
+           ! pmax points to the maximum absolute element of matrix
+             ! pmax = 1 if f largest in absolute values
+             ! pmax = 2 if g largest in absolute values
+             ! pmax = 3 if h largest in absolute values
+           pmax = 1
+           swap = ( ha>fa )
+           if( swap ) then
+              pmax = 3
+              temp = ft
+              ft = ht
+              ht = temp
+              temp = fa
+              fa = ha
+              ha = temp
+              ! now fa .ge. ha
+           end if
+           gt = g
+           ga = abs( gt )
+           if( ga==zero ) then
+              ! diagonal matrix
+              ssmin = ha
+              ssmax = fa
+              clt = one
+              crt = one
+              slt = zero
+              srt = zero
+           else
+              gasmal = .true.
+              if( ga>fa ) then
+                 pmax = 2
+                 if( ( fa / ga )<stdlib_dlamch( 'EPS' ) ) then
+                    ! case of very large ga
+                    gasmal = .false.
+                    ssmax = ga
+                    if( ha>one ) then
+                       ssmin = fa / ( ga / ha )
+                    else
+                       ssmin = ( fa / ga )*ha
+                    end if
+                    clt = one
+                    slt = ht / gt
+                    srt = one
+                    crt = ft / gt
+                 end if
+              end if
+              if( gasmal ) then
+                 ! normal case
+                 d = fa - ha
+                 if( d==fa ) then
+                    ! copes with infinite f or h
+                    l = one
+                 else
+                    l = d / fa
+                 end if
+                 ! note that 0 .le. l .le. 1
+                 m = gt / ft
+                 ! note that abs(m) .le. 1/macheps
+                 t = two - l
+                 ! note that t .ge. 1
+                 mm = m*m
+                 tt = t*t
+                 s = sqrt( tt+mm )
+                 ! note that 1 .le. s .le. 1 + 1/macheps
+                 if( l==zero ) then
+                    r = abs( m )
+                 else
+                    r = sqrt( l*l+mm )
+                 end if
+                 ! note that 0 .le. r .le. 1 + 1/macheps
+                 a = half*( s+r )
+                 ! note that 1 .le. a .le. 1 + abs(m)
+                 ssmin = ha / a
+                 ssmax = fa*a
+                 if( mm==zero ) then
+                    ! note that m is very tiny
+                    if( l==zero ) then
+                       t = sign( two, ft )*sign( one, gt )
+                    else
+                       t = gt / sign( d, ft ) + m / t
+                    end if
+                 else
+                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
+                 end if
+                 l = sqrt( t*t+four )
+                 crt = two / l
+                 srt = t / l
+                 clt = ( crt+srt*m ) / a
+                 slt = ( ht / ft )*srt / a
+              end if
+           end if
+           if( swap ) then
+              csl = srt
+              snl = crt
+              csr = slt
+              snr = clt
+           else
+              csl = clt
+              snl = slt
+              csr = crt
+              snr = srt
+           end if
+           ! correct signs of ssmax and ssmin
+           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
+           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
+           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
+           ssmax = sign( ssmax, tsign )
+           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
+           return
+     end subroutine stdlib_dlasv2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
+     !! DLASV2: computes the singular value decomposition of a 2-by-2
+     !! triangular matrix
+     !! [  F   G  ]
+     !! [  0   H  ].
+     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
+     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
+     !! right singular vectors for abs(SSMAX), giving the decomposition
+     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
+     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
+           real(${rk}$), intent(in) :: f, g, h
+       ! =====================================================================
+           
+           
+           
+           
+           
+           ! Local Scalars 
+           logical(lk) :: gasmal, swap
+           integer(ilp) :: pmax
+           real(${rk}$) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
+                     tsign, tt
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ft = f
+           fa = abs( ft )
+           ht = h
+           ha = abs( h )
+           ! pmax points to the maximum absolute element of matrix
+             ! pmax = 1 if f largest in absolute values
+             ! pmax = 2 if g largest in absolute values
+             ! pmax = 3 if h largest in absolute values
+           pmax = 1
+           swap = ( ha>fa )
+           if( swap ) then
+              pmax = 3
+              temp = ft
+              ft = ht
+              ht = temp
+              temp = fa
+              fa = ha
+              ha = temp
+              ! now fa .ge. ha
+           end if
+           gt = g
+           ga = abs( gt )
+           if( ga==zero ) then
+              ! diagonal matrix
+              ssmin = ha
+              ssmax = fa
+              clt = one
+              crt = one
+              slt = zero
+              srt = zero
+           else
+              gasmal = .true.
+              if( ga>fa ) then
+                 pmax = 2
+                 if( ( fa / ga )<stdlib_${ri}$lamch( 'EPS' ) ) then
+                    ! case of very large ga
+                    gasmal = .false.
+                    ssmax = ga
+                    if( ha>one ) then
+                       ssmin = fa / ( ga / ha )
+                    else
+                       ssmin = ( fa / ga )*ha
+                    end if
+                    clt = one
+                    slt = ht / gt
+                    srt = one
+                    crt = ft / gt
+                 end if
+              end if
+              if( gasmal ) then
+                 ! normal case
+                 d = fa - ha
+                 if( d==fa ) then
+                    ! copes with infinite f or h
+                    l = one
+                 else
+                    l = d / fa
+                 end if
+                 ! note that 0 .le. l .le. 1
+                 m = gt / ft
+                 ! note that abs(m) .le. 1/macheps
+                 t = two - l
+                 ! note that t .ge. 1
+                 mm = m*m
+                 tt = t*t
+                 s = sqrt( tt+mm )
+                 ! note that 1 .le. s .le. 1 + 1/macheps
+                 if( l==zero ) then
+                    r = abs( m )
+                 else
+                    r = sqrt( l*l+mm )
+                 end if
+                 ! note that 0 .le. r .le. 1 + 1/macheps
+                 a = half*( s+r )
+                 ! note that 1 .le. a .le. 1 + abs(m)
+                 ssmin = ha / a
+                 ssmax = fa*a
+                 if( mm==zero ) then
+                    ! note that m is very tiny
+                    if( l==zero ) then
+                       t = sign( two, ft )*sign( one, gt )
+                    else
+                       t = gt / sign( d, ft ) + m / t
+                    end if
+                 else
+                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
+                 end if
+                 l = sqrt( t*t+four )
+                 crt = two / l
+                 srt = t / l
+                 clt = ( crt+srt*m ) / a
+                 slt = ( ht / ft )*srt / a
+              end if
+           end if
+           if( swap ) then
+              csl = srt
+              snl = crt
+              csr = slt
+              snr = clt
+           else
+              csl = clt
+              snl = slt
+              csr = crt
+              snr = srt
+           end if
+           ! correct signs of ssmax and ssmin
+           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
+           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
+           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
+           ssmax = sign( ssmax, tsign )
+           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
+           return
+     end subroutine stdlib_${ri}$lasv2
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_slags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! SLAGS2 computes 2-by-2 orthogonal matrices U, V and Q, such
      !! that if ( UPPER ) then
      !! U**T *A*Q = U**T *( A1 A2 )*Q = ( x  0  )
@@ -425,7 +1645,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
            return
      end subroutine stdlib_slags2
 
-     module pure subroutine stdlib_dlags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
+     pure module subroutine stdlib_dlags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! DLAGS2 computes 2-by-2 orthogonal matrices U, V and Q, such
      !! that if ( UPPER ) then
      !! U**T *A*Q = U**T *( A1 A2 )*Q = ( x  0  )
@@ -586,7 +1806,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
+     pure module subroutine stdlib_${ri}$lags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! DLAGS2: computes 2-by-2 orthogonal matrices U, V and Q, such
      !! that if ( UPPER ) then
      !! U**T *A*Q = U**T *( A1 A2 )*Q = ( x  0  )
@@ -748,7 +1968,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_clags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
+     pure module subroutine stdlib_clags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! CLAGS2 computes 2-by-2 unitary matrices U, V and Q, such
      !! that if ( UPPER ) then
      !! U**H *A*Q = U**H *( A1 A2 )*Q = ( x  0  )
@@ -934,7 +2154,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
            return
      end subroutine stdlib_clags2
 
-     module pure subroutine stdlib_zlags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
+     pure module subroutine stdlib_zlags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! ZLAGS2 computes 2-by-2 unitary matrices U, V and Q, such
      !! that if ( UPPER ) then
      !! U**H *A*Q = U**H *( A1 A2 )*Q = ( x  0  )
@@ -1122,7 +2342,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$lags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
+     pure module subroutine stdlib_${ci}$lags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! ZLAGS2: computes 2-by-2 unitary matrices U, V and Q, such
      !! that if ( UPPER ) then
      !! U**H *A*Q = U**H *( A1 A2 )*Q = ( x  0  )
@@ -1313,1049 +2533,268 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 
 
-     module pure subroutine stdlib_slas2( f, g, h, ssmin, ssmax )
-     !! SLAS2 computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
+     pure module subroutine stdlib_slapll( n, x, incx, y, incy, ssmin )
+     !! Given two column vectors X and Y, let
+     !! A = ( X Y ).
+     !! The subroutine first computes the QR factorization of A = Q*R,
+     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
+     !! The smaller singular value of R is returned in SSMIN, which is used
+     !! as the measurement of the linear dependency of the vectors X and Y.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(sp), intent(in) :: f, g, h
-           real(sp), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(out) :: ssmin
+           ! Array Arguments 
+           real(sp), intent(inout) :: x(*), y(*)
+        ! =====================================================================
            
            ! Local Scalars 
-           real(sp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
+           real(sp) :: a11, a12, a22, c, ssmax, tau
            ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
+           ! quick return if possible
+           if( n<=1 ) then
               ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
+              return
            end if
+           ! compute the qr factorization of the n-by-2 matrix ( x y )
+           call stdlib_slarfg( n, x( 1 ), x( 1+incx ), incx, tau )
+           a11 = x( 1 )
+           x( 1 ) = one
+           c = -tau*stdlib_sdot( n, x, incx, y, incy )
+           call stdlib_saxpy( n, c, x, incx, y, incy )
+           call stdlib_slarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
+           a12 = y( 1 )
+           a22 = y( 1+incy )
+           ! compute the svd of 2-by-2 upper triangular matrix.
+           call stdlib_slas2( a11, a12, a22, ssmin, ssmax )
            return
-     end subroutine stdlib_slas2
+     end subroutine stdlib_slapll
 
-     module pure subroutine stdlib_dlas2( f, g, h, ssmin, ssmax )
-     !! DLAS2 computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
+     pure module subroutine stdlib_dlapll( n, x, incx, y, incy, ssmin )
+     !! Given two column vectors X and Y, let
+     !! A = ( X Y ).
+     !! The subroutine first computes the QR factorization of A = Q*R,
+     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
+     !! The smaller singular value of R is returned in SSMIN, which is used
+     !! as the measurement of the linear dependency of the vectors X and Y.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(dp), intent(in) :: f, g, h
-           real(dp), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(out) :: ssmin
+           ! Array Arguments 
+           real(dp), intent(inout) :: x(*), y(*)
+        ! =====================================================================
            
            ! Local Scalars 
-           real(dp) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
+           real(dp) :: a11, a12, a22, c, ssmax, tau
            ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
+           ! quick return if possible
+           if( n<=1 ) then
               ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
+              return
            end if
+           ! compute the qr factorization of the n-by-2 matrix ( x y )
+           call stdlib_dlarfg( n, x( 1 ), x( 1+incx ), incx, tau )
+           a11 = x( 1 )
+           x( 1 ) = one
+           c = -tau*stdlib_ddot( n, x, incx, y, incy )
+           call stdlib_daxpy( n, c, x, incx, y, incy )
+           call stdlib_dlarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
+           a12 = y( 1 )
+           a22 = y( 1+incy )
+           ! compute the svd of 2-by-2 upper triangular matrix.
+           call stdlib_dlas2( a11, a12, a22, ssmin, ssmax )
            return
-     end subroutine stdlib_dlas2
+     end subroutine stdlib_dlapll
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$las2( f, g, h, ssmin, ssmax )
-     !! DLAS2:  computes the singular values of the 2-by-2 matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, SSMIN is the smaller singular value and SSMAX is the
-     !! larger singular value.
+     pure module subroutine stdlib_${ri}$lapll( n, x, incx, y, incy, ssmin )
+     !! Given two column vectors X and Y, let
+     !! A = ( X Y ).
+     !! The subroutine first computes the QR factorization of A = Q*R,
+     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
+     !! The smaller singular value of R is returned in SSMIN, which is used
+     !! as the measurement of the linear dependency of the vectors X and Y.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           real(${rk}$), intent(in) :: f, g, h
-           real(${rk}$), intent(out) :: ssmax, ssmin
-        ! ====================================================================
-           
-           
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${rk}$), intent(out) :: ssmin
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: x(*), y(*)
+        ! =====================================================================
            
            ! Local Scalars 
-           real(${rk}$) :: as, at, au, c, fa, fhmn, fhmx, ga, ha
-           ! Intrinsic Functions 
+           real(${rk}$) :: a11, a12, a22, c, ssmax, tau
            ! Executable Statements 
-           fa = abs( f )
-           ga = abs( g )
-           ha = abs( h )
-           fhmn = min( fa, ha )
-           fhmx = max( fa, ha )
-           if( fhmn==zero ) then
+           ! quick return if possible
+           if( n<=1 ) then
               ssmin = zero
-              if( fhmx==zero ) then
-                 ssmax = ga
-              else
-                 ssmax = max( fhmx, ga )*sqrt( one+( min( fhmx, ga ) / max( fhmx, ga ) )**2 )
-                           
-              end if
-           else
-              if( ga<fhmx ) then
-                 as = one + fhmn / fhmx
-                 at = ( fhmx-fhmn ) / fhmx
-                 au = ( ga / fhmx )**2
-                 c = two / ( sqrt( as*as+au )+sqrt( at*at+au ) )
-                 ssmin = fhmn*c
-                 ssmax = fhmx / c
-              else
-                 au = fhmx / ga
-                 if( au==zero ) then
-                    ! avoid possible harmful underflow if exponent range
-                    ! asymmetric (true ssmin may not underflow even if
-                    ! au underflows)
-                    ssmin = ( fhmn*fhmx ) / ga
-                    ssmax = ga
-                 else
-                    as = one + fhmn / fhmx
-                    at = ( fhmx-fhmn ) / fhmx
-                    c = one / ( sqrt( one+( as*au )**2 )+sqrt( one+( at*au )**2 ) )
-                    ssmin = ( fhmn*c )*au
-                    ssmin = ssmin + ssmin
-                    ssmax = ga / ( c+c )
-                 end if
-              end if
+              return
            end if
+           ! compute the qr factorization of the n-by-2 matrix ( x y )
+           call stdlib_${ri}$larfg( n, x( 1 ), x( 1+incx ), incx, tau )
+           a11 = x( 1 )
+           x( 1 ) = one
+           c = -tau*stdlib_${ri}$dot( n, x, incx, y, incy )
+           call stdlib_${ri}$axpy( n, c, x, incx, y, incy )
+           call stdlib_${ri}$larfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
+           a12 = y( 1 )
+           a22 = y( 1+incy )
+           ! compute the svd of 2-by-2 upper triangular matrix.
+           call stdlib_${ri}$las2( a11, a12, a22, ssmin, ssmax )
            return
-     end subroutine stdlib_${ri}$las2
+     end subroutine stdlib_${ri}$lapll
 
 #:endif
 #:endfor
 
-
-
-     module pure subroutine stdlib_slabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
-     !! SLABRD reduces the first NB rows and columns of a real general
-     !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
-     !! transformation Q**T * A * P, and returns the matrices X and Y which
-     !! are needed to apply the transformation to the unreduced part of A.
-     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
-     !! bidiagonal form.
-     !! This is an auxiliary routine called by SGEBRD
+     pure module subroutine stdlib_clapll( n, x, incx, y, incy, ssmin )
+     !! Given two column vectors X and Y, let
+     !! A = ( X Y ).
+     !! The subroutine first computes the QR factorization of A = Q*R,
+     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
+     !! The smaller singular value of R is returned in SSMIN, which is used
+     !! as the measurement of the linear dependency of the vectors X and Y.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(out) :: ssmin
            ! Array Arguments 
-           real(sp), intent(inout) :: a(lda,*)
-           real(sp), intent(out) :: d(*), e(*), taup(*), tauq(*), x(ldx,*), y(ldy,*)
+           complex(sp), intent(inout) :: x(*), y(*)
         ! =====================================================================
            
+           
            ! Local Scalars 
-           integer(ilp) :: i
+           real(sp) :: ssmax
+           complex(sp) :: a11, a12, a22, c, tau
            ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( m<=0 .or. n<=0 )return
-           if( m>=n ) then
-              ! reduce to upper bidiagonal form
-              loop_10: do i = 1, nb
-                 ! update a(i:m,i)
-                 call stdlib_sgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, a( i, 1 ),lda, y( i, 1 ), &
-                           ldy, one, a( i, i ), 1 )
-                 call stdlib_sgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, x( i, 1 ),ldx, a( 1, i ), 1,&
-                            one, a( i, i ), 1 )
-                 ! generate reflection q(i) to annihilate a(i+1:m,i)
-                 call stdlib_slarfg( m-i+1, a( i, i ), a( min( i+1, m ), i ), 1,tauq( i ) )
-                           
-                 d( i ) = a( i, i )
-                 if( i<n ) then
-                    a( i, i ) = one
-                    ! compute y(i+1:n,i)
-                    call stdlib_sgemv( 'TRANSPOSE', m-i+1, n-i, one, a( i, i+1 ),lda, a( i, i ), &
-                              1, zero, y( i+1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', m-i+1, i-1, one, a( i, 1 ), lda,a( i, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
-                               1, one, y( i+1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', m-i+1, i-1, one, x( i, 1 ), ldx,a( i, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, y( 1, i ), 1,&
-                               one, y( i+1, i ), 1 )
-                    call stdlib_sscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                    ! update a(i,i+1:n)
-                    call stdlib_sgemv( 'NO TRANSPOSE', n-i, i, -one, y( i+1, 1 ),ldy, a( i, 1 ), &
-                              lda, one, a( i, i+1 ), lda )
-                    call stdlib_sgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, x( i, 1 ), &
-                              ldx, one, a( i, i+1 ), lda )
-                    ! generate reflection p(i) to annihilate a(i,i+2:n)
-                    call stdlib_slarfg( n-i, a( i, i+1 ), a( i, min( i+2, n ) ),lda, taup( i ) )
-                              
-                    e( i ) = a( i, i+1 )
-                    a( i, i+1 ) = one
-                    ! compute x(i+1:m,i)
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i, i+&
-                              1 ), lda, zero, x( i+1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', n-i, i, one, y( i+1, 1 ), ldy,a( i, i+1 ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i, -one, a( i+1, 1 ),lda, x( 1, i ), &
-                              1, one, x( i+1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', i-1, n-i, one, a( 1, i+1 ),lda, a( i, i+1 )&
-                              , lda, zero, x( 1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_sscal( m-i, taup( i ), x( i+1, i ), 1 )
-                 end if
-              end do loop_10
-           else
-              ! reduce to lower bidiagonal form
-              loop_20: do i = 1, nb
-                 ! update a(i,i:n)
-                 call stdlib_sgemv( 'NO TRANSPOSE', n-i+1, i-1, -one, y( i, 1 ),ldy, a( i, 1 ), &
-                           lda, one, a( i, i ), lda )
-                 call stdlib_sgemv( 'TRANSPOSE', i-1, n-i+1, -one, a( 1, i ), lda,x( i, 1 ), ldx, &
-                           one, a( i, i ), lda )
-                 ! generate reflection p(i) to annihilate a(i,i+1:n)
-                 call stdlib_slarfg( n-i+1, a( i, i ), a( i, min( i+1, n ) ), lda,taup( i ) )
-                           
-                 d( i ) = a( i, i )
-                 if( i<m ) then
-                    a( i, i ) = one
-                    ! compute x(i+1:m,i)
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, n-i+1, one, a( i+1, i ),lda, a( i, i )&
-                              , lda, zero, x( i+1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', n-i+1, i-1, one, y( i, 1 ), ldy,a( i, i ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', i-1, n-i+1, one, a( 1, i ),lda, a( i, i ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_sscal( m-i, taup( i ), x( i+1, i ), 1 )
-                    ! update a(i+1:m,i)
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, y( i, 1 ),&
-                               ldy, one, a( i+1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', m-i, i, -one, x( i+1, 1 ),ldx, a( 1, i ), &
-                              1, one, a( i+1, i ), 1 )
-                    ! generate reflection q(i) to annihilate a(i+2:m,i)
-                    call stdlib_slarfg( m-i, a( i+1, i ), a( min( i+2, m ), i ), 1,tauq( i ) )
-                              
-                    e( i ) = a( i+1, i )
-                    a( i+1, i ) = one
-                    ! compute y(i+1:n,i)
-                    call stdlib_sgemv( 'TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i+1, i ),&
-                               1, zero, y( i+1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', m-i, i-1, one, a( i+1, 1 ), lda,a( i+1, i ), &
-                              1, zero, y( 1, i ), 1 )
-                    call stdlib_sgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
-                               1, one, y( i+1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', m-i, i, one, x( i+1, 1 ), ldx,a( i+1, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_sgemv( 'TRANSPOSE', i, n-i, -one, a( 1, i+1 ), lda,y( 1, i ), 1, &
-                              one, y( i+1, i ), 1 )
-                    call stdlib_sscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                 end if
-              end do loop_20
+           if( n<=1 ) then
+              ssmin = zero
+              return
            end if
+           ! compute the qr factorization of the n-by-2 matrix ( x y )
+           call stdlib_clarfg( n, x( 1 ), x( 1+incx ), incx, tau )
+           a11 = x( 1 )
+           x( 1 ) = cone
+           c = -conjg( tau )*stdlib_cdotc( n, x, incx, y, incy )
+           call stdlib_caxpy( n, c, x, incx, y, incy )
+           call stdlib_clarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
+           a12 = y( 1 )
+           a22 = y( 1+incy )
+           ! compute the svd of 2-by-2 upper triangular matrix.
+           call stdlib_slas2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
-     end subroutine stdlib_slabrd
+     end subroutine stdlib_clapll
 
-     module pure subroutine stdlib_dlabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
-     !! DLABRD reduces the first NB rows and columns of a real general
-     !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
-     !! transformation Q**T * A * P, and returns the matrices X and Y which
-     !! are needed to apply the transformation to the unreduced part of A.
-     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
-     !! bidiagonal form.
-     !! This is an auxiliary routine called by DGEBRD
+     pure module subroutine stdlib_zlapll( n, x, incx, y, incy, ssmin )
+     !! Given two column vectors X and Y, let
+     !! A = ( X Y ).
+     !! The subroutine first computes the QR factorization of A = Q*R,
+     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
+     !! The smaller singular value of R is returned in SSMIN, which is used
+     !! as the measurement of the linear dependency of the vectors X and Y.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(out) :: ssmin
            ! Array Arguments 
-           real(dp), intent(inout) :: a(lda,*)
-           real(dp), intent(out) :: d(*), e(*), taup(*), tauq(*), x(ldx,*), y(ldy,*)
+           complex(dp), intent(inout) :: x(*), y(*)
         ! =====================================================================
            
+           
            ! Local Scalars 
-           integer(ilp) :: i
+           real(dp) :: ssmax
+           complex(dp) :: a11, a12, a22, c, tau
            ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( m<=0 .or. n<=0 )return
-           if( m>=n ) then
-              ! reduce to upper bidiagonal form
-              loop_10: do i = 1, nb
-                 ! update a(i:m,i)
-                 call stdlib_dgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, a( i, 1 ),lda, y( i, 1 ), &
-                           ldy, one, a( i, i ), 1 )
-                 call stdlib_dgemv( 'NO TRANSPOSE', m-i+1, i-1, -one, x( i, 1 ),ldx, a( 1, i ), 1,&
-                            one, a( i, i ), 1 )
-                 ! generate reflection q(i) to annihilate a(i+1:m,i)
-                 call stdlib_dlarfg( m-i+1, a( i, i ), a( min( i+1, m ), i ), 1,tauq( i ) )
-                           
-                 d( i ) = a( i, i )
-                 if( i<n ) then
-                    a( i, i ) = one
-                    ! compute y(i+1:n,i)
-                    call stdlib_dgemv( 'TRANSPOSE', m-i+1, n-i, one, a( i, i+1 ),lda, a( i, i ), &
-                              1, zero, y( i+1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', m-i+1, i-1, one, a( i, 1 ), lda,a( i, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
-                               1, one, y( i+1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', m-i+1, i-1, one, x( i, 1 ), ldx,a( i, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, y( 1, i ), 1,&
-                               one, y( i+1, i ), 1 )
-                    call stdlib_dscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                    ! update a(i,i+1:n)
-                    call stdlib_dgemv( 'NO TRANSPOSE', n-i, i, -one, y( i+1, 1 ),ldy, a( i, 1 ), &
-                              lda, one, a( i, i+1 ), lda )
-                    call stdlib_dgemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, x( i, 1 ), &
-                              ldx, one, a( i, i+1 ), lda )
-                    ! generate reflection p(i) to annihilate a(i,i+2:n)
-                    call stdlib_dlarfg( n-i, a( i, i+1 ), a( i, min( i+2, n ) ),lda, taup( i ) )
-                              
-                    e( i ) = a( i, i+1 )
-                    a( i, i+1 ) = one
-                    ! compute x(i+1:m,i)
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i, i+&
-                              1 ), lda, zero, x( i+1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', n-i, i, one, y( i+1, 1 ), ldy,a( i, i+1 ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i, -one, a( i+1, 1 ),lda, x( 1, i ), &
-                              1, one, x( i+1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', i-1, n-i, one, a( 1, i+1 ),lda, a( i, i+1 )&
-                              , lda, zero, x( 1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_dscal( m-i, taup( i ), x( i+1, i ), 1 )
-                 end if
-              end do loop_10
-           else
-              ! reduce to lower bidiagonal form
-              loop_20: do i = 1, nb
-                 ! update a(i,i:n)
-                 call stdlib_dgemv( 'NO TRANSPOSE', n-i+1, i-1, -one, y( i, 1 ),ldy, a( i, 1 ), &
-                           lda, one, a( i, i ), lda )
-                 call stdlib_dgemv( 'TRANSPOSE', i-1, n-i+1, -one, a( 1, i ), lda,x( i, 1 ), ldx, &
-                           one, a( i, i ), lda )
-                 ! generate reflection p(i) to annihilate a(i,i+1:n)
-                 call stdlib_dlarfg( n-i+1, a( i, i ), a( i, min( i+1, n ) ), lda,taup( i ) )
-                           
-                 d( i ) = a( i, i )
-                 if( i<m ) then
-                    a( i, i ) = one
-                    ! compute x(i+1:m,i)
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, n-i+1, one, a( i+1, i ),lda, a( i, i )&
-                              , lda, zero, x( i+1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', n-i+1, i-1, one, y( i, 1 ), ldy,a( i, i ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', i-1, n-i+1, one, a( 1, i ),lda, a( i, i ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_dscal( m-i, taup( i ), x( i+1, i ), 1 )
-                    ! update a(i+1:m,i)
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, y( i, 1 ),&
-                               ldy, one, a( i+1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', m-i, i, -one, x( i+1, 1 ),ldx, a( 1, i ), &
-                              1, one, a( i+1, i ), 1 )
-                    ! generate reflection q(i) to annihilate a(i+2:m,i)
-                    call stdlib_dlarfg( m-i, a( i+1, i ), a( min( i+2, m ), i ), 1,tauq( i ) )
-                              
-                    e( i ) = a( i+1, i )
-                    a( i+1, i ) = one
-                    ! compute y(i+1:n,i)
-                    call stdlib_dgemv( 'TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i+1, i ),&
-                               1, zero, y( i+1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', m-i, i-1, one, a( i+1, 1 ), lda,a( i+1, i ), &
-                              1, zero, y( 1, i ), 1 )
-                    call stdlib_dgemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
-                               1, one, y( i+1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', m-i, i, one, x( i+1, 1 ), ldx,a( i+1, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_dgemv( 'TRANSPOSE', i, n-i, -one, a( 1, i+1 ), lda,y( 1, i ), 1, &
-                              one, y( i+1, i ), 1 )
-                    call stdlib_dscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                 end if
-              end do loop_20
+           if( n<=1 ) then
+              ssmin = zero
+              return
            end if
+           ! compute the qr factorization of the n-by-2 matrix ( x y )
+           call stdlib_zlarfg( n, x( 1 ), x( 1+incx ), incx, tau )
+           a11 = x( 1 )
+           x( 1 ) = cone
+           c = -conjg( tau )*stdlib_zdotc( n, x, incx, y, incy )
+           call stdlib_zaxpy( n, c, x, incx, y, incy )
+           call stdlib_zlarfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
+           a12 = y( 1 )
+           a22 = y( 1+incy )
+           ! compute the svd of 2-by-2 upper triangular matrix.
+           call stdlib_dlas2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
-     end subroutine stdlib_dlabrd
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$labrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
-     !! DLABRD: reduces the first NB rows and columns of a real general
-     !! m by n matrix A to upper or lower bidiagonal form by an orthogonal
-     !! transformation Q**T * A * P, and returns the matrices X and Y which
-     !! are needed to apply the transformation to the unreduced part of A.
-     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
-     !! bidiagonal form.
-     !! This is an auxiliary routine called by DGEBRD
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: a(lda,*)
-           real(${rk}$), intent(out) :: d(*), e(*), taup(*), tauq(*), x(ldx,*), y(ldy,*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( m<=0 .or. n<=0 )return
-           if( m>=n ) then
-              ! reduce to upper bidiagonal form
-              loop_10: do i = 1, nb
-                 ! update a(i:m,i)
-                 call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -one, a( i, 1 ),lda, y( i, 1 ), &
-                           ldy, one, a( i, i ), 1 )
-                 call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -one, x( i, 1 ),ldx, a( 1, i ), 1,&
-                            one, a( i, i ), 1 )
-                 ! generate reflection q(i) to annihilate a(i+1:m,i)
-                 call stdlib_${ri}$larfg( m-i+1, a( i, i ), a( min( i+1, m ), i ), 1,tauq( i ) )
-                           
-                 d( i ) = a( i, i )
-                 if( i<n ) then
-                    a( i, i ) = one
-                    ! compute y(i+1:n,i)
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i+1, n-i, one, a( i, i+1 ),lda, a( i, i ), &
-                              1, zero, y( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i+1, i-1, one, a( i, 1 ), lda,a( i, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
-                               1, one, y( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i+1, i-1, one, x( i, 1 ), ldx,a( i, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, y( 1, i ), 1,&
-                               one, y( i+1, i ), 1 )
-                    call stdlib_${ri}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
-                    ! update a(i,i+1:n)
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i, i, -one, y( i+1, 1 ),ldy, a( i, 1 ), &
-                              lda, one, a( i, i+1 ), lda )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', i-1, n-i, -one, a( 1, i+1 ),lda, x( i, 1 ), &
-                              ldx, one, a( i, i+1 ), lda )
-                    ! generate reflection p(i) to annihilate a(i,i+2:n)
-                    call stdlib_${ri}$larfg( n-i, a( i, i+1 ), a( i, min( i+2, n ) ),lda, taup( i ) )
-                              
-                    e( i ) = a( i, i+1 )
-                    a( i, i+1 ) = one
-                    ! compute x(i+1:m,i)
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i, i+&
-                              1 ), lda, zero, x( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', n-i, i, one, y( i+1, 1 ), ldy,a( i, i+1 ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i, -one, a( i+1, 1 ),lda, x( 1, i ), &
-                              1, one, x( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', i-1, n-i, one, a( 1, i+1 ),lda, a( i, i+1 )&
-                              , lda, zero, x( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_${ri}$scal( m-i, taup( i ), x( i+1, i ), 1 )
-                 end if
-              end do loop_10
-           else
-              ! reduce to lower bidiagonal form
-              loop_20: do i = 1, nb
-                 ! update a(i,i:n)
-                 call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i+1, i-1, -one, y( i, 1 ),ldy, a( i, 1 ), &
-                           lda, one, a( i, i ), lda )
-                 call stdlib_${ri}$gemv( 'TRANSPOSE', i-1, n-i+1, -one, a( 1, i ), lda,x( i, 1 ), ldx, &
-                           one, a( i, i ), lda )
-                 ! generate reflection p(i) to annihilate a(i,i+1:n)
-                 call stdlib_${ri}$larfg( n-i+1, a( i, i ), a( i, min( i+1, n ) ), lda,taup( i ) )
-                           
-                 d( i ) = a( i, i )
-                 if( i<m ) then
-                    a( i, i ) = one
-                    ! compute x(i+1:m,i)
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, n-i+1, one, a( i+1, i ),lda, a( i, i )&
-                              , lda, zero, x( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', n-i+1, i-1, one, y( i, 1 ), ldy,a( i, i ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', i-1, n-i+1, one, a( 1, i ),lda, a( i, i ), &
-                              lda, zero, x( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, x( i+1, 1 ),ldx, x( 1, i ),&
-                               1, one, x( i+1, i ), 1 )
-                    call stdlib_${ri}$scal( m-i, taup( i ), x( i+1, i ), 1 )
-                    ! update a(i+1:m,i)
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i-1, -one, a( i+1, 1 ),lda, y( i, 1 ),&
-                               ldy, one, a( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', m-i, i, -one, x( i+1, 1 ),ldx, a( 1, i ), &
-                              1, one, a( i+1, i ), 1 )
-                    ! generate reflection q(i) to annihilate a(i+2:m,i)
-                    call stdlib_${ri}$larfg( m-i, a( i+1, i ), a( min( i+2, m ), i ), 1,tauq( i ) )
-                              
-                    e( i ) = a( i+1, i )
-                    a( i+1, i ) = one
-                    ! compute y(i+1:n,i)
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i, n-i, one, a( i+1, i+1 ),lda, a( i+1, i ),&
-                               1, zero, y( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i, i-1, one, a( i+1, 1 ), lda,a( i+1, i ), &
-                              1, zero, y( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'NO TRANSPOSE', n-i, i-1, -one, y( i+1, 1 ),ldy, y( 1, i ),&
-                               1, one, y( i+1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', m-i, i, one, x( i+1, 1 ), ldx,a( i+1, i ), 1, &
-                              zero, y( 1, i ), 1 )
-                    call stdlib_${ri}$gemv( 'TRANSPOSE', i, n-i, -one, a( 1, i+1 ), lda,y( 1, i ), 1, &
-                              one, y( i+1, i ), 1 )
-                    call stdlib_${ri}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
-                 end if
-              end do loop_20
-           end if
-           return
-     end subroutine stdlib_${ri}$labrd
-
-#:endif
-#:endfor
-
-     module pure subroutine stdlib_clabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
-     !! CLABRD reduces the first NB rows and columns of a complex general
-     !! m by n matrix A to upper or lower real bidiagonal form by a unitary
-     !! transformation Q**H * A * P, and returns the matrices X and Y which
-     !! are needed to apply the transformation to the unreduced part of A.
-     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
-     !! bidiagonal form.
-     !! This is an auxiliary routine called by CGEBRD
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
-           ! Array Arguments 
-           real(sp), intent(out) :: d(*), e(*)
-           complex(sp), intent(inout) :: a(lda,*)
-           complex(sp), intent(out) :: taup(*), tauq(*), x(ldx,*), y(ldy,*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i
-           complex(sp) :: alpha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( m<=0 .or. n<=0 )return
-           if( m>=n ) then
-              ! reduce to upper bidiagonal form
-              loop_10: do i = 1, nb
-                 ! update a(i:m,i)
-                 call stdlib_clacgv( i-1, y( i, 1 ), ldy )
-                 call stdlib_cgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, a( i, 1 ),lda, y( i, 1 ), &
-                           ldy, cone, a( i, i ), 1 )
-                 call stdlib_clacgv( i-1, y( i, 1 ), ldy )
-                 call stdlib_cgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, x( i, 1 ),ldx, a( 1, i ), &
-                           1, cone, a( i, i ), 1 )
-                 ! generate reflection q(i) to annihilate a(i+1:m,i)
-                 alpha = a( i, i )
-                 call stdlib_clarfg( m-i+1, alpha, a( min( i+1, m ), i ), 1,tauq( i ) )
-                 d( i ) = real( alpha,KIND=sp)
-                 if( i<n ) then
-                    a( i, i ) = cone
-                    ! compute y(i+1:n,i)
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i+1, n-i, cone,a( i, i+1 ), lda, &
-                              a( i, i ), 1, czero,y( i+1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,a( i, 1 ), lda, a( &
-                              i, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
-                              , 1, cone, y( i+1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,x( i, 1 ), ldx, a( &
-                              i, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, y(&
-                               1, i ), 1, cone,y( i+1, i ), 1 )
-                    call stdlib_cscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                    ! update a(i,i+1:n)
-                    call stdlib_clacgv( n-i, a( i, i+1 ), lda )
-                    call stdlib_clacgv( i, a( i, 1 ), lda )
-                    call stdlib_cgemv( 'NO TRANSPOSE', n-i, i, -cone, y( i+1, 1 ),ldy, a( i, 1 ), &
-                              lda, cone, a( i, i+1 ), lda )
-                    call stdlib_clacgv( i, a( i, 1 ), lda )
-                    call stdlib_clacgv( i-1, x( i, 1 ), ldx )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, x(&
-                               i, 1 ), ldx, cone,a( i, i+1 ), lda )
-                    call stdlib_clacgv( i-1, x( i, 1 ), ldx )
-                    ! generate reflection p(i) to annihilate a(i,i+2:n)
-                    alpha = a( i, i+1 )
-                    call stdlib_clarfg( n-i, alpha, a( i, min( i+2, n ) ),lda, taup( i ) )
-                    e( i ) = real( alpha,KIND=sp)
-                    a( i, i+1 ) = cone
-                    ! compute x(i+1:m,i)
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, n-i, cone, a( i+1, i+1 ),lda, a( i, i+&
-                              1 ), lda, czero, x( i+1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', n-i, i, cone,y( i+1, 1 ), ldy, a( i,&
-                               i+1 ), lda, czero,x( 1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i, -cone, a( i+1, 1 ),lda, x( 1, i ), &
-                              1, cone, x( i+1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', i-1, n-i, cone, a( 1, i+1 ),lda, a( i, i+1 &
-                              ), lda, czero, x( 1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_cscal( m-i, taup( i ), x( i+1, i ), 1 )
-                    call stdlib_clacgv( n-i, a( i, i+1 ), lda )
-                 end if
-              end do loop_10
-           else
-              ! reduce to lower bidiagonal form
-              loop_20: do i = 1, nb
-                 ! update a(i,i:n)
-                 call stdlib_clacgv( n-i+1, a( i, i ), lda )
-                 call stdlib_clacgv( i-1, a( i, 1 ), lda )
-                 call stdlib_cgemv( 'NO TRANSPOSE', n-i+1, i-1, -cone, y( i, 1 ),ldy, a( i, 1 ), &
-                           lda, cone, a( i, i ), lda )
-                 call stdlib_clacgv( i-1, a( i, 1 ), lda )
-                 call stdlib_clacgv( i-1, x( i, 1 ), ldx )
-                 call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i-1, n-i+1, -cone,a( 1, i ), lda, x( i,&
-                            1 ), ldx, cone, a( i, i ),lda )
-                 call stdlib_clacgv( i-1, x( i, 1 ), ldx )
-                 ! generate reflection p(i) to annihilate a(i,i+1:n)
-                 alpha = a( i, i )
-                 call stdlib_clarfg( n-i+1, alpha, a( i, min( i+1, n ) ), lda,taup( i ) )
-                 d( i ) = real( alpha,KIND=sp)
-                 if( i<m ) then
-                    a( i, i ) = cone
-                    ! compute x(i+1:m,i)
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, n-i+1, cone, a( i+1, i ),lda, a( i, i &
-                              ), lda, czero, x( i+1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', n-i+1, i-1, cone,y( i, 1 ), ldy, a( &
-                              i, i ), lda, czero,x( 1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', i-1, n-i+1, cone, a( 1, i ),lda, a( i, i ),&
-                               lda, czero, x( 1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_cscal( m-i, taup( i ), x( i+1, i ), 1 )
-                    call stdlib_clacgv( n-i+1, a( i, i ), lda )
-                    ! update a(i+1:m,i)
-                    call stdlib_clacgv( i-1, y( i, 1 ), ldy )
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, y( i, 1 )&
-                              , ldy, cone, a( i+1, i ), 1 )
-                    call stdlib_clacgv( i-1, y( i, 1 ), ldy )
-                    call stdlib_cgemv( 'NO TRANSPOSE', m-i, i, -cone, x( i+1, 1 ),ldx, a( 1, i ), &
-                              1, cone, a( i+1, i ), 1 )
-                    ! generate reflection q(i) to annihilate a(i+2:m,i)
-                    alpha = a( i+1, i )
-                    call stdlib_clarfg( m-i, alpha, a( min( i+2, m ), i ), 1,tauq( i ) )
-                    e( i ) = real( alpha,KIND=sp)
-                    a( i+1, i ) = cone
-                    ! compute y(i+1:n,i)
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i, n-i, cone,a( i+1, i+1 ), lda, &
-                              a( i+1, i ), 1, czero,y( i+1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i, i-1, cone,a( i+1, 1 ), lda, a( &
-                              i+1, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_cgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
-                              , 1, cone, y( i+1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', m-i, i, cone,x( i+1, 1 ), ldx, a( i+&
-                              1, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_cgemv( 'CONJUGATE TRANSPOSE', i, n-i, -cone,a( 1, i+1 ), lda, y( &
-                              1, i ), 1, cone,y( i+1, i ), 1 )
-                    call stdlib_cscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                 else
-                    call stdlib_clacgv( n-i+1, a( i, i ), lda )
-                 end if
-              end do loop_20
-           end if
-           return
-     end subroutine stdlib_clabrd
-
-     module pure subroutine stdlib_zlabrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
-     !! ZLABRD reduces the first NB rows and columns of a complex general
-     !! m by n matrix A to upper or lower real bidiagonal form by a unitary
-     !! transformation Q**H * A * P, and returns the matrices X and Y which
-     !! are needed to apply the transformation to the unreduced part of A.
-     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
-     !! bidiagonal form.
-     !! This is an auxiliary routine called by ZGEBRD
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
-           ! Array Arguments 
-           real(dp), intent(out) :: d(*), e(*)
-           complex(dp), intent(inout) :: a(lda,*)
-           complex(dp), intent(out) :: taup(*), tauq(*), x(ldx,*), y(ldy,*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i
-           complex(dp) :: alpha
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! quick return if possible
-           if( m<=0 .or. n<=0 )return
-           if( m>=n ) then
-              ! reduce to upper bidiagonal form
-              loop_10: do i = 1, nb
-                 ! update a(i:m,i)
-                 call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
-                 call stdlib_zgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, a( i, 1 ),lda, y( i, 1 ), &
-                           ldy, cone, a( i, i ), 1 )
-                 call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
-                 call stdlib_zgemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, x( i, 1 ),ldx, a( 1, i ), &
-                           1, cone, a( i, i ), 1 )
-                 ! generate reflection q(i) to annihilate a(i+1:m,i)
-                 alpha = a( i, i )
-                 call stdlib_zlarfg( m-i+1, alpha, a( min( i+1, m ), i ), 1,tauq( i ) )
-                 d( i ) = real( alpha,KIND=dp)
-                 if( i<n ) then
-                    a( i, i ) = cone
-                    ! compute y(i+1:n,i)
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i+1, n-i, cone,a( i, i+1 ), lda, &
-                              a( i, i ), 1, czero,y( i+1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,a( i, 1 ), lda, a( &
-                              i, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
-                              , 1, cone, y( i+1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,x( i, 1 ), ldx, a( &
-                              i, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, y(&
-                               1, i ), 1, cone,y( i+1, i ), 1 )
-                    call stdlib_zscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                    ! update a(i,i+1:n)
-                    call stdlib_zlacgv( n-i, a( i, i+1 ), lda )
-                    call stdlib_zlacgv( i, a( i, 1 ), lda )
-                    call stdlib_zgemv( 'NO TRANSPOSE', n-i, i, -cone, y( i+1, 1 ),ldy, a( i, 1 ), &
-                              lda, cone, a( i, i+1 ), lda )
-                    call stdlib_zlacgv( i, a( i, 1 ), lda )
-                    call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, x(&
-                               i, 1 ), ldx, cone,a( i, i+1 ), lda )
-                    call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
-                    ! generate reflection p(i) to annihilate a(i,i+2:n)
-                    alpha = a( i, i+1 )
-                    call stdlib_zlarfg( n-i, alpha, a( i, min( i+2, n ) ), lda,taup( i ) )
-                    e( i ) = real( alpha,KIND=dp)
-                    a( i, i+1 ) = cone
-                    ! compute x(i+1:m,i)
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, n-i, cone, a( i+1, i+1 ),lda, a( i, i+&
-                              1 ), lda, czero, x( i+1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', n-i, i, cone,y( i+1, 1 ), ldy, a( i,&
-                               i+1 ), lda, czero,x( 1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i, -cone, a( i+1, 1 ),lda, x( 1, i ), &
-                              1, cone, x( i+1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', i-1, n-i, cone, a( 1, i+1 ),lda, a( i, i+1 &
-                              ), lda, czero, x( 1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_zscal( m-i, taup( i ), x( i+1, i ), 1 )
-                    call stdlib_zlacgv( n-i, a( i, i+1 ), lda )
-                 end if
-              end do loop_10
-           else
-              ! reduce to lower bidiagonal form
-              loop_20: do i = 1, nb
-                 ! update a(i,i:n)
-                 call stdlib_zlacgv( n-i+1, a( i, i ), lda )
-                 call stdlib_zlacgv( i-1, a( i, 1 ), lda )
-                 call stdlib_zgemv( 'NO TRANSPOSE', n-i+1, i-1, -cone, y( i, 1 ),ldy, a( i, 1 ), &
-                           lda, cone, a( i, i ), lda )
-                 call stdlib_zlacgv( i-1, a( i, 1 ), lda )
-                 call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
-                 call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i-1, n-i+1, -cone,a( 1, i ), lda, x( i,&
-                            1 ), ldx, cone, a( i, i ),lda )
-                 call stdlib_zlacgv( i-1, x( i, 1 ), ldx )
-                 ! generate reflection p(i) to annihilate a(i,i+1:n)
-                 alpha = a( i, i )
-                 call stdlib_zlarfg( n-i+1, alpha, a( i, min( i+1, n ) ), lda,taup( i ) )
-                 d( i ) = real( alpha,KIND=dp)
-                 if( i<m ) then
-                    a( i, i ) = cone
-                    ! compute x(i+1:m,i)
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, n-i+1, cone, a( i+1, i ),lda, a( i, i &
-                              ), lda, czero, x( i+1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', n-i+1, i-1, cone,y( i, 1 ), ldy, a( &
-                              i, i ), lda, czero,x( 1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', i-1, n-i+1, cone, a( 1, i ),lda, a( i, i ),&
-                               lda, czero, x( 1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_zscal( m-i, taup( i ), x( i+1, i ), 1 )
-                    call stdlib_zlacgv( n-i+1, a( i, i ), lda )
-                    ! update a(i+1:m,i)
-                    call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, y( i, 1 )&
-                              , ldy, cone, a( i+1, i ), 1 )
-                    call stdlib_zlacgv( i-1, y( i, 1 ), ldy )
-                    call stdlib_zgemv( 'NO TRANSPOSE', m-i, i, -cone, x( i+1, 1 ),ldx, a( 1, i ), &
-                              1, cone, a( i+1, i ), 1 )
-                    ! generate reflection q(i) to annihilate a(i+2:m,i)
-                    alpha = a( i+1, i )
-                    call stdlib_zlarfg( m-i, alpha, a( min( i+2, m ), i ), 1,tauq( i ) )
-                    e( i ) = real( alpha,KIND=dp)
-                    a( i+1, i ) = cone
-                    ! compute y(i+1:n,i)
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i, n-i, cone,a( i+1, i+1 ), lda, &
-                              a( i+1, i ), 1, czero,y( i+1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i, i-1, cone,a( i+1, 1 ), lda, a( &
-                              i+1, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_zgemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
-                              , 1, cone, y( i+1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', m-i, i, cone,x( i+1, 1 ), ldx, a( i+&
-                              1, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_zgemv( 'CONJUGATE TRANSPOSE', i, n-i, -cone,a( 1, i+1 ), lda, y( &
-                              1, i ), 1, cone,y( i+1, i ), 1 )
-                    call stdlib_zscal( n-i, tauq( i ), y( i+1, i ), 1 )
-                 else
-                    call stdlib_zlacgv( n-i+1, a( i, i ), lda )
-                 end if
-              end do loop_20
-           end if
-           return
-     end subroutine stdlib_zlabrd
+     end subroutine stdlib_zlapll
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$labrd( m, n, nb, a, lda, d, e, tauq, taup, x, ldx, y,ldy )
-     !! ZLABRD: reduces the first NB rows and columns of a complex general
-     !! m by n matrix A to upper or lower real bidiagonal form by a unitary
-     !! transformation Q**H * A * P, and returns the matrices X and Y which
-     !! are needed to apply the transformation to the unreduced part of A.
-     !! If m >= n, A is reduced to upper bidiagonal form; if m < n, to lower
-     !! bidiagonal form.
-     !! This is an auxiliary routine called by ZGEBRD
+     pure module subroutine stdlib_${ci}$lapll( n, x, incx, y, incy, ssmin )
+     !! Given two column vectors X and Y, let
+     !! A = ( X Y ).
+     !! The subroutine first computes the QR factorization of A = Q*R,
+     !! and then computes the SVD of the 2-by-2 upper triangular matrix R.
+     !! The smaller singular value of R is returned in SSMIN, which is used
+     !! as the measurement of the linear dependency of the vectors X and Y.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldx, ldy, m, n, nb
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${ck}$), intent(out) :: ssmin
            ! Array Arguments 
-           real(${ck}$), intent(out) :: d(*), e(*)
-           complex(${ck}$), intent(inout) :: a(lda,*)
-           complex(${ck}$), intent(out) :: taup(*), tauq(*), x(ldx,*), y(ldy,*)
+           complex(${ck}$), intent(inout) :: x(*), y(*)
         ! =====================================================================
            
+           
            ! Local Scalars 
-           integer(ilp) :: i
-           complex(${ck}$) :: alpha
+           real(${ck}$) :: ssmax
+           complex(${ck}$) :: a11, a12, a22, c, tau
            ! Intrinsic Functions 
            ! Executable Statements 
            ! quick return if possible
-           if( m<=0 .or. n<=0 )return
-           if( m>=n ) then
-              ! reduce to upper bidiagonal form
-              loop_10: do i = 1, nb
-                 ! update a(i:m,i)
-                 call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
-                 call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, a( i, 1 ),lda, y( i, 1 ), &
-                           ldy, cone, a( i, i ), 1 )
-                 call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
-                 call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i+1, i-1, -cone, x( i, 1 ),ldx, a( 1, i ), &
-                           1, cone, a( i, i ), 1 )
-                 ! generate reflection q(i) to annihilate a(i+1:m,i)
-                 alpha = a( i, i )
-                 call stdlib_${ci}$larfg( m-i+1, alpha, a( min( i+1, m ), i ), 1,tauq( i ) )
-                 d( i ) = real( alpha,KIND=${ck}$)
-                 if( i<n ) then
-                    a( i, i ) = cone
-                    ! compute y(i+1:n,i)
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i+1, n-i, cone,a( i, i+1 ), lda, &
-                              a( i, i ), 1, czero,y( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,a( i, 1 ), lda, a( &
-                              i, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
-                              , 1, cone, y( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i+1, i-1, cone,x( i, 1 ), ldx, a( &
-                              i, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, y(&
-                               1, i ), 1, cone,y( i+1, i ), 1 )
-                    call stdlib_${ci}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
-                    ! update a(i,i+1:n)
-                    call stdlib_${ci}$lacgv( n-i, a( i, i+1 ), lda )
-                    call stdlib_${ci}$lacgv( i, a( i, 1 ), lda )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i, i, -cone, y( i+1, 1 ),ldy, a( i, 1 ), &
-                              lda, cone, a( i, i+1 ), lda )
-                    call stdlib_${ci}$lacgv( i, a( i, 1 ), lda )
-                    call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i-1, n-i, -cone,a( 1, i+1 ), lda, x(&
-                               i, 1 ), ldx, cone,a( i, i+1 ), lda )
-                    call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
-                    ! generate reflection p(i) to annihilate a(i,i+2:n)
-                    alpha = a( i, i+1 )
-                    call stdlib_${ci}$larfg( n-i, alpha, a( i, min( i+2, n ) ), lda,taup( i ) )
-                    e( i ) = real( alpha,KIND=${ck}$)
-                    a( i, i+1 ) = cone
-                    ! compute x(i+1:m,i)
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, n-i, cone, a( i+1, i+1 ),lda, a( i, i+&
-                              1 ), lda, czero, x( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', n-i, i, cone,y( i+1, 1 ), ldy, a( i,&
-                               i+1 ), lda, czero,x( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i, -cone, a( i+1, 1 ),lda, x( 1, i ), &
-                              1, cone, x( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', i-1, n-i, cone, a( 1, i+1 ),lda, a( i, i+1 &
-                              ), lda, czero, x( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_${ci}$scal( m-i, taup( i ), x( i+1, i ), 1 )
-                    call stdlib_${ci}$lacgv( n-i, a( i, i+1 ), lda )
-                 end if
-              end do loop_10
-           else
-              ! reduce to lower bidiagonal form
-              loop_20: do i = 1, nb
-                 ! update a(i,i:n)
-                 call stdlib_${ci}$lacgv( n-i+1, a( i, i ), lda )
-                 call stdlib_${ci}$lacgv( i-1, a( i, 1 ), lda )
-                 call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i+1, i-1, -cone, y( i, 1 ),ldy, a( i, 1 ), &
-                           lda, cone, a( i, i ), lda )
-                 call stdlib_${ci}$lacgv( i-1, a( i, 1 ), lda )
-                 call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
-                 call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i-1, n-i+1, -cone,a( 1, i ), lda, x( i,&
-                            1 ), ldx, cone, a( i, i ),lda )
-                 call stdlib_${ci}$lacgv( i-1, x( i, 1 ), ldx )
-                 ! generate reflection p(i) to annihilate a(i,i+1:n)
-                 alpha = a( i, i )
-                 call stdlib_${ci}$larfg( n-i+1, alpha, a( i, min( i+1, n ) ), lda,taup( i ) )
-                 d( i ) = real( alpha,KIND=${ck}$)
-                 if( i<m ) then
-                    a( i, i ) = cone
-                    ! compute x(i+1:m,i)
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, n-i+1, cone, a( i+1, i ),lda, a( i, i &
-                              ), lda, czero, x( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', n-i+1, i-1, cone,y( i, 1 ), ldy, a( &
-                              i, i ), lda, czero,x( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', i-1, n-i+1, cone, a( 1, i ),lda, a( i, i ),&
-                               lda, czero, x( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, x( i+1, 1 ),ldx, x( 1, i )&
-                              , 1, cone, x( i+1, i ), 1 )
-                    call stdlib_${ci}$scal( m-i, taup( i ), x( i+1, i ), 1 )
-                    call stdlib_${ci}$lacgv( n-i+1, a( i, i ), lda )
-                    ! update a(i+1:m,i)
-                    call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i-1, -cone, a( i+1, 1 ),lda, y( i, 1 )&
-                              , ldy, cone, a( i+1, i ), 1 )
-                    call stdlib_${ci}$lacgv( i-1, y( i, 1 ), ldy )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', m-i, i, -cone, x( i+1, 1 ),ldx, a( 1, i ), &
-                              1, cone, a( i+1, i ), 1 )
-                    ! generate reflection q(i) to annihilate a(i+2:m,i)
-                    alpha = a( i+1, i )
-                    call stdlib_${ci}$larfg( m-i, alpha, a( min( i+2, m ), i ), 1,tauq( i ) )
-                    e( i ) = real( alpha,KIND=${ck}$)
-                    a( i+1, i ) = cone
-                    ! compute y(i+1:n,i)
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i, n-i, cone,a( i+1, i+1 ), lda, &
-                              a( i+1, i ), 1, czero,y( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i, i-1, cone,a( i+1, 1 ), lda, a( &
-                              i+1, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'NO TRANSPOSE', n-i, i-1, -cone, y( i+1, 1 ),ldy, y( 1, i )&
-                              , 1, cone, y( i+1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', m-i, i, cone,x( i+1, 1 ), ldx, a( i+&
-                              1, i ), 1, czero,y( 1, i ), 1 )
-                    call stdlib_${ci}$gemv( 'CONJUGATE TRANSPOSE', i, n-i, -cone,a( 1, i+1 ), lda, y( &
-                              1, i ), 1, cone,y( i+1, i ), 1 )
-                    call stdlib_${ci}$scal( n-i, tauq( i ), y( i+1, i ), 1 )
-                 else
-                    call stdlib_${ci}$lacgv( n-i+1, a( i, i ), lda )
-                 end if
-              end do loop_20
+           if( n<=1 ) then
+              ssmin = zero
+              return
            end if
+           ! compute the qr factorization of the n-by-2 matrix ( x y )
+           call stdlib_${ci}$larfg( n, x( 1 ), x( 1+incx ), incx, tau )
+           a11 = x( 1 )
+           x( 1 ) = cone
+           c = -conjg( tau )*stdlib_${ci}$dotc( n, x, incx, y, incy )
+           call stdlib_${ci}$axpy( n, c, x, incx, y, incy )
+           call stdlib_${ci}$larfg( n-1, y( 1+incy ), y( 1+2*incy ), incy, tau )
+           a12 = y( 1 )
+           a22 = y( 1+incy )
+           ! compute the svd of 2-by-2 upper triangular matrix.
+           call stdlib_${c2ri(ci)}$las2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
-     end subroutine stdlib_${ci}$labrd
+     end subroutine stdlib_${ci}$lapll
 
 #:endif
 #:endfor
 
 
 
-     module pure subroutine stdlib_slartgs( x, y, sigma, cs, sn )
+     pure module subroutine stdlib_slartgs( x, y, sigma, cs, sn )
      !! SLARTGS generates a plane rotation designed to introduce a bulge in
      !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
      !! problem. X and Y are the top-row entries, and SIGMA is the shift.
@@ -2411,7 +2850,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
            ! end stdlib_slartgs
      end subroutine stdlib_slartgs
 
-     module pure subroutine stdlib_dlartgs( x, y, sigma, cs, sn )
+     pure module subroutine stdlib_dlartgs( x, y, sigma, cs, sn )
      !! DLARTGS generates a plane rotation designed to introduce a bulge in
      !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
      !! problem. X and Y are the top-row entries, and SIGMA is the shift.
@@ -2469,7 +2908,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lartgs( x, y, sigma, cs, sn )
+     pure module subroutine stdlib_${ri}$lartgs( x, y, sigma, cs, sn )
      !! DLARTGS: generates a plane rotation designed to introduce a bulge in
      !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
      !! problem. X and Y are the top-row entries, and SIGMA is the shift.
@@ -2524,445 +2963,6 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
            return
            ! end stdlib_${ri}$lartgs
      end subroutine stdlib_${ri}$lartgs
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_slasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
-     !! SLASV2 computes the singular value decomposition of a 2-by-2
-     !! triangular matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
-     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
-     !! right singular vectors for abs(SSMAX), giving the decomposition
-     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
-     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
-           real(sp), intent(in) :: f, g, h
-       ! =====================================================================
-           
-           
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: gasmal, swap
-           integer(ilp) :: pmax
-           real(sp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
-                     tsign, tt
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ft = f
-           fa = abs( ft )
-           ht = h
-           ha = abs( h )
-           ! pmax points to the maximum absolute element of matrix
-             ! pmax = 1 if f largest in absolute values
-             ! pmax = 2 if g largest in absolute values
-             ! pmax = 3 if h largest in absolute values
-           pmax = 1
-           swap = ( ha>fa )
-           if( swap ) then
-              pmax = 3
-              temp = ft
-              ft = ht
-              ht = temp
-              temp = fa
-              fa = ha
-              ha = temp
-              ! now fa .ge. ha
-           end if
-           gt = g
-           ga = abs( gt )
-           if( ga==zero ) then
-              ! diagonal matrix
-              ssmin = ha
-              ssmax = fa
-              clt = one
-              crt = one
-              slt = zero
-              srt = zero
-           else
-              gasmal = .true.
-              if( ga>fa ) then
-                 pmax = 2
-                 if( ( fa / ga )<stdlib_slamch( 'EPS' ) ) then
-                    ! case of very large ga
-                    gasmal = .false.
-                    ssmax = ga
-                    if( ha>one ) then
-                       ssmin = fa / ( ga / ha )
-                    else
-                       ssmin = ( fa / ga )*ha
-                    end if
-                    clt = one
-                    slt = ht / gt
-                    srt = one
-                    crt = ft / gt
-                 end if
-              end if
-              if( gasmal ) then
-                 ! normal case
-                 d = fa - ha
-                 if( d==fa ) then
-                    ! copes with infinite f or h
-                    l = one
-                 else
-                    l = d / fa
-                 end if
-                 ! note that 0 .le. l .le. 1
-                 m = gt / ft
-                 ! note that abs(m) .le. 1/macheps
-                 t = two - l
-                 ! note that t .ge. 1
-                 mm = m*m
-                 tt = t*t
-                 s = sqrt( tt+mm )
-                 ! note that 1 .le. s .le. 1 + 1/macheps
-                 if( l==zero ) then
-                    r = abs( m )
-                 else
-                    r = sqrt( l*l+mm )
-                 end if
-                 ! note that 0 .le. r .le. 1 + 1/macheps
-                 a = half*( s+r )
-                 ! note that 1 .le. a .le. 1 + abs(m)
-                 ssmin = ha / a
-                 ssmax = fa*a
-                 if( mm==zero ) then
-                    ! note that m is very tiny
-                    if( l==zero ) then
-                       t = sign( two, ft )*sign( one, gt )
-                    else
-                       t = gt / sign( d, ft ) + m / t
-                    end if
-                 else
-                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
-                 end if
-                 l = sqrt( t*t+four )
-                 crt = two / l
-                 srt = t / l
-                 clt = ( crt+srt*m ) / a
-                 slt = ( ht / ft )*srt / a
-              end if
-           end if
-           if( swap ) then
-              csl = srt
-              snl = crt
-              csr = slt
-              snr = clt
-           else
-              csl = clt
-              snl = slt
-              csr = crt
-              snr = srt
-           end if
-           ! correct signs of ssmax and ssmin
-           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
-           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
-           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
-           ssmax = sign( ssmax, tsign )
-           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
-           return
-     end subroutine stdlib_slasv2
-
-     module pure subroutine stdlib_dlasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
-     !! DLASV2 computes the singular value decomposition of a 2-by-2
-     !! triangular matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
-     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
-     !! right singular vectors for abs(SSMAX), giving the decomposition
-     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
-     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
-           real(dp), intent(in) :: f, g, h
-       ! =====================================================================
-           
-           
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: gasmal, swap
-           integer(ilp) :: pmax
-           real(dp) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
-                     tsign, tt
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ft = f
-           fa = abs( ft )
-           ht = h
-           ha = abs( h )
-           ! pmax points to the maximum absolute element of matrix
-             ! pmax = 1 if f largest in absolute values
-             ! pmax = 2 if g largest in absolute values
-             ! pmax = 3 if h largest in absolute values
-           pmax = 1
-           swap = ( ha>fa )
-           if( swap ) then
-              pmax = 3
-              temp = ft
-              ft = ht
-              ht = temp
-              temp = fa
-              fa = ha
-              ha = temp
-              ! now fa .ge. ha
-           end if
-           gt = g
-           ga = abs( gt )
-           if( ga==zero ) then
-              ! diagonal matrix
-              ssmin = ha
-              ssmax = fa
-              clt = one
-              crt = one
-              slt = zero
-              srt = zero
-           else
-              gasmal = .true.
-              if( ga>fa ) then
-                 pmax = 2
-                 if( ( fa / ga )<stdlib_dlamch( 'EPS' ) ) then
-                    ! case of very large ga
-                    gasmal = .false.
-                    ssmax = ga
-                    if( ha>one ) then
-                       ssmin = fa / ( ga / ha )
-                    else
-                       ssmin = ( fa / ga )*ha
-                    end if
-                    clt = one
-                    slt = ht / gt
-                    srt = one
-                    crt = ft / gt
-                 end if
-              end if
-              if( gasmal ) then
-                 ! normal case
-                 d = fa - ha
-                 if( d==fa ) then
-                    ! copes with infinite f or h
-                    l = one
-                 else
-                    l = d / fa
-                 end if
-                 ! note that 0 .le. l .le. 1
-                 m = gt / ft
-                 ! note that abs(m) .le. 1/macheps
-                 t = two - l
-                 ! note that t .ge. 1
-                 mm = m*m
-                 tt = t*t
-                 s = sqrt( tt+mm )
-                 ! note that 1 .le. s .le. 1 + 1/macheps
-                 if( l==zero ) then
-                    r = abs( m )
-                 else
-                    r = sqrt( l*l+mm )
-                 end if
-                 ! note that 0 .le. r .le. 1 + 1/macheps
-                 a = half*( s+r )
-                 ! note that 1 .le. a .le. 1 + abs(m)
-                 ssmin = ha / a
-                 ssmax = fa*a
-                 if( mm==zero ) then
-                    ! note that m is very tiny
-                    if( l==zero ) then
-                       t = sign( two, ft )*sign( one, gt )
-                    else
-                       t = gt / sign( d, ft ) + m / t
-                    end if
-                 else
-                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
-                 end if
-                 l = sqrt( t*t+four )
-                 crt = two / l
-                 srt = t / l
-                 clt = ( crt+srt*m ) / a
-                 slt = ( ht / ft )*srt / a
-              end if
-           end if
-           if( swap ) then
-              csl = srt
-              snl = crt
-              csr = slt
-              snr = clt
-           else
-              csl = clt
-              snl = slt
-              csr = crt
-              snr = srt
-           end if
-           ! correct signs of ssmax and ssmin
-           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
-           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
-           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
-           ssmax = sign( ssmax, tsign )
-           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
-           return
-     end subroutine stdlib_dlasv2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasv2( f, g, h, ssmin, ssmax, snr, csr, snl, csl )
-     !! DLASV2: computes the singular value decomposition of a 2-by-2
-     !! triangular matrix
-     !! [  F   G  ]
-     !! [  0   H  ].
-     !! On return, abs(SSMAX) is the larger singular value, abs(SSMIN) is the
-     !! smaller singular value, and (CSL,SNL) and (CSR,SNR) are the left and
-     !! right singular vectors for abs(SSMAX), giving the decomposition
-     !! [ CSL  SNL ] [  F   G  ] [ CSR -SNR ]  =  [ SSMAX   0   ]
-     !! [-SNL  CSL ] [  0   H  ] [ SNR  CSR ]     [  0    SSMIN ].
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(out) :: csl, csr, snl, snr, ssmax, ssmin
-           real(${rk}$), intent(in) :: f, g, h
-       ! =====================================================================
-           
-           
-           
-           
-           
-           ! Local Scalars 
-           logical(lk) :: gasmal, swap
-           integer(ilp) :: pmax
-           real(${rk}$) :: a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m, mm, r, s, slt, srt, t, temp, &
-                     tsign, tt
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ft = f
-           fa = abs( ft )
-           ht = h
-           ha = abs( h )
-           ! pmax points to the maximum absolute element of matrix
-             ! pmax = 1 if f largest in absolute values
-             ! pmax = 2 if g largest in absolute values
-             ! pmax = 3 if h largest in absolute values
-           pmax = 1
-           swap = ( ha>fa )
-           if( swap ) then
-              pmax = 3
-              temp = ft
-              ft = ht
-              ht = temp
-              temp = fa
-              fa = ha
-              ha = temp
-              ! now fa .ge. ha
-           end if
-           gt = g
-           ga = abs( gt )
-           if( ga==zero ) then
-              ! diagonal matrix
-              ssmin = ha
-              ssmax = fa
-              clt = one
-              crt = one
-              slt = zero
-              srt = zero
-           else
-              gasmal = .true.
-              if( ga>fa ) then
-                 pmax = 2
-                 if( ( fa / ga )<stdlib_${ri}$lamch( 'EPS' ) ) then
-                    ! case of very large ga
-                    gasmal = .false.
-                    ssmax = ga
-                    if( ha>one ) then
-                       ssmin = fa / ( ga / ha )
-                    else
-                       ssmin = ( fa / ga )*ha
-                    end if
-                    clt = one
-                    slt = ht / gt
-                    srt = one
-                    crt = ft / gt
-                 end if
-              end if
-              if( gasmal ) then
-                 ! normal case
-                 d = fa - ha
-                 if( d==fa ) then
-                    ! copes with infinite f or h
-                    l = one
-                 else
-                    l = d / fa
-                 end if
-                 ! note that 0 .le. l .le. 1
-                 m = gt / ft
-                 ! note that abs(m) .le. 1/macheps
-                 t = two - l
-                 ! note that t .ge. 1
-                 mm = m*m
-                 tt = t*t
-                 s = sqrt( tt+mm )
-                 ! note that 1 .le. s .le. 1 + 1/macheps
-                 if( l==zero ) then
-                    r = abs( m )
-                 else
-                    r = sqrt( l*l+mm )
-                 end if
-                 ! note that 0 .le. r .le. 1 + 1/macheps
-                 a = half*( s+r )
-                 ! note that 1 .le. a .le. 1 + abs(m)
-                 ssmin = ha / a
-                 ssmax = fa*a
-                 if( mm==zero ) then
-                    ! note that m is very tiny
-                    if( l==zero ) then
-                       t = sign( two, ft )*sign( one, gt )
-                    else
-                       t = gt / sign( d, ft ) + m / t
-                    end if
-                 else
-                    t = ( m / ( s+t )+m / ( r+l ) )*( one+a )
-                 end if
-                 l = sqrt( t*t+four )
-                 crt = two / l
-                 srt = t / l
-                 clt = ( crt+srt*m ) / a
-                 slt = ( ht / ft )*srt / a
-              end if
-           end if
-           if( swap ) then
-              csl = srt
-              snl = crt
-              csr = slt
-              snr = clt
-           else
-              csl = clt
-              snl = slt
-              csr = crt
-              snr = srt
-           end if
-           ! correct signs of ssmax and ssmin
-           if( pmax==1 )tsign = sign( one, csr )*sign( one, csl )*sign( one, f )
-           if( pmax==2 )tsign = sign( one, snr )*sign( one, csl )*sign( one, g )
-           if( pmax==3 )tsign = sign( one, snr )*sign( one, snl )*sign( one, h )
-           ssmax = sign( ssmax, tsign )
-           ssmin = sign( ssmin, tsign*sign( one, f )*sign( one, h ) )
-           return
-     end subroutine stdlib_${ri}$lasv2
 
 #:endif
 #:endfor

@@ -5,7 +5,1149 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
   contains
 
-     module pure subroutine stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     pure module subroutine stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     !! SLASQ4 computes an approximation TAU to the smallest eigenvalue
+     !! using values of d from the previous transform.
+               ttype, g )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, n0in, pp
+           integer(ilp), intent(out) :: ttype
+           real(sp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
+           real(sp), intent(inout) :: g
+           real(sp), intent(out) :: tau
+           ! Array Arguments 
+           real(sp), intent(in) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: cnst1 = 0.5630_sp
+           real(sp), parameter :: cnst2 = 1.010_sp
+           real(sp), parameter :: cnst3 = 1.050_sp
+           real(sp), parameter :: qurtr = 0.250_sp
+           real(sp), parameter :: third = 0.3330_sp
+           real(sp), parameter :: hundrd = 100.0_sp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i4, nn, np
+           real(sp) :: a2, b1, b2, gam, gap1, gap2, s
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! a negative dmin forces the shift to take that absolute value
+           ! ttype records the type of shift.
+           if( dmin<=zero ) then
+              tau = -dmin
+              ttype = -1
+              return
+           end if
+           nn = 4*n0 + pp
+           if( n0in==n0 ) then
+              ! no eigenvalues deflated.
+              if( dmin==dn .or. dmin==dn1 ) then
+                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
+                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
+                 a2 = z( nn-7 ) + z( nn-5 )
+                 ! cases 2 and 3.
+                 if( dmin==dn .and. dmin1==dn1 ) then
+                    gap2 = dmin2 - a2 - dmin2*qurtr
+                    if( gap2>zero .and. gap2>b2 ) then
+                       gap1 = a2 - dn - ( b2 / gap2 )*b2
+                    else
+                       gap1 = a2 - dn - ( b1+b2 )
+                    end if
+                    if( gap1>zero .and. gap1>b1 ) then
+                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
+                       ttype = -2
+                    else
+                       s = zero
+                       if( dn>b1 )s = dn - b1
+                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
+                       s = max( s, third*dmin )
+                       ttype = -3
+                    end if
+                 else
+                    ! case 4.
+                    ttype = -4
+                    s = qurtr*dmin
+                    if( dmin==dn ) then
+                       gam = dn
+                       a2 = zero
+                       if( z( nn-5 ) > z( nn-7 ) )return
+                       b2 = z( nn-5 ) / z( nn-7 )
+                       np = nn - 9
+                    else
+                       np = nn - 2*pp
+                       gam = dn1
+                       if( z( np-4 ) > z( np-2 ) )return
+                       a2 = z( np-4 ) / z( np-2 )
+                       if( z( nn-9 ) > z( nn-11 ) )return
+                       b2 = z( nn-9 ) / z( nn-11 )
+                       np = nn - 13
+                    end if
+                    ! approximate contribution to norm squared from i < nn-1.
+                    a2 = a2 + b2
+                    do i4 = np, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 20
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
+                    end do
+                    20 continue
+                    a2 = cnst3*a2
+                    ! rayleigh quotient residual bound.
+                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+                 end if
+              else if( dmin==dn2 ) then
+                 ! case 5.
+                 ttype = -5
+                 s = qurtr*dmin
+                 ! compute contribution to norm squared from i > nn-2.
+                 np = nn - 2*pp
+                 b1 = z( np-2 )
+                 b2 = z( np-6 )
+                 gam = dn2
+                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
+                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
+                 ! approximate contribution to norm squared from i < nn-2.
+                 if( n0-i0>2 ) then
+                    b2 = z( nn-13 ) / z( nn-15 )
+                    a2 = a2 + b2
+                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 40
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
+                    end do
+                    40 continue
+                    a2 = cnst3*a2
+                 end if
+                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+              else
+                 ! case 6, no information to guide us.
+                 if( ttype==-6 ) then
+                    g = g + third*( one-g )
+                 else if( ttype==-18 ) then
+                    g = qurtr*third
+                 else
+                    g = qurtr
+                 end if
+                 s = g*dmin
+                 ttype = -6
+              end if
+           else if( n0in==( n0+1 ) ) then
+              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
+              if( dmin1==dn1 .and. dmin2==dn2 ) then
+                 ! cases 7 and 8.
+                 ttype = -7
+                 s = third*dmin1
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 60
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    a2 = b1
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*max( b1, a2 )<b2 )go to 60
+                 end do
+                 60 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin1 / ( one+b2**2 )
+                 gap2 = half*dmin2 - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                    ttype = -8
+                 end if
+              else
+                 ! case 9.
+                 s = qurtr*dmin1
+                 if( dmin1==dn1 )s = half*dmin1
+                 ttype = -9
+              end if
+           else if( n0in==( n0+2 ) ) then
+              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
+              ! cases 10 and 11.
+              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
+                 ttype = -10
+                 s = third*dmin2
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 80
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*b1<b2 )go to 80
+                 end do
+                 80 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin2 / ( one+b2**2 )
+                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                 end if
+              else
+                 s = qurtr*dmin2
+                 ttype = -11
+              end if
+           else if( n0in>( n0+2 ) ) then
+              ! case 12, more than two eigenvalues deflated. no information.
+              s = zero
+              ttype = -12
+           end if
+           tau = s
+           return
+     end subroutine stdlib_slasq4
+
+     pure module subroutine stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     !! DLASQ4 computes an approximation TAU to the smallest eigenvalue
+     !! using values of d from the previous transform.
+               ttype, g )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, n0in, pp
+           integer(ilp), intent(out) :: ttype
+           real(dp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
+           real(dp), intent(inout) :: g
+           real(dp), intent(out) :: tau
+           ! Array Arguments 
+           real(dp), intent(in) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: cnst1 = 0.5630_dp
+           real(dp), parameter :: cnst2 = 1.010_dp
+           real(dp), parameter :: cnst3 = 1.050_dp
+           real(dp), parameter :: qurtr = 0.250_dp
+           real(dp), parameter :: third = 0.3330_dp
+           real(dp), parameter :: hundrd = 100.0_dp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i4, nn, np
+           real(dp) :: a2, b1, b2, gam, gap1, gap2, s
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! a negative dmin forces the shift to take that absolute value
+           ! ttype records the type of shift.
+           if( dmin<=zero ) then
+              tau = -dmin
+              ttype = -1
+              return
+           end if
+           nn = 4*n0 + pp
+           if( n0in==n0 ) then
+              ! no eigenvalues deflated.
+              if( dmin==dn .or. dmin==dn1 ) then
+                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
+                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
+                 a2 = z( nn-7 ) + z( nn-5 )
+                 ! cases 2 and 3.
+                 if( dmin==dn .and. dmin1==dn1 ) then
+                    gap2 = dmin2 - a2 - dmin2*qurtr
+                    if( gap2>zero .and. gap2>b2 ) then
+                       gap1 = a2 - dn - ( b2 / gap2 )*b2
+                    else
+                       gap1 = a2 - dn - ( b1+b2 )
+                    end if
+                    if( gap1>zero .and. gap1>b1 ) then
+                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
+                       ttype = -2
+                    else
+                       s = zero
+                       if( dn>b1 )s = dn - b1
+                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
+                       s = max( s, third*dmin )
+                       ttype = -3
+                    end if
+                 else
+                    ! case 4.
+                    ttype = -4
+                    s = qurtr*dmin
+                    if( dmin==dn ) then
+                       gam = dn
+                       a2 = zero
+                       if( z( nn-5 ) > z( nn-7 ) )return
+                       b2 = z( nn-5 ) / z( nn-7 )
+                       np = nn - 9
+                    else
+                       np = nn - 2*pp
+                       gam = dn1
+                       if( z( np-4 ) > z( np-2 ) )return
+                       a2 = z( np-4 ) / z( np-2 )
+                       if( z( nn-9 ) > z( nn-11 ) )return
+                       b2 = z( nn-9 ) / z( nn-11 )
+                       np = nn - 13
+                    end if
+                    ! approximate contribution to norm squared from i < nn-1.
+                    a2 = a2 + b2
+                    do i4 = np, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 20
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
+                    end do
+                    20 continue
+                    a2 = cnst3*a2
+                    ! rayleigh quotient residual bound.
+                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+                 end if
+              else if( dmin==dn2 ) then
+                 ! case 5.
+                 ttype = -5
+                 s = qurtr*dmin
+                 ! compute contribution to norm squared from i > nn-2.
+                 np = nn - 2*pp
+                 b1 = z( np-2 )
+                 b2 = z( np-6 )
+                 gam = dn2
+                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
+                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
+                 ! approximate contribution to norm squared from i < nn-2.
+                 if( n0-i0>2 ) then
+                    b2 = z( nn-13 ) / z( nn-15 )
+                    a2 = a2 + b2
+                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 40
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
+                    end do
+                    40 continue
+                    a2 = cnst3*a2
+                 end if
+                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+              else
+                 ! case 6, no information to guide us.
+                 if( ttype==-6 ) then
+                    g = g + third*( one-g )
+                 else if( ttype==-18 ) then
+                    g = qurtr*third
+                 else
+                    g = qurtr
+                 end if
+                 s = g*dmin
+                 ttype = -6
+              end if
+           else if( n0in==( n0+1 ) ) then
+              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
+              if( dmin1==dn1 .and. dmin2==dn2 ) then
+                 ! cases 7 and 8.
+                 ttype = -7
+                 s = third*dmin1
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 60
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    a2 = b1
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*max( b1, a2 )<b2 )go to 60
+                 end do
+                 60 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin1 / ( one+b2**2 )
+                 gap2 = half*dmin2 - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                    ttype = -8
+                 end if
+              else
+                 ! case 9.
+                 s = qurtr*dmin1
+                 if( dmin1==dn1 )s = half*dmin1
+                 ttype = -9
+              end if
+           else if( n0in==( n0+2 ) ) then
+              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
+              ! cases 10 and 11.
+              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
+                 ttype = -10
+                 s = third*dmin2
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 80
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*b1<b2 )go to 80
+                 end do
+                 80 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin2 / ( one+b2**2 )
+                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                 end if
+              else
+                 s = qurtr*dmin2
+                 ttype = -11
+              end if
+           else if( n0in>( n0+2 ) ) then
+              ! case 12, more than two eigenvalues deflated. no information.
+              s = zero
+              ttype = -12
+           end if
+           tau = s
+           return
+     end subroutine stdlib_dlasq4
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     !! DLASQ4: computes an approximation TAU to the smallest eigenvalue
+     !! using values of d from the previous transform.
+               ttype, g )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, n0in, pp
+           integer(ilp), intent(out) :: ttype
+           real(${rk}$), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
+           real(${rk}$), intent(inout) :: g
+           real(${rk}$), intent(out) :: tau
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(${rk}$), parameter :: cnst1 = 0.5630_${rk}$
+           real(${rk}$), parameter :: cnst2 = 1.010_${rk}$
+           real(${rk}$), parameter :: cnst3 = 1.050_${rk}$
+           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
+           real(${rk}$), parameter :: third = 0.3330_${rk}$
+           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i4, nn, np
+           real(${rk}$) :: a2, b1, b2, gam, gap1, gap2, s
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! a negative dmin forces the shift to take that absolute value
+           ! ttype records the type of shift.
+           if( dmin<=zero ) then
+              tau = -dmin
+              ttype = -1
+              return
+           end if
+           nn = 4*n0 + pp
+           if( n0in==n0 ) then
+              ! no eigenvalues deflated.
+              if( dmin==dn .or. dmin==dn1 ) then
+                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
+                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
+                 a2 = z( nn-7 ) + z( nn-5 )
+                 ! cases 2 and 3.
+                 if( dmin==dn .and. dmin1==dn1 ) then
+                    gap2 = dmin2 - a2 - dmin2*qurtr
+                    if( gap2>zero .and. gap2>b2 ) then
+                       gap1 = a2 - dn - ( b2 / gap2 )*b2
+                    else
+                       gap1 = a2 - dn - ( b1+b2 )
+                    end if
+                    if( gap1>zero .and. gap1>b1 ) then
+                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
+                       ttype = -2
+                    else
+                       s = zero
+                       if( dn>b1 )s = dn - b1
+                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
+                       s = max( s, third*dmin )
+                       ttype = -3
+                    end if
+                 else
+                    ! case 4.
+                    ttype = -4
+                    s = qurtr*dmin
+                    if( dmin==dn ) then
+                       gam = dn
+                       a2 = zero
+                       if( z( nn-5 ) > z( nn-7 ) )return
+                       b2 = z( nn-5 ) / z( nn-7 )
+                       np = nn - 9
+                    else
+                       np = nn - 2*pp
+                       gam = dn1
+                       if( z( np-4 ) > z( np-2 ) )return
+                       a2 = z( np-4 ) / z( np-2 )
+                       if( z( nn-9 ) > z( nn-11 ) )return
+                       b2 = z( nn-9 ) / z( nn-11 )
+                       np = nn - 13
+                    end if
+                    ! approximate contribution to norm squared from i < nn-1.
+                    a2 = a2 + b2
+                    do i4 = np, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 20
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
+                    end do
+                    20 continue
+                    a2 = cnst3*a2
+                    ! rayleigh quotient residual bound.
+                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+                 end if
+              else if( dmin==dn2 ) then
+                 ! case 5.
+                 ttype = -5
+                 s = qurtr*dmin
+                 ! compute contribution to norm squared from i > nn-2.
+                 np = nn - 2*pp
+                 b1 = z( np-2 )
+                 b2 = z( np-6 )
+                 gam = dn2
+                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
+                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
+                 ! approximate contribution to norm squared from i < nn-2.
+                 if( n0-i0>2 ) then
+                    b2 = z( nn-13 ) / z( nn-15 )
+                    a2 = a2 + b2
+                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 40
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
+                    end do
+                    40 continue
+                    a2 = cnst3*a2
+                 end if
+                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+              else
+                 ! case 6, no information to guide us.
+                 if( ttype==-6 ) then
+                    g = g + third*( one-g )
+                 else if( ttype==-18 ) then
+                    g = qurtr*third
+                 else
+                    g = qurtr
+                 end if
+                 s = g*dmin
+                 ttype = -6
+              end if
+           else if( n0in==( n0+1 ) ) then
+              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
+              if( dmin1==dn1 .and. dmin2==dn2 ) then
+                 ! cases 7 and 8.
+                 ttype = -7
+                 s = third*dmin1
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 60
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    a2 = b1
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*max( b1, a2 )<b2 )go to 60
+                 end do
+                 60 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin1 / ( one+b2**2 )
+                 gap2 = half*dmin2 - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                    ttype = -8
+                 end if
+              else
+                 ! case 9.
+                 s = qurtr*dmin1
+                 if( dmin1==dn1 )s = half*dmin1
+                 ttype = -9
+              end if
+           else if( n0in==( n0+2 ) ) then
+              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
+              ! cases 10 and 11.
+              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
+                 ttype = -10
+                 s = third*dmin2
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 80
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*b1<b2 )go to 80
+                 end do
+                 80 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin2 / ( one+b2**2 )
+                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                 end if
+              else
+                 s = qurtr*dmin2
+                 ttype = -11
+              end if
+           else if( n0in>( n0+2 ) ) then
+              ! case 12, more than two eigenvalues deflated. no information.
+              s = zero
+              ttype = -12
+           end if
+           tau = s
+           return
+     end subroutine stdlib_${ri}$lasq4
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_slasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! SLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(sp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(sp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(sp), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: cbias = 1.50_sp
+           real(sp), parameter :: qurtr = 0.250_sp
+           real(sp), parameter :: hundrd = 100.0_sp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(sp) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_slamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_sisnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_slasq3
+
+     pure module subroutine stdlib_dlasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! DLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(dp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(dp), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: cbias = 1.50_dp
+           real(dp), parameter :: qurtr = 0.250_dp
+           real(dp), parameter :: hundrd = 100.0_dp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(dp) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_dlamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_disnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_dlasq3
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! DLASQ3: checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(${rk}$), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(${rk}$), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(${rk}$), parameter :: cbias = 1.50_${rk}$
+           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
+           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(${rk}$) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_${ri}$lamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_${ri}$isnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_${ri}$lasq3
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
      !! SLASQ5 computes one dqds transform in ping-pong form, one
      !! version for IEEE machines another for non IEEE machines.
                ieee, eps )
@@ -232,7 +1374,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq5
 
-     module pure subroutine stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     pure module subroutine stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
      !! DLASQ5 computes one dqds transform in ping-pong form, one
      !! version for IEEE machines another for non IEEE machines.
                ieee, eps )
@@ -461,7 +1603,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     pure module subroutine stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
      !! DLASQ5: computes one dqds transform in ping-pong form, one
      !! version for IEEE machines another for non IEEE machines.
                ieee, eps )
@@ -693,7 +1835,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 
 
-     module pure subroutine stdlib_slasq2( n, z, info )
+     pure module subroutine stdlib_slasq2( n, z, info )
      !! SLASQ2 computes all the eigenvalues of the symmetric positive
      !! definite tridiagonal matrix associated with the qd array Z to high
      !! relative accuracy are computed to high relative accuracy, in the
@@ -1085,7 +2227,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq2
 
-     module pure subroutine stdlib_dlasq2( n, z, info )
+     pure module subroutine stdlib_dlasq2( n, z, info )
      !! DLASQ2 computes all the eigenvalues of the symmetric positive
      !! definite tridiagonal matrix associated with the qd array Z to high
      !! relative accuracy are computed to high relative accuracy, in the
@@ -1474,7 +2616,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasq2( n, z, info )
+     pure module subroutine stdlib_${ri}$lasq2( n, z, info )
      !! DLASQ2: computes all the eigenvalues of the symmetric positive
      !! definite tridiagonal matrix associated with the qd array Z to high
      !! relative accuracy are computed to high relative accuracy, in the
@@ -1866,521 +3008,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 
 
-     module pure subroutine stdlib_slasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! SLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(sp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(sp), intent(out) :: dmin, sigma
-           integer(ilp), intent(inout) :: ttype
-           ! Array Arguments 
-           real(sp), intent(inout) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: cbias = 1.50_sp
-           real(sp), parameter :: qurtr = 0.250_sp
-           real(sp), parameter :: hundrd = 100.0_sp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           real(sp) :: eps, s, t, temp, tol, tol2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           n0in = n0
-           eps = stdlib_slamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
-           end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_sisnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
-           return
-     end subroutine stdlib_slasq3
-
-     module pure subroutine stdlib_dlasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! DLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(dp), intent(out) :: dmin, sigma
-           integer(ilp), intent(inout) :: ttype
-           ! Array Arguments 
-           real(dp), intent(inout) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: cbias = 1.50_dp
-           real(dp), parameter :: qurtr = 0.250_dp
-           real(dp), parameter :: hundrd = 100.0_dp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           real(dp) :: eps, s, t, temp, tol, tol2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           n0in = n0
-           eps = stdlib_dlamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
-           end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_disnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
-           return
-     end subroutine stdlib_dlasq3
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! DLASQ3: checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(${rk}$), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(${rk}$), intent(out) :: dmin, sigma
-           integer(ilp), intent(inout) :: ttype
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(${rk}$), parameter :: cbias = 1.50_${rk}$
-           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
-           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           real(${rk}$) :: eps, s, t, temp, tol, tol2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           n0in = n0
-           eps = stdlib_${ri}$lamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
-           end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_${ri}$isnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
-           return
-     end subroutine stdlib_${ri}$lasq3
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
+     pure module subroutine stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
      !! SLASQ6 computes one dqd (shift equal to zero) transform in
      !! ping-pong form, with protection against underflow and overflow.
         ! -- lapack computational routine --
@@ -2489,7 +3117,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq6
 
-     module pure subroutine stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
+     pure module subroutine stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
      !! DLASQ6 computes one dqd (shift equal to zero) transform in
      !! ping-pong form, with protection against underflow and overflow.
         ! -- lapack computational routine --
@@ -2600,7 +3228,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
+     pure module subroutine stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
      !! DLASQ6: computes one dqd (shift equal to zero) transform in
      !! ping-pong form, with protection against underflow and overflow.
         ! -- lapack computational routine --
@@ -2714,635 +3342,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 
 
-     module pure subroutine stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
-     !! SLASQ4 computes an approximation TAU to the smallest eigenvalue
-     !! using values of d from the previous transform.
-               ttype, g )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, n0in, pp
-           integer(ilp), intent(out) :: ttype
-           real(sp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
-           real(sp), intent(inout) :: g
-           real(sp), intent(out) :: tau
-           ! Array Arguments 
-           real(sp), intent(in) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: cnst1 = 0.5630_sp
-           real(sp), parameter :: cnst2 = 1.010_sp
-           real(sp), parameter :: cnst3 = 1.050_sp
-           real(sp), parameter :: qurtr = 0.250_sp
-           real(sp), parameter :: third = 0.3330_sp
-           real(sp), parameter :: hundrd = 100.0_sp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i4, nn, np
-           real(sp) :: a2, b1, b2, gam, gap1, gap2, s
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! a negative dmin forces the shift to take that absolute value
-           ! ttype records the type of shift.
-           if( dmin<=zero ) then
-              tau = -dmin
-              ttype = -1
-              return
-           end if
-           nn = 4*n0 + pp
-           if( n0in==n0 ) then
-              ! no eigenvalues deflated.
-              if( dmin==dn .or. dmin==dn1 ) then
-                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
-                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
-                 a2 = z( nn-7 ) + z( nn-5 )
-                 ! cases 2 and 3.
-                 if( dmin==dn .and. dmin1==dn1 ) then
-                    gap2 = dmin2 - a2 - dmin2*qurtr
-                    if( gap2>zero .and. gap2>b2 ) then
-                       gap1 = a2 - dn - ( b2 / gap2 )*b2
-                    else
-                       gap1 = a2 - dn - ( b1+b2 )
-                    end if
-                    if( gap1>zero .and. gap1>b1 ) then
-                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
-                       ttype = -2
-                    else
-                       s = zero
-                       if( dn>b1 )s = dn - b1
-                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
-                       s = max( s, third*dmin )
-                       ttype = -3
-                    end if
-                 else
-                    ! case 4.
-                    ttype = -4
-                    s = qurtr*dmin
-                    if( dmin==dn ) then
-                       gam = dn
-                       a2 = zero
-                       if( z( nn-5 ) > z( nn-7 ) )return
-                       b2 = z( nn-5 ) / z( nn-7 )
-                       np = nn - 9
-                    else
-                       np = nn - 2*pp
-                       gam = dn1
-                       if( z( np-4 ) > z( np-2 ) )return
-                       a2 = z( np-4 ) / z( np-2 )
-                       if( z( nn-9 ) > z( nn-11 ) )return
-                       b2 = z( nn-9 ) / z( nn-11 )
-                       np = nn - 13
-                    end if
-                    ! approximate contribution to norm squared from i < nn-1.
-                    a2 = a2 + b2
-                    do i4 = np, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 20
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
-                    end do
-                    20 continue
-                    a2 = cnst3*a2
-                    ! rayleigh quotient residual bound.
-                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-                 end if
-              else if( dmin==dn2 ) then
-                 ! case 5.
-                 ttype = -5
-                 s = qurtr*dmin
-                 ! compute contribution to norm squared from i > nn-2.
-                 np = nn - 2*pp
-                 b1 = z( np-2 )
-                 b2 = z( np-6 )
-                 gam = dn2
-                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
-                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
-                 ! approximate contribution to norm squared from i < nn-2.
-                 if( n0-i0>2 ) then
-                    b2 = z( nn-13 ) / z( nn-15 )
-                    a2 = a2 + b2
-                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 40
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
-                    end do
-                    40 continue
-                    a2 = cnst3*a2
-                 end if
-                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-              else
-                 ! case 6, no information to guide us.
-                 if( ttype==-6 ) then
-                    g = g + third*( one-g )
-                 else if( ttype==-18 ) then
-                    g = qurtr*third
-                 else
-                    g = qurtr
-                 end if
-                 s = g*dmin
-                 ttype = -6
-              end if
-           else if( n0in==( n0+1 ) ) then
-              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
-              if( dmin1==dn1 .and. dmin2==dn2 ) then
-                 ! cases 7 and 8.
-                 ttype = -7
-                 s = third*dmin1
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 60
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    a2 = b1
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*max( b1, a2 )<b2 )go to 60
-                 end do
-                 60 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin1 / ( one+b2**2 )
-                 gap2 = half*dmin2 - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                    ttype = -8
-                 end if
-              else
-                 ! case 9.
-                 s = qurtr*dmin1
-                 if( dmin1==dn1 )s = half*dmin1
-                 ttype = -9
-              end if
-           else if( n0in==( n0+2 ) ) then
-              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
-              ! cases 10 and 11.
-              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
-                 ttype = -10
-                 s = third*dmin2
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 80
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*b1<b2 )go to 80
-                 end do
-                 80 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin2 / ( one+b2**2 )
-                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                 end if
-              else
-                 s = qurtr*dmin2
-                 ttype = -11
-              end if
-           else if( n0in>( n0+2 ) ) then
-              ! case 12, more than two eigenvalues deflated. no information.
-              s = zero
-              ttype = -12
-           end if
-           tau = s
-           return
-     end subroutine stdlib_slasq4
-
-     module pure subroutine stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
-     !! DLASQ4 computes an approximation TAU to the smallest eigenvalue
-     !! using values of d from the previous transform.
-               ttype, g )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, n0in, pp
-           integer(ilp), intent(out) :: ttype
-           real(dp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
-           real(dp), intent(inout) :: g
-           real(dp), intent(out) :: tau
-           ! Array Arguments 
-           real(dp), intent(in) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: cnst1 = 0.5630_dp
-           real(dp), parameter :: cnst2 = 1.010_dp
-           real(dp), parameter :: cnst3 = 1.050_dp
-           real(dp), parameter :: qurtr = 0.250_dp
-           real(dp), parameter :: third = 0.3330_dp
-           real(dp), parameter :: hundrd = 100.0_dp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i4, nn, np
-           real(dp) :: a2, b1, b2, gam, gap1, gap2, s
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! a negative dmin forces the shift to take that absolute value
-           ! ttype records the type of shift.
-           if( dmin<=zero ) then
-              tau = -dmin
-              ttype = -1
-              return
-           end if
-           nn = 4*n0 + pp
-           if( n0in==n0 ) then
-              ! no eigenvalues deflated.
-              if( dmin==dn .or. dmin==dn1 ) then
-                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
-                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
-                 a2 = z( nn-7 ) + z( nn-5 )
-                 ! cases 2 and 3.
-                 if( dmin==dn .and. dmin1==dn1 ) then
-                    gap2 = dmin2 - a2 - dmin2*qurtr
-                    if( gap2>zero .and. gap2>b2 ) then
-                       gap1 = a2 - dn - ( b2 / gap2 )*b2
-                    else
-                       gap1 = a2 - dn - ( b1+b2 )
-                    end if
-                    if( gap1>zero .and. gap1>b1 ) then
-                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
-                       ttype = -2
-                    else
-                       s = zero
-                       if( dn>b1 )s = dn - b1
-                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
-                       s = max( s, third*dmin )
-                       ttype = -3
-                    end if
-                 else
-                    ! case 4.
-                    ttype = -4
-                    s = qurtr*dmin
-                    if( dmin==dn ) then
-                       gam = dn
-                       a2 = zero
-                       if( z( nn-5 ) > z( nn-7 ) )return
-                       b2 = z( nn-5 ) / z( nn-7 )
-                       np = nn - 9
-                    else
-                       np = nn - 2*pp
-                       gam = dn1
-                       if( z( np-4 ) > z( np-2 ) )return
-                       a2 = z( np-4 ) / z( np-2 )
-                       if( z( nn-9 ) > z( nn-11 ) )return
-                       b2 = z( nn-9 ) / z( nn-11 )
-                       np = nn - 13
-                    end if
-                    ! approximate contribution to norm squared from i < nn-1.
-                    a2 = a2 + b2
-                    do i4 = np, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 20
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
-                    end do
-                    20 continue
-                    a2 = cnst3*a2
-                    ! rayleigh quotient residual bound.
-                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-                 end if
-              else if( dmin==dn2 ) then
-                 ! case 5.
-                 ttype = -5
-                 s = qurtr*dmin
-                 ! compute contribution to norm squared from i > nn-2.
-                 np = nn - 2*pp
-                 b1 = z( np-2 )
-                 b2 = z( np-6 )
-                 gam = dn2
-                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
-                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
-                 ! approximate contribution to norm squared from i < nn-2.
-                 if( n0-i0>2 ) then
-                    b2 = z( nn-13 ) / z( nn-15 )
-                    a2 = a2 + b2
-                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 40
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
-                    end do
-                    40 continue
-                    a2 = cnst3*a2
-                 end if
-                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-              else
-                 ! case 6, no information to guide us.
-                 if( ttype==-6 ) then
-                    g = g + third*( one-g )
-                 else if( ttype==-18 ) then
-                    g = qurtr*third
-                 else
-                    g = qurtr
-                 end if
-                 s = g*dmin
-                 ttype = -6
-              end if
-           else if( n0in==( n0+1 ) ) then
-              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
-              if( dmin1==dn1 .and. dmin2==dn2 ) then
-                 ! cases 7 and 8.
-                 ttype = -7
-                 s = third*dmin1
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 60
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    a2 = b1
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*max( b1, a2 )<b2 )go to 60
-                 end do
-                 60 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin1 / ( one+b2**2 )
-                 gap2 = half*dmin2 - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                    ttype = -8
-                 end if
-              else
-                 ! case 9.
-                 s = qurtr*dmin1
-                 if( dmin1==dn1 )s = half*dmin1
-                 ttype = -9
-              end if
-           else if( n0in==( n0+2 ) ) then
-              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
-              ! cases 10 and 11.
-              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
-                 ttype = -10
-                 s = third*dmin2
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 80
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*b1<b2 )go to 80
-                 end do
-                 80 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin2 / ( one+b2**2 )
-                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                 end if
-              else
-                 s = qurtr*dmin2
-                 ttype = -11
-              end if
-           else if( n0in>( n0+2 ) ) then
-              ! case 12, more than two eigenvalues deflated. no information.
-              s = zero
-              ttype = -12
-           end if
-           tau = s
-           return
-     end subroutine stdlib_dlasq4
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
-     !! DLASQ4: computes an approximation TAU to the smallest eigenvalue
-     !! using values of d from the previous transform.
-               ttype, g )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, n0in, pp
-           integer(ilp), intent(out) :: ttype
-           real(${rk}$), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
-           real(${rk}$), intent(inout) :: g
-           real(${rk}$), intent(out) :: tau
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(${rk}$), parameter :: cnst1 = 0.5630_${rk}$
-           real(${rk}$), parameter :: cnst2 = 1.010_${rk}$
-           real(${rk}$), parameter :: cnst3 = 1.050_${rk}$
-           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
-           real(${rk}$), parameter :: third = 0.3330_${rk}$
-           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i4, nn, np
-           real(${rk}$) :: a2, b1, b2, gam, gap1, gap2, s
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! a negative dmin forces the shift to take that absolute value
-           ! ttype records the type of shift.
-           if( dmin<=zero ) then
-              tau = -dmin
-              ttype = -1
-              return
-           end if
-           nn = 4*n0 + pp
-           if( n0in==n0 ) then
-              ! no eigenvalues deflated.
-              if( dmin==dn .or. dmin==dn1 ) then
-                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
-                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
-                 a2 = z( nn-7 ) + z( nn-5 )
-                 ! cases 2 and 3.
-                 if( dmin==dn .and. dmin1==dn1 ) then
-                    gap2 = dmin2 - a2 - dmin2*qurtr
-                    if( gap2>zero .and. gap2>b2 ) then
-                       gap1 = a2 - dn - ( b2 / gap2 )*b2
-                    else
-                       gap1 = a2 - dn - ( b1+b2 )
-                    end if
-                    if( gap1>zero .and. gap1>b1 ) then
-                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
-                       ttype = -2
-                    else
-                       s = zero
-                       if( dn>b1 )s = dn - b1
-                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
-                       s = max( s, third*dmin )
-                       ttype = -3
-                    end if
-                 else
-                    ! case 4.
-                    ttype = -4
-                    s = qurtr*dmin
-                    if( dmin==dn ) then
-                       gam = dn
-                       a2 = zero
-                       if( z( nn-5 ) > z( nn-7 ) )return
-                       b2 = z( nn-5 ) / z( nn-7 )
-                       np = nn - 9
-                    else
-                       np = nn - 2*pp
-                       gam = dn1
-                       if( z( np-4 ) > z( np-2 ) )return
-                       a2 = z( np-4 ) / z( np-2 )
-                       if( z( nn-9 ) > z( nn-11 ) )return
-                       b2 = z( nn-9 ) / z( nn-11 )
-                       np = nn - 13
-                    end if
-                    ! approximate contribution to norm squared from i < nn-1.
-                    a2 = a2 + b2
-                    do i4 = np, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 20
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
-                    end do
-                    20 continue
-                    a2 = cnst3*a2
-                    ! rayleigh quotient residual bound.
-                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-                 end if
-              else if( dmin==dn2 ) then
-                 ! case 5.
-                 ttype = -5
-                 s = qurtr*dmin
-                 ! compute contribution to norm squared from i > nn-2.
-                 np = nn - 2*pp
-                 b1 = z( np-2 )
-                 b2 = z( np-6 )
-                 gam = dn2
-                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
-                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
-                 ! approximate contribution to norm squared from i < nn-2.
-                 if( n0-i0>2 ) then
-                    b2 = z( nn-13 ) / z( nn-15 )
-                    a2 = a2 + b2
-                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 40
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
-                    end do
-                    40 continue
-                    a2 = cnst3*a2
-                 end if
-                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-              else
-                 ! case 6, no information to guide us.
-                 if( ttype==-6 ) then
-                    g = g + third*( one-g )
-                 else if( ttype==-18 ) then
-                    g = qurtr*third
-                 else
-                    g = qurtr
-                 end if
-                 s = g*dmin
-                 ttype = -6
-              end if
-           else if( n0in==( n0+1 ) ) then
-              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
-              if( dmin1==dn1 .and. dmin2==dn2 ) then
-                 ! cases 7 and 8.
-                 ttype = -7
-                 s = third*dmin1
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 60
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    a2 = b1
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*max( b1, a2 )<b2 )go to 60
-                 end do
-                 60 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin1 / ( one+b2**2 )
-                 gap2 = half*dmin2 - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                    ttype = -8
-                 end if
-              else
-                 ! case 9.
-                 s = qurtr*dmin1
-                 if( dmin1==dn1 )s = half*dmin1
-                 ttype = -9
-              end if
-           else if( n0in==( n0+2 ) ) then
-              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
-              ! cases 10 and 11.
-              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
-                 ttype = -10
-                 s = third*dmin2
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 80
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*b1<b2 )go to 80
-                 end do
-                 80 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin2 / ( one+b2**2 )
-                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                 end if
-              else
-                 s = qurtr*dmin2
-                 ttype = -11
-              end if
-           else if( n0in>( n0+2 ) ) then
-              ! case 12, more than two eigenvalues deflated. no information.
-              s = zero
-              ttype = -12
-           end if
-           tau = s
-           return
-     end subroutine stdlib_${ri}$lasq4
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_slasq1( n, d, e, work, info )
+     pure module subroutine stdlib_slasq1( n, d, e, work, info )
      !! SLASQ1 computes the singular values of a real N-by-N bidiagonal
      !! matrix with diagonal D and off-diagonal E. The singular values
      !! are computed to high relative accuracy, in the absence of
@@ -3433,7 +3433,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
            return
      end subroutine stdlib_slasq1
 
-     module pure subroutine stdlib_dlasq1( n, d, e, work, info )
+     pure module subroutine stdlib_dlasq1( n, d, e, work, info )
      !! DLASQ1 computes the singular values of a real N-by-N bidiagonal
      !! matrix with diagonal D and off-diagonal E. The singular values
      !! are computed to high relative accuracy, in the absence of
@@ -3526,7 +3526,7 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lasq1( n, d, e, work, info )
+     pure module subroutine stdlib_${ri}$lasq1( n, d, e, work, info )
      !! DLASQ1: computes the singular values of a real N-by-N bidiagonal
      !! matrix with diagonal D and off-diagonal E. The singular values
      !! are computed to high relative accuracy, in the absence of

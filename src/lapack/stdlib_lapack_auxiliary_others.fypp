@@ -7,7 +7,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 
 
-     module pure subroutine stdlib_crot( n, cx, incx, cy, incy, c, s )
+     pure module subroutine stdlib_crot( n, cx, incx, cy, incy, c, s )
      !! CROT applies a plane rotation, where the cos (C) is real and the
      !! sin (S) is complex, and the vectors CX and CY are complex.
         ! -- lapack auxiliary routine --
@@ -51,7 +51,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
            return
      end subroutine stdlib_crot
 
-     module pure subroutine stdlib_zrot( n, cx, incx, cy, incy, c, s )
+     pure module subroutine stdlib_zrot( n, cx, incx, cy, incy, c, s )
      !! ZROT applies a plane rotation, where the cos (C) is real and the
      !! sin (S) is complex, and the vectors CX and CY are complex.
         ! -- lapack auxiliary routine --
@@ -97,7 +97,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$rot( n, cx, incx, cy, incy, c, s )
+     pure module subroutine stdlib_${ci}$rot( n, cx, incx, cy, incy, c, s )
      !! ZROT:   applies a plane rotation, where the cos (C) is real and the
      !! sin (S) is complex, and the vectors CX and CY are complex.
         ! -- lapack auxiliary routine --
@@ -146,7 +146,9 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 
 
-     module pure subroutine stdlib_sladiv1( a, b, c, d, p, q )
+
+
+     pure module subroutine stdlib_sladiv1( a, b, c, d, p, q )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -168,7 +170,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
            return
      end subroutine stdlib_sladiv1
 
-     module pure subroutine stdlib_dladiv1( a, b, c, d, p, q )
+     pure module subroutine stdlib_dladiv1( a, b, c, d, p, q )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -192,7 +194,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$ladiv1( a, b, c, d, p, q )
+     pure module subroutine stdlib_${ri}$ladiv1( a, b, c, d, p, q )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -221,11 +223,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 
 
-
-
-
-
-     module pure real(sp) function stdlib_sladiv2( a, b, c, d, r, t )
+     pure real(sp) module function stdlib_sladiv2( a, b, c, d, r, t )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -250,7 +248,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
            return
      end function stdlib_sladiv2
 
-     module pure real(dp) function stdlib_dladiv2( a, b, c, d, r, t )
+     pure real(dp) module function stdlib_dladiv2( a, b, c, d, r, t )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -277,7 +275,7 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure real(${rk}$) function stdlib_${ri}$ladiv2( a, b, c, d, r, t )
+     pure real(${rk}$) module function stdlib_${ri}$ladiv2( a, b, c, d, r, t )
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
@@ -304,6 +302,8 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 #:endif
 #:endfor
+
+
 
 
 end submodule stdlib_lapack_auxiliary_others

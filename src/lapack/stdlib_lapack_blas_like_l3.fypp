@@ -5,173 +5,730 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
   contains
 
-     module pure subroutine stdlib_clarcm( m, n, a, lda, b, ldb, c, ldc, rwork )
-     !! CLARCM performs a very simple matrix-matrix multiplication:
-     !! C := A * B,
-     !! where A is M by M and real; B is M by N and complex;
-     !! C is M by N and complex.
+     pure module subroutine stdlib_slagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+     !! SLAGTM performs a matrix-vector product of the form
+     !! B := alpha * A * X + beta * B
+     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
+     !! matrices, and alpha and beta are real scalars, each of which may be
+     !! 0., 1., or -1.
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(sp), intent(in) :: alpha, beta
            ! Array Arguments 
-           real(sp), intent(in) :: a(lda,*)
-           real(sp), intent(out) :: rwork(*)
-           complex(sp), intent(in) :: b(ldb,*)
-           complex(sp), intent(out) :: c(ldc,*)
+           real(sp), intent(inout) :: b(ldb,*)
+           real(sp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j, l
-           ! Intrinsic Functions 
+           integer(ilp) :: i, j
            ! Executable Statements 
-           ! quick return if possible.
-           if( ( m==0 ) .or. ( n==0 ) )return
-           do j = 1, n
-              do i = 1, m
-                 rwork( ( j-1 )*m+i ) = real( b( i, j ),KIND=sp)
+           if( n==0 )return
+           ! multiply b by beta if beta/=1.
+           if( beta==zero ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = zero
+                 end do
               end do
-           end do
-           l = m*n + 1
-           call stdlib_sgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
-                     
-           do j = 1, n
-              do i = 1, m
-                 c( i, j ) = rwork( l+( j-1 )*m+i-1 )
+           else if( beta==-one ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = -b( i, j )
+                 end do
               end do
-           end do
-           do j = 1, n
-              do i = 1, m
-                 rwork( ( j-1 )*m+i ) = aimag( b( i, j ) )
-              end do
-           end do
-           call stdlib_sgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
-                     
-           do j = 1, n
-              do i = 1, m
-                 c( i, j ) = cmplx( real( c( i, j ),KIND=sp),rwork( l+( j-1 )*m+i-1 ),KIND=sp)
-                           
-              end do
-           end do
+           end if
+           if( alpha==one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b + a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else
+                 ! compute b := b + a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           else if( alpha==-one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b - a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else
+                 ! compute b := b - a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           end if
            return
-     end subroutine stdlib_clarcm
+     end subroutine stdlib_slagtm
 
-     module pure subroutine stdlib_zlarcm( m, n, a, lda, b, ldb, c, ldc, rwork )
-     !! ZLARCM performs a very simple matrix-matrix multiplication:
-     !! C := A * B,
-     !! where A is M by M and real; B is M by N and complex;
-     !! C is M by N and complex.
+     pure module subroutine stdlib_dlagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+     !! DLAGTM performs a matrix-vector product of the form
+     !! B := alpha * A * X + beta * B
+     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
+     !! matrices, and alpha and beta are real scalars, each of which may be
+     !! 0., 1., or -1.
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(dp), intent(in) :: alpha, beta
            ! Array Arguments 
-           real(dp), intent(in) :: a(lda,*)
-           real(dp), intent(out) :: rwork(*)
-           complex(dp), intent(in) :: b(ldb,*)
-           complex(dp), intent(out) :: c(ldc,*)
+           real(dp), intent(inout) :: b(ldb,*)
+           real(dp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j, l
+           integer(ilp) :: i, j
+           ! Executable Statements 
+           if( n==0 )return
+           ! multiply b by beta if beta/=1.
+           if( beta==zero ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = zero
+                 end do
+              end do
+           else if( beta==-one ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = -b( i, j )
+                 end do
+              end do
+           end if
+           if( alpha==one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b + a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else
+                 ! compute b := b + a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           else if( alpha==-one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b - a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else
+                 ! compute b := b - a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           end if
+           return
+     end subroutine stdlib_dlagtm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+     !! DLAGTM: performs a matrix-vector product of the form
+     !! B := alpha * A * X + beta * B
+     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
+     !! matrices, and alpha and beta are real scalars, each of which may be
+     !! 0., 1., or -1.
+               
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(${rk}$), intent(in) :: alpha, beta
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: b(ldb,*)
+           real(${rk}$), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           ! Executable Statements 
+           if( n==0 )return
+           ! multiply b by beta if beta/=1.
+           if( beta==zero ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = zero
+                 end do
+              end do
+           else if( beta==-one ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = -b( i, j )
+                 end do
+              end do
+           end if
+           if( alpha==one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b + a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else
+                 ! compute b := b + a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           else if( alpha==-one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b - a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else
+                 ! compute b := b - a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           end if
+           return
+     end subroutine stdlib_${ri}$lagtm
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+     !! CLAGTM performs a matrix-vector product of the form
+     !! B := alpha * A * X + beta * B
+     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
+     !! matrices, and alpha and beta are real scalars, each of which may be
+     !! 0., 1., or -1.
+               
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(sp), intent(in) :: alpha, beta
+           ! Array Arguments 
+           complex(sp), intent(inout) :: b(ldb,*)
+           complex(sp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j
            ! Intrinsic Functions 
            ! Executable Statements 
-           ! quick return if possible.
-           if( ( m==0 ) .or. ( n==0 ) )return
-           do j = 1, n
-              do i = 1, m
-                 rwork( ( j-1 )*m+i ) = real( b( i, j ),KIND=dp)
+           if( n==0 )return
+           ! multiply b by beta if beta/=1.
+           if( beta==zero ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = zero
+                 end do
               end do
-           end do
-           l = m*n + 1
-           call stdlib_dgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
-                     
-           do j = 1, n
-              do i = 1, m
-                 c( i, j ) = rwork( l+( j-1 )*m+i-1 )
+           else if( beta==-one ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = -b( i, j )
+                 end do
               end do
-           end do
-           do j = 1, n
-              do i = 1, m
-                 rwork( ( j-1 )*m+i ) = aimag( b( i, j ) )
-              end do
-           end do
-           call stdlib_dgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
-                     
-           do j = 1, n
-              do i = 1, m
-                 c( i, j ) = cmplx( real( c( i, j ),KIND=dp),rwork( l+( j-1 )*m+i-1 ),KIND=dp)
-                           
-              end do
-           end do
+           end if
+           if( alpha==one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b + a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'T' ) ) then
+                 ! compute b := b + a**t * x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'C' ) ) then
+                 ! compute b := b + a**h * x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j ) +conjg( dl( 1 ) )*x( 2, &
+                                 j )
+                       b( n, j ) = b( n, j ) + conjg( du( n-1 ) )*x( n-1, j ) + conjg( d( n ) )*x(&
+                                  n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + conjg( du( i-1 ) )*x( i-1, j ) + conjg( d( i ) )&
+                                    *x( i, j ) + conjg( dl( i ) )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           else if( alpha==-one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b - a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'T' ) ) then
+                 ! compute b := b - a**t*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'C' ) ) then
+                 ! compute b := b - a**h*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j ) -conjg( dl( 1 ) )*x( 2, &
+                                 j )
+                       b( n, j ) = b( n, j ) - conjg( du( n-1 ) )*x( n-1, j ) - conjg( d( n ) )*x(&
+                                  n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - conjg( du( i-1 ) )*x( i-1, j ) - conjg( d( i ) )&
+                                    *x( i, j ) - conjg( dl( i ) )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           end if
            return
-     end subroutine stdlib_zlarcm
+     end subroutine stdlib_clagtm
+
+     pure module subroutine stdlib_zlagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+     !! ZLAGTM performs a matrix-vector product of the form
+     !! B := alpha * A * X + beta * B
+     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
+     !! matrices, and alpha and beta are real scalars, each of which may be
+     !! 0., 1., or -1.
+               
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(dp), intent(in) :: alpha, beta
+           ! Array Arguments 
+           complex(dp), intent(inout) :: b(ldb,*)
+           complex(dp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: i, j
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( n==0 )return
+           ! multiply b by beta if beta/=1.
+           if( beta==zero ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = zero
+                 end do
+              end do
+           else if( beta==-one ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = -b( i, j )
+                 end do
+              end do
+           end if
+           if( alpha==one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b + a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'T' ) ) then
+                 ! compute b := b + a**t * x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'C' ) ) then
+                 ! compute b := b + a**h * x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j ) +conjg( dl( 1 ) )*x( 2, &
+                                 j )
+                       b( n, j ) = b( n, j ) + conjg( du( n-1 ) )*x( n-1, j ) + conjg( d( n ) )*x(&
+                                  n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + conjg( du( i-1 ) )*x( i-1, j ) + conjg( d( i ) )&
+                                    *x( i, j ) + conjg( dl( i ) )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           else if( alpha==-one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b - a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'T' ) ) then
+                 ! compute b := b - a**t *x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'C' ) ) then
+                 ! compute b := b - a**h *x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j ) -conjg( dl( 1 ) )*x( 2, &
+                                 j )
+                       b( n, j ) = b( n, j ) - conjg( du( n-1 ) )*x( n-1, j ) - conjg( d( n ) )*x(&
+                                  n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - conjg( du( i-1 ) )*x( i-1, j ) - conjg( d( i ) )&
+                                    *x( i, j ) - conjg( dl( i ) )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           end if
+           return
+     end subroutine stdlib_zlagtm
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$larcm( m, n, a, lda, b, ldb, c, ldc, rwork )
-     !! ZLARCM: performs a very simple matrix-matrix multiplication:
-     !! C := A * B,
-     !! where A is M by M and real; B is M by N and complex;
-     !! C is M by N and complex.
+     pure module subroutine stdlib_${ci}$lagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+     !! ZLAGTM: performs a matrix-vector product of the form
+     !! B := alpha * A * X + beta * B
+     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
+     !! matrices, and alpha and beta are real scalars, each of which may be
+     !! 0., 1., or -1.
+               
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(${ck}$), intent(in) :: alpha, beta
            ! Array Arguments 
-           real(${ck}$), intent(in) :: a(lda,*)
-           real(${ck}$), intent(out) :: rwork(*)
-           complex(${ck}$), intent(in) :: b(ldb,*)
-           complex(${ck}$), intent(out) :: c(ldc,*)
+           complex(${ck}$), intent(inout) :: b(ldb,*)
+           complex(${ck}$), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j, l
+           integer(ilp) :: i, j
            ! Intrinsic Functions 
            ! Executable Statements 
-           ! quick return if possible.
-           if( ( m==0 ) .or. ( n==0 ) )return
-           do j = 1, n
-              do i = 1, m
-                 rwork( ( j-1 )*m+i ) = real( b( i, j ),KIND=${ck}$)
+           if( n==0 )return
+           ! multiply b by beta if beta/=1.
+           if( beta==zero ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = zero
+                 end do
               end do
-           end do
-           l = m*n + 1
-           call stdlib_${c2ri(ci)}$gemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
-                     
-           do j = 1, n
-              do i = 1, m
-                 c( i, j ) = rwork( l+( j-1 )*m+i-1 )
+           else if( beta==-one ) then
+              do j = 1, nrhs
+                 do i = 1, n
+                    b( i, j ) = -b( i, j )
+                 end do
               end do
-           end do
-           do j = 1, n
-              do i = 1, m
-                 rwork( ( j-1 )*m+i ) = aimag( b( i, j ) )
-              end do
-           end do
-           call stdlib_${c2ri(ci)}$gemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
-                     
-           do j = 1, n
-              do i = 1, m
-                 c( i, j ) = cmplx( real( c( i, j ),KIND=${ck}$),rwork( l+( j-1 )*m+i-1 ),KIND=${ck}$)
-                           
-              end do
-           end do
+           end if
+           if( alpha==one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b + a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'T' ) ) then
+                 ! compute b := b + a**t * x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'C' ) ) then
+                 ! compute b := b + a**h * x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j ) +conjg( dl( 1 ) )*x( 2, &
+                                 j )
+                       b( n, j ) = b( n, j ) + conjg( du( n-1 ) )*x( n-1, j ) + conjg( d( n ) )*x(&
+                                  n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) + conjg( du( i-1 ) )*x( i-1, j ) + conjg( d( i ) )&
+                                    *x( i, j ) + conjg( dl( i ) )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           else if( alpha==-one ) then
+              if( stdlib_lsame( trans, 'N' ) ) then
+                 ! compute b := b - a*x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'T' ) ) then
+                 ! compute b := b - a**t *x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
+                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
+                                    )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              else if( stdlib_lsame( trans, 'C' ) ) then
+                 ! compute b := b - a**h *x
+                 do j = 1, nrhs
+                    if( n==1 ) then
+                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j )
+                    else
+                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j ) -conjg( dl( 1 ) )*x( 2, &
+                                 j )
+                       b( n, j ) = b( n, j ) - conjg( du( n-1 ) )*x( n-1, j ) - conjg( d( n ) )*x(&
+                                  n, j )
+                       do i = 2, n - 1
+                          b( i, j ) = b( i, j ) - conjg( du( i-1 ) )*x( i-1, j ) - conjg( d( i ) )&
+                                    *x( i, j ) - conjg( dl( i ) )*x( i+1, j )
+                       end do
+                    end if
+                 end do
+              end if
+           end if
            return
-     end subroutine stdlib_${ci}$larcm
+     end subroutine stdlib_${ci}$lagtm
 
 #:endif
 #:endfor
 
 
 
-     module pure subroutine stdlib_stfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+     pure module subroutine stdlib_stfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
      !! Level 3 BLAS like routine for A in RFP Format.
      !! STFSM solves the matrix equation
      !! op( A )*X = alpha*B  or  X*op( A ) = alpha*B
@@ -672,7 +1229,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
            return
      end subroutine stdlib_stfsm
 
-     module pure subroutine stdlib_dtfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+     pure module subroutine stdlib_dtfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
      !! Level 3 BLAS like routine for A in RFP Format.
      !! DTFSM solves the matrix equation
      !! op( A )*X = alpha*B  or  X*op( A ) = alpha*B
@@ -1175,7 +1732,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$tfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+     pure module subroutine stdlib_${ri}$tfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
      !! Level 3 BLAS like routine for A in RFP Format.
      !! DTFSM:  solves the matrix equation
      !! op( A )*X = alpha*B  or  X*op( A ) = alpha*B
@@ -1679,7 +2236,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_ctfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+     pure module subroutine stdlib_ctfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
      !! Level 3 BLAS like routine for A in RFP Format.
      !! CTFSM solves the matrix equation
      !! op( A )*X = alpha*B  or  X*op( A ) = alpha*B
@@ -2180,7 +2737,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
            return
      end subroutine stdlib_ctfsm
 
-     module pure subroutine stdlib_ztfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+     pure module subroutine stdlib_ztfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
      !! Level 3 BLAS like routine for A in RFP Format.
      !! ZTFSM solves the matrix equation
      !! op( A )*X = alpha*B  or  X*op( A ) = alpha*B
@@ -2683,7 +3240,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$tfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+     pure module subroutine stdlib_${ci}$tfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
      !! Level 3 BLAS like routine for A in RFP Format.
      !! ZTFSM:  solves the matrix equation
      !! op( A )*X = alpha*B  or  X*op( A ) = alpha*B
@@ -3189,7 +3746,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
 
 
-     module pure subroutine stdlib_clacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
+     pure module subroutine stdlib_clacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
      !! CLACRM performs a very simple matrix-matrix multiplication:
      !! C := A * B,
      !! where A is M by N and complex; B is N by N and real;
@@ -3242,7 +3799,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
            return
      end subroutine stdlib_clacrm
 
-     module pure subroutine stdlib_zlacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
+     pure module subroutine stdlib_zlacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
      !! ZLACRM performs a very simple matrix-matrix multiplication:
      !! C := A * B,
      !! where A is M by N and complex; B is N by N and real;
@@ -3297,7 +3854,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$lacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
+     pure module subroutine stdlib_${ci}$lacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
      !! ZLACRM: performs a very simple matrix-matrix multiplication:
      !! C := A * B,
      !! where A is M by N and complex; B is N by N and real;
@@ -3355,730 +3912,945 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
 
 
-     module pure subroutine stdlib_slagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
-     !! SLAGTM performs a matrix-vector product of the form
-     !! B := alpha * A * X + beta * B
-     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
-     !! matrices, and alpha and beta are real scalars, each of which may be
-     !! 0., 1., or -1.
-               
-        ! -- lapack auxiliary routine --
+     pure module subroutine stdlib_ssfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+     !! Level 3 BLAS like routine for C in RFP Format.
+     !! SSFRK performs one of the symmetric rank--k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where alpha and beta are real scalars, C is an n--by--n symmetric
+     !! matrix and A is an n--by--k matrix in the first case and a k--by--n
+     !! matrix in the second case.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: trans
-           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
            real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
            ! Array Arguments 
-           real(sp), intent(inout) :: b(ldb,*)
-           real(sp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: c(*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j
+           logical(lk) :: lower, normaltransr, nisodd, notrans
+           integer(ilp) :: info, nrowa, j, nk, n1, n2
+           ! Intrinsic Functions 
            ! Executable Statements 
-           if( n==0 )return
-           ! multiply b by beta if beta/=1.
-           if( beta==zero ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = zero
-                 end do
-              end do
-           else if( beta==-one ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = -b( i, j )
-                 end do
-              end do
+           ! test the input parameters.
+           info = 0
+           normaltransr = stdlib_lsame( transr, 'N' )
+           lower = stdlib_lsame( uplo, 'L' )
+           notrans = stdlib_lsame( trans, 'N' )
+           if( notrans ) then
+              nrowa = n
+           else
+              nrowa = k
            end if
-           if( alpha==one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b + a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
+           if( .not.normaltransr .and. .not.stdlib_lsame( transr, 'T' ) ) then
+              info = -1
+           else if( .not.lower .and. .not.stdlib_lsame( uplo, 'U' ) ) then
+              info = -2
+           else if( .not.notrans .and. .not.stdlib_lsame( trans, 'T' ) ) then
+              info = -3
+           else if( n<0 ) then
+              info = -4
+           else if( k<0 ) then
+              info = -5
+           else if( lda<max( 1, nrowa ) ) then
+              info = -8
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'SSFRK ', -info )
+              return
+           end if
+           ! quick return if possible.
+           ! the quick return case: ((alpha==0).and.(beta/=zero)) is not
+           ! done (it is in stdlib_ssyrk for example) and left in the general case.
+           if( ( n==0 ) .or. ( ( ( alpha==zero ) .or. ( k==0 ) ) .and.( beta==one ) ) )&
+                     return
+           if( ( alpha==zero ) .and. ( beta==zero ) ) then
+              do j = 1, ( ( n*( n+1 ) ) / 2 )
+                 c( j ) = zero
+              end do
+              return
+           end if
+           ! c is n-by-n.
+           ! if n is odd, set nisodd = .true., and n1 and n2.
+           ! if n is even, nisodd = .false., and nk.
+           if( mod( n, 2 )==0 ) then
+              nisodd = .false.
+              nk = n / 2
+           else
+              nisodd = .true.
+              if( lower ) then
+                 n2 = n / 2
+                 n1 = n - n2
               else
-                 ! compute b := b + a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
+                 n1 = n / 2
+                 n2 = n - n1
               end if
-           else if( alpha==-one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b - a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+           end if
+           if( nisodd ) then
+              ! n is odd
+              if( normaltransr ) then
+                 ! n is odd and transr = 'n'
+                 if( lower ) then
+                    ! n is odd, transr = 'n', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is odd, transr = 'n', uplo = 'l', and trans = 'n'
+                       call stdlib_ssyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
+                                 
+                       call stdlib_ssyrk( 'U', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( n+1 )&
+                                 , n )
+                       call stdlib_sgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( n1+1 ), n )
                     else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
-                                    )*x( i+1, j )
-                       end do
+                       ! n is odd, transr = 'n', uplo = 'l', and trans = 't'
+                       call stdlib_ssyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
+                                 
+                       call stdlib_ssyrk( 'U', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( n+1 )&
+                                 , n )
+                       call stdlib_sgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( n1+1 ), n )
                     end if
-                 end do
+                 else
+                    ! n is odd, transr = 'n', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is odd, transr = 'n', uplo = 'u', and trans = 'n'
+                       call stdlib_ssyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
+                                 n )
+                       call stdlib_ssyrk( 'U', 'N', n2, k, alpha, a( n2, 1 ), lda,beta, c( n1+1 ),&
+                                  n )
+                       call stdlib_sgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n2, 1 ), &
+                                 lda, beta, c( 1 ), n )
+                    else
+                       ! n is odd, transr = 'n', uplo = 'u', and trans = 't'
+                       call stdlib_ssyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
+                                 n )
+                       call stdlib_ssyrk( 'U', 'T', n2, k, alpha, a( 1, n2 ), lda,beta, c( n1+1 ),&
+                                  n )
+                       call stdlib_sgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n2 ), &
+                                 lda, beta, c( 1 ), n )
+                    end if
+                 end if
               else
-                 ! compute b := b - a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                 ! n is odd, and transr = 't'
+                 if( lower ) then
+                    ! n is odd, transr = 't', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is odd, transr = 't', uplo = 'l', and trans = 'n'
+                       call stdlib_ssyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
+                                 )
+                       call stdlib_ssyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( 2 ), &
+                                 n1 )
+                       call stdlib_sgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n1+1, 1 ),&
+                                  lda, beta,c( n1*n1+1 ), n1 )
                     else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
-                                    )*x( i+1, j )
-                       end do
+                       ! n is odd, transr = 't', uplo = 'l', and trans = 't'
+                       call stdlib_ssyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
+                                 )
+                       call stdlib_ssyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( 2 ), &
+                                 n1 )
+                       call stdlib_sgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n1+1 ),&
+                                  lda, beta,c( n1*n1+1 ), n1 )
                     end if
-                 end do
+                 else
+                    ! n is odd, transr = 't', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is odd, transr = 't', uplo = 'u', and trans = 'n'
+                       call stdlib_ssyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
+                                 ), n2 )
+                       call stdlib_ssyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( &
+                                 n1*n2+1 ), n2 )
+                       call stdlib_sgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), n2 )
+                    else
+                       ! n is odd, transr = 't', uplo = 'u', and trans = 't'
+                       call stdlib_ssyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
+                                 ), n2 )
+                       call stdlib_ssyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( &
+                                 n1*n2+1 ), n2 )
+                       call stdlib_sgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), n2 )
+                    end if
+                 end if
+              end if
+           else
+              ! n is even
+              if( normaltransr ) then
+                 ! n is even and transr = 'n'
+                 if( lower ) then
+                    ! n is even, transr = 'n', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is even, transr = 'n', uplo = 'l', and trans = 'n'
+                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
+                                 1 )
+                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
+                                 n+1 )
+                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( nk+2 ),n+1 )
+                    else
+                       ! n is even, transr = 'n', uplo = 'l', and trans = 't'
+                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
+                                 1 )
+                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
+                                 n+1 )
+                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( nk+2 ),n+1 )
+                    end if
+                 else
+                    ! n is even, transr = 'n', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is even, transr = 'n', uplo = 'u', and trans = 'n'
+                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
+                                 n+1 )
+                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( nk+1 &
+                                 ), n+1 )
+                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
+                                  lda, beta, c( 1 ),n+1 )
+                    else
+                       ! n is even, transr = 'n', uplo = 'u', and trans = 't'
+                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
+                                 n+1 )
+                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( nk+1 &
+                                 ), n+1 )
+                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
+                                  lda, beta, c( 1 ),n+1 )
+                    end if
+                 end if
+              else
+                 ! n is even, and transr = 't'
+                 if( lower ) then
+                    ! n is even, transr = 't', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is even, transr = 't', uplo = 'l', and trans = 'n'
+                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
+                                 nk )
+                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
+                                 nk )
+                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
+                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
+                    else
+                       ! n is even, transr = 't', uplo = 'l', and trans = 't'
+                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
+                                 nk )
+                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
+                                 nk )
+                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
+                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
+                    end if
+                 else
+                    ! n is even, transr = 't', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is even, transr = 't', uplo = 'u', and trans = 'n'
+                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
+                                 1 )+1 ), nk )
+                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( &
+                                 nk*nk+1 ), nk )
+                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), nk )
+                    else
+                       ! n is even, transr = 't', uplo = 'u', and trans = 't'
+                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
+                                 1 )+1 ), nk )
+                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( &
+                                 nk*nk+1 ), nk )
+                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), nk )
+                    end if
+                 end if
               end if
            end if
            return
-     end subroutine stdlib_slagtm
+     end subroutine stdlib_ssfrk
 
-     module pure subroutine stdlib_dlagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
-     !! DLAGTM performs a matrix-vector product of the form
-     !! B := alpha * A * X + beta * B
-     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
-     !! matrices, and alpha and beta are real scalars, each of which may be
-     !! 0., 1., or -1.
-               
-        ! -- lapack auxiliary routine --
+     pure module subroutine stdlib_dsfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+     !! Level 3 BLAS like routine for C in RFP Format.
+     !! DSFRK performs one of the symmetric rank--k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where alpha and beta are real scalars, C is an n--by--n symmetric
+     !! matrix and A is an n--by--k matrix in the first case and a k--by--n
+     !! matrix in the second case.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: trans
-           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
            real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
            ! Array Arguments 
-           real(dp), intent(inout) :: b(ldb,*)
-           real(dp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: c(*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j
+           logical(lk) :: lower, normaltransr, nisodd, notrans
+           integer(ilp) :: info, nrowa, j, nk, n1, n2
+           ! Intrinsic Functions 
            ! Executable Statements 
-           if( n==0 )return
-           ! multiply b by beta if beta/=1.
-           if( beta==zero ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = zero
-                 end do
-              end do
-           else if( beta==-one ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = -b( i, j )
-                 end do
-              end do
+           ! test the input parameters.
+           info = 0
+           normaltransr = stdlib_lsame( transr, 'N' )
+           lower = stdlib_lsame( uplo, 'L' )
+           notrans = stdlib_lsame( trans, 'N' )
+           if( notrans ) then
+              nrowa = n
+           else
+              nrowa = k
            end if
-           if( alpha==one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b + a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
+           if( .not.normaltransr .and. .not.stdlib_lsame( transr, 'T' ) ) then
+              info = -1
+           else if( .not.lower .and. .not.stdlib_lsame( uplo, 'U' ) ) then
+              info = -2
+           else if( .not.notrans .and. .not.stdlib_lsame( trans, 'T' ) ) then
+              info = -3
+           else if( n<0 ) then
+              info = -4
+           else if( k<0 ) then
+              info = -5
+           else if( lda<max( 1, nrowa ) ) then
+              info = -8
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DSFRK ', -info )
+              return
+           end if
+           ! quick return if possible.
+           ! the quick return case: ((alpha==0).and.(beta/=zero)) is not
+           ! done (it is in stdlib_dsyrk for example) and left in the general case.
+           if( ( n==0 ) .or. ( ( ( alpha==zero ) .or. ( k==0 ) ) .and.( beta==one ) ) )&
+                     return
+           if( ( alpha==zero ) .and. ( beta==zero ) ) then
+              do j = 1, ( ( n*( n+1 ) ) / 2 )
+                 c( j ) = zero
+              end do
+              return
+           end if
+           ! c is n-by-n.
+           ! if n is odd, set nisodd = .true., and n1 and n2.
+           ! if n is even, nisodd = .false., and nk.
+           if( mod( n, 2 )==0 ) then
+              nisodd = .false.
+              nk = n / 2
+           else
+              nisodd = .true.
+              if( lower ) then
+                 n2 = n / 2
+                 n1 = n - n2
               else
-                 ! compute b := b + a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
+                 n1 = n / 2
+                 n2 = n - n1
               end if
-           else if( alpha==-one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b - a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+           end if
+           if( nisodd ) then
+              ! n is odd
+              if( normaltransr ) then
+                 ! n is odd and transr = 'n'
+                 if( lower ) then
+                    ! n is odd, transr = 'n', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is odd, transr = 'n', uplo = 'l', and trans = 'n'
+                       call stdlib_dsyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
+                                 
+                       call stdlib_dsyrk( 'U', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( n+1 )&
+                                 , n )
+                       call stdlib_dgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( n1+1 ), n )
                     else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
-                                    )*x( i+1, j )
-                       end do
+                       ! n is odd, transr = 'n', uplo = 'l', and trans = 't'
+                       call stdlib_dsyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
+                                 
+                       call stdlib_dsyrk( 'U', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( n+1 )&
+                                 , n )
+                       call stdlib_dgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( n1+1 ), n )
                     end if
-                 end do
+                 else
+                    ! n is odd, transr = 'n', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is odd, transr = 'n', uplo = 'u', and trans = 'n'
+                       call stdlib_dsyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
+                                 n )
+                       call stdlib_dsyrk( 'U', 'N', n2, k, alpha, a( n2, 1 ), lda,beta, c( n1+1 ),&
+                                  n )
+                       call stdlib_dgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n2, 1 ), &
+                                 lda, beta, c( 1 ), n )
+                    else
+                       ! n is odd, transr = 'n', uplo = 'u', and trans = 't'
+                       call stdlib_dsyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
+                                 n )
+                       call stdlib_dsyrk( 'U', 'T', n2, k, alpha, a( 1, n2 ), lda,beta, c( n1+1 ),&
+                                  n )
+                       call stdlib_dgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n2 ), &
+                                 lda, beta, c( 1 ), n )
+                    end if
+                 end if
               else
-                 ! compute b := b - a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                 ! n is odd, and transr = 't'
+                 if( lower ) then
+                    ! n is odd, transr = 't', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is odd, transr = 't', uplo = 'l', and trans = 'n'
+                       call stdlib_dsyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
+                                 )
+                       call stdlib_dsyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( 2 ), &
+                                 n1 )
+                       call stdlib_dgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n1+1, 1 ),&
+                                  lda, beta,c( n1*n1+1 ), n1 )
                     else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
-                                    )*x( i+1, j )
-                       end do
+                       ! n is odd, transr = 't', uplo = 'l', and trans = 't'
+                       call stdlib_dsyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
+                                 )
+                       call stdlib_dsyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( 2 ), &
+                                 n1 )
+                       call stdlib_dgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n1+1 ),&
+                                  lda, beta,c( n1*n1+1 ), n1 )
                     end if
-                 end do
+                 else
+                    ! n is odd, transr = 't', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is odd, transr = 't', uplo = 'u', and trans = 'n'
+                       call stdlib_dsyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
+                                 ), n2 )
+                       call stdlib_dsyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( &
+                                 n1*n2+1 ), n2 )
+                       call stdlib_dgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), n2 )
+                    else
+                       ! n is odd, transr = 't', uplo = 'u', and trans = 't'
+                       call stdlib_dsyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
+                                 ), n2 )
+                       call stdlib_dsyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( &
+                                 n1*n2+1 ), n2 )
+                       call stdlib_dgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), n2 )
+                    end if
+                 end if
+              end if
+           else
+              ! n is even
+              if( normaltransr ) then
+                 ! n is even and transr = 'n'
+                 if( lower ) then
+                    ! n is even, transr = 'n', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is even, transr = 'n', uplo = 'l', and trans = 'n'
+                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
+                                 1 )
+                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
+                                 n+1 )
+                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( nk+2 ),n+1 )
+                    else
+                       ! n is even, transr = 'n', uplo = 'l', and trans = 't'
+                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
+                                 1 )
+                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
+                                 n+1 )
+                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( nk+2 ),n+1 )
+                    end if
+                 else
+                    ! n is even, transr = 'n', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is even, transr = 'n', uplo = 'u', and trans = 'n'
+                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
+                                 n+1 )
+                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( nk+1 &
+                                 ), n+1 )
+                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
+                                  lda, beta, c( 1 ),n+1 )
+                    else
+                       ! n is even, transr = 'n', uplo = 'u', and trans = 't'
+                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
+                                 n+1 )
+                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( nk+1 &
+                                 ), n+1 )
+                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
+                                  lda, beta, c( 1 ),n+1 )
+                    end if
+                 end if
+              else
+                 ! n is even, and transr = 't'
+                 if( lower ) then
+                    ! n is even, transr = 't', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is even, transr = 't', uplo = 'l', and trans = 'n'
+                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
+                                 nk )
+                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
+                                 nk )
+                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
+                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
+                    else
+                       ! n is even, transr = 't', uplo = 'l', and trans = 't'
+                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
+                                 nk )
+                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
+                                 nk )
+                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
+                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
+                    end if
+                 else
+                    ! n is even, transr = 't', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is even, transr = 't', uplo = 'u', and trans = 'n'
+                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
+                                 1 )+1 ), nk )
+                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( &
+                                 nk*nk+1 ), nk )
+                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), nk )
+                    else
+                       ! n is even, transr = 't', uplo = 'u', and trans = 't'
+                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
+                                 1 )+1 ), nk )
+                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( &
+                                 nk*nk+1 ), nk )
+                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), nk )
+                    end if
+                 end if
               end if
            end if
            return
-     end subroutine stdlib_dlagtm
+     end subroutine stdlib_dsfrk
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$lagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
-     !! DLAGTM: performs a matrix-vector product of the form
-     !! B := alpha * A * X + beta * B
-     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
-     !! matrices, and alpha and beta are real scalars, each of which may be
-     !! 0., 1., or -1.
-               
-        ! -- lapack auxiliary routine --
+     pure module subroutine stdlib_${ri}$sfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+     !! Level 3 BLAS like routine for C in RFP Format.
+     !! DSFRK: performs one of the symmetric rank--k operations
+     !! C := alpha*A*A**T + beta*C,
+     !! or
+     !! C := alpha*A**T*A + beta*C,
+     !! where alpha and beta are real scalars, C is an n--by--n symmetric
+     !! matrix and A is an n--by--k matrix in the first case and a k--by--n
+     !! matrix in the second case.
+        ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: trans
-           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
            real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: b(ldb,*)
-           real(${rk}$), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: c(*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j
+           logical(lk) :: lower, normaltransr, nisodd, notrans
+           integer(ilp) :: info, nrowa, j, nk, n1, n2
+           ! Intrinsic Functions 
            ! Executable Statements 
-           if( n==0 )return
-           ! multiply b by beta if beta/=1.
-           if( beta==zero ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = zero
-                 end do
-              end do
-           else if( beta==-one ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = -b( i, j )
-                 end do
-              end do
+           ! test the input parameters.
+           info = 0
+           normaltransr = stdlib_lsame( transr, 'N' )
+           lower = stdlib_lsame( uplo, 'L' )
+           notrans = stdlib_lsame( trans, 'N' )
+           if( notrans ) then
+              nrowa = n
+           else
+              nrowa = k
            end if
-           if( alpha==one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b + a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
+           if( .not.normaltransr .and. .not.stdlib_lsame( transr, 'T' ) ) then
+              info = -1
+           else if( .not.lower .and. .not.stdlib_lsame( uplo, 'U' ) ) then
+              info = -2
+           else if( .not.notrans .and. .not.stdlib_lsame( trans, 'T' ) ) then
+              info = -3
+           else if( n<0 ) then
+              info = -4
+           else if( k<0 ) then
+              info = -5
+           else if( lda<max( 1, nrowa ) ) then
+              info = -8
+           end if
+           if( info/=0 ) then
+              call stdlib_xerbla( 'DSFRK ', -info )
+              return
+           end if
+           ! quick return if possible.
+           ! the quick return case: ((alpha==0).and.(beta/=zero)) is not
+           ! done (it is in stdlib_${ri}$syrk for example) and left in the general case.
+           if( ( n==0 ) .or. ( ( ( alpha==zero ) .or. ( k==0 ) ) .and.( beta==one ) ) )&
+                     return
+           if( ( alpha==zero ) .and. ( beta==zero ) ) then
+              do j = 1, ( ( n*( n+1 ) ) / 2 )
+                 c( j ) = zero
+              end do
+              return
+           end if
+           ! c is n-by-n.
+           ! if n is odd, set nisodd = .true., and n1 and n2.
+           ! if n is even, nisodd = .false., and nk.
+           if( mod( n, 2 )==0 ) then
+              nisodd = .false.
+              nk = n / 2
+           else
+              nisodd = .true.
+              if( lower ) then
+                 n2 = n / 2
+                 n1 = n - n2
               else
-                 ! compute b := b + a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
+                 n1 = n / 2
+                 n2 = n - n1
               end if
-           else if( alpha==-one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b - a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+           end if
+           if( nisodd ) then
+              ! n is odd
+              if( normaltransr ) then
+                 ! n is odd and transr = 'n'
+                 if( lower ) then
+                    ! n is odd, transr = 'n', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is odd, transr = 'n', uplo = 'l', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
+                                 
+                       call stdlib_${ri}$syrk( 'U', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( n+1 )&
+                                 , n )
+                       call stdlib_${ri}$gemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( n1+1 ), n )
                     else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
-                                    )*x( i+1, j )
-                       end do
+                       ! n is odd, transr = 'n', uplo = 'l', and trans = 't'
+                       call stdlib_${ri}$syrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
+                                 
+                       call stdlib_${ri}$syrk( 'U', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( n+1 )&
+                                 , n )
+                       call stdlib_${ri}$gemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( n1+1 ), n )
                     end if
-                 end do
+                 else
+                    ! n is odd, transr = 'n', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is odd, transr = 'n', uplo = 'u', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
+                                 n )
+                       call stdlib_${ri}$syrk( 'U', 'N', n2, k, alpha, a( n2, 1 ), lda,beta, c( n1+1 ),&
+                                  n )
+                       call stdlib_${ri}$gemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n2, 1 ), &
+                                 lda, beta, c( 1 ), n )
+                    else
+                       ! n is odd, transr = 'n', uplo = 'u', and trans = 't'
+                       call stdlib_${ri}$syrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
+                                 n )
+                       call stdlib_${ri}$syrk( 'U', 'T', n2, k, alpha, a( 1, n2 ), lda,beta, c( n1+1 ),&
+                                  n )
+                       call stdlib_${ri}$gemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n2 ), &
+                                 lda, beta, c( 1 ), n )
+                    end if
+                 end if
               else
-                 ! compute b := b - a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
+                 ! n is odd, and transr = 't'
+                 if( lower ) then
+                    ! n is odd, transr = 't', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is odd, transr = 't', uplo = 'l', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
+                                 )
+                       call stdlib_${ri}$syrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( 2 ), &
+                                 n1 )
+                       call stdlib_${ri}$gemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n1+1, 1 ),&
+                                  lda, beta,c( n1*n1+1 ), n1 )
                     else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
-                                    )*x( i+1, j )
-                       end do
+                       ! n is odd, transr = 't', uplo = 'l', and trans = 't'
+                       call stdlib_${ri}$syrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
+                                 )
+                       call stdlib_${ri}$syrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( 2 ), &
+                                 n1 )
+                       call stdlib_${ri}$gemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n1+1 ),&
+                                  lda, beta,c( n1*n1+1 ), n1 )
                     end if
-                 end do
+                 else
+                    ! n is odd, transr = 't', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is odd, transr = 't', uplo = 'u', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
+                                 ), n2 )
+                       call stdlib_${ri}$syrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( &
+                                 n1*n2+1 ), n2 )
+                       call stdlib_${ri}$gemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), n2 )
+                    else
+                       ! n is odd, transr = 't', uplo = 'u', and trans = 't'
+                       call stdlib_${ri}$syrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
+                                 ), n2 )
+                       call stdlib_${ri}$syrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( &
+                                 n1*n2+1 ), n2 )
+                       call stdlib_${ri}$gemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), n2 )
+                    end if
+                 end if
+              end if
+           else
+              ! n is even
+              if( normaltransr ) then
+                 ! n is even and transr = 'n'
+                 if( lower ) then
+                    ! n is even, transr = 'n', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is even, transr = 'n', uplo = 'l', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
+                                 1 )
+                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
+                                 n+1 )
+                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( nk+2 ),n+1 )
+                    else
+                       ! n is even, transr = 'n', uplo = 'l', and trans = 't'
+                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
+                                 1 )
+                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
+                                 n+1 )
+                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( nk+2 ),n+1 )
+                    end if
+                 else
+                    ! n is even, transr = 'n', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is even, transr = 'n', uplo = 'u', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
+                                 n+1 )
+                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( nk+1 &
+                                 ), n+1 )
+                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
+                                  lda, beta, c( 1 ),n+1 )
+                    else
+                       ! n is even, transr = 'n', uplo = 'u', and trans = 't'
+                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
+                                 n+1 )
+                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( nk+1 &
+                                 ), n+1 )
+                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
+                                  lda, beta, c( 1 ),n+1 )
+                    end if
+                 end if
+              else
+                 ! n is even, and transr = 't'
+                 if( lower ) then
+                    ! n is even, transr = 't', and uplo = 'l'
+                    if( notrans ) then
+                       ! n is even, transr = 't', uplo = 'l', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
+                                 nk )
+                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
+                                 nk )
+                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
+                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
+                    else
+                       ! n is even, transr = 't', uplo = 'l', and trans = 't'
+                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
+                                 nk )
+                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
+                                 nk )
+                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
+                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
+                    end if
+                 else
+                    ! n is even, transr = 't', and uplo = 'u'
+                    if( notrans ) then
+                       ! n is even, transr = 't', uplo = 'u', and trans = 'n'
+                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
+                                 1 )+1 ), nk )
+                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( &
+                                 nk*nk+1 ), nk )
+                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), nk )
+                    else
+                       ! n is even, transr = 't', uplo = 'u', and trans = 't'
+                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
+                                 1 )+1 ), nk )
+                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( &
+                                 nk*nk+1 ), nk )
+                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
+                                  lda, beta, c( 1 ), nk )
+                    end if
+                 end if
               end if
            end if
            return
-     end subroutine stdlib_${ri}$lagtm
+     end subroutine stdlib_${ri}$sfrk
 
 #:endif
 #:endfor
 
-     module pure subroutine stdlib_clagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
-     !! CLAGTM performs a matrix-vector product of the form
-     !! B := alpha * A * X + beta * B
-     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
-     !! matrices, and alpha and beta are real scalars, each of which may be
-     !! 0., 1., or -1.
-               
+
+
+     pure module subroutine stdlib_clarcm( m, n, a, lda, b, ldb, c, ldc, rwork )
+     !! CLARCM performs a very simple matrix-matrix multiplication:
+     !! C := A * B,
+     !! where A is M by M and real; B is M by N and complex;
+     !! C is M by N and complex.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: trans
-           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
-           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
            ! Array Arguments 
-           complex(sp), intent(inout) :: b(ldb,*)
-           complex(sp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: rwork(*)
+           complex(sp), intent(in) :: b(ldb,*)
+           complex(sp), intent(out) :: c(ldc,*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j
+           integer(ilp) :: i, j, l
            ! Intrinsic Functions 
            ! Executable Statements 
-           if( n==0 )return
-           ! multiply b by beta if beta/=1.
-           if( beta==zero ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = zero
-                 end do
+           ! quick return if possible.
+           if( ( m==0 ) .or. ( n==0 ) )return
+           do j = 1, n
+              do i = 1, m
+                 rwork( ( j-1 )*m+i ) = real( b( i, j ),KIND=sp)
               end do
-           else if( beta==-one ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = -b( i, j )
-                 end do
+           end do
+           l = m*n + 1
+           call stdlib_sgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
+                     
+           do j = 1, n
+              do i = 1, m
+                 c( i, j ) = rwork( l+( j-1 )*m+i-1 )
               end do
-           end if
-           if( alpha==one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b + a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'T' ) ) then
-                 ! compute b := b + a**t * x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'C' ) ) then
-                 ! compute b := b + a**h * x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j ) +conjg( dl( 1 ) )*x( 2, &
-                                 j )
-                       b( n, j ) = b( n, j ) + conjg( du( n-1 ) )*x( n-1, j ) + conjg( d( n ) )*x(&
-                                  n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + conjg( du( i-1 ) )*x( i-1, j ) + conjg( d( i ) )&
-                                    *x( i, j ) + conjg( dl( i ) )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              end if
-           else if( alpha==-one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b - a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'T' ) ) then
-                 ! compute b := b - a**t*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'C' ) ) then
-                 ! compute b := b - a**h*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j ) -conjg( dl( 1 ) )*x( 2, &
-                                 j )
-                       b( n, j ) = b( n, j ) - conjg( du( n-1 ) )*x( n-1, j ) - conjg( d( n ) )*x(&
-                                  n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - conjg( du( i-1 ) )*x( i-1, j ) - conjg( d( i ) )&
-                                    *x( i, j ) - conjg( dl( i ) )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              end if
-           end if
+           end do
+           do j = 1, n
+              do i = 1, m
+                 rwork( ( j-1 )*m+i ) = aimag( b( i, j ) )
+              end do
+           end do
+           call stdlib_sgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
+                     
+           do j = 1, n
+              do i = 1, m
+                 c( i, j ) = cmplx( real( c( i, j ),KIND=sp),rwork( l+( j-1 )*m+i-1 ),KIND=sp)
+                           
+              end do
+           end do
            return
-     end subroutine stdlib_clagtm
+     end subroutine stdlib_clarcm
 
-     module pure subroutine stdlib_zlagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
-     !! ZLAGTM performs a matrix-vector product of the form
-     !! B := alpha * A * X + beta * B
-     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
-     !! matrices, and alpha and beta are real scalars, each of which may be
-     !! 0., 1., or -1.
-               
+     pure module subroutine stdlib_zlarcm( m, n, a, lda, b, ldb, c, ldc, rwork )
+     !! ZLARCM performs a very simple matrix-matrix multiplication:
+     !! C := A * B,
+     !! where A is M by M and real; B is M by N and complex;
+     !! C is M by N and complex.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: trans
-           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
-           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
            ! Array Arguments 
-           complex(dp), intent(inout) :: b(ldb,*)
-           complex(dp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: rwork(*)
+           complex(dp), intent(in) :: b(ldb,*)
+           complex(dp), intent(out) :: c(ldc,*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j
+           integer(ilp) :: i, j, l
            ! Intrinsic Functions 
            ! Executable Statements 
-           if( n==0 )return
-           ! multiply b by beta if beta/=1.
-           if( beta==zero ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = zero
-                 end do
+           ! quick return if possible.
+           if( ( m==0 ) .or. ( n==0 ) )return
+           do j = 1, n
+              do i = 1, m
+                 rwork( ( j-1 )*m+i ) = real( b( i, j ),KIND=dp)
               end do
-           else if( beta==-one ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = -b( i, j )
-                 end do
+           end do
+           l = m*n + 1
+           call stdlib_dgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
+                     
+           do j = 1, n
+              do i = 1, m
+                 c( i, j ) = rwork( l+( j-1 )*m+i-1 )
               end do
-           end if
-           if( alpha==one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b + a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'T' ) ) then
-                 ! compute b := b + a**t * x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'C' ) ) then
-                 ! compute b := b + a**h * x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j ) +conjg( dl( 1 ) )*x( 2, &
-                                 j )
-                       b( n, j ) = b( n, j ) + conjg( du( n-1 ) )*x( n-1, j ) + conjg( d( n ) )*x(&
-                                  n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + conjg( du( i-1 ) )*x( i-1, j ) + conjg( d( i ) )&
-                                    *x( i, j ) + conjg( dl( i ) )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              end if
-           else if( alpha==-one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b - a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'T' ) ) then
-                 ! compute b := b - a**t *x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'C' ) ) then
-                 ! compute b := b - a**h *x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j ) -conjg( dl( 1 ) )*x( 2, &
-                                 j )
-                       b( n, j ) = b( n, j ) - conjg( du( n-1 ) )*x( n-1, j ) - conjg( d( n ) )*x(&
-                                  n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - conjg( du( i-1 ) )*x( i-1, j ) - conjg( d( i ) )&
-                                    *x( i, j ) - conjg( dl( i ) )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              end if
-           end if
+           end do
+           do j = 1, n
+              do i = 1, m
+                 rwork( ( j-1 )*m+i ) = aimag( b( i, j ) )
+              end do
+           end do
+           call stdlib_dgemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
+                     
+           do j = 1, n
+              do i = 1, m
+                 c( i, j ) = cmplx( real( c( i, j ),KIND=dp),rwork( l+( j-1 )*m+i-1 ),KIND=dp)
+                           
+              end do
+           end do
            return
-     end subroutine stdlib_zlagtm
+     end subroutine stdlib_zlarcm
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$lagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
-     !! ZLAGTM: performs a matrix-vector product of the form
-     !! B := alpha * A * X + beta * B
-     !! where A is a tridiagonal matrix of order N, B and X are N by NRHS
-     !! matrices, and alpha and beta are real scalars, each of which may be
-     !! 0., 1., or -1.
-               
+     pure module subroutine stdlib_${ci}$larcm( m, n, a, lda, b, ldb, c, ldc, rwork )
+     !! ZLARCM: performs a very simple matrix-matrix multiplication:
+     !! C := A * B,
+     !! where A is M by M and real; B is M by N and complex;
+     !! C is M by N and complex.
         ! -- lapack auxiliary routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           character, intent(in) :: trans
-           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
-           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
            ! Array Arguments 
-           complex(${ck}$), intent(inout) :: b(ldb,*)
-           complex(${ck}$), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+           real(${ck}$), intent(in) :: a(lda,*)
+           real(${ck}$), intent(out) :: rwork(*)
+           complex(${ck}$), intent(in) :: b(ldb,*)
+           complex(${ck}$), intent(out) :: c(ldc,*)
         ! =====================================================================
            
            ! Local Scalars 
-           integer(ilp) :: i, j
+           integer(ilp) :: i, j, l
            ! Intrinsic Functions 
            ! Executable Statements 
-           if( n==0 )return
-           ! multiply b by beta if beta/=1.
-           if( beta==zero ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = zero
-                 end do
+           ! quick return if possible.
+           if( ( m==0 ) .or. ( n==0 ) )return
+           do j = 1, n
+              do i = 1, m
+                 rwork( ( j-1 )*m+i ) = real( b( i, j ),KIND=${ck}$)
               end do
-           else if( beta==-one ) then
-              do j = 1, nrhs
-                 do i = 1, n
-                    b( i, j ) = -b( i, j )
-                 end do
+           end do
+           l = m*n + 1
+           call stdlib_${c2ri(ci)}$gemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
+                     
+           do j = 1, n
+              do i = 1, m
+                 c( i, j ) = rwork( l+( j-1 )*m+i-1 )
               end do
-           end if
-           if( alpha==one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b + a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + dl( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + dl( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'T' ) ) then
-                 ! compute b := b + a**t * x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + d( 1 )*x( 1, j ) +dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) + du( n-1 )*x( n-1, j ) +d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + du( i-1 )*x( i-1, j ) +d( i )*x( i, j ) + dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'C' ) ) then
-                 ! compute b := b + a**h * x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) + conjg( d( 1 ) )*x( 1, j ) +conjg( dl( 1 ) )*x( 2, &
-                                 j )
-                       b( n, j ) = b( n, j ) + conjg( du( n-1 ) )*x( n-1, j ) + conjg( d( n ) )*x(&
-                                  n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) + conjg( du( i-1 ) )*x( i-1, j ) + conjg( d( i ) )&
-                                    *x( i, j ) + conjg( dl( i ) )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              end if
-           else if( alpha==-one ) then
-              if( stdlib_lsame( trans, 'N' ) ) then
-                 ! compute b := b - a*x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -du( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - dl( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - dl( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - du( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'T' ) ) then
-                 ! compute b := b - a**t *x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - d( 1 )*x( 1, j ) -dl( 1 )*x( 2, j )
-                       b( n, j ) = b( n, j ) - du( n-1 )*x( n-1, j ) -d( n )*x( n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - du( i-1 )*x( i-1, j ) -d( i )*x( i, j ) - dl( i &
-                                    )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              else if( stdlib_lsame( trans, 'C' ) ) then
-                 ! compute b := b - a**h *x
-                 do j = 1, nrhs
-                    if( n==1 ) then
-                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j )
-                    else
-                       b( 1, j ) = b( 1, j ) - conjg( d( 1 ) )*x( 1, j ) -conjg( dl( 1 ) )*x( 2, &
-                                 j )
-                       b( n, j ) = b( n, j ) - conjg( du( n-1 ) )*x( n-1, j ) - conjg( d( n ) )*x(&
-                                  n, j )
-                       do i = 2, n - 1
-                          b( i, j ) = b( i, j ) - conjg( du( i-1 ) )*x( i-1, j ) - conjg( d( i ) )&
-                                    *x( i, j ) - conjg( dl( i ) )*x( i+1, j )
-                       end do
-                    end if
-                 end do
-              end if
-           end if
+           end do
+           do j = 1, n
+              do i = 1, m
+                 rwork( ( j-1 )*m+i ) = aimag( b( i, j ) )
+              end do
+           end do
+           call stdlib_${c2ri(ci)}$gemm( 'N', 'N', m, n, m, one, a, lda, rwork, m, zero,rwork( l ), m )
+                     
+           do j = 1, n
+              do i = 1, m
+                 c( i, j ) = cmplx( real( c( i, j ),KIND=${ck}$),rwork( l+( j-1 )*m+i-1 ),KIND=${ck}$)
+                           
+              end do
+           end do
            return
-     end subroutine stdlib_${ci}$lagtm
+     end subroutine stdlib_${ci}$larcm
 
 #:endif
 #:endfor
 
 
 
-     module pure subroutine stdlib_chfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+     pure module subroutine stdlib_chfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
      !! Level 3 BLAS like routine for C in RFP Format.
      !! CHFRK performs one of the Hermitian rank--k operations
      !! C := alpha*A*A**H + beta*C,
@@ -4337,7 +5109,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
            return
      end subroutine stdlib_chfrk
 
-     module pure subroutine stdlib_zhfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+     pure module subroutine stdlib_zhfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
      !! Level 3 BLAS like routine for C in RFP Format.
      !! ZHFRK performs one of the Hermitian rank--k operations
      !! C := alpha*A*A**H + beta*C,
@@ -4598,7 +5370,7 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     module pure subroutine stdlib_${ci}$hfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+     pure module subroutine stdlib_${ci}$hfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
      !! Level 3 BLAS like routine for C in RFP Format.
      !! ZHFRK: performs one of the Hermitian rank--k operations
      !! C := alpha*A*A**H + beta*C,
@@ -4856,778 +5628,6 @@ submodule(stdlib_lapack) stdlib_lapack_blas_like_l3
            end if
            return
      end subroutine stdlib_${ci}$hfrk
-
-#:endif
-#:endfor
-
-
-
-     module pure subroutine stdlib_ssfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
-     !! Level 3 BLAS like routine for C in RFP Format.
-     !! SSFRK performs one of the symmetric rank--k operations
-     !! C := alpha*A*A**T + beta*C,
-     !! or
-     !! C := alpha*A**T*A + beta*C,
-     !! where alpha and beta are real scalars, C is an n--by--n symmetric
-     !! matrix and A is an n--by--k matrix in the first case and a k--by--n
-     !! matrix in the second case.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: k, lda, n
-           character, intent(in) :: trans, transr, uplo
-           ! Array Arguments 
-           real(sp), intent(in) :: a(lda,*)
-           real(sp), intent(inout) :: c(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: lower, normaltransr, nisodd, notrans
-           integer(ilp) :: info, nrowa, j, nk, n1, n2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           normaltransr = stdlib_lsame( transr, 'N' )
-           lower = stdlib_lsame( uplo, 'L' )
-           notrans = stdlib_lsame( trans, 'N' )
-           if( notrans ) then
-              nrowa = n
-           else
-              nrowa = k
-           end if
-           if( .not.normaltransr .and. .not.stdlib_lsame( transr, 'T' ) ) then
-              info = -1
-           else if( .not.lower .and. .not.stdlib_lsame( uplo, 'U' ) ) then
-              info = -2
-           else if( .not.notrans .and. .not.stdlib_lsame( trans, 'T' ) ) then
-              info = -3
-           else if( n<0 ) then
-              info = -4
-           else if( k<0 ) then
-              info = -5
-           else if( lda<max( 1, nrowa ) ) then
-              info = -8
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'SSFRK ', -info )
-              return
-           end if
-           ! quick return if possible.
-           ! the quick return case: ((alpha==0).and.(beta/=zero)) is not
-           ! done (it is in stdlib_ssyrk for example) and left in the general case.
-           if( ( n==0 ) .or. ( ( ( alpha==zero ) .or. ( k==0 ) ) .and.( beta==one ) ) )&
-                     return
-           if( ( alpha==zero ) .and. ( beta==zero ) ) then
-              do j = 1, ( ( n*( n+1 ) ) / 2 )
-                 c( j ) = zero
-              end do
-              return
-           end if
-           ! c is n-by-n.
-           ! if n is odd, set nisodd = .true., and n1 and n2.
-           ! if n is even, nisodd = .false., and nk.
-           if( mod( n, 2 )==0 ) then
-              nisodd = .false.
-              nk = n / 2
-           else
-              nisodd = .true.
-              if( lower ) then
-                 n2 = n / 2
-                 n1 = n - n2
-              else
-                 n1 = n / 2
-                 n2 = n - n1
-              end if
-           end if
-           if( nisodd ) then
-              ! n is odd
-              if( normaltransr ) then
-                 ! n is odd and transr = 'n'
-                 if( lower ) then
-                    ! n is odd, transr = 'n', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is odd, transr = 'n', uplo = 'l', and trans = 'n'
-                       call stdlib_ssyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
-                                 
-                       call stdlib_ssyrk( 'U', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( n+1 )&
-                                 , n )
-                       call stdlib_sgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( n1+1 ), n )
-                    else
-                       ! n is odd, transr = 'n', uplo = 'l', and trans = 't'
-                       call stdlib_ssyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
-                                 
-                       call stdlib_ssyrk( 'U', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( n+1 )&
-                                 , n )
-                       call stdlib_sgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( n1+1 ), n )
-                    end if
-                 else
-                    ! n is odd, transr = 'n', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is odd, transr = 'n', uplo = 'u', and trans = 'n'
-                       call stdlib_ssyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
-                                 n )
-                       call stdlib_ssyrk( 'U', 'N', n2, k, alpha, a( n2, 1 ), lda,beta, c( n1+1 ),&
-                                  n )
-                       call stdlib_sgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n2, 1 ), &
-                                 lda, beta, c( 1 ), n )
-                    else
-                       ! n is odd, transr = 'n', uplo = 'u', and trans = 't'
-                       call stdlib_ssyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
-                                 n )
-                       call stdlib_ssyrk( 'U', 'T', n2, k, alpha, a( 1, n2 ), lda,beta, c( n1+1 ),&
-                                  n )
-                       call stdlib_sgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n2 ), &
-                                 lda, beta, c( 1 ), n )
-                    end if
-                 end if
-              else
-                 ! n is odd, and transr = 't'
-                 if( lower ) then
-                    ! n is odd, transr = 't', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is odd, transr = 't', uplo = 'l', and trans = 'n'
-                       call stdlib_ssyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
-                                 )
-                       call stdlib_ssyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( 2 ), &
-                                 n1 )
-                       call stdlib_sgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n1+1, 1 ),&
-                                  lda, beta,c( n1*n1+1 ), n1 )
-                    else
-                       ! n is odd, transr = 't', uplo = 'l', and trans = 't'
-                       call stdlib_ssyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
-                                 )
-                       call stdlib_ssyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( 2 ), &
-                                 n1 )
-                       call stdlib_sgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n1+1 ),&
-                                  lda, beta,c( n1*n1+1 ), n1 )
-                    end if
-                 else
-                    ! n is odd, transr = 't', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is odd, transr = 't', uplo = 'u', and trans = 'n'
-                       call stdlib_ssyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
-                                 ), n2 )
-                       call stdlib_ssyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( &
-                                 n1*n2+1 ), n2 )
-                       call stdlib_sgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), n2 )
-                    else
-                       ! n is odd, transr = 't', uplo = 'u', and trans = 't'
-                       call stdlib_ssyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
-                                 ), n2 )
-                       call stdlib_ssyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( &
-                                 n1*n2+1 ), n2 )
-                       call stdlib_sgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), n2 )
-                    end if
-                 end if
-              end if
-           else
-              ! n is even
-              if( normaltransr ) then
-                 ! n is even and transr = 'n'
-                 if( lower ) then
-                    ! n is even, transr = 'n', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is even, transr = 'n', uplo = 'l', and trans = 'n'
-                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
-                                 1 )
-                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
-                                 n+1 )
-                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( nk+2 ),n+1 )
-                    else
-                       ! n is even, transr = 'n', uplo = 'l', and trans = 't'
-                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
-                                 1 )
-                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
-                                 n+1 )
-                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( nk+2 ),n+1 )
-                    end if
-                 else
-                    ! n is even, transr = 'n', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is even, transr = 'n', uplo = 'u', and trans = 'n'
-                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
-                                 n+1 )
-                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( nk+1 &
-                                 ), n+1 )
-                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
-                                  lda, beta, c( 1 ),n+1 )
-                    else
-                       ! n is even, transr = 'n', uplo = 'u', and trans = 't'
-                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
-                                 n+1 )
-                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( nk+1 &
-                                 ), n+1 )
-                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
-                                  lda, beta, c( 1 ),n+1 )
-                    end if
-                 end if
-              else
-                 ! n is even, and transr = 't'
-                 if( lower ) then
-                    ! n is even, transr = 't', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is even, transr = 't', uplo = 'l', and trans = 'n'
-                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
-                                 nk )
-                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
-                                 nk )
-                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
-                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
-                    else
-                       ! n is even, transr = 't', uplo = 'l', and trans = 't'
-                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
-                                 nk )
-                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
-                                 nk )
-                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
-                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
-                    end if
-                 else
-                    ! n is even, transr = 't', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is even, transr = 't', uplo = 'u', and trans = 'n'
-                       call stdlib_ssyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
-                                 1 )+1 ), nk )
-                       call stdlib_ssyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( &
-                                 nk*nk+1 ), nk )
-                       call stdlib_sgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), nk )
-                    else
-                       ! n is even, transr = 't', uplo = 'u', and trans = 't'
-                       call stdlib_ssyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
-                                 1 )+1 ), nk )
-                       call stdlib_ssyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( &
-                                 nk*nk+1 ), nk )
-                       call stdlib_sgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), nk )
-                    end if
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_ssfrk
-
-     module pure subroutine stdlib_dsfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
-     !! Level 3 BLAS like routine for C in RFP Format.
-     !! DSFRK performs one of the symmetric rank--k operations
-     !! C := alpha*A*A**T + beta*C,
-     !! or
-     !! C := alpha*A**T*A + beta*C,
-     !! where alpha and beta are real scalars, C is an n--by--n symmetric
-     !! matrix and A is an n--by--k matrix in the first case and a k--by--n
-     !! matrix in the second case.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: k, lda, n
-           character, intent(in) :: trans, transr, uplo
-           ! Array Arguments 
-           real(dp), intent(in) :: a(lda,*)
-           real(dp), intent(inout) :: c(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: lower, normaltransr, nisodd, notrans
-           integer(ilp) :: info, nrowa, j, nk, n1, n2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           normaltransr = stdlib_lsame( transr, 'N' )
-           lower = stdlib_lsame( uplo, 'L' )
-           notrans = stdlib_lsame( trans, 'N' )
-           if( notrans ) then
-              nrowa = n
-           else
-              nrowa = k
-           end if
-           if( .not.normaltransr .and. .not.stdlib_lsame( transr, 'T' ) ) then
-              info = -1
-           else if( .not.lower .and. .not.stdlib_lsame( uplo, 'U' ) ) then
-              info = -2
-           else if( .not.notrans .and. .not.stdlib_lsame( trans, 'T' ) ) then
-              info = -3
-           else if( n<0 ) then
-              info = -4
-           else if( k<0 ) then
-              info = -5
-           else if( lda<max( 1, nrowa ) ) then
-              info = -8
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DSFRK ', -info )
-              return
-           end if
-           ! quick return if possible.
-           ! the quick return case: ((alpha==0).and.(beta/=zero)) is not
-           ! done (it is in stdlib_dsyrk for example) and left in the general case.
-           if( ( n==0 ) .or. ( ( ( alpha==zero ) .or. ( k==0 ) ) .and.( beta==one ) ) )&
-                     return
-           if( ( alpha==zero ) .and. ( beta==zero ) ) then
-              do j = 1, ( ( n*( n+1 ) ) / 2 )
-                 c( j ) = zero
-              end do
-              return
-           end if
-           ! c is n-by-n.
-           ! if n is odd, set nisodd = .true., and n1 and n2.
-           ! if n is even, nisodd = .false., and nk.
-           if( mod( n, 2 )==0 ) then
-              nisodd = .false.
-              nk = n / 2
-           else
-              nisodd = .true.
-              if( lower ) then
-                 n2 = n / 2
-                 n1 = n - n2
-              else
-                 n1 = n / 2
-                 n2 = n - n1
-              end if
-           end if
-           if( nisodd ) then
-              ! n is odd
-              if( normaltransr ) then
-                 ! n is odd and transr = 'n'
-                 if( lower ) then
-                    ! n is odd, transr = 'n', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is odd, transr = 'n', uplo = 'l', and trans = 'n'
-                       call stdlib_dsyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
-                                 
-                       call stdlib_dsyrk( 'U', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( n+1 )&
-                                 , n )
-                       call stdlib_dgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( n1+1 ), n )
-                    else
-                       ! n is odd, transr = 'n', uplo = 'l', and trans = 't'
-                       call stdlib_dsyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
-                                 
-                       call stdlib_dsyrk( 'U', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( n+1 )&
-                                 , n )
-                       call stdlib_dgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( n1+1 ), n )
-                    end if
-                 else
-                    ! n is odd, transr = 'n', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is odd, transr = 'n', uplo = 'u', and trans = 'n'
-                       call stdlib_dsyrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
-                                 n )
-                       call stdlib_dsyrk( 'U', 'N', n2, k, alpha, a( n2, 1 ), lda,beta, c( n1+1 ),&
-                                  n )
-                       call stdlib_dgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n2, 1 ), &
-                                 lda, beta, c( 1 ), n )
-                    else
-                       ! n is odd, transr = 'n', uplo = 'u', and trans = 't'
-                       call stdlib_dsyrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
-                                 n )
-                       call stdlib_dsyrk( 'U', 'T', n2, k, alpha, a( 1, n2 ), lda,beta, c( n1+1 ),&
-                                  n )
-                       call stdlib_dgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n2 ), &
-                                 lda, beta, c( 1 ), n )
-                    end if
-                 end if
-              else
-                 ! n is odd, and transr = 't'
-                 if( lower ) then
-                    ! n is odd, transr = 't', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is odd, transr = 't', uplo = 'l', and trans = 'n'
-                       call stdlib_dsyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
-                                 )
-                       call stdlib_dsyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( 2 ), &
-                                 n1 )
-                       call stdlib_dgemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n1+1, 1 ),&
-                                  lda, beta,c( n1*n1+1 ), n1 )
-                    else
-                       ! n is odd, transr = 't', uplo = 'l', and trans = 't'
-                       call stdlib_dsyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
-                                 )
-                       call stdlib_dsyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( 2 ), &
-                                 n1 )
-                       call stdlib_dgemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n1+1 ),&
-                                  lda, beta,c( n1*n1+1 ), n1 )
-                    end if
-                 else
-                    ! n is odd, transr = 't', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is odd, transr = 't', uplo = 'u', and trans = 'n'
-                       call stdlib_dsyrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
-                                 ), n2 )
-                       call stdlib_dsyrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( &
-                                 n1*n2+1 ), n2 )
-                       call stdlib_dgemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), n2 )
-                    else
-                       ! n is odd, transr = 't', uplo = 'u', and trans = 't'
-                       call stdlib_dsyrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
-                                 ), n2 )
-                       call stdlib_dsyrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( &
-                                 n1*n2+1 ), n2 )
-                       call stdlib_dgemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), n2 )
-                    end if
-                 end if
-              end if
-           else
-              ! n is even
-              if( normaltransr ) then
-                 ! n is even and transr = 'n'
-                 if( lower ) then
-                    ! n is even, transr = 'n', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is even, transr = 'n', uplo = 'l', and trans = 'n'
-                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
-                                 1 )
-                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
-                                 n+1 )
-                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( nk+2 ),n+1 )
-                    else
-                       ! n is even, transr = 'n', uplo = 'l', and trans = 't'
-                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
-                                 1 )
-                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
-                                 n+1 )
-                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( nk+2 ),n+1 )
-                    end if
-                 else
-                    ! n is even, transr = 'n', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is even, transr = 'n', uplo = 'u', and trans = 'n'
-                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
-                                 n+1 )
-                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( nk+1 &
-                                 ), n+1 )
-                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
-                                  lda, beta, c( 1 ),n+1 )
-                    else
-                       ! n is even, transr = 'n', uplo = 'u', and trans = 't'
-                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
-                                 n+1 )
-                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( nk+1 &
-                                 ), n+1 )
-                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
-                                  lda, beta, c( 1 ),n+1 )
-                    end if
-                 end if
-              else
-                 ! n is even, and transr = 't'
-                 if( lower ) then
-                    ! n is even, transr = 't', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is even, transr = 't', uplo = 'l', and trans = 'n'
-                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
-                                 nk )
-                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
-                                 nk )
-                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
-                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
-                    else
-                       ! n is even, transr = 't', uplo = 'l', and trans = 't'
-                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
-                                 nk )
-                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
-                                 nk )
-                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
-                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
-                    end if
-                 else
-                    ! n is even, transr = 't', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is even, transr = 't', uplo = 'u', and trans = 'n'
-                       call stdlib_dsyrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
-                                 1 )+1 ), nk )
-                       call stdlib_dsyrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( &
-                                 nk*nk+1 ), nk )
-                       call stdlib_dgemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), nk )
-                    else
-                       ! n is even, transr = 't', uplo = 'u', and trans = 't'
-                       call stdlib_dsyrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
-                                 1 )+1 ), nk )
-                       call stdlib_dsyrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( &
-                                 nk*nk+1 ), nk )
-                       call stdlib_dgemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), nk )
-                    end if
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_dsfrk
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     module pure subroutine stdlib_${ri}$sfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
-     !! Level 3 BLAS like routine for C in RFP Format.
-     !! DSFRK: performs one of the symmetric rank--k operations
-     !! C := alpha*A*A**T + beta*C,
-     !! or
-     !! C := alpha*A**T*A + beta*C,
-     !! where alpha and beta are real scalars, C is an n--by--n symmetric
-     !! matrix and A is an n--by--k matrix in the first case and a k--by--n
-     !! matrix in the second case.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: k, lda, n
-           character, intent(in) :: trans, transr, uplo
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: c(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           logical(lk) :: lower, normaltransr, nisodd, notrans
-           integer(ilp) :: info, nrowa, j, nk, n1, n2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! test the input parameters.
-           info = 0
-           normaltransr = stdlib_lsame( transr, 'N' )
-           lower = stdlib_lsame( uplo, 'L' )
-           notrans = stdlib_lsame( trans, 'N' )
-           if( notrans ) then
-              nrowa = n
-           else
-              nrowa = k
-           end if
-           if( .not.normaltransr .and. .not.stdlib_lsame( transr, 'T' ) ) then
-              info = -1
-           else if( .not.lower .and. .not.stdlib_lsame( uplo, 'U' ) ) then
-              info = -2
-           else if( .not.notrans .and. .not.stdlib_lsame( trans, 'T' ) ) then
-              info = -3
-           else if( n<0 ) then
-              info = -4
-           else if( k<0 ) then
-              info = -5
-           else if( lda<max( 1, nrowa ) ) then
-              info = -8
-           end if
-           if( info/=0 ) then
-              call stdlib_xerbla( 'DSFRK ', -info )
-              return
-           end if
-           ! quick return if possible.
-           ! the quick return case: ((alpha==0).and.(beta/=zero)) is not
-           ! done (it is in stdlib_${ri}$syrk for example) and left in the general case.
-           if( ( n==0 ) .or. ( ( ( alpha==zero ) .or. ( k==0 ) ) .and.( beta==one ) ) )&
-                     return
-           if( ( alpha==zero ) .and. ( beta==zero ) ) then
-              do j = 1, ( ( n*( n+1 ) ) / 2 )
-                 c( j ) = zero
-              end do
-              return
-           end if
-           ! c is n-by-n.
-           ! if n is odd, set nisodd = .true., and n1 and n2.
-           ! if n is even, nisodd = .false., and nk.
-           if( mod( n, 2 )==0 ) then
-              nisodd = .false.
-              nk = n / 2
-           else
-              nisodd = .true.
-              if( lower ) then
-                 n2 = n / 2
-                 n1 = n - n2
-              else
-                 n1 = n / 2
-                 n2 = n - n1
-              end if
-           end if
-           if( nisodd ) then
-              ! n is odd
-              if( normaltransr ) then
-                 ! n is odd and transr = 'n'
-                 if( lower ) then
-                    ! n is odd, transr = 'n', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is odd, transr = 'n', uplo = 'l', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
-                                 
-                       call stdlib_${ri}$syrk( 'U', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( n+1 )&
-                                 , n )
-                       call stdlib_${ri}$gemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( n1+1 ), n )
-                    else
-                       ! n is odd, transr = 'n', uplo = 'l', and trans = 't'
-                       call stdlib_${ri}$syrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n )
-                                 
-                       call stdlib_${ri}$syrk( 'U', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( n+1 )&
-                                 , n )
-                       call stdlib_${ri}$gemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( n1+1 ), n )
-                    end if
-                 else
-                    ! n is odd, transr = 'n', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is odd, transr = 'n', uplo = 'u', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'L', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
-                                 n )
-                       call stdlib_${ri}$syrk( 'U', 'N', n2, k, alpha, a( n2, 1 ), lda,beta, c( n1+1 ),&
-                                  n )
-                       call stdlib_${ri}$gemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n2, 1 ), &
-                                 lda, beta, c( 1 ), n )
-                    else
-                       ! n is odd, transr = 'n', uplo = 'u', and trans = 't'
-                       call stdlib_${ri}$syrk( 'L', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2+1 ), &
-                                 n )
-                       call stdlib_${ri}$syrk( 'U', 'T', n2, k, alpha, a( 1, n2 ), lda,beta, c( n1+1 ),&
-                                  n )
-                       call stdlib_${ri}$gemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n2 ), &
-                                 lda, beta, c( 1 ), n )
-                    end if
-                 end if
-              else
-                 ! n is odd, and transr = 't'
-                 if( lower ) then
-                    ! n is odd, transr = 't', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is odd, transr = 't', uplo = 'l', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
-                                 )
-                       call stdlib_${ri}$syrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( 2 ), &
-                                 n1 )
-                       call stdlib_${ri}$gemm( 'N', 'T', n1, n2, k, alpha, a( 1, 1 ),lda, a( n1+1, 1 ),&
-                                  lda, beta,c( n1*n1+1 ), n1 )
-                    else
-                       ! n is odd, transr = 't', uplo = 'l', and trans = 't'
-                       call stdlib_${ri}$syrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( 1 ), n1 &
-                                 )
-                       call stdlib_${ri}$syrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( 2 ), &
-                                 n1 )
-                       call stdlib_${ri}$gemm( 'T', 'N', n1, n2, k, alpha, a( 1, 1 ),lda, a( 1, n1+1 ),&
-                                  lda, beta,c( n1*n1+1 ), n1 )
-                    end if
-                 else
-                    ! n is odd, transr = 't', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is odd, transr = 't', uplo = 'u', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'U', 'N', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
-                                 ), n2 )
-                       call stdlib_${ri}$syrk( 'L', 'N', n2, k, alpha, a( n1+1, 1 ), lda,beta, c( &
-                                 n1*n2+1 ), n2 )
-                       call stdlib_${ri}$gemm( 'N', 'T', n2, n1, k, alpha, a( n1+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), n2 )
-                    else
-                       ! n is odd, transr = 't', uplo = 'u', and trans = 't'
-                       call stdlib_${ri}$syrk( 'U', 'T', n1, k, alpha, a( 1, 1 ), lda,beta, c( n2*n2+1 &
-                                 ), n2 )
-                       call stdlib_${ri}$syrk( 'L', 'T', n2, k, alpha, a( 1, n1+1 ), lda,beta, c( &
-                                 n1*n2+1 ), n2 )
-                       call stdlib_${ri}$gemm( 'T', 'N', n2, n1, k, alpha, a( 1, n1+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), n2 )
-                    end if
-                 end if
-              end if
-           else
-              ! n is even
-              if( normaltransr ) then
-                 ! n is even and transr = 'n'
-                 if( lower ) then
-                    ! n is even, transr = 'n', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is even, transr = 'n', uplo = 'l', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
-                                 1 )
-                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
-                                 n+1 )
-                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( nk+2 ),n+1 )
-                    else
-                       ! n is even, transr = 'n', uplo = 'l', and trans = 't'
-                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( 2 ), n+&
-                                 1 )
-                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
-                                 n+1 )
-                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( nk+2 ),n+1 )
-                    end if
-                 else
-                    ! n is even, transr = 'n', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is even, transr = 'n', uplo = 'u', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
-                                 n+1 )
-                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( nk+1 &
-                                 ), n+1 )
-                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
-                                  lda, beta, c( 1 ),n+1 )
-                    else
-                       ! n is even, transr = 'n', uplo = 'u', and trans = 't'
-                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+2 ), &
-                                 n+1 )
-                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( nk+1 &
-                                 ), n+1 )
-                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
-                                  lda, beta, c( 1 ),n+1 )
-                    end if
-                 end if
-              else
-                 ! n is even, and transr = 't'
-                 if( lower ) then
-                    ! n is even, transr = 't', and uplo = 'l'
-                    if( notrans ) then
-                       ! n is even, transr = 't', uplo = 'l', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
-                                 nk )
-                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( 1 ), &
-                                 nk )
-                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( 1, 1 ),lda, a( nk+1, 1 ),&
-                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
-                    else
-                       ! n is even, transr = 't', uplo = 'l', and trans = 't'
-                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk+1 ), &
-                                 nk )
-                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( 1 ), &
-                                 nk )
-                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, 1 ),lda, a( 1, nk+1 ),&
-                                  lda, beta,c( ( ( nk+1 )*nk )+1 ), nk )
-                    end if
-                 else
-                    ! n is even, transr = 't', and uplo = 'u'
-                    if( notrans ) then
-                       ! n is even, transr = 't', uplo = 'u', and trans = 'n'
-                       call stdlib_${ri}$syrk( 'U', 'N', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
-                                 1 )+1 ), nk )
-                       call stdlib_${ri}$syrk( 'L', 'N', nk, k, alpha, a( nk+1, 1 ), lda,beta, c( &
-                                 nk*nk+1 ), nk )
-                       call stdlib_${ri}$gemm( 'N', 'T', nk, nk, k, alpha, a( nk+1, 1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), nk )
-                    else
-                       ! n is even, transr = 't', uplo = 'u', and trans = 't'
-                       call stdlib_${ri}$syrk( 'U', 'T', nk, k, alpha, a( 1, 1 ), lda,beta, c( nk*( nk+&
-                                 1 )+1 ), nk )
-                       call stdlib_${ri}$syrk( 'L', 'T', nk, k, alpha, a( 1, nk+1 ), lda,beta, c( &
-                                 nk*nk+1 ), nk )
-                       call stdlib_${ri}$gemm( 'T', 'N', nk, nk, k, alpha, a( 1, nk+1 ),lda, a( 1, 1 ),&
-                                  lda, beta, c( 1 ), nk )
-                    end if
-                 end if
-              end if
-           end if
-           return
-     end subroutine stdlib_${ri}$sfrk
 
 #:endif
 #:endfor
