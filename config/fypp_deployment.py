@@ -17,7 +17,11 @@ C_PREPROCESSED = (
     "stdlib_blas_level3_sym",
     "stdlib_blas_level3_tri",
 
-    "stdlib_lapack",
+    "stdlib_lapack_base",
+    "stdlib_lapack_solve",
+    "stdlib_lapack_other",
+    "stdlib_lapack_orthogonal_factors",
+    "stdlib_lapack_eig_svd_lsq",
     "stdlib_linalg_lapack_aux",
     "stdlib_lapack_auxiliary_others",
     "stdlib_lapack_auxiliary_parameters",
