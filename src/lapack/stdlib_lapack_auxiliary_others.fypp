@@ -1,9 +1,170 @@
 #:include "common.fypp" 
-submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
+submodule(stdlib_lapack_base) stdlib_lapack_auxiliary_others
   implicit none(type,external)
 
 
   contains
+
+
+
+
+
+
+
+
+
+     pure module subroutine stdlib_sladiv1( a, b, c, d, p, q )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(inout) :: a
+           real(sp), intent(in) :: b, c, d
+           real(sp), intent(out) :: p, q
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(sp) :: r, t
+           ! Executable Statements 
+           r = d / c
+           t = one / (c + d * r)
+           p = stdlib_sladiv2(a, b, c, d, r, t)
+           a = -a
+           q = stdlib_sladiv2(b, a, c, d, r, t)
+           return
+     end subroutine stdlib_sladiv1
+
+     pure module subroutine stdlib_dladiv1( a, b, c, d, p, q )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(inout) :: a
+           real(dp), intent(in) :: b, c, d
+           real(dp), intent(out) :: p, q
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(dp) :: r, t
+           ! Executable Statements 
+           r = d / c
+           t = one / (c + d * r)
+           p = stdlib_dladiv2(a, b, c, d, r, t)
+           a = -a
+           q = stdlib_dladiv2(b, a, c, d, r, t)
+           return
+     end subroutine stdlib_dladiv1
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$ladiv1( a, b, c, d, p, q )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(inout) :: a
+           real(${rk}$), intent(in) :: b, c, d
+           real(${rk}$), intent(out) :: p, q
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: r, t
+           ! Executable Statements 
+           r = d / c
+           t = one / (c + d * r)
+           p = stdlib_${ri}$ladiv2(a, b, c, d, r, t)
+           a = -a
+           q = stdlib_${ri}$ladiv2(b, a, c, d, r, t)
+           return
+     end subroutine stdlib_${ri}$ladiv1
+
+#:endif
+#:endfor
+
+
+
+     pure real(sp) module function stdlib_sladiv2( a, b, c, d, r, t )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(in) :: a, b, c, d, r, t
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(sp) :: br
+           ! Executable Statements 
+           if( r/=zero ) then
+              br = b * r
+              if( br/=zero ) then
+                 stdlib_sladiv2 = (a + br) * t
+              else
+                 stdlib_sladiv2 = a * t + (b * t) * r
+              end if
+           else
+              stdlib_sladiv2 = (a + d * (b / c)) * t
+           end if
+           return
+     end function stdlib_sladiv2
+
+     pure real(dp) module function stdlib_dladiv2( a, b, c, d, r, t )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(in) :: a, b, c, d, r, t
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(dp) :: br
+           ! Executable Statements 
+           if( r/=zero ) then
+              br = b * r
+              if( br/=zero ) then
+                 stdlib_dladiv2 = (a + br) * t
+              else
+                 stdlib_dladiv2 = a * t + (b * t) * r
+              end if
+           else
+              stdlib_dladiv2 = (a + d * (b / c)) * t
+           end if
+           return
+     end function stdlib_dladiv2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$ladiv2( a, b, c, d, r, t )
+        ! -- lapack auxiliary routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(in) :: a, b, c, d, r, t
+        ! =====================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: br
+           ! Executable Statements 
+           if( r/=zero ) then
+              br = b * r
+              if( br/=zero ) then
+                 stdlib_${ri}$ladiv2 = (a + br) * t
+              else
+                 stdlib_${ri}$ladiv2 = a * t + (b * t) * r
+              end if
+           else
+              stdlib_${ri}$ladiv2 = (a + d * (b / c)) * t
+           end if
+           return
+     end function stdlib_${ri}$ladiv2
+
+#:endif
+#:endfor
 
 
 
@@ -143,167 +304,6 @@ submodule(stdlib_lapack) stdlib_lapack_auxiliary_others
 
 #:endif
 #:endfor
-
-
-
-
-
-     pure module subroutine stdlib_sladiv1( a, b, c, d, p, q )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(inout) :: a
-           real(sp), intent(in) :: b, c, d
-           real(sp), intent(out) :: p, q
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(sp) :: r, t
-           ! Executable Statements 
-           r = d / c
-           t = one / (c + d * r)
-           p = stdlib_sladiv2(a, b, c, d, r, t)
-           a = -a
-           q = stdlib_sladiv2(b, a, c, d, r, t)
-           return
-     end subroutine stdlib_sladiv1
-
-     pure module subroutine stdlib_dladiv1( a, b, c, d, p, q )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(inout) :: a
-           real(dp), intent(in) :: b, c, d
-           real(dp), intent(out) :: p, q
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(dp) :: r, t
-           ! Executable Statements 
-           r = d / c
-           t = one / (c + d * r)
-           p = stdlib_dladiv2(a, b, c, d, r, t)
-           a = -a
-           q = stdlib_dladiv2(b, a, c, d, r, t)
-           return
-     end subroutine stdlib_dladiv1
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$ladiv1( a, b, c, d, p, q )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(inout) :: a
-           real(${rk}$), intent(in) :: b, c, d
-           real(${rk}$), intent(out) :: p, q
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: r, t
-           ! Executable Statements 
-           r = d / c
-           t = one / (c + d * r)
-           p = stdlib_${ri}$ladiv2(a, b, c, d, r, t)
-           a = -a
-           q = stdlib_${ri}$ladiv2(b, a, c, d, r, t)
-           return
-     end subroutine stdlib_${ri}$ladiv1
-
-#:endif
-#:endfor
-
-
-
-
-
-     pure real(sp) module function stdlib_sladiv2( a, b, c, d, r, t )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(in) :: a, b, c, d, r, t
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(sp) :: br
-           ! Executable Statements 
-           if( r/=zero ) then
-              br = b * r
-              if( br/=zero ) then
-                 stdlib_sladiv2 = (a + br) * t
-              else
-                 stdlib_sladiv2 = a * t + (b * t) * r
-              end if
-           else
-              stdlib_sladiv2 = (a + d * (b / c)) * t
-           end if
-           return
-     end function stdlib_sladiv2
-
-     pure real(dp) module function stdlib_dladiv2( a, b, c, d, r, t )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(in) :: a, b, c, d, r, t
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(dp) :: br
-           ! Executable Statements 
-           if( r/=zero ) then
-              br = b * r
-              if( br/=zero ) then
-                 stdlib_dladiv2 = (a + br) * t
-              else
-                 stdlib_dladiv2 = a * t + (b * t) * r
-              end if
-           else
-              stdlib_dladiv2 = (a + d * (b / c)) * t
-           end if
-           return
-     end function stdlib_dladiv2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure real(${rk}$) module function stdlib_${ri}$ladiv2( a, b, c, d, r, t )
-        ! -- lapack auxiliary routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(in) :: a, b, c, d, r, t
-        ! =====================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: br
-           ! Executable Statements 
-           if( r/=zero ) then
-              br = b * r
-              if( br/=zero ) then
-                 stdlib_${ri}$ladiv2 = (a + br) * t
-              else
-                 stdlib_${ri}$ladiv2 = a * t + (b * t) * r
-              end if
-           else
-              stdlib_${ri}$ladiv2 = (a + d * (b / c)) * t
-           end if
-           return
-     end function stdlib_${ri}$ladiv2
-
-#:endif
-#:endfor
-
-
 
 
 end submodule stdlib_lapack_auxiliary_others

@@ -1,5 +1,5 @@
 #:include "common.fypp" 
-submodule(stdlib_lapack) stdlib_lapack_svd_comp2
+submodule(stdlib_lapack_eig_svd_lsq) stdlib_lapack_svd_comp2
   implicit none(type,external)
 
 
@@ -1486,6 +1486,181 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
 
 
 
+     pure module subroutine stdlib_slartgs( x, y, sigma, cs, sn )
+     !! SLARTGS generates a plane rotation designed to introduce a bulge in
+     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
+     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
+     !! The computed CS and SN define a plane rotation satisfying
+     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
+     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
+     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
+     !! rotation is by PI/2.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(sp), intent(out) :: cs, sn
+           real(sp), intent(in) :: sigma, x, y
+        ! ===================================================================
+           
+           ! Local Scalars 
+           real(sp) :: r, s, thresh, w, z
+           thresh = stdlib_slamch('E')
+           ! compute the first column of b**t*b - sigma^2*i, up to a scale
+           ! factor.
+           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
+                     then
+              z = zero
+              w = zero
+           else if( sigma == zero ) then
+              if( x >= zero ) then
+                 z = x
+                 w = y
+              else
+                 z = -x
+                 w = -y
+              end if
+           else if( abs(x) < thresh ) then
+              z = -sigma*sigma
+              w = zero
+           else
+              if( x >= zero ) then
+                 s = one
+              else
+                 s = negone
+              end if
+              z = s * (abs(x)-sigma) * (s+sigma/x)
+              w = s * y
+           end if
+           ! generate the rotation.
+           ! call stdlib_slartgp( z, w, cs, sn, r ) might seem more natural;
+           ! reordering the arguments ensures that if z = 0 then the rotation
+           ! is by pi/2.
+           call stdlib_slartgp( w, z, sn, cs, r )
+           return
+           ! end stdlib_slartgs
+     end subroutine stdlib_slartgs
+
+     pure module subroutine stdlib_dlartgs( x, y, sigma, cs, sn )
+     !! DLARTGS generates a plane rotation designed to introduce a bulge in
+     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
+     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
+     !! The computed CS and SN define a plane rotation satisfying
+     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
+     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
+     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
+     !! rotation is by PI/2.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(dp), intent(out) :: cs, sn
+           real(dp), intent(in) :: sigma, x, y
+        ! ===================================================================
+           
+           ! Local Scalars 
+           real(dp) :: r, s, thresh, w, z
+           thresh = stdlib_dlamch('E')
+           ! compute the first column of b**t*b - sigma^2*i, up to a scale
+           ! factor.
+           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
+                     then
+              z = zero
+              w = zero
+           else if( sigma == zero ) then
+              if( x >= zero ) then
+                 z = x
+                 w = y
+              else
+                 z = -x
+                 w = -y
+              end if
+           else if( abs(x) < thresh ) then
+              z = -sigma*sigma
+              w = zero
+           else
+              if( x >= zero ) then
+                 s = one
+              else
+                 s = negone
+              end if
+              z = s * (abs(x)-sigma) * (s+sigma/x)
+              w = s * y
+           end if
+           ! generate the rotation.
+           ! call stdlib_dlartgp( z, w, cs, sn, r ) might seem more natural;
+           ! reordering the arguments ensures that if z = 0 then the rotation
+           ! is by pi/2.
+           call stdlib_dlartgp( w, z, sn, cs, r )
+           return
+           ! end stdlib_dlartgs
+     end subroutine stdlib_dlartgs
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lartgs( x, y, sigma, cs, sn )
+     !! DLARTGS: generates a plane rotation designed to introduce a bulge in
+     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
+     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
+     !! The computed CS and SN define a plane rotation satisfying
+     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
+     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
+     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
+     !! rotation is by PI/2.
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           real(${rk}$), intent(out) :: cs, sn
+           real(${rk}$), intent(in) :: sigma, x, y
+        ! ===================================================================
+           
+           ! Local Scalars 
+           real(${rk}$) :: r, s, thresh, w, z
+           thresh = stdlib_${ri}$lamch('E')
+           ! compute the first column of b**t*b - sigma^2*i, up to a scale
+           ! factor.
+           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
+                     then
+              z = zero
+              w = zero
+           else if( sigma == zero ) then
+              if( x >= zero ) then
+                 z = x
+                 w = y
+              else
+                 z = -x
+                 w = -y
+              end if
+           else if( abs(x) < thresh ) then
+              z = -sigma*sigma
+              w = zero
+           else
+              if( x >= zero ) then
+                 s = one
+              else
+                 s = negone
+              end if
+              z = s * (abs(x)-sigma) * (s+sigma/x)
+              w = s * y
+           end if
+           ! generate the rotation.
+           ! call stdlib_${ri}$lartgp( z, w, cs, sn, r ) might seem more natural;
+           ! reordering the arguments ensures that if z = 0 then the rotation
+           ! is by pi/2.
+           call stdlib_${ri}$lartgp( w, z, sn, cs, r )
+           return
+           ! end stdlib_${ri}$lartgs
+     end subroutine stdlib_${ri}$lartgs
+
+#:endif
+#:endfor
+
+
+
      pure module subroutine stdlib_slags2( upper, a1, a2, a3, b1, b2, b3, csu, snu, csv,snv, csq, snq )
      !! SLAGS2 computes 2-by-2 orthogonal matrices U, V and Q, such
      !! that if ( UPPER ) then
@@ -2788,181 +2963,6 @@ submodule(stdlib_lapack) stdlib_lapack_svd_comp2
            call stdlib_${c2ri(ci)}$las2( abs( a11 ), abs( a12 ), abs( a22 ), ssmin, ssmax )
            return
      end subroutine stdlib_${ci}$lapll
-
-#:endif
-#:endfor
-
-
-
-     pure module subroutine stdlib_slartgs( x, y, sigma, cs, sn )
-     !! SLARTGS generates a plane rotation designed to introduce a bulge in
-     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
-     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
-     !! The computed CS and SN define a plane rotation satisfying
-     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
-     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
-     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
-     !! rotation is by PI/2.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(sp), intent(out) :: cs, sn
-           real(sp), intent(in) :: sigma, x, y
-        ! ===================================================================
-           
-           ! Local Scalars 
-           real(sp) :: r, s, thresh, w, z
-           thresh = stdlib_slamch('E')
-           ! compute the first column of b**t*b - sigma^2*i, up to a scale
-           ! factor.
-           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
-                     then
-              z = zero
-              w = zero
-           else if( sigma == zero ) then
-              if( x >= zero ) then
-                 z = x
-                 w = y
-              else
-                 z = -x
-                 w = -y
-              end if
-           else if( abs(x) < thresh ) then
-              z = -sigma*sigma
-              w = zero
-           else
-              if( x >= zero ) then
-                 s = one
-              else
-                 s = negone
-              end if
-              z = s * (abs(x)-sigma) * (s+sigma/x)
-              w = s * y
-           end if
-           ! generate the rotation.
-           ! call stdlib_slartgp( z, w, cs, sn, r ) might seem more natural;
-           ! reordering the arguments ensures that if z = 0 then the rotation
-           ! is by pi/2.
-           call stdlib_slartgp( w, z, sn, cs, r )
-           return
-           ! end stdlib_slartgs
-     end subroutine stdlib_slartgs
-
-     pure module subroutine stdlib_dlartgs( x, y, sigma, cs, sn )
-     !! DLARTGS generates a plane rotation designed to introduce a bulge in
-     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
-     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
-     !! The computed CS and SN define a plane rotation satisfying
-     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
-     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
-     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
-     !! rotation is by PI/2.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(dp), intent(out) :: cs, sn
-           real(dp), intent(in) :: sigma, x, y
-        ! ===================================================================
-           
-           ! Local Scalars 
-           real(dp) :: r, s, thresh, w, z
-           thresh = stdlib_dlamch('E')
-           ! compute the first column of b**t*b - sigma^2*i, up to a scale
-           ! factor.
-           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
-                     then
-              z = zero
-              w = zero
-           else if( sigma == zero ) then
-              if( x >= zero ) then
-                 z = x
-                 w = y
-              else
-                 z = -x
-                 w = -y
-              end if
-           else if( abs(x) < thresh ) then
-              z = -sigma*sigma
-              w = zero
-           else
-              if( x >= zero ) then
-                 s = one
-              else
-                 s = negone
-              end if
-              z = s * (abs(x)-sigma) * (s+sigma/x)
-              w = s * y
-           end if
-           ! generate the rotation.
-           ! call stdlib_dlartgp( z, w, cs, sn, r ) might seem more natural;
-           ! reordering the arguments ensures that if z = 0 then the rotation
-           ! is by pi/2.
-           call stdlib_dlartgp( w, z, sn, cs, r )
-           return
-           ! end stdlib_dlartgs
-     end subroutine stdlib_dlartgs
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$lartgs( x, y, sigma, cs, sn )
-     !! DLARTGS: generates a plane rotation designed to introduce a bulge in
-     !! Golub-Reinsch-style implicit QR iteration for the bidiagonal SVD
-     !! problem. X and Y are the top-row entries, and SIGMA is the shift.
-     !! The computed CS and SN define a plane rotation satisfying
-     !! [  CS  SN  ]  .  [ X^2 - SIGMA ]  =  [ R ],
-     !! [ -SN  CS  ]     [    X * Y    ]     [ 0 ]
-     !! with R nonnegative.  If X^2 - SIGMA and X * Y are 0, then the
-     !! rotation is by PI/2.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           real(${rk}$), intent(out) :: cs, sn
-           real(${rk}$), intent(in) :: sigma, x, y
-        ! ===================================================================
-           
-           ! Local Scalars 
-           real(${rk}$) :: r, s, thresh, w, z
-           thresh = stdlib_${ri}$lamch('E')
-           ! compute the first column of b**t*b - sigma^2*i, up to a scale
-           ! factor.
-           if( (sigma == zero .and. abs(x) < thresh) .or.(abs(x) == sigma .and. y == zero) ) &
-                     then
-              z = zero
-              w = zero
-           else if( sigma == zero ) then
-              if( x >= zero ) then
-                 z = x
-                 w = y
-              else
-                 z = -x
-                 w = -y
-              end if
-           else if( abs(x) < thresh ) then
-              z = -sigma*sigma
-              w = zero
-           else
-              if( x >= zero ) then
-                 s = one
-              else
-                 s = negone
-              end if
-              z = s * (abs(x)-sigma) * (s+sigma/x)
-              w = s * y
-           end if
-           ! generate the rotation.
-           ! call stdlib_${ri}$lartgp( z, w, cs, sn, r ) might seem more natural;
-           ! reordering the arguments ensures that if z = 0 then the rotation
-           ! is by pi/2.
-           call stdlib_${ri}$lartgp( w, z, sn, cs, r )
-           return
-           ! end stdlib_${ri}$lartgs
-     end subroutine stdlib_${ri}$lartgs
 
 #:endif
 #:endfor

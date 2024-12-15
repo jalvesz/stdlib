@@ -5,25 +5,25 @@ module stdlib_blas
   implicit none(type,external)
 
 interface 
-     pure complex(sp) module function stdlib_cdotu(n,cx,incx,cy,incy)
+     pure real(sp) module function stdlib_sasum(n,sx,incx)
      use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(sp), intent(in) :: cx(*), cy(*)
-     end function stdlib_cdotu
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(in) :: sx(*)
+     end function stdlib_sasum
 
-     pure complex(dp) module function stdlib_zdotu(n,zx,incx,zy,incy)
+     pure real(dp) module function stdlib_dasum(n,dx,incx)
      use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(dp), intent(in) :: zx(*), zy(*)
-     end function stdlib_zdotu
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(in) :: dx(*)
+     end function stdlib_dasum
 
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure complex(${ck}$) module function stdlib_${ci}$dotu(n,zx,incx,zy,incy)
-     use stdlib_blas_constants_${ck}$
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(${ck}$), intent(in) :: zx(*), zy(*)
-     end function stdlib_${ci}$dotu
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$asum(n,dx,incx)
+     use stdlib_blas_constants_${rk}$
+           integer(ilp), intent(in) :: incx, n
+           real(${rk}$), intent(in) :: dx(*)
+     end function stdlib_${ri}$asum
 
 #:endif
 #:endfor
@@ -32,21 +32,29 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_zdrot( n, zx, incx, zy, incy, c, s )
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(in) :: c, s
-           complex(dp), intent(inout) :: zx(*), zy(*)
-     end subroutine stdlib_zdrot
+     pure real(sp) module function stdlib_scasum(n,cx,incx)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(in) :: cx(*)
+     end function stdlib_scasum
 
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$drot( n, zx, incx, zy, incy, c, s )
-     use stdlib_blas_constants_${ck}$
-           integer(ilp), intent(in) :: incx, incy, n
-           real(${ck}$), intent(in) :: c, s
-           complex(${ck}$), intent(inout) :: zx(*), zy(*)
-     end subroutine stdlib_${ci}$drot
+end interface 
+
+
+interface 
+     pure real(dp) module function stdlib_dzasum(n,zx,incx)
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(in) :: zx(*)
+     end function stdlib_dzasum
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$zasum(n,zx,incx)
+     use stdlib_blas_constants_${rk}$
+           integer(ilp), intent(in) :: incx, n
+           complex(${rk}$), intent(in) :: zx(*)
+     end function stdlib_${ri}$zasum
 
 #:endif
 #:endfor
@@ -117,46 +125,6 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_srotmg(sd1,sd2,sx1,sy1,sparam)
-     use stdlib_blas_constants_sp
-           real(sp), intent(inout) :: sd1, sd2, sx1
-           real(sp), intent(in) :: sy1
-           real(sp), intent(out) :: sparam(5)
-     end subroutine stdlib_srotmg
-
-     pure module subroutine stdlib_drotmg(dd1,dd2,dx1,dy1,dparam)
-     use stdlib_blas_constants_dp
-           real(dp), intent(inout) :: dd1, dd2, dx1
-           real(dp), intent(in) :: dy1
-           real(dp), intent(out) :: dparam(5)
-     end subroutine stdlib_drotmg
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$rotmg(dd1,dd2,dx1,dy1,dparam)
-     use stdlib_blas_constants_${rk}$
-           real(${rk}$), intent(inout) :: dd1, dd2, dx1
-           real(${rk}$), intent(in) :: dy1
-           real(${rk}$), intent(out) :: dparam(5)
-     end subroutine stdlib_${ri}$rotmg
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure real(sp) module function stdlib_scnrm2( n, x, incx )
-     use stdlib_blas_constants_sp
-        integer(ilp), intent(in) :: incx, n
-        complex(sp), intent(in) :: x(*)
-     end function stdlib_scnrm2
-
-end interface 
-
-
-interface 
      pure module subroutine stdlib_scopy(n,sx,incx,sy,incy)
      use stdlib_blas_constants_sp
            integer(ilp), intent(in) :: incx, incy, n
@@ -213,48 +181,25 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_sswap(n,sx,incx,sy,incy)
+     pure real(sp) module function stdlib_sdot(n,sx,incx,sy,incy)
      use stdlib_blas_constants_sp
            integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(inout) :: sx(*), sy(*)
-     end subroutine stdlib_sswap
+           real(sp), intent(in) :: sx(*), sy(*)
+     end function stdlib_sdot
 
-     pure module subroutine stdlib_dswap(n,dx,incx,dy,incy)
+     pure real(dp) module function stdlib_ddot(n,dx,incx,dy,incy)
      use stdlib_blas_constants_dp
            integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(inout) :: dx(*), dy(*)
-     end subroutine stdlib_dswap
+           real(dp), intent(in) :: dx(*), dy(*)
+     end function stdlib_ddot
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$swap(n,dx,incx,dy,incy)
+     pure real(${rk}$) module function stdlib_${ri}$dot(n,dx,incx,dy,incy)
      use stdlib_blas_constants_${rk}$
            integer(ilp), intent(in) :: incx, incy, n
-           real(${rk}$), intent(inout) :: dx(*), dy(*)
-     end subroutine stdlib_${ri}$swap
-
-#:endif
-#:endfor
-
-     pure module subroutine stdlib_cswap(n,cx,incx,cy,incy)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(sp), intent(inout) :: cx(*), cy(*)
-     end subroutine stdlib_cswap
-
-     pure module subroutine stdlib_zswap(n,zx,incx,zy,incy)
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(dp), intent(inout) :: zx(*), zy(*)
-     end subroutine stdlib_zswap
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$swap(n,zx,incx,zy,incy)
-     use stdlib_blas_constants_${ck}$
-           integer(ilp), intent(in) :: incx, incy, n
-           complex(${ck}$), intent(inout) :: zx(*), zy(*)
-     end subroutine stdlib_${ci}$swap
+           real(${rk}$), intent(in) :: dx(*), dy(*)
+     end function stdlib_${ri}$dot
 
 #:endif
 #:endfor
@@ -263,166 +208,19 @@ end interface
 
 
 interface 
-     pure real(sp) module function stdlib_sasum(n,sx,incx)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, n
-           real(sp), intent(in) :: sx(*)
-     end function stdlib_sasum
-
-     pure real(dp) module function stdlib_dasum(n,dx,incx)
+     pure real(dp) module function stdlib_dsdot(n,sx,incx,sy,incy)
      use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, n
-           real(dp), intent(in) :: dx(*)
-     end function stdlib_dasum
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(in) :: sx(*), sy(*)
+     end function stdlib_dsdot
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure real(${rk}$) module function stdlib_${ri}$asum(n,dx,incx)
-     use stdlib_blas_constants_${rk}$
-           integer(ilp), intent(in) :: incx, n
-           real(${rk}$), intent(in) :: dx(*)
-     end function stdlib_${ri}$asum
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_csrot( n, cx, incx, cy, incy, c, s )
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(in) :: c, s
-           complex(sp), intent(inout) :: cx(*), cy(*)
-     end subroutine stdlib_csrot
-
-end interface 
-
-
-interface 
-     pure real(dp) module function stdlib_dznrm2( n, x, incx )
-     use stdlib_blas_constants_dp
-        integer(ilp), intent(in) :: incx, n
-        complex(dp), intent(in) :: x(*)
-     end function stdlib_dznrm2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure real(${rk}$) module function stdlib_${ri}$znrm2( n, x, incx )
-     use stdlib_blas_constants_${rk}$
-        integer(ilp), intent(in) :: incx, n
-        complex(${rk}$), intent(in) :: x(*)
-     end function stdlib_${ri}$znrm2
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_zdscal(n,da,zx,incx)
-     use stdlib_blas_constants_dp
-           real(dp), intent(in) :: da
-           integer(ilp), intent(in) :: incx, n
-           complex(dp), intent(inout) :: zx(*)
-     end subroutine stdlib_zdscal
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$dscal(n,da,zx,incx)
-     use stdlib_blas_constants_${ck}$
-           real(${ck}$), intent(in) :: da
-           integer(ilp), intent(in) :: incx, n
-           complex(${ck}$), intent(inout) :: zx(*)
-     end subroutine stdlib_${ci}$dscal
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_sscal(n,sa,sx,incx)
-     use stdlib_blas_constants_sp
-           real(sp), intent(in) :: sa
-           integer(ilp), intent(in) :: incx, n
-           real(sp), intent(inout) :: sx(*)
-     end subroutine stdlib_sscal
-
-     pure module subroutine stdlib_dscal(n,da,dx,incx)
-     use stdlib_blas_constants_dp
-           real(dp), intent(in) :: da
-           integer(ilp), intent(in) :: incx, n
-           real(dp), intent(inout) :: dx(*)
-     end subroutine stdlib_dscal
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$scal(n,da,dx,incx)
-     use stdlib_blas_constants_${rk}$
-           real(${rk}$), intent(in) :: da
-           integer(ilp), intent(in) :: incx, n
-           real(${rk}$), intent(inout) :: dx(*)
-     end subroutine stdlib_${ri}$scal
-
-#:endif
-#:endfor
-
-     pure module subroutine stdlib_cscal(n,ca,cx,incx)
-     use stdlib_blas_constants_sp
-           complex(sp), intent(in) :: ca
-           integer(ilp), intent(in) :: incx, n
-           complex(sp), intent(inout) :: cx(*)
-     end subroutine stdlib_cscal
-
-     pure module subroutine stdlib_zscal(n,za,zx,incx)
-     use stdlib_blas_constants_dp
-           complex(dp), intent(in) :: za
-           integer(ilp), intent(in) :: incx, n
-           complex(dp), intent(inout) :: zx(*)
-     end subroutine stdlib_zscal
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$scal(n,za,zx,incx)
-     use stdlib_blas_constants_${ck}$
-           complex(${ck}$), intent(in) :: za
-           integer(ilp), intent(in) :: incx, n
-           complex(${ck}$), intent(inout) :: zx(*)
-     end subroutine stdlib_${ci}$scal
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_srotm(n,sx,incx,sy,incy,sparam)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(in) :: sparam(5)
-           real(sp), intent(inout) :: sx(*), sy(*)
-     end subroutine stdlib_srotm
-
-     pure module subroutine stdlib_drotm(n,dx,incx,dy,incy,dparam)    
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(in) :: dparam(5)
-           real(dp), intent(inout) :: dx(*), dy(*)
-     end subroutine stdlib_drotm
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$rotm(n,dx,incx,dy,incy,dparam)
+     pure real(${rk}$) module function stdlib_${ri}$sdot(n,sx,incx,sy,incy)
      use stdlib_blas_constants_${rk}$
            integer(ilp), intent(in) :: incx, incy, n
-           real(${rk}$), intent(in) :: dparam(5)
-           real(${rk}$), intent(inout) :: dx(*), dy(*)
-     end subroutine stdlib_${ri}$rotm
+           real(dp), intent(in) :: sx(*), sy(*)
+     end function stdlib_${ri}$sdot
 
 #:endif
 #:endfor
@@ -458,46 +256,25 @@ end interface
 
 
 interface 
-     pure real(dp) module function stdlib_dzasum(n,zx,incx)
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, n
-           complex(dp), intent(in) :: zx(*)
-     end function stdlib_dzasum
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure real(${rk}$) module function stdlib_${ri}$zasum(n,zx,incx)
-     use stdlib_blas_constants_${rk}$
-           integer(ilp), intent(in) :: incx, n
-           complex(${rk}$), intent(in) :: zx(*)
-     end function stdlib_${ri}$zasum
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure real(sp) module function stdlib_sdot(n,sx,incx,sy,incy)
+     pure complex(sp) module function stdlib_cdotu(n,cx,incx,cy,incy)
      use stdlib_blas_constants_sp
            integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(in) :: sx(*), sy(*)
-     end function stdlib_sdot
+           complex(sp), intent(in) :: cx(*), cy(*)
+     end function stdlib_cdotu
 
-     pure real(dp) module function stdlib_ddot(n,dx,incx,dy,incy)
+     pure complex(dp) module function stdlib_zdotu(n,zx,incx,zy,incy)
      use stdlib_blas_constants_dp
            integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(in) :: dx(*), dy(*)
-     end function stdlib_ddot
+           complex(dp), intent(in) :: zx(*), zy(*)
+     end function stdlib_zdotu
 
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure real(${rk}$) module function stdlib_${ri}$dot(n,dx,incx,dy,incy)
-     use stdlib_blas_constants_${rk}$
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure complex(${ck}$) module function stdlib_${ci}$dotu(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
            integer(ilp), intent(in) :: incx, incy, n
-           real(${rk}$), intent(in) :: dx(*), dy(*)
-     end function stdlib_${ri}$dot
+           complex(${ck}$), intent(in) :: zx(*), zy(*)
+     end function stdlib_${ci}$dotu
 
 #:endif
 #:endfor
@@ -525,6 +302,90 @@ interface
         integer(ilp), intent(in) :: incx, n
         real(${rk}$), intent(in) :: x(*)
      end function stdlib_${ri}$nrm2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_scnrm2( n, x, incx )
+     use stdlib_blas_constants_sp
+        integer(ilp), intent(in) :: incx, n
+        complex(sp), intent(in) :: x(*)
+     end function stdlib_scnrm2
+
+end interface 
+
+
+interface 
+     pure real(dp) module function stdlib_dznrm2( n, x, incx )
+     use stdlib_blas_constants_dp
+        integer(ilp), intent(in) :: incx, n
+        complex(dp), intent(in) :: x(*)
+     end function stdlib_dznrm2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$znrm2( n, x, incx )
+     use stdlib_blas_constants_${rk}$
+        integer(ilp), intent(in) :: incx, n
+        complex(${rk}$), intent(in) :: x(*)
+     end function stdlib_${ri}$znrm2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_srot(n,sx,incx,sy,incy,c,s)
+     use stdlib_blas_constants_sp
+           real(sp), intent(in) :: c, s
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(inout) :: sx(*), sy(*)
+     end subroutine stdlib_srot
+
+     pure module subroutine stdlib_drot(n,dx,incx,dy,incy,c,s)
+     use stdlib_blas_constants_dp
+           real(dp), intent(in) :: c, s
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_drot
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$rot(n,dx,incx,dy,incy,c,s)
+     use stdlib_blas_constants_${rk}$
+           real(${rk}$), intent(in) :: c, s
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${rk}$), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_${ri}$rot
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_zdrot( n, zx, incx, zy, incy, c, s )
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(in) :: c, s
+           complex(dp), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_zdrot
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$drot( n, zx, incx, zy, incy, c, s )
+     use stdlib_blas_constants_${ck}$
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${ck}$), intent(in) :: c, s
+           complex(${ck}$), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_${ci}$drot
 
 #:endif
 #:endfor
@@ -589,19 +450,28 @@ end interface
 
 
 interface 
-     pure real(dp) module function stdlib_dsdot(n,sx,incx,sy,incy)
+     pure module subroutine stdlib_srotm(n,sx,incx,sy,incy,sparam)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(in) :: sparam(5)
+           real(sp), intent(inout) :: sx(*), sy(*)
+     end subroutine stdlib_srotm
+
+     pure module subroutine stdlib_drotm(n,dx,incx,dy,incy,dparam)    
      use stdlib_blas_constants_dp
            integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(in) :: sx(*), sy(*)
-     end function stdlib_dsdot
+           real(dp), intent(in) :: dparam(5)
+           real(dp), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_drotm
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure real(${rk}$) module function stdlib_${ri}$sdot(n,sx,incx,sy,incy)
+     pure module subroutine stdlib_${ri}$rotm(n,dx,incx,dy,incy,dparam)
      use stdlib_blas_constants_${rk}$
            integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(in) :: sx(*), sy(*)
-     end function stdlib_${ri}$sdot
+           real(${rk}$), intent(in) :: dparam(5)
+           real(${rk}$), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_${ri}$rotm
 
 #:endif
 #:endfor
@@ -610,28 +480,95 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_srot(n,sx,incx,sy,incy,c,s)
+     pure module subroutine stdlib_srotmg(sd1,sd2,sx1,sy1,sparam)
      use stdlib_blas_constants_sp
-           real(sp), intent(in) :: c, s
-           integer(ilp), intent(in) :: incx, incy, n
-           real(sp), intent(inout) :: sx(*), sy(*)
-     end subroutine stdlib_srot
+           real(sp), intent(inout) :: sd1, sd2, sx1
+           real(sp), intent(in) :: sy1
+           real(sp), intent(out) :: sparam(5)
+     end subroutine stdlib_srotmg
 
-     pure module subroutine stdlib_drot(n,dx,incx,dy,incy,c,s)
+     pure module subroutine stdlib_drotmg(dd1,dd2,dx1,dy1,dparam)
      use stdlib_blas_constants_dp
-           real(dp), intent(in) :: c, s
-           integer(ilp), intent(in) :: incx, incy, n
-           real(dp), intent(inout) :: dx(*), dy(*)
-     end subroutine stdlib_drot
+           real(dp), intent(inout) :: dd1, dd2, dx1
+           real(dp), intent(in) :: dy1
+           real(dp), intent(out) :: dparam(5)
+     end subroutine stdlib_drotmg
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$rot(n,dx,incx,dy,incy,c,s)
+     pure module subroutine stdlib_${ri}$rotmg(dd1,dd2,dx1,dy1,dparam)
      use stdlib_blas_constants_${rk}$
-           real(${rk}$), intent(in) :: c, s
+           real(${rk}$), intent(inout) :: dd1, dd2, dx1
+           real(${rk}$), intent(in) :: dy1
+           real(${rk}$), intent(out) :: dparam(5)
+     end subroutine stdlib_${ri}$rotmg
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_csrot( n, cx, incx, cy, incy, c, s )
+     use stdlib_blas_constants_sp
            integer(ilp), intent(in) :: incx, incy, n
-           real(${rk}$), intent(inout) :: dx(*), dy(*)
-     end subroutine stdlib_${ri}$rot
+           real(sp), intent(in) :: c, s
+           complex(sp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_csrot
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_sscal(n,sa,sx,incx)
+     use stdlib_blas_constants_sp
+           real(sp), intent(in) :: sa
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(inout) :: sx(*)
+     end subroutine stdlib_sscal
+
+     pure module subroutine stdlib_dscal(n,da,dx,incx)
+     use stdlib_blas_constants_dp
+           real(dp), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(inout) :: dx(*)
+     end subroutine stdlib_dscal
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$scal(n,da,dx,incx)
+     use stdlib_blas_constants_${rk}$
+           real(${rk}$), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           real(${rk}$), intent(inout) :: dx(*)
+     end subroutine stdlib_${ri}$scal
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_cscal(n,ca,cx,incx)
+     use stdlib_blas_constants_sp
+           complex(sp), intent(in) :: ca
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(inout) :: cx(*)
+     end subroutine stdlib_cscal
+
+     pure module subroutine stdlib_zscal(n,za,zx,incx)
+     use stdlib_blas_constants_dp
+           complex(dp), intent(in) :: za
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(inout) :: zx(*)
+     end subroutine stdlib_zscal
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$scal(n,za,zx,incx)
+     use stdlib_blas_constants_${ck}$
+           complex(${ck}$), intent(in) :: za
+           integer(ilp), intent(in) :: incx, n
+           complex(${ck}$), intent(inout) :: zx(*)
+     end subroutine stdlib_${ci}$scal
 
 #:endif
 #:endfor
@@ -651,44 +588,21 @@ end interface
 
 
 interface 
-     pure real(sp) module function stdlib_scasum(n,cx,incx)
-     use stdlib_blas_constants_sp
+     pure module subroutine stdlib_zdscal(n,da,zx,incx)
+     use stdlib_blas_constants_dp
+           real(dp), intent(in) :: da
            integer(ilp), intent(in) :: incx, n
-           complex(sp), intent(in) :: cx(*)
-     end function stdlib_scasum
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_chemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
-     use stdlib_blas_constants_sp
-           complex(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
-           complex(sp), intent(in) :: a(lda,*), x(*)
-           complex(sp), intent(inout) :: y(*)
-     end subroutine stdlib_chemv
-
-     pure module subroutine stdlib_zhemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
-     use stdlib_blas_constants_dp
-           complex(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
-           complex(dp), intent(in) :: a(lda,*), x(*)
-           complex(dp), intent(inout) :: y(*)
-     end subroutine stdlib_zhemv
+           complex(dp), intent(inout) :: zx(*)
+     end subroutine stdlib_zdscal
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$hemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_${ci}$dscal(n,da,zx,incx)
      use stdlib_blas_constants_${ck}$
-           complex(${ck}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
-           character, intent(in) :: uplo
-           complex(${ck}$), intent(in) :: a(lda,*), x(*)
-           complex(${ck}$), intent(inout) :: y(*)
-     end subroutine stdlib_${ci}$hemv
+           real(${ck}$), intent(in) :: da
+           integer(ilp), intent(in) :: incx, n
+           complex(${ck}$), intent(inout) :: zx(*)
+     end subroutine stdlib_${ci}$dscal
 
 #:endif
 #:endfor
@@ -697,97 +611,48 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_cgeru(m,n,alpha,x,incx,y,incy,a,lda)
+     pure module subroutine stdlib_sswap(n,sx,incx,sy,incy)
      use stdlib_blas_constants_sp
-           complex(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           complex(sp), intent(inout) :: a(lda,*)
-           complex(sp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_cgeru
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(inout) :: sx(*), sy(*)
+     end subroutine stdlib_sswap
 
-     pure module subroutine stdlib_zgeru(m,n,alpha,x,incx,y,incy,a,lda)
+     pure module subroutine stdlib_dswap(n,dx,incx,dy,incy)
      use stdlib_blas_constants_dp
-           complex(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           complex(dp), intent(inout) :: a(lda,*)
-           complex(dp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_zgeru
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$geru(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_${ck}$
-           complex(${ck}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           complex(${ck}$), intent(inout) :: a(lda,*)
-           complex(${ck}$), intent(in) :: x(*), y(*)
-     end subroutine stdlib_${ci}$geru
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_cgerc(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_sp
-           complex(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           complex(sp), intent(inout) :: a(lda,*)
-           complex(sp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_cgerc
-
-     pure module subroutine stdlib_zgerc(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_dp
-           complex(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           complex(dp), intent(inout) :: a(lda,*)
-           complex(dp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_zgerc
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$gerc(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_${ck}$
-           complex(${ck}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           complex(${ck}$), intent(inout) :: a(lda,*)
-           complex(${ck}$), intent(in) :: x(*), y(*)
-     end subroutine stdlib_${ci}$gerc
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_sger(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_sp
-           real(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           real(sp), intent(inout) :: a(lda,*)
-           real(sp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_sger
-
-     pure module subroutine stdlib_dger(m,n,alpha,x,incx,y,incy,a,lda)
-     use stdlib_blas_constants_dp
-           real(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           real(dp), intent(inout) :: a(lda,*)
-           real(dp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_dger
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_dswap
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$ger(m,n,alpha,x,incx,y,incy,a,lda)
+     pure module subroutine stdlib_${ri}$swap(n,dx,incx,dy,incy)
      use stdlib_blas_constants_${rk}$
-           real(${rk}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, lda, m, n
-           real(${rk}$), intent(inout) :: a(lda,*)
-           real(${rk}$), intent(in) :: x(*), y(*)
-     end subroutine stdlib_${ri}$ger
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${rk}$), intent(inout) :: dx(*), dy(*)
+     end subroutine stdlib_${ri}$swap
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_cswap(n,cx,incx,cy,incy)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(sp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_cswap
+
+     pure module subroutine stdlib_zswap(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(dp), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_zswap
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$swap(n,zx,incx,zy,incy)
+     use stdlib_blas_constants_${ck}$
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(${ck}$), intent(inout) :: zx(*), zy(*)
+     end subroutine stdlib_${ci}$swap
 
 #:endif
 #:endfor
@@ -864,6 +729,105 @@ end interface
 
 
 interface 
+     pure module subroutine stdlib_sger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_sger
+
+     pure module subroutine stdlib_dger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_dger
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$ger(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${rk}$
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ri}$ger
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_cgerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_cgerc
+
+     pure module subroutine stdlib_zgerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_zgerc
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$gerc(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ci}$gerc
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_cgeru(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_sp
+           complex(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_cgeru
+
+     pure module subroutine stdlib_zgeru(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_dp
+           complex(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_zgeru
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$geru(m,n,alpha,x,incx,y,incy,a,lda)
+     use stdlib_blas_constants_${ck}$
+           complex(${ck}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ci}$geru
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
      pure module subroutine stdlib_cher(uplo,n,alpha,x,incx,a,lda)
      use stdlib_blas_constants_sp
            real(sp), intent(in) :: alpha
@@ -928,6 +892,42 @@ interface
            complex(${ck}$), intent(inout) :: a(lda,*)
            complex(${ck}$), intent(in) :: x(*), y(*)
      end subroutine stdlib_${ci}$her2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_chemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_chemv
+
+     pure module subroutine stdlib_zhemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zhemv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$hemv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${ck}$
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$hemv
 
 #:endif
 #:endfor
@@ -1040,6 +1040,42 @@ end interface
 
 
 interface 
+     pure module subroutine stdlib_ssymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_sp
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_ssymv
+
+     pure module subroutine stdlib_dsymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_dp
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dsymv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$symv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     use stdlib_blas_constants_${rk}$
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           character, intent(in) :: uplo
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$symv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
      pure module subroutine stdlib_ssyr(uplo,n,alpha,x,incx,a,lda)
      use stdlib_blas_constants_sp
            real(sp), intent(in) :: alpha
@@ -1112,70 +1148,34 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_ssymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_sspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
      use stdlib_blas_constants_sp
            real(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
+           integer(ilp), intent(in) :: incx, incy, n
            character, intent(in) :: uplo
-           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(in) :: ap(*), x(*)
            real(sp), intent(inout) :: y(*)
-     end subroutine stdlib_ssymv
+     end subroutine stdlib_sspmv
 
-     pure module subroutine stdlib_dsymv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_dspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
      use stdlib_blas_constants_dp
            real(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
+           integer(ilp), intent(in) :: incx, incy, n
            character, intent(in) :: uplo
-           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(in) :: ap(*), x(*)
            real(dp), intent(inout) :: y(*)
-     end subroutine stdlib_dsymv
+     end subroutine stdlib_dspmv
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$symv(uplo,n,alpha,a,lda,x,incx,beta,y,incy)
+     pure module subroutine stdlib_${ri}$spmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
      use stdlib_blas_constants_${rk}$
            real(${rk}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, lda, n
+           integer(ilp), intent(in) :: incx, incy, n
            character, intent(in) :: uplo
-           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(in) :: ap(*), x(*)
            real(${rk}$), intent(inout) :: y(*)
-     end subroutine stdlib_${ri}$symv
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_sspr2(uplo,n,alpha,x,incx,y,incy,ap)
-     use stdlib_blas_constants_sp
-           real(sp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, n
-           character, intent(in) :: uplo
-           real(sp), intent(inout) :: ap(*)
-           real(sp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_sspr2
-
-     pure module subroutine stdlib_dspr2(uplo,n,alpha,x,incx,y,incy,ap)
-     use stdlib_blas_constants_dp
-           real(dp), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, n
-           character, intent(in) :: uplo
-           real(dp), intent(inout) :: ap(*)
-           real(dp), intent(in) :: x(*), y(*)
-     end subroutine stdlib_dspr2
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$spr2(uplo,n,alpha,x,incx,y,incy,ap)
-     use stdlib_blas_constants_${rk}$
-           real(${rk}$), intent(in) :: alpha
-           integer(ilp), intent(in) :: incx, incy, n
-           character, intent(in) :: uplo
-           real(${rk}$), intent(inout) :: ap(*)
-           real(${rk}$), intent(in) :: x(*), y(*)
-     end subroutine stdlib_${ri}$spr2
+     end subroutine stdlib_${ri}$spmv
 
 #:endif
 #:endfor
@@ -1256,6 +1256,42 @@ end interface
 
 
 interface 
+     pure module subroutine stdlib_sspr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_sp
+           real(sp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           real(sp), intent(inout) :: ap(*)
+           real(sp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_sspr2
+
+     pure module subroutine stdlib_dspr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_dp
+           real(dp), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           real(dp), intent(inout) :: ap(*)
+           real(dp), intent(in) :: x(*), y(*)
+     end subroutine stdlib_dspr2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$spr2(uplo,n,alpha,x,incx,y,incy,ap)
+     use stdlib_blas_constants_${rk}$
+           real(${rk}$), intent(in) :: alpha
+           integer(ilp), intent(in) :: incx, incy, n
+           character, intent(in) :: uplo
+           real(${rk}$), intent(inout) :: ap(*)
+           real(${rk}$), intent(in) :: x(*), y(*)
+     end subroutine stdlib_${ri}$spr2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
      pure module subroutine stdlib_chpmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
      use stdlib_blas_constants_sp
            complex(sp), intent(in) :: alpha, beta
@@ -1284,42 +1320,6 @@ interface
            complex(${ck}$), intent(in) :: ap(*), x(*)
            complex(${ck}$), intent(inout) :: y(*)
      end subroutine stdlib_${ci}$hpmv
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
-     pure module subroutine stdlib_sspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
-     use stdlib_blas_constants_sp
-           real(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, n
-           character, intent(in) :: uplo
-           real(sp), intent(in) :: ap(*), x(*)
-           real(sp), intent(inout) :: y(*)
-     end subroutine stdlib_sspmv
-
-     pure module subroutine stdlib_dspmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
-     use stdlib_blas_constants_dp
-           real(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, n
-           character, intent(in) :: uplo
-           real(dp), intent(in) :: ap(*), x(*)
-           real(dp), intent(inout) :: y(*)
-     end subroutine stdlib_dspmv
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$spmv(uplo,n,alpha,ap,x,incx,beta,y,incy)
-     use stdlib_blas_constants_${rk}$
-           real(${rk}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: incx, incy, n
-           character, intent(in) :: uplo
-           real(${rk}$), intent(in) :: ap(*), x(*)
-           real(${rk}$), intent(inout) :: y(*)
-     end subroutine stdlib_${ri}$spmv
 
 #:endif
 #:endfor
@@ -1400,60 +1400,60 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_stbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     pure module subroutine stdlib_strmv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, k, lda, n
+           integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            real(sp), intent(in) :: a(lda,*)
            real(sp), intent(inout) :: x(*)
-     end subroutine stdlib_stbsv
+     end subroutine stdlib_strmv
 
-     pure module subroutine stdlib_dtbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     pure module subroutine stdlib_dtrmv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, k, lda, n
+           integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            real(dp), intent(in) :: a(lda,*)
            real(dp), intent(inout) :: x(*)
-     end subroutine stdlib_dtbsv
+     end subroutine stdlib_dtrmv
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     pure module subroutine stdlib_${ri}$trmv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_${rk}$
-           integer(ilp), intent(in) :: incx, k, lda, n
+           integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            real(${rk}$), intent(in) :: a(lda,*)
            real(${rk}$), intent(inout) :: x(*)
-     end subroutine stdlib_${ri}$tbsv
+     end subroutine stdlib_${ri}$trmv
 
 #:endif
 #:endfor
 
-     pure module subroutine stdlib_ctbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     pure module subroutine stdlib_ctrmv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, k, lda, n
+           integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            complex(sp), intent(in) :: a(lda,*)
            complex(sp), intent(inout) :: x(*)
-     end subroutine stdlib_ctbsv
+     end subroutine stdlib_ctrmv
 
-     pure module subroutine stdlib_ztbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     pure module subroutine stdlib_ztrmv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, k, lda, n
+           integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            complex(dp), intent(in) :: a(lda,*)
            complex(dp), intent(inout) :: x(*)
-     end subroutine stdlib_ztbsv
+     end subroutine stdlib_ztrmv
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     pure module subroutine stdlib_${ci}$trmv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_${ck}$
-           integer(ilp), intent(in) :: incx, k, lda, n
+           integer(ilp), intent(in) :: incx, lda, n
            character, intent(in) :: diag, trans, uplo
            complex(${ck}$), intent(in) :: a(lda,*)
            complex(${ck}$), intent(inout) :: x(*)
-     end subroutine stdlib_${ci}$tbsv
+     end subroutine stdlib_${ci}$trmv
 
 #:endif
 #:endfor
@@ -1524,68 +1524,6 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_strmv(uplo,trans,diag,n,a,lda,x,incx)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, lda, n
-           character, intent(in) :: diag, trans, uplo
-           real(sp), intent(in) :: a(lda,*)
-           real(sp), intent(inout) :: x(*)
-     end subroutine stdlib_strmv
-
-     pure module subroutine stdlib_dtrmv(uplo,trans,diag,n,a,lda,x,incx)
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, lda, n
-           character, intent(in) :: diag, trans, uplo
-           real(dp), intent(in) :: a(lda,*)
-           real(dp), intent(inout) :: x(*)
-     end subroutine stdlib_dtrmv
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$trmv(uplo,trans,diag,n,a,lda,x,incx)
-     use stdlib_blas_constants_${rk}$
-           integer(ilp), intent(in) :: incx, lda, n
-           character, intent(in) :: diag, trans, uplo
-           real(${rk}$), intent(in) :: a(lda,*)
-           real(${rk}$), intent(inout) :: x(*)
-     end subroutine stdlib_${ri}$trmv
-
-#:endif
-#:endfor
-
-     pure module subroutine stdlib_ctrmv(uplo,trans,diag,n,a,lda,x,incx)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, lda, n
-           character, intent(in) :: diag, trans, uplo
-           complex(sp), intent(in) :: a(lda,*)
-           complex(sp), intent(inout) :: x(*)
-     end subroutine stdlib_ctrmv
-
-     pure module subroutine stdlib_ztrmv(uplo,trans,diag,n,a,lda,x,incx)
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, lda, n
-           character, intent(in) :: diag, trans, uplo
-           complex(dp), intent(in) :: a(lda,*)
-           complex(dp), intent(inout) :: x(*)
-     end subroutine stdlib_ztrmv
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$trmv(uplo,trans,diag,n,a,lda,x,incx)
-     use stdlib_blas_constants_${ck}$
-           integer(ilp), intent(in) :: incx, lda, n
-           character, intent(in) :: diag, trans, uplo
-           complex(${ck}$), intent(in) :: a(lda,*)
-           complex(${ck}$), intent(inout) :: x(*)
-     end subroutine stdlib_${ci}$trmv
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
      pure module subroutine stdlib_stpmv(uplo,trans,diag,n,ap,x,incx)
      use stdlib_blas_constants_sp
            integer(ilp), intent(in) :: incx, n
@@ -1648,68 +1586,6 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_stpsv(uplo,trans,diag,n,ap,x,incx)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, n
-           character, intent(in) :: diag, trans, uplo
-           real(sp), intent(in) :: ap(*)
-           real(sp), intent(inout) :: x(*)
-     end subroutine stdlib_stpsv
-
-     pure module subroutine stdlib_dtpsv(uplo,trans,diag,n,ap,x,incx)
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, n
-           character, intent(in) :: diag, trans, uplo
-           real(dp), intent(in) :: ap(*)
-           real(dp), intent(inout) :: x(*)
-     end subroutine stdlib_dtpsv
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$tpsv(uplo,trans,diag,n,ap,x,incx)
-     use stdlib_blas_constants_${rk}$
-           integer(ilp), intent(in) :: incx, n
-           character, intent(in) :: diag, trans, uplo
-           real(${rk}$), intent(in) :: ap(*)
-           real(${rk}$), intent(inout) :: x(*)
-     end subroutine stdlib_${ri}$tpsv
-
-#:endif
-#:endfor
-
-     pure module subroutine stdlib_ctpsv(uplo,trans,diag,n,ap,x,incx)
-     use stdlib_blas_constants_sp
-           integer(ilp), intent(in) :: incx, n
-           character, intent(in) :: diag, trans, uplo
-           complex(sp), intent(in) :: ap(*)
-           complex(sp), intent(inout) :: x(*)
-     end subroutine stdlib_ctpsv
-
-     pure module subroutine stdlib_ztpsv(uplo,trans,diag,n,ap,x,incx)
-     use stdlib_blas_constants_dp
-           integer(ilp), intent(in) :: incx, n
-           character, intent(in) :: diag, trans, uplo
-           complex(dp), intent(in) :: ap(*)
-           complex(dp), intent(inout) :: x(*)
-     end subroutine stdlib_ztpsv
-
-#:for ck,ct,ci in CMPLX_KINDS_TYPES
-#:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$tpsv(uplo,trans,diag,n,ap,x,incx)
-     use stdlib_blas_constants_${ck}$
-           integer(ilp), intent(in) :: incx, n
-           character, intent(in) :: diag, trans, uplo
-           complex(${ck}$), intent(in) :: ap(*)
-           complex(${ck}$), intent(inout) :: x(*)
-     end subroutine stdlib_${ci}$tpsv
-
-#:endif
-#:endfor
-
-end interface 
-
-
-interface 
      pure module subroutine stdlib_strsv(uplo,trans,diag,n,a,lda,x,incx)
      use stdlib_blas_constants_sp
            integer(ilp), intent(in) :: incx, lda, n
@@ -1764,6 +1640,130 @@ interface
            complex(${ck}$), intent(in) :: a(lda,*)
            complex(${ck}$), intent(inout) :: x(*)
      end subroutine stdlib_${ci}$trsv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_stbsv
+
+     pure module subroutine stdlib_dtbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtbsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_${rk}$
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$tbsv
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctbsv
+
+     pure module subroutine stdlib_ztbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztbsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tbsv(uplo,trans,diag,n,k,a,lda,x,incx)
+     use stdlib_blas_constants_${ck}$
+           integer(ilp), intent(in) :: incx, k, lda, n
+           character, intent(in) :: diag, trans, uplo
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$tbsv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           real(sp), intent(in) :: ap(*)
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_stpsv
+
+     pure module subroutine stdlib_dtpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dtpsv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_${rk}$
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           real(${rk}$), intent(in) :: ap(*)
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$tpsv
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_sp
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           complex(sp), intent(in) :: ap(*)
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_ctpsv
+
+     pure module subroutine stdlib_ztpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_dp
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           complex(dp), intent(in) :: ap(*)
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_ztpsv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tpsv(uplo,trans,diag,n,ap,x,incx)
+     use stdlib_blas_constants_${ck}$
+           integer(ilp), intent(in) :: incx, n
+           character, intent(in) :: diag, trans, uplo
+           complex(${ck}$), intent(in) :: ap(*)
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$tpsv
 
 #:endif
 #:endfor
@@ -1840,37 +1840,34 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_cher2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     pure module subroutine stdlib_chemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
-           complex(sp), intent(in) :: alpha
-           real(sp), intent(in) :: beta
-           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
-           character, intent(in) :: trans, uplo
+           complex(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
            complex(sp), intent(in) :: a(lda,*), b(ldb,*)
            complex(sp), intent(inout) :: c(ldc,*)
-     end subroutine stdlib_cher2k
+     end subroutine stdlib_chemm
 
-     pure module subroutine stdlib_zher2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     pure module subroutine stdlib_zhemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_dp
-           complex(dp), intent(in) :: alpha
-           real(dp), intent(in) :: beta
-           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
-           character, intent(in) :: trans, uplo
+           complex(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
            complex(dp), intent(in) :: a(lda,*), b(ldb,*)
            complex(dp), intent(inout) :: c(ldc,*)
-     end subroutine stdlib_zher2k
+     end subroutine stdlib_zhemm
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$her2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
+     pure module subroutine stdlib_${ci}$hemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_${ck}$
-           complex(${ck}$), intent(in) :: alpha
-           real(${ck}$), intent(in) :: beta
-           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
-           character, intent(in) :: trans, uplo
+           complex(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           character, intent(in) :: side, uplo
            complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
            complex(${ck}$), intent(inout) :: c(ldc,*)
-     end subroutine stdlib_${ci}$her2k
+     end subroutine stdlib_${ci}$hemm
 
 #:endif
 #:endfor
@@ -1915,34 +1912,37 @@ end interface
 
 
 interface 
-     pure module subroutine stdlib_chemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     pure module subroutine stdlib_cher2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_sp
-           complex(sp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
-           character, intent(in) :: side, uplo
+           complex(sp), intent(in) :: alpha
+           real(sp), intent(in) :: beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
            complex(sp), intent(in) :: a(lda,*), b(ldb,*)
            complex(sp), intent(inout) :: c(ldc,*)
-     end subroutine stdlib_chemm
+     end subroutine stdlib_cher2k
 
-     pure module subroutine stdlib_zhemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     pure module subroutine stdlib_zher2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_dp
-           complex(dp), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
-           character, intent(in) :: side, uplo
+           complex(dp), intent(in) :: alpha
+           real(dp), intent(in) :: beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
            complex(dp), intent(in) :: a(lda,*), b(ldb,*)
            complex(dp), intent(inout) :: c(ldc,*)
-     end subroutine stdlib_zhemm
+     end subroutine stdlib_zher2k
 
 #:for ck,ct,ci in CMPLX_KINDS_TYPES
 #:if not ck in ["sp","dp"]
-     pure module subroutine stdlib_${ci}$hemm(side,uplo,m,n,alpha,a,lda,b,ldb,beta,c,ldc)
+     pure module subroutine stdlib_${ci}$her2k(uplo,trans,n,k,alpha,a,lda,b,ldb,beta,c,ldc)
      use stdlib_blas_constants_${ck}$
-           complex(${ck}$), intent(in) :: alpha, beta
-           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
-           character, intent(in) :: side, uplo
+           complex(${ck}$), intent(in) :: alpha
+           real(${ck}$), intent(in) :: beta
+           integer(ilp), intent(in) :: k, lda, ldb, ldc, n
+           character, intent(in) :: trans, uplo
            complex(${ck}$), intent(in) :: a(lda,*), b(ldb,*)
            complex(${ck}$), intent(inout) :: c(ldc,*)
-     end subroutine stdlib_${ci}$hemm
+     end subroutine stdlib_${ci}$her2k
 
 #:endif
 #:endfor

@@ -1,0 +1,3766 @@
+#:include "common.fypp" 
+module stdlib_lapack_base
+  use stdlib_linalg_constants
+  use stdlib_linalg_lapack_aux
+  use stdlib_linalg_blas
+  implicit none(type,external)
+
+interface 
+     pure real(sp) module function stdlib_slamch( cmach )
+           use stdlib_blas_constants_sp, only: zero, one, eps
+           character, intent(in) :: cmach
+     end function stdlib_slamch
+
+     pure real(dp) module function stdlib_dlamch( cmach )
+           use stdlib_blas_constants_dp, only: zero, one, eps
+           character, intent(in) :: cmach
+     end function stdlib_dlamch
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$lamch( cmach )
+           use stdlib_blas_constants_${rk}$, only: zero, one, eps
+           character, intent(in) :: cmach
+     end function stdlib_${ri}$lamch
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_slamc3( a, b )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: a, b
+     end function stdlib_slamc3
+
+     pure real(dp) module function stdlib_dlamc3( a, b )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: a, b
+     end function stdlib_dlamc3
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$lamc3( a, b )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: a, b
+     end function stdlib_${ri}$lamc3
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slabad( small, large )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(inout) :: large, small
+     end subroutine stdlib_slabad
+
+     pure module subroutine stdlib_dlabad( small, large )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(inout) :: large, small
+     end subroutine stdlib_dlabad
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$labad( small, large )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(inout) :: large, small
+     end subroutine stdlib_${ri}$labad
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_scsum1( n, cx, incx )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(in) :: cx(*)
+     end function stdlib_scsum1
+
+end interface 
+
+
+interface 
+     pure real(dp) module function stdlib_dzsum1( n, cx, incx )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(in) :: cx(*)
+     end function stdlib_dzsum1
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$zsum1( n, cx, incx )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(${rk}$), intent(in) :: cx(*)
+     end function stdlib_${ri}$zsum1
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slaqsb( uplo, n, kd, ab, ldab, s, scond, amax, equed )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(out) :: equed
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: kd, ldab, n
+           real(sp), intent(in) :: amax, scond
+           real(sp), intent(inout) :: ab(ldab,*)
+           real(sp), intent(in) :: s(*)
+     end subroutine stdlib_slaqsb
+
+     pure module subroutine stdlib_dlaqsb( uplo, n, kd, ab, ldab, s, scond, amax, equed )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(out) :: equed
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: kd, ldab, n
+           real(dp), intent(in) :: amax, scond
+           real(dp), intent(inout) :: ab(ldab,*)
+           real(dp), intent(in) :: s(*)
+     end subroutine stdlib_dlaqsb
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$laqsb( uplo, n, kd, ab, ldab, s, scond, amax, equed )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(out) :: equed
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: kd, ldab, n
+           real(${rk}$), intent(in) :: amax, scond
+           real(${rk}$), intent(inout) :: ab(ldab,*)
+           real(${rk}$), intent(in) :: s(*)
+     end subroutine stdlib_${ri}$laqsb
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_claqsb( uplo, n, kd, ab, ldab, s, scond, amax, equed )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(out) :: equed
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: kd, ldab, n
+           real(sp), intent(in) :: amax, scond
+           real(sp), intent(in) :: s(*)
+           complex(sp), intent(inout) :: ab(ldab,*)
+     end subroutine stdlib_claqsb
+
+     pure module subroutine stdlib_zlaqsb( uplo, n, kd, ab, ldab, s, scond, amax, equed )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(out) :: equed
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: kd, ldab, n
+           real(dp), intent(in) :: amax, scond
+           real(dp), intent(in) :: s(*)
+           complex(dp), intent(inout) :: ab(ldab,*)
+     end subroutine stdlib_zlaqsb
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$laqsb( uplo, n, kd, ab, ldab, s, scond, amax, equed )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(out) :: equed
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: kd, ldab, n
+           real(${ck}$), intent(in) :: amax, scond
+           real(${ck}$), intent(in) :: s(*)
+           complex(${ck}$), intent(inout) :: ab(ldab,*)
+     end subroutine stdlib_${ci}$laqsb
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_sladiv1( a, b, c, d, p, q )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(inout) :: a
+           real(sp), intent(in) :: b, c, d
+           real(sp), intent(out) :: p, q
+     end subroutine stdlib_sladiv1
+
+     pure module subroutine stdlib_dladiv1( a, b, c, d, p, q )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(inout) :: a
+           real(dp), intent(in) :: b, c, d
+           real(dp), intent(out) :: p, q
+     end subroutine stdlib_dladiv1
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$ladiv1( a, b, c, d, p, q )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(inout) :: a
+           real(${rk}$), intent(in) :: b, c, d
+           real(${rk}$), intent(out) :: p, q
+     end subroutine stdlib_${ri}$ladiv1
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_sladiv2( a, b, c, d, r, t )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: a, b, c, d, r, t
+     end function stdlib_sladiv2
+
+     pure real(dp) module function stdlib_dladiv2( a, b, c, d, r, t )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: a, b, c, d, r, t
+     end function stdlib_dladiv2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$ladiv2( a, b, c, d, r, t )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: a, b, c, d, r, t
+     end function stdlib_${ri}$ladiv2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_crot( n, cx, incx, cy, incy, c, s )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, incy, n
+           real(sp), intent(in) :: c
+           complex(sp), intent(in) :: s
+           complex(sp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_crot
+
+     pure module subroutine stdlib_zrot( n, cx, incx, cy, incy, c, s )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, incy, n
+           real(dp), intent(in) :: c
+           complex(dp), intent(in) :: s
+           complex(dp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_zrot
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$rot( n, cx, incx, cy, incy, c, s )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, incy, n
+           real(${ck}$), intent(in) :: c
+           complex(${ck}$), intent(in) :: s
+           complex(${ck}$), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_${ci}$rot
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slaset( uplo, m, n, alpha, beta, a, lda )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(in) :: alpha, beta
+           real(sp), intent(out) :: a(lda,*)
+     end subroutine stdlib_slaset
+
+     pure module subroutine stdlib_dlaset( uplo, m, n, alpha, beta, a, lda )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(in) :: alpha, beta
+           real(dp), intent(out) :: a(lda,*)
+     end subroutine stdlib_dlaset
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$laset( uplo, m, n, alpha, beta, a, lda )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(${rk}$), intent(in) :: alpha, beta
+           real(${rk}$), intent(out) :: a(lda,*)
+     end subroutine stdlib_${ri}$laset
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_claset( uplo, m, n, alpha, beta, a, lda )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, m, n
+           complex(sp), intent(in) :: alpha, beta
+           complex(sp), intent(out) :: a(lda,*)
+     end subroutine stdlib_claset
+
+     pure module subroutine stdlib_zlaset( uplo, m, n, alpha, beta, a, lda )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, m, n
+           complex(dp), intent(in) :: alpha, beta
+           complex(dp), intent(out) :: a(lda,*)
+     end subroutine stdlib_zlaset
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$laset( uplo, m, n, alpha, beta, a, lda )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, m, n
+           complex(${ck}$), intent(in) :: alpha, beta
+           complex(${ck}$), intent(out) :: a(lda,*)
+     end subroutine stdlib_${ci}$laset
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarnv( idist, iseed, n, x )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: idist, n
+           integer(ilp), intent(inout) :: iseed(4)
+           real(sp), intent(out) :: x(*)
+     end subroutine stdlib_slarnv
+
+     pure module subroutine stdlib_dlarnv( idist, iseed, n, x )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: idist, n
+           integer(ilp), intent(inout) :: iseed(4)
+           real(dp), intent(out) :: x(*)
+     end subroutine stdlib_dlarnv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larnv( idist, iseed, n, x )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: idist, n
+           integer(ilp), intent(inout) :: iseed(4)
+           real(${rk}$), intent(out) :: x(*)
+     end subroutine stdlib_${ri}$larnv
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarnv( idist, iseed, n, x )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: idist, n
+           integer(ilp), intent(inout) :: iseed(4)
+           complex(sp), intent(out) :: x(*)
+     end subroutine stdlib_clarnv
+
+     pure module subroutine stdlib_zlarnv( idist, iseed, n, x )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: idist, n
+           integer(ilp), intent(inout) :: iseed(4)
+           complex(dp), intent(out) :: x(*)
+     end subroutine stdlib_zlarnv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larnv( idist, iseed, n, x )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: idist, n
+           integer(ilp), intent(inout) :: iseed(4)
+           complex(${ck}$), intent(out) :: x(*)
+     end subroutine stdlib_${ci}$larnv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slaruv( iseed, n, x )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           integer(ilp), intent(inout) :: iseed(4)
+           real(sp), intent(out) :: x(n)
+     end subroutine stdlib_slaruv
+
+     pure module subroutine stdlib_dlaruv( iseed, n, x )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           integer(ilp), intent(inout) :: iseed(4)
+           real(dp), intent(out) :: x(n)
+     end subroutine stdlib_dlaruv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$laruv( iseed, n, x )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           integer(ilp), intent(inout) :: iseed(4)
+           real(${rk}$), intent(out) :: x(n)
+     end subroutine stdlib_${ri}$laruv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slacpy( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: b(ldb,*)
+     end subroutine stdlib_slacpy
+
+     pure module subroutine stdlib_dlacpy( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: b(ldb,*)
+     end subroutine stdlib_dlacpy
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lacpy( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(out) :: b(ldb,*)
+     end subroutine stdlib_${ri}$lacpy
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clacpy( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(out) :: b(ldb,*)
+     end subroutine stdlib_clacpy
+
+     pure module subroutine stdlib_zlacpy( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(out) :: b(ldb,*)
+     end subroutine stdlib_zlacpy
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lacpy( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(out) :: b(ldb,*)
+     end subroutine stdlib_${ci}$lacpy
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_clacp2( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           real(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(out) :: b(ldb,*)
+     end subroutine stdlib_clacp2
+
+     pure module subroutine stdlib_zlacp2( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           real(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(out) :: b(ldb,*)
+     end subroutine stdlib_zlacp2
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lacp2( uplo, m, n, a, lda, b, ldb )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: lda, ldb, m, n
+           real(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(out) :: b(ldb,*)
+     end subroutine stdlib_${ci}$lacp2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stfttp( transr, uplo, n, arf, ap, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(sp), intent(out) :: ap(0:*)
+           real(sp), intent(in) :: arf(0:*)
+     end subroutine stdlib_stfttp
+
+     pure module subroutine stdlib_dtfttp( transr, uplo, n, arf, ap, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(dp), intent(out) :: ap(0:*)
+           real(dp), intent(in) :: arf(0:*)
+     end subroutine stdlib_dtfttp
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tfttp( transr, uplo, n, arf, ap, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(out) :: ap(0:*)
+           real(${rk}$), intent(in) :: arf(0:*)
+     end subroutine stdlib_${ri}$tfttp
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctfttp( transr, uplo, n, arf, ap, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           complex(sp), intent(out) :: ap(0:*)
+           complex(sp), intent(in) :: arf(0:*)
+     end subroutine stdlib_ctfttp
+
+     pure module subroutine stdlib_ztfttp( transr, uplo, n, arf, ap, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           complex(dp), intent(out) :: ap(0:*)
+           complex(dp), intent(in) :: arf(0:*)
+     end subroutine stdlib_ztfttp
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tfttp( transr, uplo, n, arf, ap, info )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           complex(${ck}$), intent(out) :: ap(0:*)
+           complex(${ck}$), intent(in) :: arf(0:*)
+     end subroutine stdlib_${ci}$tfttp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stfttr( transr, uplo, n, arf, a, lda, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(sp), intent(out) :: a(0:lda-1,0:*)
+           real(sp), intent(in) :: arf(0:*)
+     end subroutine stdlib_stfttr
+
+     pure module subroutine stdlib_dtfttr( transr, uplo, n, arf, a, lda, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(dp), intent(out) :: a(0:lda-1,0:*)
+           real(dp), intent(in) :: arf(0:*)
+     end subroutine stdlib_dtfttr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tfttr( transr, uplo, n, arf, a, lda, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(${rk}$), intent(out) :: a(0:lda-1,0:*)
+           real(${rk}$), intent(in) :: arf(0:*)
+     end subroutine stdlib_${ri}$tfttr
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctfttr( transr, uplo, n, arf, a, lda, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(sp), intent(out) :: a(0:lda-1,0:*)
+           complex(sp), intent(in) :: arf(0:*)
+     end subroutine stdlib_ctfttr
+
+     pure module subroutine stdlib_ztfttr( transr, uplo, n, arf, a, lda, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(dp), intent(out) :: a(0:lda-1,0:*)
+           complex(dp), intent(in) :: arf(0:*)
+     end subroutine stdlib_ztfttr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tfttr( transr, uplo, n, arf, a, lda, info )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(${ck}$), intent(out) :: a(0:lda-1,0:*)
+           complex(${ck}$), intent(in) :: arf(0:*)
+     end subroutine stdlib_${ci}$tfttr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stpttf( transr, uplo, n, ap, arf, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: ap(0:*)
+           real(sp), intent(out) :: arf(0:*)
+     end subroutine stdlib_stpttf
+
+     pure module subroutine stdlib_dtpttf( transr, uplo, n, ap, arf, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: ap(0:*)
+           real(dp), intent(out) :: arf(0:*)
+     end subroutine stdlib_dtpttf
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tpttf( transr, uplo, n, ap, arf, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(in) :: ap(0:*)
+           real(${rk}$), intent(out) :: arf(0:*)
+     end subroutine stdlib_${ri}$tpttf
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctpttf( transr, uplo, n, ap, arf, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           complex(sp), intent(in) :: ap(0:*)
+           complex(sp), intent(out) :: arf(0:*)
+     end subroutine stdlib_ctpttf
+
+     pure module subroutine stdlib_ztpttf( transr, uplo, n, ap, arf, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           complex(dp), intent(in) :: ap(0:*)
+           complex(dp), intent(out) :: arf(0:*)
+     end subroutine stdlib_ztpttf
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tpttf( transr, uplo, n, ap, arf, info )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           complex(${ck}$), intent(in) :: ap(0:*)
+           complex(${ck}$), intent(out) :: arf(0:*)
+     end subroutine stdlib_${ci}$tpttf
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stpttr( uplo, n, ap, a, lda, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(sp), intent(out) :: a(lda,*)
+           real(sp), intent(in) :: ap(*)
+     end subroutine stdlib_stpttr
+
+     pure module subroutine stdlib_dtpttr( uplo, n, ap, a, lda, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(dp), intent(out) :: a(lda,*)
+           real(dp), intent(in) :: ap(*)
+     end subroutine stdlib_dtpttr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tpttr( uplo, n, ap, a, lda, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(${rk}$), intent(out) :: a(lda,*)
+           real(${rk}$), intent(in) :: ap(*)
+     end subroutine stdlib_${ri}$tpttr
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctpttr( uplo, n, ap, a, lda, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(sp), intent(out) :: a(lda,*)
+           complex(sp), intent(in) :: ap(*)
+     end subroutine stdlib_ctpttr
+
+     pure module subroutine stdlib_ztpttr( uplo, n, ap, a, lda, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(dp), intent(out) :: a(lda,*)
+           complex(dp), intent(in) :: ap(*)
+     end subroutine stdlib_ztpttr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tpttr( uplo, n, ap, a, lda, info )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(${ck}$), intent(out) :: a(lda,*)
+           complex(${ck}$), intent(in) :: ap(*)
+     end subroutine stdlib_${ci}$tpttr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_strttf( transr, uplo, n, a, lda, arf, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(sp), intent(in) :: a(0:lda-1,0:*)
+           real(sp), intent(out) :: arf(0:*)
+     end subroutine stdlib_strttf
+
+     pure module subroutine stdlib_dtrttf( transr, uplo, n, a, lda, arf, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(dp), intent(in) :: a(0:lda-1,0:*)
+           real(dp), intent(out) :: arf(0:*)
+     end subroutine stdlib_dtrttf
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$trttf( transr, uplo, n, a, lda, arf, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(${rk}$), intent(in) :: a(0:lda-1,0:*)
+           real(${rk}$), intent(out) :: arf(0:*)
+     end subroutine stdlib_${ri}$trttf
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctrttf( transr, uplo, n, a, lda, arf, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(sp), intent(in) :: a(0:lda-1,0:*)
+           complex(sp), intent(out) :: arf(0:*)
+     end subroutine stdlib_ctrttf
+
+     pure module subroutine stdlib_ztrttf( transr, uplo, n, a, lda, arf, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(dp), intent(in) :: a(0:lda-1,0:*)
+           complex(dp), intent(out) :: arf(0:*)
+     end subroutine stdlib_ztrttf
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$trttf( transr, uplo, n, a, lda, arf, info )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(${ck}$), intent(in) :: a(0:lda-1,0:*)
+           complex(${ck}$), intent(out) :: arf(0:*)
+     end subroutine stdlib_${ci}$trttf
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_strttp( uplo, n, a, lda, ap, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: ap(*)
+     end subroutine stdlib_strttp
+
+     pure module subroutine stdlib_dtrttp( uplo, n, a, lda, ap, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: ap(*)
+     end subroutine stdlib_dtrttp
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$trttp( uplo, n, a, lda, ap, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(out) :: ap(*)
+     end subroutine stdlib_${ri}$trttp
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctrttp( uplo, n, a, lda, ap, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(out) :: ap(*)
+     end subroutine stdlib_ctrttp
+
+     pure module subroutine stdlib_ztrttp( uplo, n, a, lda, ap, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(out) :: ap(*)
+     end subroutine stdlib_ztrttp
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$trttp( uplo, n, a, lda, ap, info )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n, lda
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(out) :: ap(*)
+     end subroutine stdlib_${ci}$trttp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_dlag2s( m, n, a, lda, sa, ldsa, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldsa, m, n
+           real(sp), intent(out) :: sa(ldsa,*)
+           real(dp), intent(in) :: a(lda,*)
+     end subroutine stdlib_dlag2s
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lag2s( m, n, a, lda, sa, ldsa, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldsa, m, n
+           real(dp), intent(out) :: sa(ldsa,*)
+           real(${rk}$), intent(in) :: a(lda,*)
+     end subroutine stdlib_${ri}$lag2s
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_dlat2s( uplo, n, a, lda, sa, ldsa, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldsa, n
+           real(sp), intent(out) :: sa(ldsa,*)
+           real(dp), intent(in) :: a(lda,*)
+     end subroutine stdlib_dlat2s
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lat2s( uplo, n, a, lda, sa, ldsa, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldsa, n
+           real(dp), intent(out) :: sa(ldsa,*)
+           real(${rk}$), intent(in) :: a(lda,*)
+     end subroutine stdlib_${ri}$lat2s
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slag2d( m, n, sa, ldsa, a, lda, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: lda, ldsa, m, n
+           real(sp), intent(in) :: sa(ldsa,*)
+           real(dp), intent(out) :: a(lda,*)
+     end subroutine stdlib_slag2d
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure logical(lk) module function stdlib_sisnan( sin )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: sin
+     end function stdlib_sisnan
+
+     pure logical(lk) module function stdlib_disnan( din )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: din
+     end function stdlib_disnan
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure logical(lk) module function stdlib_${ri}$isnan( din )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: din
+     end function stdlib_${ri}$isnan
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure logical(lk) module function stdlib_slaisnan( sin1, sin2 )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: sin1, sin2
+     end function stdlib_slaisnan
+
+     pure logical(lk) module function stdlib_dlaisnan( din1, din2 )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: din1, din2
+     end function stdlib_dlaisnan
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure logical(lk) module function stdlib_${ri}$laisnan( din1, din2 )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: din1, din2
+     end function stdlib_${ri}$laisnan
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_sladiv( a, b, c, d, p, q )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: a, b, c, d
+           real(sp), intent(out) :: p, q
+     end subroutine stdlib_sladiv
+
+     pure module subroutine stdlib_dladiv( a, b, c, d, p, q )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: a, b, c, d
+           real(dp), intent(out) :: p, q
+     end subroutine stdlib_dladiv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$ladiv( a, b, c, d, p, q )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: a, b, c, d
+           real(${rk}$), intent(out) :: p, q
+     end subroutine stdlib_${ri}$ladiv
+
+#:endif
+#:endfor
+
+     pure complex(sp) module function stdlib_cladiv( x, y )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           complex(sp), intent(in) :: x, y
+     end function stdlib_cladiv
+
+     pure complex(dp) module function stdlib_zladiv( x, y )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           complex(dp), intent(in) :: x, y
+     end function stdlib_zladiv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure complex(${ck}$) module function stdlib_${ci}$ladiv( x, y )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           complex(${ck}$), intent(in) :: x, y
+     end function stdlib_${ci}$ladiv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_slapy2( x, y )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: x, y
+     end function stdlib_slapy2
+
+     pure real(dp) module function stdlib_dlapy2( x, y )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: x, y
+     end function stdlib_dlapy2
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$lapy2( x, y )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: x, y
+     end function stdlib_${ri}$lapy2
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_slapy3( x, y, z )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: x, y, z
+     end function stdlib_slapy3
+
+     pure real(dp) module function stdlib_dlapy3( x, y, z )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: x, y, z
+     end function stdlib_dlapy3
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$lapy3( x, y, z )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: x, y, z
+     end function stdlib_${ri}$lapy3
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_clacgv( n, x, incx )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_clacgv
+
+     pure module subroutine stdlib_zlacgv( n, x, incx )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_zlacgv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lacgv( n, x, incx )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$lacgv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slasrt( id, n, d, info )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: id
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(sp), intent(inout) :: d(*)
+     end subroutine stdlib_slasrt
+
+     pure module subroutine stdlib_dlasrt( id, n, d, info )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: id
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(dp), intent(inout) :: d(*)
+     end subroutine stdlib_dlasrt
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasrt( id, n, d, info )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: id
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(inout) :: d(*)
+     end subroutine stdlib_${ri}$lasrt
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slassq( n, x, incx, scl, sumsq )
+           use stdlib_blas_constants_sp, only: zero, half, one, two, tbig, tsml, ssml, sbig
+     integer(ilp), intent(in) :: incx, n
+        real(sp), intent(inout) :: scl, sumsq
+        real(sp), intent(in) :: x(*)
+     end subroutine stdlib_slassq
+
+     pure module subroutine stdlib_dlassq( n, x, incx, scl, sumsq )
+           use stdlib_blas_constants_dp, only: zero, half, one, two, tbig, tsml, ssml, sbig
+     integer(ilp), intent(in) :: incx, n
+        real(dp), intent(inout) :: scl, sumsq
+        real(dp), intent(in) :: x(*)
+     end subroutine stdlib_dlassq
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lassq( n, x, incx, scl, sumsq )
+           use stdlib_blas_constants_${rk}$, only: zero, half, one, two, tbig, tsml, ssml, sbig
+     integer(ilp), intent(in) :: incx, n
+        real(${rk}$), intent(inout) :: scl, sumsq
+        real(${rk}$), intent(in) :: x(*)
+     end subroutine stdlib_${ri}$lassq
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_classq( n, x, incx, scl, sumsq )
+           use stdlib_blas_constants_sp, only: zero, half, one, two, tbig, tsml, ssml, sbig
+     integer(ilp), intent(in) :: incx, n
+        real(sp), intent(inout) :: scl, sumsq
+        complex(sp), intent(in) :: x(*)
+     end subroutine stdlib_classq
+
+     pure module subroutine stdlib_zlassq( n, x, incx, scl, sumsq )
+           use stdlib_blas_constants_dp, only: zero, half, one, two, tbig, tsml, ssml, sbig
+     integer(ilp), intent(in) :: incx, n
+        real(dp), intent(inout) :: scl, sumsq
+        complex(dp), intent(in) :: x(*)
+     end subroutine stdlib_zlassq
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lassq( n, x, incx, scl, sumsq )
+           use stdlib_blas_constants_${ck}$, only: zero, half, one, two, tbig, tsml, ssml, sbig
+     integer(ilp), intent(in) :: incx, n
+        real(${ck}$), intent(inout) :: scl, sumsq
+        complex(${ck}$), intent(in) :: x(*)
+     end subroutine stdlib_${ci}$lassq
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_srscl( n, sa, sx, incx )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(in) :: sa
+           real(sp), intent(inout) :: sx(*)
+     end subroutine stdlib_srscl
+
+     pure module subroutine stdlib_drscl( n, sa, sx, incx )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(in) :: sa
+           real(dp), intent(inout) :: sx(*)
+     end subroutine stdlib_drscl
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$rscl( n, sa, sx, incx )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(${rk}$), intent(in) :: sa
+           real(${rk}$), intent(inout) :: sx(*)
+     end subroutine stdlib_${ri}$rscl
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_csrscl( n, sa, sx, incx )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(in) :: sa
+           complex(sp), intent(inout) :: sx(*)
+     end subroutine stdlib_csrscl
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_zdrscl( n, sa, sx, incx )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(in) :: sa
+           complex(dp), intent(inout) :: sx(*)
+     end subroutine stdlib_zdrscl
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$drscl( n, sa, sx, incx )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(${ck}$), intent(in) :: sa
+           complex(${ck}$), intent(inout) :: sx(*)
+     end subroutine stdlib_${ci}$drscl
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+           use stdlib_blas_constants_sp, only: zero, half, one
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(sp), intent(in) :: cfrom, cto
+           real(sp), intent(inout) :: a(lda,*)
+     end subroutine stdlib_slascl
+
+     pure module subroutine stdlib_dlascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+           use stdlib_blas_constants_dp, only: zero, half, one
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(dp), intent(in) :: cfrom, cto
+           real(dp), intent(inout) :: a(lda,*)
+     end subroutine stdlib_dlascl
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+           use stdlib_blas_constants_${rk}$, only: zero, half, one
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(${rk}$), intent(in) :: cfrom, cto
+           real(${rk}$), intent(inout) :: a(lda,*)
+     end subroutine stdlib_${ri}$lascl
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+           use stdlib_blas_constants_sp, only: zero, half, one
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(sp), intent(in) :: cfrom, cto
+           complex(sp), intent(inout) :: a(lda,*)
+     end subroutine stdlib_clascl
+
+     pure module subroutine stdlib_zlascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+           use stdlib_blas_constants_dp, only: zero, half, one
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(dp), intent(in) :: cfrom, cto
+           complex(dp), intent(inout) :: a(lda,*)
+     end subroutine stdlib_zlascl
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lascl( type, kl, ku, cfrom, cto, m, n, a, lda, info )
+           use stdlib_blas_constants_${ck}$, only: zero, half, one
+           character, intent(in) :: type
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: kl, ku, lda, m, n
+           real(${ck}$), intent(in) :: cfrom, cto
+           complex(${ck}$), intent(inout) :: a(lda,*)
+     end subroutine stdlib_${ci}$lascl
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module subroutine stdlib_sla_geamv( trans, m, n, alpha, a, lda, x, incx, beta,y, incy )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n, trans
+           real(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_sla_geamv
+
+     module subroutine stdlib_dla_geamv ( trans, m, n, alpha, a, lda, x, incx, beta,y, incy )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n, trans
+           real(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dla_geamv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module subroutine stdlib_${ri}$la_geamv ( trans, m, n, alpha, a, lda, x, incx, beta,y, incy )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n, trans
+           real(${rk}$), intent(in) :: a(lda,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$la_geamv
+
+#:endif
+#:endfor
+
+     module subroutine stdlib_cla_geamv( trans, m, n, alpha, a, lda, x, incx, beta,y, incy )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           integer(ilp), intent(in) :: trans
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_cla_geamv
+
+     module subroutine stdlib_zla_geamv( trans, m, n, alpha, a, lda, x, incx, beta,y, incy )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           integer(ilp), intent(in) :: trans
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zla_geamv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module subroutine stdlib_${ci}$la_geamv( trans, m, n, alpha, a, lda, x, incx, beta,y, incy )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, m, n
+           integer(ilp), intent(in) :: trans
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           real(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$la_geamv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module subroutine stdlib_sla_gbamv( trans, m, n, kl, ku, alpha, ab, ldab, x,incx, beta, y, incy )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, ldab, m, n, kl, ku, trans
+           real(sp), intent(in) :: ab(ldab,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_sla_gbamv
+
+     module subroutine stdlib_dla_gbamv( trans, m, n, kl, ku, alpha, ab, ldab, x,incx, beta, y, incy )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, ldab, m, n, kl, ku, trans
+           real(dp), intent(in) :: ab(ldab,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_dla_gbamv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module subroutine stdlib_${ri}$la_gbamv( trans, m, n, kl, ku, alpha, ab, ldab, x,incx, beta, y, incy )
+               
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, ldab, m, n, kl, ku, trans
+           real(${rk}$), intent(in) :: ab(ldab,*), x(*)
+           real(${rk}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ri}$la_gbamv
+
+#:endif
+#:endfor
+
+     module subroutine stdlib_cla_gbamv( trans, m, n, kl, ku, alpha, ab, ldab, x,incx, beta, y, incy )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, ldab, m, n, kl, ku, trans
+           complex(sp), intent(in) :: ab(ldab,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_cla_gbamv
+
+     module subroutine stdlib_zla_gbamv( trans, m, n, kl, ku, alpha, ab, ldab, x,incx, beta, y, incy )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, ldab, m, n, kl, ku, trans
+           complex(dp), intent(in) :: ab(ldab,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zla_gbamv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module subroutine stdlib_${ci}$la_gbamv( trans, m, n, kl, ku, alpha, ab, ldab, x,incx, beta, y, incy )
+               
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, ldab, m, n, kl, ku, trans
+           complex(${ck}$), intent(in) :: ab(ldab,*), x(*)
+           real(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$la_gbamv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module subroutine stdlib_cla_heamv( uplo, n, alpha, a, lda, x, incx, beta, y,incy )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n, uplo
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           real(sp), intent(inout) :: y(*)
+     end subroutine stdlib_cla_heamv
+
+     module subroutine stdlib_zla_heamv( uplo, n, alpha, a, lda, x, incx, beta, y,incy )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n, uplo
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           real(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zla_heamv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module subroutine stdlib_${ci}$la_heamv( uplo, n, alpha, a, lda, x, incx, beta, y,incy )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: incx, incy, lda, n, uplo
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           real(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$la_heamv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_sla_wwaddw( n, x, y, w )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           real(sp), intent(inout) :: x(*), y(*)
+           real(sp), intent(in) :: w(*)
+     end subroutine stdlib_sla_wwaddw
+
+     pure module subroutine stdlib_dla_wwaddw( n, x, y, w )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           real(dp), intent(inout) :: x(*), y(*)
+           real(dp), intent(in) :: w(*)
+     end subroutine stdlib_dla_wwaddw
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$la_wwaddw( n, x, y, w )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(inout) :: x(*), y(*)
+           real(${rk}$), intent(in) :: w(*)
+     end subroutine stdlib_${ri}$la_wwaddw
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_cla_wwaddw( n, x, y, w )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           complex(sp), intent(inout) :: x(*), y(*)
+           complex(sp), intent(in) :: w(*)
+     end subroutine stdlib_cla_wwaddw
+
+     pure module subroutine stdlib_zla_wwaddw( n, x, y, w )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           complex(dp), intent(inout) :: x(*), y(*)
+           complex(dp), intent(in) :: w(*)
+     end subroutine stdlib_zla_wwaddw
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$la_wwaddw( n, x, y, w )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: n
+           complex(${ck}$), intent(inout) :: x(*), y(*)
+           complex(${ck}$), intent(in) :: w(*)
+     end subroutine stdlib_${ci}$la_wwaddw
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_cspmv( uplo, n, alpha, ap, x, incx, beta, y, incy )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(sp), intent(in) :: alpha, beta
+           complex(sp), intent(in) :: ap(*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_cspmv
+
+     pure module subroutine stdlib_zspmv( uplo, n, alpha, ap, x, incx, beta, y, incy )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(dp), intent(in) :: alpha, beta
+           complex(dp), intent(in) :: ap(*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zspmv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$spmv( uplo, n, alpha, ap, x, incx, beta, y, incy )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(${ck}$), intent(in) :: alpha, beta
+           complex(${ck}$), intent(in) :: ap(*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$spmv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_cspr( uplo, n, alpha, x, incx, ap )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(in) :: alpha
+           complex(sp), intent(inout) :: ap(*)
+           complex(sp), intent(in) :: x(*)
+     end subroutine stdlib_cspr
+
+     pure module subroutine stdlib_zspr( uplo, n, alpha, x, incx, ap )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(in) :: alpha
+           complex(dp), intent(inout) :: ap(*)
+           complex(dp), intent(in) :: x(*)
+     end subroutine stdlib_zspr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$spr( uplo, n, alpha, x, incx, ap )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, n
+           complex(${ck}$), intent(in) :: alpha
+           complex(${ck}$), intent(inout) :: ap(*)
+           complex(${ck}$), intent(in) :: x(*)
+     end subroutine stdlib_${ci}$spr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_csymv( uplo, n, alpha, a, lda, x, incx, beta, y, incy )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           complex(sp), intent(in) :: alpha, beta
+           complex(sp), intent(in) :: a(lda,*), x(*)
+           complex(sp), intent(inout) :: y(*)
+     end subroutine stdlib_csymv
+
+     pure module subroutine stdlib_zsymv( uplo, n, alpha, a, lda, x, incx, beta, y, incy )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           complex(dp), intent(in) :: alpha, beta
+           complex(dp), intent(in) :: a(lda,*), x(*)
+           complex(dp), intent(inout) :: y(*)
+     end subroutine stdlib_zsymv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$symv( uplo, n, alpha, a, lda, x, incx, beta, y, incy )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, incy, lda, n
+           complex(${ck}$), intent(in) :: alpha, beta
+           complex(${ck}$), intent(in) :: a(lda,*), x(*)
+           complex(${ck}$), intent(inout) :: y(*)
+     end subroutine stdlib_${ci}$symv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_csyr( uplo, n, alpha, x, incx, a, lda )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, lda, n
+           complex(sp), intent(in) :: alpha
+           complex(sp), intent(inout) :: a(lda,*)
+           complex(sp), intent(in) :: x(*)
+     end subroutine stdlib_csyr
+
+     pure module subroutine stdlib_zsyr( uplo, n, alpha, x, incx, a, lda )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, lda, n
+           complex(dp), intent(in) :: alpha
+           complex(dp), intent(inout) :: a(lda,*)
+           complex(dp), intent(in) :: x(*)
+     end subroutine stdlib_zsyr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$syr( uplo, n, alpha, x, incx, a, lda )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incx, lda, n
+           complex(${ck}$), intent(in) :: alpha
+           complex(${ck}$), intent(inout) :: a(lda,*)
+           complex(${ck}$), intent(in) :: x(*)
+     end subroutine stdlib_${ci}$syr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(sp), intent(in) :: alpha, beta
+           real(sp), intent(inout) :: b(ldb,*)
+           real(sp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+     end subroutine stdlib_slagtm
+
+     pure module subroutine stdlib_dlagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(dp), intent(in) :: alpha, beta
+           real(dp), intent(inout) :: b(ldb,*)
+           real(dp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+     end subroutine stdlib_dlagtm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+               
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(${rk}$), intent(in) :: alpha, beta
+           real(${rk}$), intent(inout) :: b(ldb,*)
+           real(${rk}$), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+     end subroutine stdlib_${ri}$lagtm
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(sp), intent(in) :: alpha, beta
+           complex(sp), intent(inout) :: b(ldb,*)
+           complex(sp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+     end subroutine stdlib_clagtm
+
+     pure module subroutine stdlib_zlagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(dp), intent(in) :: alpha, beta
+           complex(dp), intent(inout) :: b(ldb,*)
+           complex(dp), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+     end subroutine stdlib_zlagtm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lagtm( trans, n, nrhs, alpha, dl, d, du, x, ldx, beta,b, ldb )
+               
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: trans
+           integer(ilp), intent(in) :: ldb, ldx, n, nrhs
+           real(${ck}$), intent(in) :: alpha, beta
+           complex(${ck}$), intent(inout) :: b(ldb,*)
+           complex(${ck}$), intent(in) :: d(*), dl(*), du(*), x(ldx,*)
+     end subroutine stdlib_${ci}$lagtm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_clacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           real(sp), intent(in) :: b(ldb,*)
+           real(sp), intent(out) :: rwork(*)
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(out) :: c(ldc,*)
+     end subroutine stdlib_clacrm
+
+     pure module subroutine stdlib_zlacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           real(dp), intent(in) :: b(ldb,*)
+           real(dp), intent(out) :: rwork(*)
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(out) :: c(ldc,*)
+     end subroutine stdlib_zlacrm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lacrm( m, n, a, lda, b, ldb, c, ldc, rwork )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           real(${ck}$), intent(in) :: b(ldb,*)
+           real(${ck}$), intent(out) :: rwork(*)
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(out) :: c(ldc,*)
+     end subroutine stdlib_${ci}$lacrm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_clarcm( m, n, a, lda, b, ldb, c, ldc, rwork )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: rwork(*)
+           complex(sp), intent(in) :: b(ldb,*)
+           complex(sp), intent(out) :: c(ldc,*)
+     end subroutine stdlib_clarcm
+
+     pure module subroutine stdlib_zlarcm( m, n, a, lda, b, ldb, c, ldc, rwork )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: rwork(*)
+           complex(dp), intent(in) :: b(ldb,*)
+           complex(dp), intent(out) :: c(ldc,*)
+     end subroutine stdlib_zlarcm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larcm( m, n, a, lda, b, ldb, c, ldc, rwork )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: lda, ldb, ldc, m, n
+           real(${ck}$), intent(in) :: a(lda,*)
+           real(${ck}$), intent(out) :: rwork(*)
+           complex(${ck}$), intent(in) :: b(ldb,*)
+           complex(${ck}$), intent(out) :: c(ldc,*)
+     end subroutine stdlib_${ci}$larcm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_chfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
+           complex(sp), intent(in) :: a(lda,*)
+           complex(sp), intent(inout) :: c(*)
+     end subroutine stdlib_chfrk
+
+     pure module subroutine stdlib_zhfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
+           complex(dp), intent(in) :: a(lda,*)
+           complex(dp), intent(inout) :: c(*)
+     end subroutine stdlib_zhfrk
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$hfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${ck}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
+           complex(${ck}$), intent(in) :: a(lda,*)
+           complex(${ck}$), intent(inout) :: c(*)
+     end subroutine stdlib_${ci}$hfrk
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_stfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, diag, side, trans, uplo
+           integer(ilp), intent(in) :: ldb, m, n
+           real(sp), intent(in) :: alpha
+           real(sp), intent(in) :: a(0:*)
+           real(sp), intent(inout) :: b(0:ldb-1,0:*)
+     end subroutine stdlib_stfsm
+
+     pure module subroutine stdlib_dtfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, diag, side, trans, uplo
+           integer(ilp), intent(in) :: ldb, m, n
+           real(dp), intent(in) :: alpha
+           real(dp), intent(in) :: a(0:*)
+           real(dp), intent(inout) :: b(0:ldb-1,0:*)
+     end subroutine stdlib_dtfsm
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$tfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+               
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, diag, side, trans, uplo
+           integer(ilp), intent(in) :: ldb, m, n
+           real(${rk}$), intent(in) :: alpha
+           real(${rk}$), intent(in) :: a(0:*)
+           real(${rk}$), intent(inout) :: b(0:ldb-1,0:*)
+     end subroutine stdlib_${ri}$tfsm
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_ctfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, diag, side, trans, uplo
+           integer(ilp), intent(in) :: ldb, m, n
+           complex(sp), intent(in) :: alpha
+           complex(sp), intent(in) :: a(0:*)
+           complex(sp), intent(inout) :: b(0:ldb-1,0:*)
+     end subroutine stdlib_ctfsm
+
+     pure module subroutine stdlib_ztfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, diag, side, trans, uplo
+           integer(ilp), intent(in) :: ldb, m, n
+           complex(dp), intent(in) :: alpha
+           complex(dp), intent(in) :: a(0:*)
+           complex(dp), intent(inout) :: b(0:ldb-1,0:*)
+     end subroutine stdlib_ztfsm
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$tfsm( transr, side, uplo, trans, diag, m, n, alpha, a,b, ldb )
+               
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: transr, diag, side, trans, uplo
+           integer(ilp), intent(in) :: ldb, m, n
+           complex(${ck}$), intent(in) :: alpha
+           complex(${ck}$), intent(in) :: a(0:*)
+           complex(${ck}$), intent(inout) :: b(0:ldb-1,0:*)
+     end subroutine stdlib_${ci}$tfsm
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_ssfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(inout) :: c(*)
+     end subroutine stdlib_ssfrk
+
+     pure module subroutine stdlib_dsfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(inout) :: c(*)
+     end subroutine stdlib_dsfrk
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$sfrk( transr, uplo, trans, n, k, alpha, a, lda, beta,c )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(in) :: alpha, beta
+           integer(ilp), intent(in) :: k, lda, n
+           character, intent(in) :: trans, transr, uplo
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(inout) :: c(*)
+     end subroutine stdlib_${ri}$sfrk
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slange( norm, m, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slange
+
+     real(dp) module function stdlib_dlange( norm, m, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlange
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lange( norm, m, n, a, lda, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, m, n
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lange
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clange( norm, m, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: a(lda,*)
+     end function stdlib_clange
+
+     real(dp) module function stdlib_zlange( norm, m, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: a(lda,*)
+     end function stdlib_zlange
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lange( norm, m, n, a, lda, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, m, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: a(lda,*)
+     end function stdlib_${ci}$lange
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slangb( norm, n, kl, ku, ab, ldab,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: kl, ku, ldab, n
+           real(sp), intent(in) :: ab(ldab,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slangb
+
+     real(dp) module function stdlib_dlangb( norm, n, kl, ku, ab, ldab,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: kl, ku, ldab, n
+           real(dp), intent(in) :: ab(ldab,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlangb
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$langb( norm, n, kl, ku, ab, ldab,work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: kl, ku, ldab, n
+           real(${rk}$), intent(in) :: ab(ldab,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$langb
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clangb( norm, n, kl, ku, ab, ldab,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: kl, ku, ldab, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ab(ldab,*)
+     end function stdlib_clangb
+
+     real(dp) module function stdlib_zlangb( norm, n, kl, ku, ab, ldab,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: kl, ku, ldab, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ab(ldab,*)
+     end function stdlib_zlangb
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$langb( norm, n, kl, ku, ab, ldab,work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: kl, ku, ldab, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ab(ldab,*)
+     end function stdlib_${ci}$langb
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_slangt( norm, n, dl, d, du )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: d(*), dl(*), du(*)
+     end function stdlib_slangt
+
+     pure real(dp) module function stdlib_dlangt( norm, n, dl, d, du )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: d(*), dl(*), du(*)
+     end function stdlib_dlangt
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$langt( norm, n, dl, d, du )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(in) :: d(*), dl(*), du(*)
+     end function stdlib_${ri}$langt
+
+#:endif
+#:endfor
+
+     pure real(sp) module function stdlib_clangt( norm, n, dl, d, du )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           complex(sp), intent(in) :: d(*), dl(*), du(*)
+     end function stdlib_clangt
+
+     pure real(dp) module function stdlib_zlangt( norm, n, dl, d, du )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           complex(dp), intent(in) :: d(*), dl(*), du(*)
+     end function stdlib_zlangt
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure real(${ck}$) module function stdlib_${ci}$langt( norm, n, dl, d, du )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           complex(${ck}$), intent(in) :: d(*), dl(*), du(*)
+     end function stdlib_${ci}$langt
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slanhs( norm, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, n
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slanhs
+
+     real(dp) module function stdlib_dlanhs( norm, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, n
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlanhs
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lanhs( norm, n, a, lda, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, n
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lanhs
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clanhs( norm, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: a(lda,*)
+     end function stdlib_clanhs
+
+     real(dp) module function stdlib_zlanhs( norm, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: a(lda,*)
+     end function stdlib_zlanhs
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lanhs( norm, n, a, lda, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: lda, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: a(lda,*)
+     end function stdlib_${ci}$lanhs
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_clanhf( norm, transr, uplo, n, a, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, transr, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(out) :: work(0:*)
+           complex(sp), intent(in) :: a(0:*)
+     end function stdlib_clanhf
+
+     real(dp) module function stdlib_zlanhf( norm, transr, uplo, n, a, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, transr, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(out) :: work(0:*)
+           complex(dp), intent(in) :: a(0:*)
+     end function stdlib_zlanhf
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lanhf( norm, transr, uplo, n, a, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, transr, uplo
+           integer(ilp), intent(in) :: n
+           real(${ck}$), intent(out) :: work(0:*)
+           complex(${ck}$), intent(in) :: a(0:*)
+     end function stdlib_${ci}$lanhf
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slansf( norm, transr, uplo, n, a, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, transr, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: a(0:*)
+           real(sp), intent(out) :: work(0:*)
+     end function stdlib_slansf
+
+     real(dp) module function stdlib_dlansf( norm, transr, uplo, n, a, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, transr, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: a(0:*)
+           real(dp), intent(out) :: work(0:*)
+     end function stdlib_dlansf
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lansf( norm, transr, uplo, n, a, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, transr, uplo
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(in) :: a(0:*)
+           real(${rk}$), intent(out) :: work(0:*)
+     end function stdlib_${ri}$lansf
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_clanhp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ap(*)
+     end function stdlib_clanhp
+
+     real(dp) module function stdlib_zlanhp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ap(*)
+     end function stdlib_zlanhp
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lanhp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ap(*)
+     end function stdlib_${ci}$lanhp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slansp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: ap(*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slansp
+
+     real(dp) module function stdlib_dlansp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlansp
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lansp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(in) :: ap(*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lansp
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clansp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ap(*)
+     end function stdlib_clansp
+
+     real(dp) module function stdlib_zlansp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ap(*)
+     end function stdlib_zlansp
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lansp( norm, uplo, n, ap, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ap(*)
+     end function stdlib_${ci}$lansp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_clanhb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ab(ldab,*)
+     end function stdlib_clanhb
+
+     real(dp) module function stdlib_zlanhb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ab(ldab,*)
+     end function stdlib_zlanhb
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lanhb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ab(ldab,*)
+     end function stdlib_${ci}$lanhb
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slansb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(sp), intent(in) :: ab(ldab,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slansb
+
+     real(dp) module function stdlib_dlansb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(dp), intent(in) :: ab(ldab,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlansb
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lansb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(${rk}$), intent(in) :: ab(ldab,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lansb
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clansb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ab(ldab,*)
+     end function stdlib_clansb
+
+     real(dp) module function stdlib_zlansb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ab(ldab,*)
+     end function stdlib_zlansb
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lansb( norm, uplo, n, k, ab, ldab,work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ab(ldab,*)
+     end function stdlib_${ci}$lansb
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_clanht( norm, n, d, e )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: d(*)
+           complex(sp), intent(in) :: e(*)
+     end function stdlib_clanht
+
+     pure real(dp) module function stdlib_zlanht( norm, n, d, e )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: d(*)
+           complex(dp), intent(in) :: e(*)
+     end function stdlib_zlanht
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure real(${ck}$) module function stdlib_${ci}$lanht( norm, n, d, e )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(${ck}$), intent(in) :: d(*)
+           complex(${ck}$), intent(in) :: e(*)
+     end function stdlib_${ci}$lanht
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure real(sp) module function stdlib_slanst( norm, n, d, e )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: d(*), e(*)
+     end function stdlib_slanst
+
+     pure real(dp) module function stdlib_dlanst( norm, n, d, e )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: d(*), e(*)
+     end function stdlib_dlanst
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure real(${rk}$) module function stdlib_${ri}$lanst( norm, n, d, e )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(in) :: d(*), e(*)
+     end function stdlib_${ri}$lanst
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slantr( norm, uplo, diag, m, n, a, lda,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slantr
+
+     real(dp) module function stdlib_dlantr( norm, uplo, diag, m, n, a, lda,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlantr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lantr( norm, uplo, diag, m, n, a, lda,work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lantr
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clantr( norm, uplo, diag, m, n, a, lda,work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: a(lda,*)
+     end function stdlib_clantr
+
+     real(dp) module function stdlib_zlantr( norm, uplo, diag, m, n, a, lda,work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: a(lda,*)
+     end function stdlib_zlantr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lantr( norm, uplo, diag, m, n, a, lda,work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: lda, m, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: a(lda,*)
+     end function stdlib_${ci}$lantr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slantp( norm, uplo, diag, n, ap, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(in) :: ap(*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slantp
+
+     real(dp) module function stdlib_dlantp( norm, uplo, diag, n, ap, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(in) :: ap(*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlantp
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lantp( norm, uplo, diag, n, ap, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: n
+           real(${rk}$), intent(in) :: ap(*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lantp
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clantp( norm, uplo, diag, n, ap, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ap(*)
+     end function stdlib_clantp
+
+     real(dp) module function stdlib_zlantp( norm, uplo, diag, n, ap, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ap(*)
+     end function stdlib_zlantp
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lantp( norm, uplo, diag, n, ap, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ap(*)
+     end function stdlib_${ci}$lantp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slantb( norm, uplo, diag, n, k, ab,ldab, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(sp), intent(in) :: ab(ldab,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slantb
+
+     real(dp) module function stdlib_dlantb( norm, uplo, diag, n, k, ab,ldab, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(dp), intent(in) :: ab(ldab,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlantb
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lantb( norm, uplo, diag, n, k, ab,ldab, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(${rk}$), intent(in) :: ab(ldab,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lantb
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clantb( norm, uplo, diag, n, k, ab,ldab, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: ab(ldab,*)
+     end function stdlib_clantb
+
+     real(dp) module function stdlib_zlantb( norm, uplo, diag, n, k, ab,ldab, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: ab(ldab,*)
+     end function stdlib_zlantb
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lantb( norm, uplo, diag, n, k, ab,ldab, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: diag, norm, uplo
+           integer(ilp), intent(in) :: k, ldab, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: ab(ldab,*)
+     end function stdlib_${ci}$lantb
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_slansy( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(sp), intent(in) :: a(lda,*)
+           real(sp), intent(out) :: work(*)
+     end function stdlib_slansy
+
+     real(dp) module function stdlib_dlansy( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(dp), intent(in) :: a(lda,*)
+           real(dp), intent(out) :: work(*)
+     end function stdlib_dlansy
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     real(${rk}$) module function stdlib_${ri}$lansy( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(${rk}$), intent(in) :: a(lda,*)
+           real(${rk}$), intent(out) :: work(*)
+     end function stdlib_${ri}$lansy
+
+#:endif
+#:endfor
+
+     real(sp) module function stdlib_clansy( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: a(lda,*)
+     end function stdlib_clansy
+
+     real(dp) module function stdlib_zlansy( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: a(lda,*)
+     end function stdlib_zlansy
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lansy( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: a(lda,*)
+     end function stdlib_${ci}$lansy
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     real(sp) module function stdlib_clanhe( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(sp), intent(out) :: work(*)
+           complex(sp), intent(in) :: a(lda,*)
+     end function stdlib_clanhe
+
+     real(dp) module function stdlib_zlanhe( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(dp), intent(out) :: work(*)
+           complex(dp), intent(in) :: a(lda,*)
+     end function stdlib_zlanhe
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     real(${ck}$) module function stdlib_${ci}$lanhe( norm, uplo, n, a, lda, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: norm, uplo
+           integer(ilp), intent(in) :: lda, n
+           real(${ck}$), intent(out) :: work(*)
+           complex(${ck}$), intent(in) :: a(lda,*)
+     end function stdlib_${ci}$lanhe
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slartg( f, g, c, s, r )
+           use stdlib_blas_constants_sp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        real(sp), intent(out) :: c, r, s
+        real(sp), intent(in) :: f, g
+     end subroutine stdlib_slartg
+
+     pure module subroutine stdlib_dlartg( f, g, c, s, r )
+           use stdlib_blas_constants_dp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        real(dp), intent(out) :: c, r, s
+        real(dp), intent(in) :: f, g
+     end subroutine stdlib_dlartg
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lartg( f, g, c, s, r )
+           use stdlib_blas_constants_${rk}$, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        real(${rk}$), intent(out) :: c, r, s
+        real(${rk}$), intent(in) :: f, g
+     end subroutine stdlib_${ri}$lartg
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clartg( f, g, c, s, r )
+           use stdlib_blas_constants_sp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        real(sp), intent(out) :: c
+        complex(sp), intent(in) :: f, g
+        complex(sp), intent(out) :: r, s
+     end subroutine stdlib_clartg
+
+     pure module subroutine stdlib_zlartg( f, g, c, s, r )
+           use stdlib_blas_constants_dp, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        real(dp), intent(out) :: c
+        complex(dp), intent(in) :: f, g
+        complex(dp), intent(out) :: r, s
+     end subroutine stdlib_zlartg
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lartg( f, g, c, s, r )
+           use stdlib_blas_constants_${ck}$, only: zero, half, one, czero, safmax, safmin, rtmin, rtmax
+        real(${ck}$), intent(out) :: c
+        complex(${ck}$), intent(in) :: f, g
+        complex(${ck}$), intent(out) :: r, s
+     end subroutine stdlib_${ci}$lartg
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slartgp( f, g, cs, sn, r )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(sp), intent(out) :: cs, r, sn
+           real(sp), intent(in) :: f, g
+     end subroutine stdlib_slartgp
+
+     pure module subroutine stdlib_dlartgp( f, g, cs, sn, r )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(dp), intent(out) :: cs, r, sn
+           real(dp), intent(in) :: f, g
+     end subroutine stdlib_dlartgp
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lartgp( f, g, cs, sn, r )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           real(${rk}$), intent(out) :: cs, r, sn
+           real(${rk}$), intent(in) :: f, g
+     end subroutine stdlib_${ri}$lartgp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slasr( side, pivot, direct, m, n, c, s, a, lda )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, pivot, side
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(inout) :: a(lda,*)
+           real(sp), intent(in) :: c(*), s(*)
+     end subroutine stdlib_slasr
+
+     pure module subroutine stdlib_dlasr( side, pivot, direct, m, n, c, s, a, lda )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, pivot, side
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(inout) :: a(lda,*)
+           real(dp), intent(in) :: c(*), s(*)
+     end subroutine stdlib_dlasr
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasr( side, pivot, direct, m, n, c, s, a, lda )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, pivot, side
+           integer(ilp), intent(in) :: lda, m, n
+           real(${rk}$), intent(inout) :: a(lda,*)
+           real(${rk}$), intent(in) :: c(*), s(*)
+     end subroutine stdlib_${ri}$lasr
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clasr( side, pivot, direct, m, n, c, s, a, lda )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, pivot, side
+           integer(ilp), intent(in) :: lda, m, n
+           real(sp), intent(in) :: c(*), s(*)
+           complex(sp), intent(inout) :: a(lda,*)
+     end subroutine stdlib_clasr
+
+     pure module subroutine stdlib_zlasr( side, pivot, direct, m, n, c, s, a, lda )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, pivot, side
+           integer(ilp), intent(in) :: lda, m, n
+           real(dp), intent(in) :: c(*), s(*)
+           complex(dp), intent(inout) :: a(lda,*)
+     end subroutine stdlib_zlasr
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lasr( side, pivot, direct, m, n, c, s, a, lda )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, pivot, side
+           integer(ilp), intent(in) :: lda, m, n
+           real(${ck}$), intent(in) :: c(*), s(*)
+           complex(${ck}$), intent(inout) :: a(lda,*)
+     end subroutine stdlib_${ci}$lasr
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slargv( n, x, incx, y, incy, c, incc )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(sp), intent(out) :: c(*)
+           real(sp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_slargv
+
+     pure module subroutine stdlib_dlargv( n, x, incx, y, incy, c, incc )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(dp), intent(out) :: c(*)
+           real(dp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_dlargv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$largv( n, x, incx, y, incy, c, incc )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(${rk}$), intent(out) :: c(*)
+           real(${rk}$), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_${ri}$largv
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clargv( n, x, incx, y, incy, c, incc )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(sp), intent(out) :: c(*)
+           complex(sp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_clargv
+
+     pure module subroutine stdlib_zlargv( n, x, incx, y, incy, c, incc )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(dp), intent(out) :: c(*)
+           complex(dp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_zlargv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$largv( n, x, incx, y, incy, c, incc )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(${ck}$), intent(out) :: c(*)
+           complex(${ck}$), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_${ci}$largv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slartv( n, x, incx, y, incy, c, s, incc )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(sp), intent(in) :: c(*), s(*)
+           real(sp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_slartv
+
+     pure module subroutine stdlib_dlartv( n, x, incx, y, incy, c, s, incc )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(dp), intent(in) :: c(*), s(*)
+           real(dp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_dlartv
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lartv( n, x, incx, y, incy, c, s, incc )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(${rk}$), intent(in) :: c(*), s(*)
+           real(${rk}$), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_${ri}$lartv
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clartv( n, x, incx, y, incy, c, s, incc )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(sp), intent(in) :: c(*)
+           complex(sp), intent(in) :: s(*)
+           complex(sp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_clartv
+
+     pure module subroutine stdlib_zlartv( n, x, incx, y, incy, c, s, incc )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(dp), intent(in) :: c(*)
+           complex(dp), intent(in) :: s(*)
+           complex(dp), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_zlartv
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lartv( n, x, incx, y, incy, c, s, incc )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, incy, n
+           real(${ck}$), intent(in) :: c(*)
+           complex(${ck}$), intent(in) :: s(*)
+           complex(${ck}$), intent(inout) :: x(*), y(*)
+     end subroutine stdlib_${ci}$lartv
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slar2v( n, x, y, z, incx, c, s, incc )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, n
+           real(sp), intent(in) :: c(*), s(*)
+           real(sp), intent(inout) :: x(*), y(*), z(*)
+     end subroutine stdlib_slar2v
+
+     pure module subroutine stdlib_dlar2v( n, x, y, z, incx, c, s, incc )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, n
+           real(dp), intent(in) :: c(*), s(*)
+           real(dp), intent(inout) :: x(*), y(*), z(*)
+     end subroutine stdlib_dlar2v
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lar2v( n, x, y, z, incx, c, s, incc )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, n
+           real(${rk}$), intent(in) :: c(*), s(*)
+           real(${rk}$), intent(inout) :: x(*), y(*), z(*)
+     end subroutine stdlib_${ri}$lar2v
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clar2v( n, x, y, z, incx, c, s, incc )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, n
+           real(sp), intent(in) :: c(*)
+           complex(sp), intent(in) :: s(*)
+           complex(sp), intent(inout) :: x(*), y(*), z(*)
+     end subroutine stdlib_clar2v
+
+     pure module subroutine stdlib_zlar2v( n, x, y, z, incx, c, s, incc )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, n
+           real(dp), intent(in) :: c(*)
+           complex(dp), intent(in) :: s(*)
+           complex(dp), intent(inout) :: x(*), y(*), z(*)
+     end subroutine stdlib_zlar2v
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lar2v( n, x, y, z, incx, c, s, incc )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incc, incx, n
+           real(${ck}$), intent(in) :: c(*)
+           complex(${ck}$), intent(in) :: s(*)
+           complex(${ck}$), intent(inout) :: x(*), y(*), z(*)
+     end subroutine stdlib_${ci}$lar2v
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_clacrt( n, cx, incx, cy, incy, c, s )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(sp), intent(in) :: c, s
+           complex(sp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_clacrt
+
+     pure module subroutine stdlib_zlacrt( n, cx, incx, cy, incy, c, s )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(dp), intent(in) :: c, s
+           complex(dp), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_zlacrt
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$lacrt( n, cx, incx, cy, incy, c, s )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, incy, n
+           complex(${ck}$), intent(in) :: c, s
+           complex(${ck}$), intent(inout) :: cx(*), cy(*)
+     end subroutine stdlib_${ci}$lacrt
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarf( side, m, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: incv, ldc, m, n
+           real(sp), intent(in) :: tau
+           real(sp), intent(inout) :: c(ldc,*)
+           real(sp), intent(in) :: v(*)
+           real(sp), intent(out) :: work(*)
+     end subroutine stdlib_slarf
+
+     pure module subroutine stdlib_dlarf( side, m, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: incv, ldc, m, n
+           real(dp), intent(in) :: tau
+           real(dp), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: v(*)
+           real(dp), intent(out) :: work(*)
+     end subroutine stdlib_dlarf
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larf( side, m, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: incv, ldc, m, n
+           real(${rk}$), intent(in) :: tau
+           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(${rk}$), intent(in) :: v(*)
+           real(${rk}$), intent(out) :: work(*)
+     end subroutine stdlib_${ri}$larf
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarf( side, m, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: incv, ldc, m, n
+           complex(sp), intent(in) :: tau
+           complex(sp), intent(inout) :: c(ldc,*)
+           complex(sp), intent(in) :: v(*)
+           complex(sp), intent(out) :: work(*)
+     end subroutine stdlib_clarf
+
+     pure module subroutine stdlib_zlarf( side, m, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: incv, ldc, m, n
+           complex(dp), intent(in) :: tau
+           complex(dp), intent(inout) :: c(ldc,*)
+           complex(dp), intent(in) :: v(*)
+           complex(dp), intent(out) :: work(*)
+     end subroutine stdlib_zlarf
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larf( side, m, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: incv, ldc, m, n
+           complex(${ck}$), intent(in) :: tau
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+           complex(${ck}$), intent(in) :: v(*)
+           complex(${ck}$), intent(out) :: work(*)
+     end subroutine stdlib_${ci}$larf
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarfx( side, m, n, v, tau, c, ldc, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: ldc, m, n
+           real(sp), intent(in) :: tau
+           real(sp), intent(inout) :: c(ldc,*)
+           real(sp), intent(in) :: v(*)
+           real(sp), intent(out) :: work(*)
+     end subroutine stdlib_slarfx
+
+     pure module subroutine stdlib_dlarfx( side, m, n, v, tau, c, ldc, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: ldc, m, n
+           real(dp), intent(in) :: tau
+           real(dp), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: v(*)
+           real(dp), intent(out) :: work(*)
+     end subroutine stdlib_dlarfx
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larfx( side, m, n, v, tau, c, ldc, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: ldc, m, n
+           real(${rk}$), intent(in) :: tau
+           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(${rk}$), intent(in) :: v(*)
+           real(${rk}$), intent(out) :: work(*)
+     end subroutine stdlib_${ri}$larfx
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarfx( side, m, n, v, tau, c, ldc, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: ldc, m, n
+           complex(sp), intent(in) :: tau
+           complex(sp), intent(inout) :: c(ldc,*)
+           complex(sp), intent(in) :: v(*)
+           complex(sp), intent(out) :: work(*)
+     end subroutine stdlib_clarfx
+
+     pure module subroutine stdlib_zlarfx( side, m, n, v, tau, c, ldc, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: ldc, m, n
+           complex(dp), intent(in) :: tau
+           complex(dp), intent(inout) :: c(ldc,*)
+           complex(dp), intent(in) :: v(*)
+           complex(dp), intent(out) :: work(*)
+     end subroutine stdlib_zlarfx
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larfx( side, m, n, v, tau, c, ldc, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: side
+           integer(ilp), intent(in) :: ldc, m, n
+           complex(${ck}$), intent(in) :: tau
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+           complex(${ck}$), intent(in) :: v(*)
+           complex(${ck}$), intent(out) :: work(*)
+     end subroutine stdlib_${ci}$larfx
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarfy( uplo, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incv, ldc, n
+           real(sp), intent(in) :: tau
+           real(sp), intent(inout) :: c(ldc,*)
+           real(sp), intent(in) :: v(*)
+           real(sp), intent(out) :: work(*)
+     end subroutine stdlib_slarfy
+
+     pure module subroutine stdlib_dlarfy( uplo, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incv, ldc, n
+           real(dp), intent(in) :: tau
+           real(dp), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: v(*)
+           real(dp), intent(out) :: work(*)
+     end subroutine stdlib_dlarfy
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larfy( uplo, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incv, ldc, n
+           real(${rk}$), intent(in) :: tau
+           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(${rk}$), intent(in) :: v(*)
+           real(${rk}$), intent(out) :: work(*)
+     end subroutine stdlib_${ri}$larfy
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarfy( uplo, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incv, ldc, n
+           complex(sp), intent(in) :: tau
+           complex(sp), intent(inout) :: c(ldc,*)
+           complex(sp), intent(in) :: v(*)
+           complex(sp), intent(out) :: work(*)
+     end subroutine stdlib_clarfy
+
+     pure module subroutine stdlib_zlarfy( uplo, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incv, ldc, n
+           complex(dp), intent(in) :: tau
+           complex(dp), intent(inout) :: c(ldc,*)
+           complex(dp), intent(in) :: v(*)
+           complex(dp), intent(out) :: work(*)
+     end subroutine stdlib_zlarfy
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larfy( uplo, n, v, incv, tau, c, ldc, work )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: uplo
+           integer(ilp), intent(in) :: incv, ldc, n
+           complex(${ck}$), intent(in) :: tau
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+           complex(${ck}$), intent(in) :: v(*)
+           complex(${ck}$), intent(out) :: work(*)
+     end subroutine stdlib_${ci}$larfy
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, work, ldwork )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, side, storev, trans
+           integer(ilp), intent(in) :: k, ldc, ldt, ldv, ldwork, m, n
+           real(sp), intent(inout) :: c(ldc,*)
+           real(sp), intent(in) :: t(ldt,*), v(ldv,*)
+           real(sp), intent(out) :: work(ldwork,*)
+     end subroutine stdlib_slarfb
+
+     pure module subroutine stdlib_dlarfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, &
+     work, ldwork )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, side, storev, trans
+           integer(ilp), intent(in) :: k, ldc, ldt, ldv, ldwork, m, n
+           real(dp), intent(inout) :: c(ldc,*)
+           real(dp), intent(in) :: t(ldt,*), v(ldv,*)
+           real(dp), intent(out) :: work(ldwork,*)
+     end subroutine stdlib_dlarfb
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, work, ldwork )
+               
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, side, storev, trans
+           integer(ilp), intent(in) :: k, ldc, ldt, ldv, ldwork, m, n
+           real(${rk}$), intent(inout) :: c(ldc,*)
+           real(${rk}$), intent(in) :: t(ldt,*), v(ldv,*)
+           real(${rk}$), intent(out) :: work(ldwork,*)
+     end subroutine stdlib_${ri}$larfb
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, &
+     work, ldwork )
+               
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, side, storev, trans
+           integer(ilp), intent(in) :: k, ldc, ldt, ldv, ldwork, m, n
+           complex(sp), intent(inout) :: c(ldc,*)
+           complex(sp), intent(in) :: t(ldt,*), v(ldv,*)
+           complex(sp), intent(out) :: work(ldwork,*)
+     end subroutine stdlib_clarfb
+
+     pure module subroutine stdlib_zlarfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, work, ldwork )
+               
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, side, storev, trans
+           integer(ilp), intent(in) :: k, ldc, ldt, ldv, ldwork, m, n
+           complex(dp), intent(inout) :: c(ldc,*)
+           complex(dp), intent(in) :: t(ldt,*), v(ldv,*)
+           complex(dp), intent(out) :: work(ldwork,*)
+     end subroutine stdlib_zlarfb
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larfb( side, trans, direct, storev, m, n, k, v, ldv,t, ldt, c, ldc, work, ldwork )
+               
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, side, storev, trans
+           integer(ilp), intent(in) :: k, ldc, ldt, ldv, ldwork, m, n
+           complex(${ck}$), intent(inout) :: c(ldc,*)
+           complex(${ck}$), intent(in) :: t(ldt,*), v(ldv,*)
+           complex(${ck}$), intent(out) :: work(ldwork,*)
+     end subroutine stdlib_${ci}$larfb
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarfg( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(inout) :: alpha
+           real(sp), intent(out) :: tau
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_slarfg
+
+     pure module subroutine stdlib_dlarfg( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(inout) :: alpha
+           real(dp), intent(out) :: tau
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dlarfg
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larfg( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(${rk}$), intent(inout) :: alpha
+           real(${rk}$), intent(out) :: tau
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$larfg
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarfg( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(inout) :: alpha
+           complex(sp), intent(out) :: tau
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_clarfg
+
+     pure module subroutine stdlib_zlarfg( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(inout) :: alpha
+           complex(dp), intent(out) :: tau
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_zlarfg
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larfg( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(${ck}$), intent(inout) :: alpha
+           complex(${ck}$), intent(out) :: tau
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$larfg
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     module subroutine stdlib_slarfgp( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(sp), intent(inout) :: alpha
+           real(sp), intent(out) :: tau
+           real(sp), intent(inout) :: x(*)
+     end subroutine stdlib_slarfgp
+
+     module subroutine stdlib_dlarfgp( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(dp), intent(inout) :: alpha
+           real(dp), intent(out) :: tau
+           real(dp), intent(inout) :: x(*)
+     end subroutine stdlib_dlarfgp
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     module subroutine stdlib_${ri}$larfgp( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           real(${rk}$), intent(inout) :: alpha
+           real(${rk}$), intent(out) :: tau
+           real(${rk}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ri}$larfgp
+
+#:endif
+#:endfor
+
+     module subroutine stdlib_clarfgp( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(sp), intent(inout) :: alpha
+           complex(sp), intent(out) :: tau
+           complex(sp), intent(inout) :: x(*)
+     end subroutine stdlib_clarfgp
+
+     module subroutine stdlib_zlarfgp( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(dp), intent(inout) :: alpha
+           complex(dp), intent(out) :: tau
+           complex(dp), intent(inout) :: x(*)
+     end subroutine stdlib_zlarfgp
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     module subroutine stdlib_${ci}$larfgp( n, alpha, x, incx, tau )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           integer(ilp), intent(in) :: incx, n
+           complex(${ck}$), intent(inout) :: alpha
+           complex(${ck}$), intent(out) :: tau
+           complex(${ck}$), intent(inout) :: x(*)
+     end subroutine stdlib_${ci}$larfgp
+
+#:endif
+#:endfor
+
+end interface 
+
+
+interface 
+     pure module subroutine stdlib_slarft( direct, storev, n, k, v, ldv, tau, t, ldt )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, storev
+           integer(ilp), intent(in) :: k, ldt, ldv, n
+           real(sp), intent(out) :: t(ldt,*)
+           real(sp), intent(in) :: tau(*), v(ldv,*)
+     end subroutine stdlib_slarft
+
+     pure module subroutine stdlib_dlarft( direct, storev, n, k, v, ldv, tau, t, ldt )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, storev
+           integer(ilp), intent(in) :: k, ldt, ldv, n
+           real(dp), intent(out) :: t(ldt,*)
+           real(dp), intent(in) :: tau(*), v(ldv,*)
+     end subroutine stdlib_dlarft
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$larft( direct, storev, n, k, v, ldv, tau, t, ldt )
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, storev
+           integer(ilp), intent(in) :: k, ldt, ldv, n
+           real(${rk}$), intent(out) :: t(ldt,*)
+           real(${rk}$), intent(in) :: tau(*), v(ldv,*)
+     end subroutine stdlib_${ri}$larft
+
+#:endif
+#:endfor
+
+     pure module subroutine stdlib_clarft( direct, storev, n, k, v, ldv, tau, t, ldt )
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, storev
+           integer(ilp), intent(in) :: k, ldt, ldv, n
+           complex(sp), intent(out) :: t(ldt,*)
+           complex(sp), intent(in) :: tau(*), v(ldv,*)
+     end subroutine stdlib_clarft
+
+     pure module subroutine stdlib_zlarft( direct, storev, n, k, v, ldv, tau, t, ldt )
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, storev
+           integer(ilp), intent(in) :: k, ldt, ldv, n
+           complex(dp), intent(out) :: t(ldt,*)
+           complex(dp), intent(in) :: tau(*), v(ldv,*)
+     end subroutine stdlib_zlarft
+
+#:for ck,ct,ci in CMPLX_KINDS_TYPES
+#:if not ck in ["sp","dp"]
+     pure module subroutine stdlib_${ci}$larft( direct, storev, n, k, v, ldv, tau, t, ldt )
+           use stdlib_blas_constants_${ck}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           character, intent(in) :: direct, storev
+           integer(ilp), intent(in) :: k, ldt, ldv, n
+           complex(${ck}$), intent(out) :: t(ldt,*)
+           complex(${ck}$), intent(in) :: tau(*), v(ldv,*)
+     end subroutine stdlib_${ci}$larft
+
+#:endif
+#:endfor
+
+end interface 
+
+end module stdlib_lapack_base

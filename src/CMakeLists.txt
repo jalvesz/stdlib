@@ -96,7 +96,12 @@ set(cppFiles
     blas/stdlib_blas_level3_sym.fypp
     blas/stdlib_blas_level3_tri.fypp
 
-    lapack/stdlib_lapack.fypp
+    lapack/stdlib_lapack_base.fypp
+    lapack/stdlib_lapack_solve.fypp
+    lapack/stdlib_lapack_other.fypp
+    lapack/stdlib_lapack_orthogonal_factors.fypp
+    lapack/stdlib_lapack_eig_svd_lsq.fypp
+
     lapack/stdlib_linalg_lapack_aux.fypp
     lapack/stdlib_lapack_auxiliary_others.fypp
     lapack/stdlib_lapack_auxiliary_parameters.fypp

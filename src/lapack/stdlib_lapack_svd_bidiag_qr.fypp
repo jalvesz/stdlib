@@ -1,1834 +1,284 @@
 #:include "common.fypp" 
-submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
+submodule(stdlib_lapack_eig_svd_lsq) stdlib_lapack_svd_bidiag_qr
   implicit none(type,external)
 
 
   contains
 
-     pure module subroutine stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
-     !! SLASQ4 computes an approximation TAU to the smallest eigenvalue
-     !! using values of d from the previous transform.
-               ttype, g )
+     pure module subroutine stdlib_slasq1( n, d, e, work, info )
+     !! SLASQ1 computes the singular values of a real N-by-N bidiagonal
+     !! matrix with diagonal D and off-diagonal E. The singular values
+     !! are computed to high relative accuracy, in the absence of
+     !! denormalization, underflow and overflow. The algorithm was first
+     !! presented in
+     !! "Accurate singular values and differential qd algorithms" by K. V.
+     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
+     !! 1994,
+     !! and the present implementation is described in "An implementation of
+     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, n0in, pp
-           integer(ilp), intent(out) :: ttype
-           real(sp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
-           real(sp), intent(inout) :: g
-           real(sp), intent(out) :: tau
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
            ! Array Arguments 
-           real(sp), intent(in) :: z(*)
+           real(sp), intent(inout) :: d(*), e(*)
+           real(sp), intent(out) :: work(*)
         ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: cnst1 = 0.5630_sp
-           real(sp), parameter :: cnst2 = 1.010_sp
-           real(sp), parameter :: cnst3 = 1.050_sp
-           real(sp), parameter :: qurtr = 0.250_sp
-           real(sp), parameter :: third = 0.3330_sp
-           real(sp), parameter :: hundrd = 100.0_sp
-           
            
            ! Local Scalars 
-           integer(ilp) :: i4, nn, np
-           real(sp) :: a2, b1, b2, gam, gap1, gap2, s
+           integer(ilp) :: i, iinfo
+           real(sp) :: eps, scale, safmin, sigmn, sigmx
            ! Intrinsic Functions 
            ! Executable Statements 
-           ! a negative dmin forces the shift to take that absolute value
-           ! ttype records the type of shift.
-           if( dmin<=zero ) then
-              tau = -dmin
-              ttype = -1
+           info = 0
+           if( n<0 ) then
+              info = -1
+              call stdlib_xerbla( 'SLASQ1', -info )
+              return
+           else if( n==0 ) then
+              return
+           else if( n==1 ) then
+              d( 1 ) = abs( d( 1 ) )
+              return
+           else if( n==2 ) then
+              call stdlib_slas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
+              d( 1 ) = sigmx
+              d( 2 ) = sigmn
               return
            end if
-           nn = 4*n0 + pp
-           if( n0in==n0 ) then
-              ! no eigenvalues deflated.
-              if( dmin==dn .or. dmin==dn1 ) then
-                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
-                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
-                 a2 = z( nn-7 ) + z( nn-5 )
-                 ! cases 2 and 3.
-                 if( dmin==dn .and. dmin1==dn1 ) then
-                    gap2 = dmin2 - a2 - dmin2*qurtr
-                    if( gap2>zero .and. gap2>b2 ) then
-                       gap1 = a2 - dn - ( b2 / gap2 )*b2
-                    else
-                       gap1 = a2 - dn - ( b1+b2 )
-                    end if
-                    if( gap1>zero .and. gap1>b1 ) then
-                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
-                       ttype = -2
-                    else
-                       s = zero
-                       if( dn>b1 )s = dn - b1
-                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
-                       s = max( s, third*dmin )
-                       ttype = -3
-                    end if
-                 else
-                    ! case 4.
-                    ttype = -4
-                    s = qurtr*dmin
-                    if( dmin==dn ) then
-                       gam = dn
-                       a2 = zero
-                       if( z( nn-5 ) > z( nn-7 ) )return
-                       b2 = z( nn-5 ) / z( nn-7 )
-                       np = nn - 9
-                    else
-                       np = nn - 2*pp
-                       gam = dn1
-                       if( z( np-4 ) > z( np-2 ) )return
-                       a2 = z( np-4 ) / z( np-2 )
-                       if( z( nn-9 ) > z( nn-11 ) )return
-                       b2 = z( nn-9 ) / z( nn-11 )
-                       np = nn - 13
-                    end if
-                    ! approximate contribution to norm squared from i < nn-1.
-                    a2 = a2 + b2
-                    do i4 = np, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 20
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
-                    end do
-                    20 continue
-                    a2 = cnst3*a2
-                    ! rayleigh quotient residual bound.
-                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-                 end if
-              else if( dmin==dn2 ) then
-                 ! case 5.
-                 ttype = -5
-                 s = qurtr*dmin
-                 ! compute contribution to norm squared from i > nn-2.
-                 np = nn - 2*pp
-                 b1 = z( np-2 )
-                 b2 = z( np-6 )
-                 gam = dn2
-                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
-                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
-                 ! approximate contribution to norm squared from i < nn-2.
-                 if( n0-i0>2 ) then
-                    b2 = z( nn-13 ) / z( nn-15 )
-                    a2 = a2 + b2
-                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 40
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
-                    end do
-                    40 continue
-                    a2 = cnst3*a2
-                 end if
-                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-              else
-                 ! case 6, no information to guide us.
-                 if( ttype==-6 ) then
-                    g = g + third*( one-g )
-                 else if( ttype==-18 ) then
-                    g = qurtr*third
-                 else
-                    g = qurtr
-                 end if
-                 s = g*dmin
-                 ttype = -6
-              end if
-           else if( n0in==( n0+1 ) ) then
-              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
-              if( dmin1==dn1 .and. dmin2==dn2 ) then
-                 ! cases 7 and 8.
-                 ttype = -7
-                 s = third*dmin1
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 60
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    a2 = b1
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*max( b1, a2 )<b2 )go to 60
-                 end do
-                 60 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin1 / ( one+b2**2 )
-                 gap2 = half*dmin2 - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                    ttype = -8
-                 end if
-              else
-                 ! case 9.
-                 s = qurtr*dmin1
-                 if( dmin1==dn1 )s = half*dmin1
-                 ttype = -9
-              end if
-           else if( n0in==( n0+2 ) ) then
-              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
-              ! cases 10 and 11.
-              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
-                 ttype = -10
-                 s = third*dmin2
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 80
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*b1<b2 )go to 80
-                 end do
-                 80 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin2 / ( one+b2**2 )
-                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                 end if
-              else
-                 s = qurtr*dmin2
-                 ttype = -11
-              end if
-           else if( n0in>( n0+2 ) ) then
-              ! case 12, more than two eigenvalues deflated. no information.
-              s = zero
-              ttype = -12
-           end if
-           tau = s
-           return
-     end subroutine stdlib_slasq4
-
-     pure module subroutine stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
-     !! DLASQ4 computes an approximation TAU to the smallest eigenvalue
-     !! using values of d from the previous transform.
-               ttype, g )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, n0in, pp
-           integer(ilp), intent(out) :: ttype
-           real(dp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
-           real(dp), intent(inout) :: g
-           real(dp), intent(out) :: tau
-           ! Array Arguments 
-           real(dp), intent(in) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: cnst1 = 0.5630_dp
-           real(dp), parameter :: cnst2 = 1.010_dp
-           real(dp), parameter :: cnst3 = 1.050_dp
-           real(dp), parameter :: qurtr = 0.250_dp
-           real(dp), parameter :: third = 0.3330_dp
-           real(dp), parameter :: hundrd = 100.0_dp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i4, nn, np
-           real(dp) :: a2, b1, b2, gam, gap1, gap2, s
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! a negative dmin forces the shift to take that absolute value
-           ! ttype records the type of shift.
-           if( dmin<=zero ) then
-              tau = -dmin
-              ttype = -1
+           ! estimate the largest singular value.
+           sigmx = zero
+           do i = 1, n - 1
+              d( i ) = abs( d( i ) )
+              sigmx = max( sigmx, abs( e( i ) ) )
+           end do
+           d( n ) = abs( d( n ) )
+           ! early return if sigmx is zero (matrix is already diagonal).
+           if( sigmx==zero ) then
+              call stdlib_slasrt( 'D', n, d, iinfo )
               return
            end if
-           nn = 4*n0 + pp
-           if( n0in==n0 ) then
-              ! no eigenvalues deflated.
-              if( dmin==dn .or. dmin==dn1 ) then
-                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
-                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
-                 a2 = z( nn-7 ) + z( nn-5 )
-                 ! cases 2 and 3.
-                 if( dmin==dn .and. dmin1==dn1 ) then
-                    gap2 = dmin2 - a2 - dmin2*qurtr
-                    if( gap2>zero .and. gap2>b2 ) then
-                       gap1 = a2 - dn - ( b2 / gap2 )*b2
-                    else
-                       gap1 = a2 - dn - ( b1+b2 )
-                    end if
-                    if( gap1>zero .and. gap1>b1 ) then
-                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
-                       ttype = -2
-                    else
-                       s = zero
-                       if( dn>b1 )s = dn - b1
-                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
-                       s = max( s, third*dmin )
-                       ttype = -3
-                    end if
-                 else
-                    ! case 4.
-                    ttype = -4
-                    s = qurtr*dmin
-                    if( dmin==dn ) then
-                       gam = dn
-                       a2 = zero
-                       if( z( nn-5 ) > z( nn-7 ) )return
-                       b2 = z( nn-5 ) / z( nn-7 )
-                       np = nn - 9
-                    else
-                       np = nn - 2*pp
-                       gam = dn1
-                       if( z( np-4 ) > z( np-2 ) )return
-                       a2 = z( np-4 ) / z( np-2 )
-                       if( z( nn-9 ) > z( nn-11 ) )return
-                       b2 = z( nn-9 ) / z( nn-11 )
-                       np = nn - 13
-                    end if
-                    ! approximate contribution to norm squared from i < nn-1.
-                    a2 = a2 + b2
-                    do i4 = np, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 20
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
-                    end do
-                    20 continue
-                    a2 = cnst3*a2
-                    ! rayleigh quotient residual bound.
-                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-                 end if
-              else if( dmin==dn2 ) then
-                 ! case 5.
-                 ttype = -5
-                 s = qurtr*dmin
-                 ! compute contribution to norm squared from i > nn-2.
-                 np = nn - 2*pp
-                 b1 = z( np-2 )
-                 b2 = z( np-6 )
-                 gam = dn2
-                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
-                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
-                 ! approximate contribution to norm squared from i < nn-2.
-                 if( n0-i0>2 ) then
-                    b2 = z( nn-13 ) / z( nn-15 )
-                    a2 = a2 + b2
-                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 40
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
-                    end do
-                    40 continue
-                    a2 = cnst3*a2
-                 end if
-                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-              else
-                 ! case 6, no information to guide us.
-                 if( ttype==-6 ) then
-                    g = g + third*( one-g )
-                 else if( ttype==-18 ) then
-                    g = qurtr*third
-                 else
-                    g = qurtr
-                 end if
-                 s = g*dmin
-                 ttype = -6
-              end if
-           else if( n0in==( n0+1 ) ) then
-              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
-              if( dmin1==dn1 .and. dmin2==dn2 ) then
-                 ! cases 7 and 8.
-                 ttype = -7
-                 s = third*dmin1
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 60
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    a2 = b1
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*max( b1, a2 )<b2 )go to 60
-                 end do
-                 60 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin1 / ( one+b2**2 )
-                 gap2 = half*dmin2 - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                    ttype = -8
-                 end if
-              else
-                 ! case 9.
-                 s = qurtr*dmin1
-                 if( dmin1==dn1 )s = half*dmin1
-                 ttype = -9
-              end if
-           else if( n0in==( n0+2 ) ) then
-              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
-              ! cases 10 and 11.
-              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
-                 ttype = -10
-                 s = third*dmin2
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 80
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*b1<b2 )go to 80
-                 end do
-                 80 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin2 / ( one+b2**2 )
-                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                 end if
-              else
-                 s = qurtr*dmin2
-                 ttype = -11
-              end if
-           else if( n0in>( n0+2 ) ) then
-              ! case 12, more than two eigenvalues deflated. no information.
-              s = zero
-              ttype = -12
-           end if
-           tau = s
-           return
-     end subroutine stdlib_dlasq4
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
-     !! DLASQ4: computes an approximation TAU to the smallest eigenvalue
-     !! using values of d from the previous transform.
-               ttype, g )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(in) :: i0, n0, n0in, pp
-           integer(ilp), intent(out) :: ttype
-           real(${rk}$), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
-           real(${rk}$), intent(inout) :: g
-           real(${rk}$), intent(out) :: tau
-           ! Array Arguments 
-           real(${rk}$), intent(in) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(${rk}$), parameter :: cnst1 = 0.5630_${rk}$
-           real(${rk}$), parameter :: cnst2 = 1.010_${rk}$
-           real(${rk}$), parameter :: cnst3 = 1.050_${rk}$
-           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
-           real(${rk}$), parameter :: third = 0.3330_${rk}$
-           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: i4, nn, np
-           real(${rk}$) :: a2, b1, b2, gam, gap1, gap2, s
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           ! a negative dmin forces the shift to take that absolute value
-           ! ttype records the type of shift.
-           if( dmin<=zero ) then
-              tau = -dmin
-              ttype = -1
-              return
-           end if
-           nn = 4*n0 + pp
-           if( n0in==n0 ) then
-              ! no eigenvalues deflated.
-              if( dmin==dn .or. dmin==dn1 ) then
-                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
-                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
-                 a2 = z( nn-7 ) + z( nn-5 )
-                 ! cases 2 and 3.
-                 if( dmin==dn .and. dmin1==dn1 ) then
-                    gap2 = dmin2 - a2 - dmin2*qurtr
-                    if( gap2>zero .and. gap2>b2 ) then
-                       gap1 = a2 - dn - ( b2 / gap2 )*b2
-                    else
-                       gap1 = a2 - dn - ( b1+b2 )
-                    end if
-                    if( gap1>zero .and. gap1>b1 ) then
-                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
-                       ttype = -2
-                    else
-                       s = zero
-                       if( dn>b1 )s = dn - b1
-                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
-                       s = max( s, third*dmin )
-                       ttype = -3
-                    end if
-                 else
-                    ! case 4.
-                    ttype = -4
-                    s = qurtr*dmin
-                    if( dmin==dn ) then
-                       gam = dn
-                       a2 = zero
-                       if( z( nn-5 ) > z( nn-7 ) )return
-                       b2 = z( nn-5 ) / z( nn-7 )
-                       np = nn - 9
-                    else
-                       np = nn - 2*pp
-                       gam = dn1
-                       if( z( np-4 ) > z( np-2 ) )return
-                       a2 = z( np-4 ) / z( np-2 )
-                       if( z( nn-9 ) > z( nn-11 ) )return
-                       b2 = z( nn-9 ) / z( nn-11 )
-                       np = nn - 13
-                    end if
-                    ! approximate contribution to norm squared from i < nn-1.
-                    a2 = a2 + b2
-                    do i4 = np, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 20
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
-                    end do
-                    20 continue
-                    a2 = cnst3*a2
-                    ! rayleigh quotient residual bound.
-                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-                 end if
-              else if( dmin==dn2 ) then
-                 ! case 5.
-                 ttype = -5
-                 s = qurtr*dmin
-                 ! compute contribution to norm squared from i > nn-2.
-                 np = nn - 2*pp
-                 b1 = z( np-2 )
-                 b2 = z( np-6 )
-                 gam = dn2
-                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
-                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
-                 ! approximate contribution to norm squared from i < nn-2.
-                 if( n0-i0>2 ) then
-                    b2 = z( nn-13 ) / z( nn-15 )
-                    a2 = a2 + b2
-                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
-                       if( b2==zero )go to 40
-                       b1 = b2
-                       if( z( i4 ) > z( i4-2 ) )return
-                       b2 = b2*( z( i4 ) / z( i4-2 ) )
-                       a2 = a2 + b2
-                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
-                    end do
-                    40 continue
-                    a2 = cnst3*a2
-                 end if
-                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
-              else
-                 ! case 6, no information to guide us.
-                 if( ttype==-6 ) then
-                    g = g + third*( one-g )
-                 else if( ttype==-18 ) then
-                    g = qurtr*third
-                 else
-                    g = qurtr
-                 end if
-                 s = g*dmin
-                 ttype = -6
-              end if
-           else if( n0in==( n0+1 ) ) then
-              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
-              if( dmin1==dn1 .and. dmin2==dn2 ) then
-                 ! cases 7 and 8.
-                 ttype = -7
-                 s = third*dmin1
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 60
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    a2 = b1
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*max( b1, a2 )<b2 )go to 60
-                 end do
-                 60 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin1 / ( one+b2**2 )
-                 gap2 = half*dmin2 - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                    ttype = -8
-                 end if
-              else
-                 ! case 9.
-                 s = qurtr*dmin1
-                 if( dmin1==dn1 )s = half*dmin1
-                 ttype = -9
-              end if
-           else if( n0in==( n0+2 ) ) then
-              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
-              ! cases 10 and 11.
-              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
-                 ttype = -10
-                 s = third*dmin2
-                 if( z( nn-5 )>z( nn-7 ) )return
-                 b1 = z( nn-5 ) / z( nn-7 )
-                 b2 = b1
-                 if( b2==zero )go to 80
-                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
-                    if( z( i4 )>z( i4-2 ) )return
-                    b1 = b1*( z( i4 ) / z( i4-2 ) )
-                    b2 = b2 + b1
-                    if( hundrd*b1<b2 )go to 80
-                 end do
-                 80 continue
-                 b2 = sqrt( cnst3*b2 )
-                 a2 = dmin2 / ( one+b2**2 )
-                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
-                 if( gap2>zero .and. gap2>b2*a2 ) then
-                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
-                 else
-                    s = max( s, a2*( one-cnst2*b2 ) )
-                 end if
-              else
-                 s = qurtr*dmin2
-                 ttype = -11
-              end if
-           else if( n0in>( n0+2 ) ) then
-              ! case 12, more than two eigenvalues deflated. no information.
-              s = zero
-              ttype = -12
-           end if
-           tau = s
-           return
-     end subroutine stdlib_${ri}$lasq4
-
-#:endif
-#:endfor
-
-
-
-     pure module subroutine stdlib_slasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! SLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(sp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(sp), intent(out) :: dmin, sigma
-           integer(ilp), intent(inout) :: ttype
-           ! Array Arguments 
-           real(sp), intent(inout) :: z(*)
-        ! =====================================================================
-           ! Parameters 
-           real(sp), parameter :: cbias = 1.50_sp
-           real(sp), parameter :: qurtr = 0.250_sp
-           real(sp), parameter :: hundrd = 100.0_sp
-           
-           
-           ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           real(sp) :: eps, s, t, temp, tol, tol2
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           n0in = n0
+           do i = 1, n
+              sigmx = max( sigmx, d( i ) )
+           end do
+           ! copy d and e into work (in the z format) and scale (squaring the
+           ! input data makes scaling by a power of the radix pointless).
            eps = stdlib_slamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
+           safmin = stdlib_slamch( 'SAFE MINIMUM' )
+           scale = sqrt( eps / safmin )
+           call stdlib_scopy( n, d, 1, work( 1 ), 2 )
+           call stdlib_scopy( n-1, e, 1, work( 2 ), 2 )
+           call stdlib_slascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
+           ! compute the q's and e's.
+           do i = 1, 2*n - 1
+              work( i ) = work( i )**2
+           end do
+           work( 2*n ) = zero
+           call stdlib_slasq2( n, work, info )
+           if( info==0 ) then
+              do i = 1, n
+                 d( i ) = sqrt( work( i ) )
+              end do
+              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+           else if( info==2 ) then
+           ! maximum number of iterations exceeded.  move data from work
+           ! into d and e so the calling subroutine can try to finish
+              do i = 1, n
+                 d( i ) = sqrt( work( 2*i-1 ) )
+                 e( i ) = sqrt( work( 2*i ) )
+              end do
+              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
            end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_sisnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
            return
-     end subroutine stdlib_slasq3
+     end subroutine stdlib_slasq1
 
-     pure module subroutine stdlib_dlasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! DLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+     pure module subroutine stdlib_dlasq1( n, d, e, work, info )
+     !! DLASQ1 computes the singular values of a real N-by-N bidiagonal
+     !! matrix with diagonal D and off-diagonal E. The singular values
+     !! are computed to high relative accuracy, in the absence of
+     !! denormalization, underflow and overflow. The algorithm was first
+     !! presented in
+     !! "Accurate singular values and differential qd algorithms" by K. V.
+     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
+     !! 1994,
+     !! and the present implementation is described in "An implementation of
+     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(dp), intent(out) :: dmin, sigma
-           integer(ilp), intent(inout) :: ttype
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
            ! Array Arguments 
-           real(dp), intent(inout) :: z(*)
+           real(dp), intent(inout) :: d(*), e(*)
+           real(dp), intent(out) :: work(*)
         ! =====================================================================
-           ! Parameters 
-           real(dp), parameter :: cbias = 1.50_dp
-           real(dp), parameter :: qurtr = 0.250_dp
-           real(dp), parameter :: hundrd = 100.0_dp
-           
            
            ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           real(dp) :: eps, s, t, temp, tol, tol2
+           integer(ilp) :: i, iinfo
+           real(dp) :: eps, scale, safmin, sigmn, sigmx
            ! Intrinsic Functions 
            ! Executable Statements 
-           n0in = n0
+           info = 0
+           if( n<0 ) then
+              info = -1
+              call stdlib_xerbla( 'DLASQ1', -info )
+              return
+           else if( n==0 ) then
+              return
+           else if( n==1 ) then
+              d( 1 ) = abs( d( 1 ) )
+              return
+           else if( n==2 ) then
+              call stdlib_dlas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
+              d( 1 ) = sigmx
+              d( 2 ) = sigmn
+              return
+           end if
+           ! estimate the largest singular value.
+           sigmx = zero
+           do i = 1, n - 1
+              d( i ) = abs( d( i ) )
+              sigmx = max( sigmx, abs( e( i ) ) )
+           end do
+           d( n ) = abs( d( n ) )
+           ! early return if sigmx is zero (matrix is already diagonal).
+           if( sigmx==zero ) then
+              call stdlib_dlasrt( 'D', n, d, iinfo )
+              return
+           end if
+           do i = 1, n
+              sigmx = max( sigmx, d( i ) )
+           end do
+           ! copy d and e into work (in the z format) and scale (squaring the
+           ! input data makes scaling by a power of the radix pointless).
            eps = stdlib_dlamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
+           safmin = stdlib_dlamch( 'SAFE MINIMUM' )
+           scale = sqrt( eps / safmin )
+           call stdlib_dcopy( n, d, 1, work( 1 ), 2 )
+           call stdlib_dcopy( n-1, e, 1, work( 2 ), 2 )
+           call stdlib_dlascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
+           ! compute the q's and e's.
+           do i = 1, 2*n - 1
+              work( i ) = work( i )**2
+           end do
+           work( 2*n ) = zero
+           call stdlib_dlasq2( n, work, info )
+           if( info==0 ) then
+              do i = 1, n
+                 d( i ) = sqrt( work( i ) )
+              end do
+              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+           else if( info==2 ) then
+           ! maximum number of iterations exceeded.  move data from work
+           ! into d and e so the calling subroutine can try to finish
+              do i = 1, n
+                 d( i ) = sqrt( work( 2*i-1 ) )
+                 e( i ) = sqrt( work( 2*i ) )
+              end do
+              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
            end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_disnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
            return
-     end subroutine stdlib_dlasq3
+     end subroutine stdlib_dlasq1
 
 #:for rk,rt,ri in REAL_KINDS_TYPES
 #:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$lasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
-     !! DLASQ3: checks for deflation, computes a shift (TAU) and calls dqds.
-     !! In case of failure it changes shifts, and tries again until output
-     !! is positive.
-               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+     pure module subroutine stdlib_${ri}$lasq1( n, d, e, work, info )
+     !! DLASQ1: computes the singular values of a real N-by-N bidiagonal
+     !! matrix with diagonal D and off-diagonal E. The singular values
+     !! are computed to high relative accuracy, in the absence of
+     !! denormalization, underflow and overflow. The algorithm was first
+     !! presented in
+     !! "Accurate singular values and differential qd algorithms" by K. V.
+     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
+     !! 1994,
+     !! and the present implementation is described in "An implementation of
+     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
         ! -- lapack computational routine --
         ! -- lapack is a software package provided by univ. of tennessee,    --
         ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
            use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
            ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0
-           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
-           real(${rk}$), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
-           real(${rk}$), intent(out) :: dmin, sigma
-           integer(ilp), intent(inout) :: ttype
+           integer(ilp), intent(out) :: info
+           integer(ilp), intent(in) :: n
            ! Array Arguments 
-           real(${rk}$), intent(inout) :: z(*)
+           real(${rk}$), intent(inout) :: d(*), e(*)
+           real(${rk}$), intent(out) :: work(*)
         ! =====================================================================
-           ! Parameters 
-           real(${rk}$), parameter :: cbias = 1.50_${rk}$
-           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
-           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
-           
            
            ! Local Scalars 
-           integer(ilp) :: ipn4, j4, n0in, nn
-           real(${rk}$) :: eps, s, t, temp, tol, tol2
+           integer(ilp) :: i, iinfo
+           real(${rk}$) :: eps, scale, safmin, sigmn, sigmx
            ! Intrinsic Functions 
            ! Executable Statements 
-           n0in = n0
+           info = 0
+           if( n<0 ) then
+              info = -1
+              call stdlib_xerbla( 'DLASQ1', -info )
+              return
+           else if( n==0 ) then
+              return
+           else if( n==1 ) then
+              d( 1 ) = abs( d( 1 ) )
+              return
+           else if( n==2 ) then
+              call stdlib_${ri}$las2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
+              d( 1 ) = sigmx
+              d( 2 ) = sigmn
+              return
+           end if
+           ! estimate the largest singular value.
+           sigmx = zero
+           do i = 1, n - 1
+              d( i ) = abs( d( i ) )
+              sigmx = max( sigmx, abs( e( i ) ) )
+           end do
+           d( n ) = abs( d( n ) )
+           ! early return if sigmx is zero (matrix is already diagonal).
+           if( sigmx==zero ) then
+              call stdlib_${ri}$lasrt( 'D', n, d, iinfo )
+              return
+           end if
+           do i = 1, n
+              sigmx = max( sigmx, d( i ) )
+           end do
+           ! copy d and e into work (in the z format) and scale (squaring the
+           ! input data makes scaling by a power of the radix pointless).
            eps = stdlib_${ri}$lamch( 'PRECISION' )
-           tol = eps*hundrd
-           tol2 = tol**2
-           ! check for deflation.
-           10 continue
-           if( n0<i0 )return
-           if( n0==i0 )go to 20
-           nn = 4*n0 + pp
-           if( n0==( i0+1 ) )go to 40
-           ! check whether e(n0-1) is negligible, 1 eigenvalue.
-           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
-                     30
-           20 continue
-           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
-           n0 = n0 - 1
-           go to 10
-           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
-           30 continue
-           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
-           40 continue
-           if( z( nn-3 )>z( nn-7 ) ) then
-              s = z( nn-3 )
-              z( nn-3 ) = z( nn-7 )
-              z( nn-7 ) = s
+           safmin = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
+           scale = sqrt( eps / safmin )
+           call stdlib_${ri}$copy( n, d, 1, work( 1 ), 2 )
+           call stdlib_${ri}$copy( n-1, e, 1, work( 2 ), 2 )
+           call stdlib_${ri}$lascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
+           ! compute the q's and e's.
+           do i = 1, 2*n - 1
+              work( i ) = work( i )**2
+           end do
+           work( 2*n ) = zero
+           call stdlib_${ri}$lasq2( n, work, info )
+           if( info==0 ) then
+              do i = 1, n
+                 d( i ) = sqrt( work( i ) )
+              end do
+              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+           else if( info==2 ) then
+           ! maximum number of iterations exceeded.  move data from work
+           ! into d and e so the calling subroutine can try to finish
+              do i = 1, n
+                 d( i ) = sqrt( work( 2*i-1 ) )
+                 e( i ) = sqrt( work( 2*i ) )
+              end do
+              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
+              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
            end if
-           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
-           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
-              s = z( nn-3 )*( z( nn-5 ) / t )
-              if( s<=t ) then
-                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
-              else
-                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
-              end if
-              t = z( nn-7 ) + ( s+z( nn-5 ) )
-              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
-              z( nn-7 ) = t
-           end if
-           z( 4*n0-7 ) = z( nn-7 ) + sigma
-           z( 4*n0-3 ) = z( nn-3 ) + sigma
-           n0 = n0 - 2
-           go to 10
-           50 continue
-           if( pp==2 )pp = 0
-           ! reverse the qd-array, if warranted.
-           if( dmin<=zero .or. n0<n0in ) then
-              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
-                 ipn4 = 4*( i0+n0 )
-                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
-                    temp = z( j4-3 )
-                    z( j4-3 ) = z( ipn4-j4-3 )
-                    z( ipn4-j4-3 ) = temp
-                    temp = z( j4-2 )
-                    z( j4-2 ) = z( ipn4-j4-2 )
-                    z( ipn4-j4-2 ) = temp
-                    temp = z( j4-1 )
-                    z( j4-1 ) = z( ipn4-j4-5 )
-                    z( ipn4-j4-5 ) = temp
-                    temp = z( j4 )
-                    z( j4 ) = z( ipn4-j4-4 )
-                    z( ipn4-j4-4 ) = temp
-                 end do
-                 if( n0-i0<=4 ) then
-                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
-                    z( 4*n0-pp ) = z( 4*i0-pp )
-                 end if
-                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
-                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
-                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
-                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
-                 dmin = -zero
-              end if
-           end if
-           ! choose a shift.
-           call stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
-                     g )
-           ! call dqds until dmin > 0.
-           70 continue
-           call stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
-                     eps )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           ! check status.
-           if( dmin>=zero .and. dmin1>=zero ) then
-              ! success.
-              go to 90
-           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
-                      dn )<tol*sigma ) then
-              ! convergence hidden by negative dn.
-              z( 4*( n0-1 )-pp+2 ) = zero
-              dmin = zero
-              go to 90
-           else if( dmin<zero ) then
-              ! tau too big. select new tau and try again.
-              nfail = nfail + 1
-              if( ttype<-22 ) then
-                 ! failed twice. play it safe.
-                 tau = zero
-              else if( dmin1>zero ) then
-                 ! late failure. gives excellent shift.
-                 tau = ( tau+dmin )*( one-two*eps )
-                 ttype = ttype - 11
-              else
-                 ! early failure. divide by 4.
-                 tau = qurtr*tau
-                 ttype = ttype - 12
-              end if
-              go to 70
-           else if( stdlib_${ri}$isnan( dmin ) ) then
-              ! nan.
-              if( tau==zero ) then
-                 go to 80
-              else
-                 tau = zero
-                 go to 70
-              end if
-           else
-              ! possible underflow. play it safe.
-              go to 80
-           end if
-           ! risk of underflow.
-           80 continue
-           call stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
-           ndiv = ndiv + ( n0-i0+2 )
-           iter = iter + 1
-           tau = zero
-           90 continue
-           if( tau<sigma ) then
-              desig = desig + tau
-              t = sigma + desig
-              desig = desig - ( t-sigma )
-           else
-              t = sigma + tau
-              desig = sigma - ( t-tau ) + desig
-           end if
-           sigma = t
            return
-     end subroutine stdlib_${ri}$lasq3
-
-#:endif
-#:endfor
-
-
-
-     pure module subroutine stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
-     !! SLASQ5 computes one dqds transform in ping-pong form, one
-     !! version for IEEE machines another for non IEEE machines.
-               ieee, eps )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0, n0, pp
-           real(sp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
-           real(sp), intent(inout) :: tau
-           real(sp), intent(in) :: sigma, eps
-           ! Array Arguments 
-           real(sp), intent(inout) :: z(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: j4, j4p2
-           real(sp) :: d, emin, temp, dthresh
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           if( ( n0-i0-1 )<=0 )return
-           dthresh = eps*(sigma+tau)
-           if( tau<dthresh*half ) tau = zero
-           if( tau/=zero ) then
-              j4 = 4*i0 + pp - 3
-              emin = z( j4+4 )
-              d = z( j4 ) - tau
-              dmin = d
-              dmin1 = -z( j4 )
-              if( ieee ) then
-           ! code for ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       temp = z( j4+1 ) / z( j4-2 )
-                       d = d*temp - tau
-                       dmin = min( dmin, d )
-                       z( j4 ) = z( j4-1 )*temp
-                       emin = min( z( j4 ), emin )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       temp = z( j4+2 ) / z( j4-3 )
-                       d = d*temp - tau
-                       dmin = min( dmin, d )
-                       z( j4-1 ) = z( j4 )*temp
-                       emin = min( z( j4-1 ), emin )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dn )
-              else
-           ! code for non ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
-                       end if
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4 ) )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
-                       end if
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4-1 ) )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 if( dnm2<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 if( dnm1<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dn )
-              end if
-           else
-           ! this is the version that sets d's to zero if they are small enough
-              j4 = 4*i0 + pp - 3
-              emin = z( j4+4 )
-              d = z( j4 ) - tau
-              dmin = d
-              dmin1 = -z( j4 )
-              if( ieee ) then
-           ! code for ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       temp = z( j4+1 ) / z( j4-2 )
-                       d = d*temp - tau
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       z( j4 ) = z( j4-1 )*temp
-                       emin = min( z( j4 ), emin )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       temp = z( j4+2 ) / z( j4-3 )
-                       d = d*temp - tau
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       z( j4-1 ) = z( j4 )*temp
-                       emin = min( z( j4-1 ), emin )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dn )
-              else
-           ! code for non ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
-                       end if
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4 ) )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
-                       end if
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4-1 ) )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 if( dnm2<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 if( dnm1<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dn )
-              end if
-           end if
-           z( j4+2 ) = dn
-           z( 4*n0-pp ) = emin
-           return
-     end subroutine stdlib_slasq5
-
-     pure module subroutine stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
-     !! DLASQ5 computes one dqds transform in ping-pong form, one
-     !! version for IEEE machines another for non IEEE machines.
-               ieee, eps )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0, n0, pp
-           real(dp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
-           real(dp), intent(inout) :: tau
-           real(dp), intent(in) :: sigma, eps
-           ! Array Arguments 
-           real(dp), intent(inout) :: z(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: j4, j4p2
-           real(dp) :: d, emin, temp, dthresh
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           if( ( n0-i0-1 )<=0 )return
-           dthresh = eps*(sigma+tau)
-           if( tau<dthresh*half ) tau = zero
-           if( tau/=zero ) then
-           j4 = 4*i0 + pp - 3
-           emin = z( j4+4 )
-           d = z( j4 ) - tau
-           dmin = d
-           dmin1 = -z( j4 )
-           if( ieee ) then
-              ! code for ieee arithmetic.
-              if( pp==0 ) then
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-2 ) = d + z( j4-1 )
-                    temp = z( j4+1 ) / z( j4-2 )
-                    d = d*temp - tau
-                    dmin = min( dmin, d )
-                    z( j4 ) = z( j4-1 )*temp
-                    emin = min( z( j4 ), emin )
-                 end do
-              else
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-3 ) = d + z( j4 )
-                    temp = z( j4+2 ) / z( j4-3 )
-                    d = d*temp - tau
-                    dmin = min( dmin, d )
-                    z( j4-1 ) = z( j4 )*temp
-                    emin = min( z( j4-1 ), emin )
-                 end do
-              end if
-              ! unroll last two steps.
-              dnm2 = d
-              dmin2 = dmin
-              j4 = 4*( n0-2 ) - pp
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm2 + z( j4p2 )
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-              dmin = min( dmin, dnm1 )
-              dmin1 = dmin
-              j4 = j4 + 4
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm1 + z( j4p2 )
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-              dmin = min( dmin, dn )
-           else
-              ! code for non ieee arithmetic.
-              if( pp==0 ) then
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-2 ) = d + z( j4-1 )
-                    if( d<zero ) then
-                       return
-                    else
-                       z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                       d = z( j4+1 )*( d / z( j4-2 ) ) - tau
-                    end if
-                    dmin = min( dmin, d )
-                    emin = min( emin, z( j4 ) )
-                 end do
-              else
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-3 ) = d + z( j4 )
-                    if( d<zero ) then
-                       return
-                    else
-                       z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                       d = z( j4+2 )*( d / z( j4-3 ) ) - tau
-                    end if
-                    dmin = min( dmin, d )
-                    emin = min( emin, z( j4-1 ) )
-                 end do
-              end if
-              ! unroll last two steps.
-              dnm2 = d
-              dmin2 = dmin
-              j4 = 4*( n0-2 ) - pp
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm2 + z( j4p2 )
-              if( dnm2<zero ) then
-                 return
-              else
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-              end if
-              dmin = min( dmin, dnm1 )
-              dmin1 = dmin
-              j4 = j4 + 4
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm1 + z( j4p2 )
-              if( dnm1<zero ) then
-                 return
-              else
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-              end if
-              dmin = min( dmin, dn )
-           end if
-           else
-           ! this is the version that sets d's to zero if they are small enough
-              j4 = 4*i0 + pp - 3
-              emin = z( j4+4 )
-              d = z( j4 ) - tau
-              dmin = d
-              dmin1 = -z( j4 )
-              if( ieee ) then
-           ! code for ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       temp = z( j4+1 ) / z( j4-2 )
-                       d = d*temp - tau
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       z( j4 ) = z( j4-1 )*temp
-                       emin = min( z( j4 ), emin )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       temp = z( j4+2 ) / z( j4-3 )
-                       d = d*temp - tau
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       z( j4-1 ) = z( j4 )*temp
-                       emin = min( z( j4-1 ), emin )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dn )
-              else
-           ! code for non ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
-                       end if
-                       if( d<dthresh) d = zero
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4 ) )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
-                       end if
-                       if( d<dthresh) d = zero
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4-1 ) )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 if( dnm2<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 if( dnm1<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dn )
-              end if
-           end if
-           z( j4+2 ) = dn
-           z( 4*n0-pp ) = emin
-           return
-     end subroutine stdlib_dlasq5
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
-     !! DLASQ5: computes one dqds transform in ping-pong form, one
-     !! version for IEEE machines another for non IEEE machines.
-               ieee, eps )
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           logical(lk), intent(in) :: ieee
-           integer(ilp), intent(in) :: i0, n0, pp
-           real(${rk}$), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
-           real(${rk}$), intent(inout) :: tau
-           real(${rk}$), intent(in) :: sigma, eps
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: z(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: j4, j4p2
-           real(${rk}$) :: d, emin, temp, dthresh
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           if( ( n0-i0-1 )<=0 )return
-           dthresh = eps*(sigma+tau)
-           if( tau<dthresh*half ) tau = zero
-           if( tau/=zero ) then
-           j4 = 4*i0 + pp - 3
-           emin = z( j4+4 )
-           d = z( j4 ) - tau
-           dmin = d
-           dmin1 = -z( j4 )
-           if( ieee ) then
-              ! code for ieee arithmetic.
-              if( pp==0 ) then
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-2 ) = d + z( j4-1 )
-                    temp = z( j4+1 ) / z( j4-2 )
-                    d = d*temp - tau
-                    dmin = min( dmin, d )
-                    z( j4 ) = z( j4-1 )*temp
-                    emin = min( z( j4 ), emin )
-                 end do
-              else
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-3 ) = d + z( j4 )
-                    temp = z( j4+2 ) / z( j4-3 )
-                    d = d*temp - tau
-                    dmin = min( dmin, d )
-                    z( j4-1 ) = z( j4 )*temp
-                    emin = min( z( j4-1 ), emin )
-                 end do
-              end if
-              ! unroll last two steps.
-              dnm2 = d
-              dmin2 = dmin
-              j4 = 4*( n0-2 ) - pp
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm2 + z( j4p2 )
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-              dmin = min( dmin, dnm1 )
-              dmin1 = dmin
-              j4 = j4 + 4
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm1 + z( j4p2 )
-              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-              dmin = min( dmin, dn )
-           else
-              ! code for non ieee arithmetic.
-              if( pp==0 ) then
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-2 ) = d + z( j4-1 )
-                    if( d<zero ) then
-                       return
-                    else
-                       z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                       d = z( j4+1 )*( d / z( j4-2 ) ) - tau
-                    end if
-                    dmin = min( dmin, d )
-                    emin = min( emin, z( j4 ) )
-                 end do
-              else
-                 do j4 = 4*i0, 4*( n0-3 ), 4
-                    z( j4-3 ) = d + z( j4 )
-                    if( d<zero ) then
-                       return
-                    else
-                       z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                       d = z( j4+2 )*( d / z( j4-3 ) ) - tau
-                    end if
-                    dmin = min( dmin, d )
-                    emin = min( emin, z( j4-1 ) )
-                 end do
-              end if
-              ! unroll last two steps.
-              dnm2 = d
-              dmin2 = dmin
-              j4 = 4*( n0-2 ) - pp
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm2 + z( j4p2 )
-              if( dnm2<zero ) then
-                 return
-              else
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-              end if
-              dmin = min( dmin, dnm1 )
-              dmin1 = dmin
-              j4 = j4 + 4
-              j4p2 = j4 + 2*pp - 1
-              z( j4-2 ) = dnm1 + z( j4p2 )
-              if( dnm1<zero ) then
-                 return
-              else
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-              end if
-              dmin = min( dmin, dn )
-           end if
-           else
-           ! this is the version that sets d's to zero if they are small enough
-              j4 = 4*i0 + pp - 3
-              emin = z( j4+4 )
-              d = z( j4 ) - tau
-              dmin = d
-              dmin1 = -z( j4 )
-              if( ieee ) then
-           ! code for ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       temp = z( j4+1 ) / z( j4-2 )
-                       d = d*temp - tau
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       z( j4 ) = z( j4-1 )*temp
-                       emin = min( z( j4 ), emin )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       temp = z( j4+2 ) / z( j4-3 )
-                       d = d*temp - tau
-                       if( d<dthresh ) d = zero
-                       dmin = min( dmin, d )
-                       z( j4-1 ) = z( j4 )*temp
-                       emin = min( z( j4-1 ), emin )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 dmin = min( dmin, dn )
-              else
-           ! code for non ieee arithmetic.
-                 if( pp==0 ) then
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-2 ) = d + z( j4-1 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
-                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
-                       end if
-                       if( d<dthresh) d = zero
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4 ) )
-                    end do
-                 else
-                    do j4 = 4*i0, 4*( n0-3 ), 4
-                       z( j4-3 ) = d + z( j4 )
-                       if( d<zero ) then
-                          return
-                       else
-                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
-                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
-                       end if
-                       if( d<dthresh) d = zero
-                       dmin = min( dmin, d )
-                       emin = min( emin, z( j4-1 ) )
-                    end do
-                 end if
-           ! unroll last two steps.
-                 dnm2 = d
-                 dmin2 = dmin
-                 j4 = 4*( n0-2 ) - pp
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm2 + z( j4p2 )
-                 if( dnm2<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dnm1 )
-                 dmin1 = dmin
-                 j4 = j4 + 4
-                 j4p2 = j4 + 2*pp - 1
-                 z( j4-2 ) = dnm1 + z( j4p2 )
-                 if( dnm1<zero ) then
-                    return
-                 else
-                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
-                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
-                 end if
-                 dmin = min( dmin, dn )
-              end if
-           end if
-           z( j4+2 ) = dn
-           z( 4*n0-pp ) = emin
-           return
-     end subroutine stdlib_${ri}$lasq5
+     end subroutine stdlib_${ri}$lasq1
 
 #:endif
 #:endfor
@@ -3008,6 +1458,1836 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
 
 
 
+     pure module subroutine stdlib_slasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! SLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(sp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(sp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(sp), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: cbias = 1.50_sp
+           real(sp), parameter :: qurtr = 0.250_sp
+           real(sp), parameter :: hundrd = 100.0_sp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(sp) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_slamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_sisnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_slasq3
+
+     pure module subroutine stdlib_dlasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! DLASQ3 checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(dp), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(dp), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(dp), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: cbias = 1.50_dp
+           real(dp), parameter :: qurtr = 0.250_dp
+           real(dp), parameter :: hundrd = 100.0_dp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(dp) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_dlamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_disnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_dlasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_dlasq3
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasq3( i0, n0, z, pp, dmin, sigma, desig, qmax, nfail,iter, ndiv, &
+     !! DLASQ3: checks for deflation, computes a shift (TAU) and calls dqds.
+     !! In case of failure it changes shifts, and tries again until output
+     !! is positive.
+               ieee, ttype, dmin1, dmin2, dn, dn1,dn2, g, tau )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0
+           integer(ilp), intent(inout) :: iter, n0, ndiv, nfail, pp
+           real(${rk}$), intent(inout) :: desig, dmin1, dmin2, dn, dn1, dn2, g, qmax, tau
+           real(${rk}$), intent(out) :: dmin, sigma
+           integer(ilp), intent(inout) :: ttype
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(${rk}$), parameter :: cbias = 1.50_${rk}$
+           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
+           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: ipn4, j4, n0in, nn
+           real(${rk}$) :: eps, s, t, temp, tol, tol2
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           n0in = n0
+           eps = stdlib_${ri}$lamch( 'PRECISION' )
+           tol = eps*hundrd
+           tol2 = tol**2
+           ! check for deflation.
+           10 continue
+           if( n0<i0 )return
+           if( n0==i0 )go to 20
+           nn = 4*n0 + pp
+           if( n0==( i0+1 ) )go to 40
+           ! check whether e(n0-1) is negligible, 1 eigenvalue.
+           if( z( nn-5 )>tol2*( sigma+z( nn-3 ) ) .and.z( nn-2*pp-4 )>tol2*z( nn-7 ) )go to &
+                     30
+           20 continue
+           z( 4*n0-3 ) = z( 4*n0+pp-3 ) + sigma
+           n0 = n0 - 1
+           go to 10
+           ! check  whether e(n0-2) is negligible, 2 eigenvalues.
+           30 continue
+           if( z( nn-9 )>tol2*sigma .and.z( nn-2*pp-8 )>tol2*z( nn-11 ) )go to 50
+           40 continue
+           if( z( nn-3 )>z( nn-7 ) ) then
+              s = z( nn-3 )
+              z( nn-3 ) = z( nn-7 )
+              z( nn-7 ) = s
+           end if
+           t = half*( ( z( nn-7 )-z( nn-3 ) )+z( nn-5 ) )
+           if( z( nn-5 )>z( nn-3 )*tol2.and.t/=zero ) then
+              s = z( nn-3 )*( z( nn-5 ) / t )
+              if( s<=t ) then
+                 s = z( nn-3 )*( z( nn-5 ) /( t*( one+sqrt( one+s / t ) ) ) )
+              else
+                 s = z( nn-3 )*( z( nn-5 ) / ( t+sqrt( t )*sqrt( t+s ) ) )
+              end if
+              t = z( nn-7 ) + ( s+z( nn-5 ) )
+              z( nn-3 ) = z( nn-3 )*( z( nn-7 ) / t )
+              z( nn-7 ) = t
+           end if
+           z( 4*n0-7 ) = z( nn-7 ) + sigma
+           z( 4*n0-3 ) = z( nn-3 ) + sigma
+           n0 = n0 - 2
+           go to 10
+           50 continue
+           if( pp==2 )pp = 0
+           ! reverse the qd-array, if warranted.
+           if( dmin<=zero .or. n0<n0in ) then
+              if( cbias*z( 4*i0+pp-3 )<z( 4*n0+pp-3 ) ) then
+                 ipn4 = 4*( i0+n0 )
+                 do j4 = 4*i0, 2*( i0+n0-1 ), 4
+                    temp = z( j4-3 )
+                    z( j4-3 ) = z( ipn4-j4-3 )
+                    z( ipn4-j4-3 ) = temp
+                    temp = z( j4-2 )
+                    z( j4-2 ) = z( ipn4-j4-2 )
+                    z( ipn4-j4-2 ) = temp
+                    temp = z( j4-1 )
+                    z( j4-1 ) = z( ipn4-j4-5 )
+                    z( ipn4-j4-5 ) = temp
+                    temp = z( j4 )
+                    z( j4 ) = z( ipn4-j4-4 )
+                    z( ipn4-j4-4 ) = temp
+                 end do
+                 if( n0-i0<=4 ) then
+                    z( 4*n0+pp-1 ) = z( 4*i0+pp-1 )
+                    z( 4*n0-pp ) = z( 4*i0-pp )
+                 end if
+                 dmin2 = min( dmin2, z( 4*n0+pp-1 ) )
+                 z( 4*n0+pp-1 ) = min( z( 4*n0+pp-1 ), z( 4*i0+pp-1 ),z( 4*i0+pp+3 ) )
+                 z( 4*n0-pp ) = min( z( 4*n0-pp ), z( 4*i0-pp ),z( 4*i0-pp+4 ) )
+                 qmax = max( qmax, z( 4*i0+pp-3 ), z( 4*i0+pp+1 ) )
+                 dmin = -zero
+              end if
+           end if
+           ! choose a shift.
+           call stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn, dn1,dn2, tau, ttype, &
+                     g )
+           ! call dqds until dmin > 0.
+           70 continue
+           call stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2, dn,dn1, dn2, ieee, &
+                     eps )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           ! check status.
+           if( dmin>=zero .and. dmin1>=zero ) then
+              ! success.
+              go to 90
+           else if( dmin<zero .and. dmin1>zero .and.z( 4*( n0-1 )-pp )<tol*( sigma+dn1 ) .and.abs(&
+                      dn )<tol*sigma ) then
+              ! convergence hidden by negative dn.
+              z( 4*( n0-1 )-pp+2 ) = zero
+              dmin = zero
+              go to 90
+           else if( dmin<zero ) then
+              ! tau too big. select new tau and try again.
+              nfail = nfail + 1
+              if( ttype<-22 ) then
+                 ! failed twice. play it safe.
+                 tau = zero
+              else if( dmin1>zero ) then
+                 ! late failure. gives excellent shift.
+                 tau = ( tau+dmin )*( one-two*eps )
+                 ttype = ttype - 11
+              else
+                 ! early failure. divide by 4.
+                 tau = qurtr*tau
+                 ttype = ttype - 12
+              end if
+              go to 70
+           else if( stdlib_${ri}$isnan( dmin ) ) then
+              ! nan.
+              if( tau==zero ) then
+                 go to 80
+              else
+                 tau = zero
+                 go to 70
+              end if
+           else
+              ! possible underflow. play it safe.
+              go to 80
+           end if
+           ! risk of underflow.
+           80 continue
+           call stdlib_${ri}$lasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn, dn1, dn2 )
+           ndiv = ndiv + ( n0-i0+2 )
+           iter = iter + 1
+           tau = zero
+           90 continue
+           if( tau<sigma ) then
+              desig = desig + tau
+              t = sigma + desig
+              desig = desig - ( t-sigma )
+           else
+              t = sigma + tau
+              desig = sigma - ( t-tau ) + desig
+           end if
+           sigma = t
+           return
+     end subroutine stdlib_${ri}$lasq3
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_slasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     !! SLASQ4 computes an approximation TAU to the smallest eigenvalue
+     !! using values of d from the previous transform.
+               ttype, g )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, n0in, pp
+           integer(ilp), intent(out) :: ttype
+           real(sp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
+           real(sp), intent(inout) :: g
+           real(sp), intent(out) :: tau
+           ! Array Arguments 
+           real(sp), intent(in) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(sp), parameter :: cnst1 = 0.5630_sp
+           real(sp), parameter :: cnst2 = 1.010_sp
+           real(sp), parameter :: cnst3 = 1.050_sp
+           real(sp), parameter :: qurtr = 0.250_sp
+           real(sp), parameter :: third = 0.3330_sp
+           real(sp), parameter :: hundrd = 100.0_sp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i4, nn, np
+           real(sp) :: a2, b1, b2, gam, gap1, gap2, s
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! a negative dmin forces the shift to take that absolute value
+           ! ttype records the type of shift.
+           if( dmin<=zero ) then
+              tau = -dmin
+              ttype = -1
+              return
+           end if
+           nn = 4*n0 + pp
+           if( n0in==n0 ) then
+              ! no eigenvalues deflated.
+              if( dmin==dn .or. dmin==dn1 ) then
+                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
+                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
+                 a2 = z( nn-7 ) + z( nn-5 )
+                 ! cases 2 and 3.
+                 if( dmin==dn .and. dmin1==dn1 ) then
+                    gap2 = dmin2 - a2 - dmin2*qurtr
+                    if( gap2>zero .and. gap2>b2 ) then
+                       gap1 = a2 - dn - ( b2 / gap2 )*b2
+                    else
+                       gap1 = a2 - dn - ( b1+b2 )
+                    end if
+                    if( gap1>zero .and. gap1>b1 ) then
+                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
+                       ttype = -2
+                    else
+                       s = zero
+                       if( dn>b1 )s = dn - b1
+                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
+                       s = max( s, third*dmin )
+                       ttype = -3
+                    end if
+                 else
+                    ! case 4.
+                    ttype = -4
+                    s = qurtr*dmin
+                    if( dmin==dn ) then
+                       gam = dn
+                       a2 = zero
+                       if( z( nn-5 ) > z( nn-7 ) )return
+                       b2 = z( nn-5 ) / z( nn-7 )
+                       np = nn - 9
+                    else
+                       np = nn - 2*pp
+                       gam = dn1
+                       if( z( np-4 ) > z( np-2 ) )return
+                       a2 = z( np-4 ) / z( np-2 )
+                       if( z( nn-9 ) > z( nn-11 ) )return
+                       b2 = z( nn-9 ) / z( nn-11 )
+                       np = nn - 13
+                    end if
+                    ! approximate contribution to norm squared from i < nn-1.
+                    a2 = a2 + b2
+                    do i4 = np, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 20
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
+                    end do
+                    20 continue
+                    a2 = cnst3*a2
+                    ! rayleigh quotient residual bound.
+                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+                 end if
+              else if( dmin==dn2 ) then
+                 ! case 5.
+                 ttype = -5
+                 s = qurtr*dmin
+                 ! compute contribution to norm squared from i > nn-2.
+                 np = nn - 2*pp
+                 b1 = z( np-2 )
+                 b2 = z( np-6 )
+                 gam = dn2
+                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
+                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
+                 ! approximate contribution to norm squared from i < nn-2.
+                 if( n0-i0>2 ) then
+                    b2 = z( nn-13 ) / z( nn-15 )
+                    a2 = a2 + b2
+                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 40
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
+                    end do
+                    40 continue
+                    a2 = cnst3*a2
+                 end if
+                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+              else
+                 ! case 6, no information to guide us.
+                 if( ttype==-6 ) then
+                    g = g + third*( one-g )
+                 else if( ttype==-18 ) then
+                    g = qurtr*third
+                 else
+                    g = qurtr
+                 end if
+                 s = g*dmin
+                 ttype = -6
+              end if
+           else if( n0in==( n0+1 ) ) then
+              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
+              if( dmin1==dn1 .and. dmin2==dn2 ) then
+                 ! cases 7 and 8.
+                 ttype = -7
+                 s = third*dmin1
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 60
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    a2 = b1
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*max( b1, a2 )<b2 )go to 60
+                 end do
+                 60 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin1 / ( one+b2**2 )
+                 gap2 = half*dmin2 - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                    ttype = -8
+                 end if
+              else
+                 ! case 9.
+                 s = qurtr*dmin1
+                 if( dmin1==dn1 )s = half*dmin1
+                 ttype = -9
+              end if
+           else if( n0in==( n0+2 ) ) then
+              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
+              ! cases 10 and 11.
+              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
+                 ttype = -10
+                 s = third*dmin2
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 80
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*b1<b2 )go to 80
+                 end do
+                 80 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin2 / ( one+b2**2 )
+                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                 end if
+              else
+                 s = qurtr*dmin2
+                 ttype = -11
+              end if
+           else if( n0in>( n0+2 ) ) then
+              ! case 12, more than two eigenvalues deflated. no information.
+              s = zero
+              ttype = -12
+           end if
+           tau = s
+           return
+     end subroutine stdlib_slasq4
+
+     pure module subroutine stdlib_dlasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     !! DLASQ4 computes an approximation TAU to the smallest eigenvalue
+     !! using values of d from the previous transform.
+               ttype, g )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, n0in, pp
+           integer(ilp), intent(out) :: ttype
+           real(dp), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
+           real(dp), intent(inout) :: g
+           real(dp), intent(out) :: tau
+           ! Array Arguments 
+           real(dp), intent(in) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(dp), parameter :: cnst1 = 0.5630_dp
+           real(dp), parameter :: cnst2 = 1.010_dp
+           real(dp), parameter :: cnst3 = 1.050_dp
+           real(dp), parameter :: qurtr = 0.250_dp
+           real(dp), parameter :: third = 0.3330_dp
+           real(dp), parameter :: hundrd = 100.0_dp
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i4, nn, np
+           real(dp) :: a2, b1, b2, gam, gap1, gap2, s
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! a negative dmin forces the shift to take that absolute value
+           ! ttype records the type of shift.
+           if( dmin<=zero ) then
+              tau = -dmin
+              ttype = -1
+              return
+           end if
+           nn = 4*n0 + pp
+           if( n0in==n0 ) then
+              ! no eigenvalues deflated.
+              if( dmin==dn .or. dmin==dn1 ) then
+                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
+                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
+                 a2 = z( nn-7 ) + z( nn-5 )
+                 ! cases 2 and 3.
+                 if( dmin==dn .and. dmin1==dn1 ) then
+                    gap2 = dmin2 - a2 - dmin2*qurtr
+                    if( gap2>zero .and. gap2>b2 ) then
+                       gap1 = a2 - dn - ( b2 / gap2 )*b2
+                    else
+                       gap1 = a2 - dn - ( b1+b2 )
+                    end if
+                    if( gap1>zero .and. gap1>b1 ) then
+                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
+                       ttype = -2
+                    else
+                       s = zero
+                       if( dn>b1 )s = dn - b1
+                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
+                       s = max( s, third*dmin )
+                       ttype = -3
+                    end if
+                 else
+                    ! case 4.
+                    ttype = -4
+                    s = qurtr*dmin
+                    if( dmin==dn ) then
+                       gam = dn
+                       a2 = zero
+                       if( z( nn-5 ) > z( nn-7 ) )return
+                       b2 = z( nn-5 ) / z( nn-7 )
+                       np = nn - 9
+                    else
+                       np = nn - 2*pp
+                       gam = dn1
+                       if( z( np-4 ) > z( np-2 ) )return
+                       a2 = z( np-4 ) / z( np-2 )
+                       if( z( nn-9 ) > z( nn-11 ) )return
+                       b2 = z( nn-9 ) / z( nn-11 )
+                       np = nn - 13
+                    end if
+                    ! approximate contribution to norm squared from i < nn-1.
+                    a2 = a2 + b2
+                    do i4 = np, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 20
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
+                    end do
+                    20 continue
+                    a2 = cnst3*a2
+                    ! rayleigh quotient residual bound.
+                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+                 end if
+              else if( dmin==dn2 ) then
+                 ! case 5.
+                 ttype = -5
+                 s = qurtr*dmin
+                 ! compute contribution to norm squared from i > nn-2.
+                 np = nn - 2*pp
+                 b1 = z( np-2 )
+                 b2 = z( np-6 )
+                 gam = dn2
+                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
+                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
+                 ! approximate contribution to norm squared from i < nn-2.
+                 if( n0-i0>2 ) then
+                    b2 = z( nn-13 ) / z( nn-15 )
+                    a2 = a2 + b2
+                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 40
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
+                    end do
+                    40 continue
+                    a2 = cnst3*a2
+                 end if
+                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+              else
+                 ! case 6, no information to guide us.
+                 if( ttype==-6 ) then
+                    g = g + third*( one-g )
+                 else if( ttype==-18 ) then
+                    g = qurtr*third
+                 else
+                    g = qurtr
+                 end if
+                 s = g*dmin
+                 ttype = -6
+              end if
+           else if( n0in==( n0+1 ) ) then
+              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
+              if( dmin1==dn1 .and. dmin2==dn2 ) then
+                 ! cases 7 and 8.
+                 ttype = -7
+                 s = third*dmin1
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 60
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    a2 = b1
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*max( b1, a2 )<b2 )go to 60
+                 end do
+                 60 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin1 / ( one+b2**2 )
+                 gap2 = half*dmin2 - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                    ttype = -8
+                 end if
+              else
+                 ! case 9.
+                 s = qurtr*dmin1
+                 if( dmin1==dn1 )s = half*dmin1
+                 ttype = -9
+              end if
+           else if( n0in==( n0+2 ) ) then
+              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
+              ! cases 10 and 11.
+              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
+                 ttype = -10
+                 s = third*dmin2
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 80
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*b1<b2 )go to 80
+                 end do
+                 80 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin2 / ( one+b2**2 )
+                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                 end if
+              else
+                 s = qurtr*dmin2
+                 ttype = -11
+              end if
+           else if( n0in>( n0+2 ) ) then
+              ! case 12, more than two eigenvalues deflated. no information.
+              s = zero
+              ttype = -12
+           end if
+           tau = s
+           return
+     end subroutine stdlib_dlasq4
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasq4( i0, n0, z, pp, n0in, dmin, dmin1, dmin2, dn,dn1, dn2, tau, &
+     !! DLASQ4: computes an approximation TAU to the smallest eigenvalue
+     !! using values of d from the previous transform.
+               ttype, g )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           integer(ilp), intent(in) :: i0, n0, n0in, pp
+           integer(ilp), intent(out) :: ttype
+           real(${rk}$), intent(in) :: dmin, dmin1, dmin2, dn, dn1, dn2
+           real(${rk}$), intent(inout) :: g
+           real(${rk}$), intent(out) :: tau
+           ! Array Arguments 
+           real(${rk}$), intent(in) :: z(*)
+        ! =====================================================================
+           ! Parameters 
+           real(${rk}$), parameter :: cnst1 = 0.5630_${rk}$
+           real(${rk}$), parameter :: cnst2 = 1.010_${rk}$
+           real(${rk}$), parameter :: cnst3 = 1.050_${rk}$
+           real(${rk}$), parameter :: qurtr = 0.250_${rk}$
+           real(${rk}$), parameter :: third = 0.3330_${rk}$
+           real(${rk}$), parameter :: hundrd = 100.0_${rk}$
+           
+           
+           ! Local Scalars 
+           integer(ilp) :: i4, nn, np
+           real(${rk}$) :: a2, b1, b2, gam, gap1, gap2, s
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           ! a negative dmin forces the shift to take that absolute value
+           ! ttype records the type of shift.
+           if( dmin<=zero ) then
+              tau = -dmin
+              ttype = -1
+              return
+           end if
+           nn = 4*n0 + pp
+           if( n0in==n0 ) then
+              ! no eigenvalues deflated.
+              if( dmin==dn .or. dmin==dn1 ) then
+                 b1 = sqrt( z( nn-3 ) )*sqrt( z( nn-5 ) )
+                 b2 = sqrt( z( nn-7 ) )*sqrt( z( nn-9 ) )
+                 a2 = z( nn-7 ) + z( nn-5 )
+                 ! cases 2 and 3.
+                 if( dmin==dn .and. dmin1==dn1 ) then
+                    gap2 = dmin2 - a2 - dmin2*qurtr
+                    if( gap2>zero .and. gap2>b2 ) then
+                       gap1 = a2 - dn - ( b2 / gap2 )*b2
+                    else
+                       gap1 = a2 - dn - ( b1+b2 )
+                    end if
+                    if( gap1>zero .and. gap1>b1 ) then
+                       s = max( dn-( b1 / gap1 )*b1, half*dmin )
+                       ttype = -2
+                    else
+                       s = zero
+                       if( dn>b1 )s = dn - b1
+                       if( a2>( b1+b2 ) )s = min( s, a2-( b1+b2 ) )
+                       s = max( s, third*dmin )
+                       ttype = -3
+                    end if
+                 else
+                    ! case 4.
+                    ttype = -4
+                    s = qurtr*dmin
+                    if( dmin==dn ) then
+                       gam = dn
+                       a2 = zero
+                       if( z( nn-5 ) > z( nn-7 ) )return
+                       b2 = z( nn-5 ) / z( nn-7 )
+                       np = nn - 9
+                    else
+                       np = nn - 2*pp
+                       gam = dn1
+                       if( z( np-4 ) > z( np-2 ) )return
+                       a2 = z( np-4 ) / z( np-2 )
+                       if( z( nn-9 ) > z( nn-11 ) )return
+                       b2 = z( nn-9 ) / z( nn-11 )
+                       np = nn - 13
+                    end if
+                    ! approximate contribution to norm squared from i < nn-1.
+                    a2 = a2 + b2
+                    do i4 = np, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 20
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 20
+                    end do
+                    20 continue
+                    a2 = cnst3*a2
+                    ! rayleigh quotient residual bound.
+                    if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+                 end if
+              else if( dmin==dn2 ) then
+                 ! case 5.
+                 ttype = -5
+                 s = qurtr*dmin
+                 ! compute contribution to norm squared from i > nn-2.
+                 np = nn - 2*pp
+                 b1 = z( np-2 )
+                 b2 = z( np-6 )
+                 gam = dn2
+                 if( z( np-8 )>b2 .or. z( np-4 )>b1 )return
+                 a2 = ( z( np-8 ) / b2 )*( one+z( np-4 ) / b1 )
+                 ! approximate contribution to norm squared from i < nn-2.
+                 if( n0-i0>2 ) then
+                    b2 = z( nn-13 ) / z( nn-15 )
+                    a2 = a2 + b2
+                    do i4 = nn - 17, 4*i0 - 1 + pp, -4
+                       if( b2==zero )go to 40
+                       b1 = b2
+                       if( z( i4 ) > z( i4-2 ) )return
+                       b2 = b2*( z( i4 ) / z( i4-2 ) )
+                       a2 = a2 + b2
+                       if( hundrd*max( b2, b1 )<a2 .or. cnst1<a2 )go to 40
+                    end do
+                    40 continue
+                    a2 = cnst3*a2
+                 end if
+                 if( a2<cnst1 )s = gam*( one-sqrt( a2 ) ) / ( one+a2 )
+              else
+                 ! case 6, no information to guide us.
+                 if( ttype==-6 ) then
+                    g = g + third*( one-g )
+                 else if( ttype==-18 ) then
+                    g = qurtr*third
+                 else
+                    g = qurtr
+                 end if
+                 s = g*dmin
+                 ttype = -6
+              end if
+           else if( n0in==( n0+1 ) ) then
+              ! one eigenvalue just deflated. use dmin1, dn1 for dmin and dn.
+              if( dmin1==dn1 .and. dmin2==dn2 ) then
+                 ! cases 7 and 8.
+                 ttype = -7
+                 s = third*dmin1
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 60
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    a2 = b1
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*max( b1, a2 )<b2 )go to 60
+                 end do
+                 60 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin1 / ( one+b2**2 )
+                 gap2 = half*dmin2 - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                    ttype = -8
+                 end if
+              else
+                 ! case 9.
+                 s = qurtr*dmin1
+                 if( dmin1==dn1 )s = half*dmin1
+                 ttype = -9
+              end if
+           else if( n0in==( n0+2 ) ) then
+              ! two eigenvalues deflated. use dmin2, dn2 for dmin and dn.
+              ! cases 10 and 11.
+              if( dmin2==dn2 .and. two*z( nn-5 )<z( nn-7 ) ) then
+                 ttype = -10
+                 s = third*dmin2
+                 if( z( nn-5 )>z( nn-7 ) )return
+                 b1 = z( nn-5 ) / z( nn-7 )
+                 b2 = b1
+                 if( b2==zero )go to 80
+                 do i4 = 4*n0 - 9 + pp, 4*i0 - 1 + pp, -4
+                    if( z( i4 )>z( i4-2 ) )return
+                    b1 = b1*( z( i4 ) / z( i4-2 ) )
+                    b2 = b2 + b1
+                    if( hundrd*b1<b2 )go to 80
+                 end do
+                 80 continue
+                 b2 = sqrt( cnst3*b2 )
+                 a2 = dmin2 / ( one+b2**2 )
+                 gap2 = z( nn-7 ) + z( nn-9 ) -sqrt( z( nn-11 ) )*sqrt( z( nn-9 ) ) - a2
+                 if( gap2>zero .and. gap2>b2*a2 ) then
+                    s = max( s, a2*( one-cnst2*a2*( b2 / gap2 )*b2 ) )
+                 else
+                    s = max( s, a2*( one-cnst2*b2 ) )
+                 end if
+              else
+                 s = qurtr*dmin2
+                 ttype = -11
+              end if
+           else if( n0in>( n0+2 ) ) then
+              ! case 12, more than two eigenvalues deflated. no information.
+              s = zero
+              ttype = -12
+           end if
+           tau = s
+           return
+     end subroutine stdlib_${ri}$lasq4
+
+#:endif
+#:endfor
+
+
+
+     pure module subroutine stdlib_slasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     !! SLASQ5 computes one dqds transform in ping-pong form, one
+     !! version for IEEE machines another for non IEEE machines.
+               ieee, eps )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0, n0, pp
+           real(sp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           real(sp), intent(inout) :: tau
+           real(sp), intent(in) :: sigma, eps
+           ! Array Arguments 
+           real(sp), intent(inout) :: z(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j4, j4p2
+           real(sp) :: d, emin, temp, dthresh
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( ( n0-i0-1 )<=0 )return
+           dthresh = eps*(sigma+tau)
+           if( tau<dthresh*half ) tau = zero
+           if( tau/=zero ) then
+              j4 = 4*i0 + pp - 3
+              emin = z( j4+4 )
+              d = z( j4 ) - tau
+              dmin = d
+              dmin1 = -z( j4 )
+              if( ieee ) then
+           ! code for ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       temp = z( j4+1 ) / z( j4-2 )
+                       d = d*temp - tau
+                       dmin = min( dmin, d )
+                       z( j4 ) = z( j4-1 )*temp
+                       emin = min( z( j4 ), emin )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       temp = z( j4+2 ) / z( j4-3 )
+                       d = d*temp - tau
+                       dmin = min( dmin, d )
+                       z( j4-1 ) = z( j4 )*temp
+                       emin = min( z( j4-1 ), emin )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dn )
+              else
+           ! code for non ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
+                       end if
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4 ) )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
+                       end if
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4-1 ) )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 if( dnm2<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 if( dnm1<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dn )
+              end if
+           else
+           ! this is the version that sets d's to zero if they are small enough
+              j4 = 4*i0 + pp - 3
+              emin = z( j4+4 )
+              d = z( j4 ) - tau
+              dmin = d
+              dmin1 = -z( j4 )
+              if( ieee ) then
+           ! code for ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       temp = z( j4+1 ) / z( j4-2 )
+                       d = d*temp - tau
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       z( j4 ) = z( j4-1 )*temp
+                       emin = min( z( j4 ), emin )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       temp = z( j4+2 ) / z( j4-3 )
+                       d = d*temp - tau
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       z( j4-1 ) = z( j4 )*temp
+                       emin = min( z( j4-1 ), emin )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dn )
+              else
+           ! code for non ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
+                       end if
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4 ) )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
+                       end if
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4-1 ) )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 if( dnm2<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 if( dnm1<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dn )
+              end if
+           end if
+           z( j4+2 ) = dn
+           z( 4*n0-pp ) = emin
+           return
+     end subroutine stdlib_slasq5
+
+     pure module subroutine stdlib_dlasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     !! DLASQ5 computes one dqds transform in ping-pong form, one
+     !! version for IEEE machines another for non IEEE machines.
+               ieee, eps )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0, n0, pp
+           real(dp), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           real(dp), intent(inout) :: tau
+           real(dp), intent(in) :: sigma, eps
+           ! Array Arguments 
+           real(dp), intent(inout) :: z(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j4, j4p2
+           real(dp) :: d, emin, temp, dthresh
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( ( n0-i0-1 )<=0 )return
+           dthresh = eps*(sigma+tau)
+           if( tau<dthresh*half ) tau = zero
+           if( tau/=zero ) then
+           j4 = 4*i0 + pp - 3
+           emin = z( j4+4 )
+           d = z( j4 ) - tau
+           dmin = d
+           dmin1 = -z( j4 )
+           if( ieee ) then
+              ! code for ieee arithmetic.
+              if( pp==0 ) then
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-2 ) = d + z( j4-1 )
+                    temp = z( j4+1 ) / z( j4-2 )
+                    d = d*temp - tau
+                    dmin = min( dmin, d )
+                    z( j4 ) = z( j4-1 )*temp
+                    emin = min( z( j4 ), emin )
+                 end do
+              else
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-3 ) = d + z( j4 )
+                    temp = z( j4+2 ) / z( j4-3 )
+                    d = d*temp - tau
+                    dmin = min( dmin, d )
+                    z( j4-1 ) = z( j4 )*temp
+                    emin = min( z( j4-1 ), emin )
+                 end do
+              end if
+              ! unroll last two steps.
+              dnm2 = d
+              dmin2 = dmin
+              j4 = 4*( n0-2 ) - pp
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm2 + z( j4p2 )
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+              dmin = min( dmin, dnm1 )
+              dmin1 = dmin
+              j4 = j4 + 4
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm1 + z( j4p2 )
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+              dmin = min( dmin, dn )
+           else
+              ! code for non ieee arithmetic.
+              if( pp==0 ) then
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-2 ) = d + z( j4-1 )
+                    if( d<zero ) then
+                       return
+                    else
+                       z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                       d = z( j4+1 )*( d / z( j4-2 ) ) - tau
+                    end if
+                    dmin = min( dmin, d )
+                    emin = min( emin, z( j4 ) )
+                 end do
+              else
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-3 ) = d + z( j4 )
+                    if( d<zero ) then
+                       return
+                    else
+                       z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                       d = z( j4+2 )*( d / z( j4-3 ) ) - tau
+                    end if
+                    dmin = min( dmin, d )
+                    emin = min( emin, z( j4-1 ) )
+                 end do
+              end if
+              ! unroll last two steps.
+              dnm2 = d
+              dmin2 = dmin
+              j4 = 4*( n0-2 ) - pp
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm2 + z( j4p2 )
+              if( dnm2<zero ) then
+                 return
+              else
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+              end if
+              dmin = min( dmin, dnm1 )
+              dmin1 = dmin
+              j4 = j4 + 4
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm1 + z( j4p2 )
+              if( dnm1<zero ) then
+                 return
+              else
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+              end if
+              dmin = min( dmin, dn )
+           end if
+           else
+           ! this is the version that sets d's to zero if they are small enough
+              j4 = 4*i0 + pp - 3
+              emin = z( j4+4 )
+              d = z( j4 ) - tau
+              dmin = d
+              dmin1 = -z( j4 )
+              if( ieee ) then
+           ! code for ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       temp = z( j4+1 ) / z( j4-2 )
+                       d = d*temp - tau
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       z( j4 ) = z( j4-1 )*temp
+                       emin = min( z( j4 ), emin )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       temp = z( j4+2 ) / z( j4-3 )
+                       d = d*temp - tau
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       z( j4-1 ) = z( j4 )*temp
+                       emin = min( z( j4-1 ), emin )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dn )
+              else
+           ! code for non ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
+                       end if
+                       if( d<dthresh) d = zero
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4 ) )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
+                       end if
+                       if( d<dthresh) d = zero
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4-1 ) )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 if( dnm2<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 if( dnm1<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dn )
+              end if
+           end if
+           z( j4+2 ) = dn
+           z( 4*n0-pp ) = emin
+           return
+     end subroutine stdlib_dlasq5
+
+#:for rk,rt,ri in REAL_KINDS_TYPES
+#:if not rk in ["sp","dp"]
+     pure module subroutine stdlib_${ri}$lasq5( i0, n0, z, pp, tau, sigma, dmin, dmin1, dmin2,dn, dnm1, dnm2, &
+     !! DLASQ5: computes one dqds transform in ping-pong form, one
+     !! version for IEEE machines another for non IEEE machines.
+               ieee, eps )
+        ! -- lapack computational routine --
+        ! -- lapack is a software package provided by univ. of tennessee,    --
+        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
+           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
+           ! Scalar Arguments 
+           logical(lk), intent(in) :: ieee
+           integer(ilp), intent(in) :: i0, n0, pp
+           real(${rk}$), intent(out) :: dmin, dmin1, dmin2, dn, dnm1, dnm2
+           real(${rk}$), intent(inout) :: tau
+           real(${rk}$), intent(in) :: sigma, eps
+           ! Array Arguments 
+           real(${rk}$), intent(inout) :: z(*)
+        ! =====================================================================
+           
+           ! Local Scalars 
+           integer(ilp) :: j4, j4p2
+           real(${rk}$) :: d, emin, temp, dthresh
+           ! Intrinsic Functions 
+           ! Executable Statements 
+           if( ( n0-i0-1 )<=0 )return
+           dthresh = eps*(sigma+tau)
+           if( tau<dthresh*half ) tau = zero
+           if( tau/=zero ) then
+           j4 = 4*i0 + pp - 3
+           emin = z( j4+4 )
+           d = z( j4 ) - tau
+           dmin = d
+           dmin1 = -z( j4 )
+           if( ieee ) then
+              ! code for ieee arithmetic.
+              if( pp==0 ) then
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-2 ) = d + z( j4-1 )
+                    temp = z( j4+1 ) / z( j4-2 )
+                    d = d*temp - tau
+                    dmin = min( dmin, d )
+                    z( j4 ) = z( j4-1 )*temp
+                    emin = min( z( j4 ), emin )
+                 end do
+              else
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-3 ) = d + z( j4 )
+                    temp = z( j4+2 ) / z( j4-3 )
+                    d = d*temp - tau
+                    dmin = min( dmin, d )
+                    z( j4-1 ) = z( j4 )*temp
+                    emin = min( z( j4-1 ), emin )
+                 end do
+              end if
+              ! unroll last two steps.
+              dnm2 = d
+              dmin2 = dmin
+              j4 = 4*( n0-2 ) - pp
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm2 + z( j4p2 )
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+              dmin = min( dmin, dnm1 )
+              dmin1 = dmin
+              j4 = j4 + 4
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm1 + z( j4p2 )
+              z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+              dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+              dmin = min( dmin, dn )
+           else
+              ! code for non ieee arithmetic.
+              if( pp==0 ) then
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-2 ) = d + z( j4-1 )
+                    if( d<zero ) then
+                       return
+                    else
+                       z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                       d = z( j4+1 )*( d / z( j4-2 ) ) - tau
+                    end if
+                    dmin = min( dmin, d )
+                    emin = min( emin, z( j4 ) )
+                 end do
+              else
+                 do j4 = 4*i0, 4*( n0-3 ), 4
+                    z( j4-3 ) = d + z( j4 )
+                    if( d<zero ) then
+                       return
+                    else
+                       z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                       d = z( j4+2 )*( d / z( j4-3 ) ) - tau
+                    end if
+                    dmin = min( dmin, d )
+                    emin = min( emin, z( j4-1 ) )
+                 end do
+              end if
+              ! unroll last two steps.
+              dnm2 = d
+              dmin2 = dmin
+              j4 = 4*( n0-2 ) - pp
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm2 + z( j4p2 )
+              if( dnm2<zero ) then
+                 return
+              else
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+              end if
+              dmin = min( dmin, dnm1 )
+              dmin1 = dmin
+              j4 = j4 + 4
+              j4p2 = j4 + 2*pp - 1
+              z( j4-2 ) = dnm1 + z( j4p2 )
+              if( dnm1<zero ) then
+                 return
+              else
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+              end if
+              dmin = min( dmin, dn )
+           end if
+           else
+           ! this is the version that sets d's to zero if they are small enough
+              j4 = 4*i0 + pp - 3
+              emin = z( j4+4 )
+              d = z( j4 ) - tau
+              dmin = d
+              dmin1 = -z( j4 )
+              if( ieee ) then
+           ! code for ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       temp = z( j4+1 ) / z( j4-2 )
+                       d = d*temp - tau
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       z( j4 ) = z( j4-1 )*temp
+                       emin = min( z( j4 ), emin )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       temp = z( j4+2 ) / z( j4-3 )
+                       d = d*temp - tau
+                       if( d<dthresh ) d = zero
+                       dmin = min( dmin, d )
+                       z( j4-1 ) = z( j4 )*temp
+                       emin = min( z( j4-1 ), emin )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                 dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 dmin = min( dmin, dn )
+              else
+           ! code for non ieee arithmetic.
+                 if( pp==0 ) then
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-2 ) = d + z( j4-1 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4 ) = z( j4+1 )*( z( j4-1 ) / z( j4-2 ) )
+                          d = z( j4+1 )*( d / z( j4-2 ) ) - tau
+                       end if
+                       if( d<dthresh) d = zero
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4 ) )
+                    end do
+                 else
+                    do j4 = 4*i0, 4*( n0-3 ), 4
+                       z( j4-3 ) = d + z( j4 )
+                       if( d<zero ) then
+                          return
+                       else
+                          z( j4-1 ) = z( j4+2 )*( z( j4 ) / z( j4-3 ) )
+                          d = z( j4+2 )*( d / z( j4-3 ) ) - tau
+                       end if
+                       if( d<dthresh) d = zero
+                       dmin = min( dmin, d )
+                       emin = min( emin, z( j4-1 ) )
+                    end do
+                 end if
+           ! unroll last two steps.
+                 dnm2 = d
+                 dmin2 = dmin
+                 j4 = 4*( n0-2 ) - pp
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm2 + z( j4p2 )
+                 if( dnm2<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dnm1 = z( j4p2+2 )*( dnm2 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dnm1 )
+                 dmin1 = dmin
+                 j4 = j4 + 4
+                 j4p2 = j4 + 2*pp - 1
+                 z( j4-2 ) = dnm1 + z( j4p2 )
+                 if( dnm1<zero ) then
+                    return
+                 else
+                    z( j4 ) = z( j4p2+2 )*( z( j4p2 ) / z( j4-2 ) )
+                    dn = z( j4p2+2 )*( dnm1 / z( j4-2 ) ) - tau
+                 end if
+                 dmin = min( dmin, dn )
+              end if
+           end if
+           z( j4+2 ) = dn
+           z( 4*n0-pp ) = emin
+           return
+     end subroutine stdlib_${ri}$lasq5
+
+#:endif
+#:endfor
+
+
+
      pure module subroutine stdlib_slasq6( i0, n0, z, pp, dmin, dmin1, dmin2, dn,dnm1, dnm2 )
      !! SLASQ6 computes one dqd (shift equal to zero) transform in
      !! ping-pong form, with protection against underflow and overflow.
@@ -3336,286 +3616,6 @@ submodule(stdlib_lapack) stdlib_lapack_svd_bidiag_qr
            z( 4*n0-pp ) = emin
            return
      end subroutine stdlib_${ri}$lasq6
-
-#:endif
-#:endfor
-
-
-
-     pure module subroutine stdlib_slasq1( n, d, e, work, info )
-     !! SLASQ1 computes the singular values of a real N-by-N bidiagonal
-     !! matrix with diagonal D and off-diagonal E. The singular values
-     !! are computed to high relative accuracy, in the absence of
-     !! denormalization, underflow and overflow. The algorithm was first
-     !! presented in
-     !! "Accurate singular values and differential qd algorithms" by K. V.
-     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
-     !! 1994,
-     !! and the present implementation is described in "An implementation of
-     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_sp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: n
-           ! Array Arguments 
-           real(sp), intent(inout) :: d(*), e(*)
-           real(sp), intent(out) :: work(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, iinfo
-           real(sp) :: eps, scale, safmin, sigmn, sigmx
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           info = 0
-           if( n<0 ) then
-              info = -1
-              call stdlib_xerbla( 'SLASQ1', -info )
-              return
-           else if( n==0 ) then
-              return
-           else if( n==1 ) then
-              d( 1 ) = abs( d( 1 ) )
-              return
-           else if( n==2 ) then
-              call stdlib_slas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
-              d( 1 ) = sigmx
-              d( 2 ) = sigmn
-              return
-           end if
-           ! estimate the largest singular value.
-           sigmx = zero
-           do i = 1, n - 1
-              d( i ) = abs( d( i ) )
-              sigmx = max( sigmx, abs( e( i ) ) )
-           end do
-           d( n ) = abs( d( n ) )
-           ! early return if sigmx is zero (matrix is already diagonal).
-           if( sigmx==zero ) then
-              call stdlib_slasrt( 'D', n, d, iinfo )
-              return
-           end if
-           do i = 1, n
-              sigmx = max( sigmx, d( i ) )
-           end do
-           ! copy d and e into work (in the z format) and scale (squaring the
-           ! input data makes scaling by a power of the radix pointless).
-           eps = stdlib_slamch( 'PRECISION' )
-           safmin = stdlib_slamch( 'SAFE MINIMUM' )
-           scale = sqrt( eps / safmin )
-           call stdlib_scopy( n, d, 1, work( 1 ), 2 )
-           call stdlib_scopy( n-1, e, 1, work( 2 ), 2 )
-           call stdlib_slascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
-           ! compute the q's and e's.
-           do i = 1, 2*n - 1
-              work( i ) = work( i )**2
-           end do
-           work( 2*n ) = zero
-           call stdlib_slasq2( n, work, info )
-           if( info==0 ) then
-              do i = 1, n
-                 d( i ) = sqrt( work( i ) )
-              end do
-              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-           else if( info==2 ) then
-           ! maximum number of iterations exceeded.  move data from work
-           ! into d and e so the calling subroutine can try to finish
-              do i = 1, n
-                 d( i ) = sqrt( work( 2*i-1 ) )
-                 e( i ) = sqrt( work( 2*i ) )
-              end do
-              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-              call stdlib_slascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
-           end if
-           return
-     end subroutine stdlib_slasq1
-
-     pure module subroutine stdlib_dlasq1( n, d, e, work, info )
-     !! DLASQ1 computes the singular values of a real N-by-N bidiagonal
-     !! matrix with diagonal D and off-diagonal E. The singular values
-     !! are computed to high relative accuracy, in the absence of
-     !! denormalization, underflow and overflow. The algorithm was first
-     !! presented in
-     !! "Accurate singular values and differential qd algorithms" by K. V.
-     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
-     !! 1994,
-     !! and the present implementation is described in "An implementation of
-     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_dp, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: n
-           ! Array Arguments 
-           real(dp), intent(inout) :: d(*), e(*)
-           real(dp), intent(out) :: work(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, iinfo
-           real(dp) :: eps, scale, safmin, sigmn, sigmx
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           info = 0
-           if( n<0 ) then
-              info = -1
-              call stdlib_xerbla( 'DLASQ1', -info )
-              return
-           else if( n==0 ) then
-              return
-           else if( n==1 ) then
-              d( 1 ) = abs( d( 1 ) )
-              return
-           else if( n==2 ) then
-              call stdlib_dlas2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
-              d( 1 ) = sigmx
-              d( 2 ) = sigmn
-              return
-           end if
-           ! estimate the largest singular value.
-           sigmx = zero
-           do i = 1, n - 1
-              d( i ) = abs( d( i ) )
-              sigmx = max( sigmx, abs( e( i ) ) )
-           end do
-           d( n ) = abs( d( n ) )
-           ! early return if sigmx is zero (matrix is already diagonal).
-           if( sigmx==zero ) then
-              call stdlib_dlasrt( 'D', n, d, iinfo )
-              return
-           end if
-           do i = 1, n
-              sigmx = max( sigmx, d( i ) )
-           end do
-           ! copy d and e into work (in the z format) and scale (squaring the
-           ! input data makes scaling by a power of the radix pointless).
-           eps = stdlib_dlamch( 'PRECISION' )
-           safmin = stdlib_dlamch( 'SAFE MINIMUM' )
-           scale = sqrt( eps / safmin )
-           call stdlib_dcopy( n, d, 1, work( 1 ), 2 )
-           call stdlib_dcopy( n-1, e, 1, work( 2 ), 2 )
-           call stdlib_dlascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
-           ! compute the q's and e's.
-           do i = 1, 2*n - 1
-              work( i ) = work( i )**2
-           end do
-           work( 2*n ) = zero
-           call stdlib_dlasq2( n, work, info )
-           if( info==0 ) then
-              do i = 1, n
-                 d( i ) = sqrt( work( i ) )
-              end do
-              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-           else if( info==2 ) then
-           ! maximum number of iterations exceeded.  move data from work
-           ! into d and e so the calling subroutine can try to finish
-              do i = 1, n
-                 d( i ) = sqrt( work( 2*i-1 ) )
-                 e( i ) = sqrt( work( 2*i ) )
-              end do
-              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-              call stdlib_dlascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
-           end if
-           return
-     end subroutine stdlib_dlasq1
-
-#:for rk,rt,ri in REAL_KINDS_TYPES
-#:if not rk in ["sp","dp"]
-     pure module subroutine stdlib_${ri}$lasq1( n, d, e, work, info )
-     !! DLASQ1: computes the singular values of a real N-by-N bidiagonal
-     !! matrix with diagonal D and off-diagonal E. The singular values
-     !! are computed to high relative accuracy, in the absence of
-     !! denormalization, underflow and overflow. The algorithm was first
-     !! presented in
-     !! "Accurate singular values and differential qd algorithms" by K. V.
-     !! Fernando and B. N. Parlett, Numer. Math., Vol-67, No. 2, pp. 191-230,
-     !! 1994,
-     !! and the present implementation is described in "An implementation of
-     !! the dqds Algorithm (Positive Case)", LAPACK Working Note.
-        ! -- lapack computational routine --
-        ! -- lapack is a software package provided by univ. of tennessee,    --
-        ! -- univ. of california berkeley, univ. of colorado denver and nag ltd..--
-           use stdlib_blas_constants_${rk}$, only: negone, zero, half, one, two, three, four, eight, ten, czero, chalf, cone, cnegone
-           ! Scalar Arguments 
-           integer(ilp), intent(out) :: info
-           integer(ilp), intent(in) :: n
-           ! Array Arguments 
-           real(${rk}$), intent(inout) :: d(*), e(*)
-           real(${rk}$), intent(out) :: work(*)
-        ! =====================================================================
-           
-           ! Local Scalars 
-           integer(ilp) :: i, iinfo
-           real(${rk}$) :: eps, scale, safmin, sigmn, sigmx
-           ! Intrinsic Functions 
-           ! Executable Statements 
-           info = 0
-           if( n<0 ) then
-              info = -1
-              call stdlib_xerbla( 'DLASQ1', -info )
-              return
-           else if( n==0 ) then
-              return
-           else if( n==1 ) then
-              d( 1 ) = abs( d( 1 ) )
-              return
-           else if( n==2 ) then
-              call stdlib_${ri}$las2( d( 1 ), e( 1 ), d( 2 ), sigmn, sigmx )
-              d( 1 ) = sigmx
-              d( 2 ) = sigmn
-              return
-           end if
-           ! estimate the largest singular value.
-           sigmx = zero
-           do i = 1, n - 1
-              d( i ) = abs( d( i ) )
-              sigmx = max( sigmx, abs( e( i ) ) )
-           end do
-           d( n ) = abs( d( n ) )
-           ! early return if sigmx is zero (matrix is already diagonal).
-           if( sigmx==zero ) then
-              call stdlib_${ri}$lasrt( 'D', n, d, iinfo )
-              return
-           end if
-           do i = 1, n
-              sigmx = max( sigmx, d( i ) )
-           end do
-           ! copy d and e into work (in the z format) and scale (squaring the
-           ! input data makes scaling by a power of the radix pointless).
-           eps = stdlib_${ri}$lamch( 'PRECISION' )
-           safmin = stdlib_${ri}$lamch( 'SAFE MINIMUM' )
-           scale = sqrt( eps / safmin )
-           call stdlib_${ri}$copy( n, d, 1, work( 1 ), 2 )
-           call stdlib_${ri}$copy( n-1, e, 1, work( 2 ), 2 )
-           call stdlib_${ri}$lascl( 'G', 0, 0, sigmx, scale, 2*n-1, 1, work, 2*n-1,iinfo )
-           ! compute the q's and e's.
-           do i = 1, 2*n - 1
-              work( i ) = work( i )**2
-           end do
-           work( 2*n ) = zero
-           call stdlib_${ri}$lasq2( n, work, info )
-           if( info==0 ) then
-              do i = 1, n
-                 d( i ) = sqrt( work( i ) )
-              end do
-              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-           else if( info==2 ) then
-           ! maximum number of iterations exceeded.  move data from work
-           ! into d and e so the calling subroutine can try to finish
-              do i = 1, n
-                 d( i ) = sqrt( work( 2*i-1 ) )
-                 e( i ) = sqrt( work( 2*i ) )
-              end do
-              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, d, n, iinfo )
-              call stdlib_${ri}$lascl( 'G', 0, 0, scale, sigmx, n, 1, e, n, iinfo )
-           end if
-           return
-     end subroutine stdlib_${ri}$lasq1
 
 #:endif
 #:endfor
