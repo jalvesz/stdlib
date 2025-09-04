@@ -1,0 +1,720 @@
+#:include "common.fypp"
+#:set R_KINDS_TYPES = list(zip(REAL_KINDS, REAL_TYPES, REAL_SUFFIX))
+#:set C_KINDS_TYPES = list(zip(CMPLX_KINDS, CMPLX_TYPES, CMPLX_SUFFIX))
+#:set KINDS_TYPES = R_KINDS_TYPES+C_KINDS_TYPES
+
+#! Allow for integer or character norm input: i.e., norm(a,2) or norm(a, '2')
+#:set INPUT_TYPE    = ["character(len=*)","integer(ilp)"]
+#:set INPUT_SHORT   = ["char","int"]
+#:set INPUT_OPTIONS = list(zip(INPUT_TYPE,INPUT_SHORT))
+
+! Sparse matrix norms
+submodule(stdlib_sparse) stdlib_sparse_norms
+    use stdlib_sparse_constants
+    use stdlib_sparse_kinds
+    use stdlib_linalg_state, only: linalg_state_type, linalg_error_handling, LINALG_ERROR, &
+        LINALG_INTERNAL_ERROR, LINALG_VALUE_ERROR     
+    use ieee_arithmetic, only: ieee_is_finite
+    implicit none
+    
+    character(*), parameter :: this = 'sparse_norm'
+    
+    !> List of internal norm flags
+    integer(ilp), parameter :: NORM_ONE       = 1_ilp 
+    integer(ilp), parameter :: NORM_TWO       = 2_ilp
+    integer(ilp), parameter :: NORM_POW_FIRST = 3_ilp       
+    integer(ilp), parameter :: NORM_INF       = +huge(0_ilp) ! infinity norm 
+    integer(ilp), parameter :: NORM_POW_LAST  = NORM_INF - 1_ilp
+    integer(ilp), parameter :: NORM_MINUSINF  = -huge(0_ilp)
+    
+    interface parse_norm_type
+        module procedure parse_norm_type_integer
+        module procedure parse_norm_type_character
+    end interface parse_norm_type
+    
+    contains
+    
+    !> Parse norm type from an integer user input
+    pure subroutine parse_norm_type_integer(order,norm_type,err)
+        !> User input value
+        integer(ilp), intent(in) :: order
+        !> Return value: norm type
+        integer(ilp), intent(out) :: norm_type
+        !> State return flag
+        type(linalg_state_type), intent(out) :: err
+        
+        select case (order)
+           case (1_ilp)
+               norm_type = NORM_ONE
+           case (2_ilp)
+               norm_type = NORM_TWO
+           case (3_ilp:NORM_POW_LAST)
+               norm_type = order
+           case (NORM_INF:)
+               norm_type = NORM_INF
+           case (:NORM_MINUSINF)
+               norm_type = NORM_MINUSINF
+           
+           case default
+               norm_type = NORM_ONE
+               err = linalg_state_type(this,LINALG_ERROR,'Input norm type ',order,' is not recognized.')
+        end select    
+        
+    end subroutine parse_norm_type_integer
+
+    pure subroutine parse_norm_type_character(order,norm_type,err)
+        !> User input value
+        character(len=*), intent(in) :: order
+        !> Return value: norm type
+        integer(ilp), intent(out) :: norm_type
+        !> State return flag
+        type(linalg_state_type), intent(out) :: err
+        
+        integer(ilp) :: int_order,read_err
+        
+        select case (order)
+           case ('inf','Inf','INF')
+              norm_type = NORM_INF
+           case ('-inf','-Inf','-INF')
+              norm_type = NORM_MINUSINF
+           case ('Euclidean','euclidean','EUCLIDEAN','Frobenius','frobenius','FROBENIUS','Fro','fro','frob')
+              norm_type = NORM_TWO
+           case default
+            
+              ! Check if this input can be read as an integer
+              read(order,*,iostat=read_err) int_order
+              if (read_err/=0) then 
+                 ! Cannot read as an integer
+                 norm_type = NORM_ONE
+                 err = linalg_state_type(this,LINALG_ERROR,'Input norm type ',order,' is not recognized.')                 
+              else
+                 call parse_norm_type_integer(int_order,norm_type,err)
+              endif  
+
+        end select    
+        
+    end subroutine parse_norm_type_character
+
+    #:for it,ii in INPUT_OPTIONS
+    #:for k1, t1, s1 in KINDS_TYPES
+
+    !> COO (Coordinate) format norm
+    module function sparse_norm_${ii}$_coo_${s1}$(matrix, order, err) result(nrm)
+        !> Input COO sparse matrix
+        class(COO_${s1}$_type), intent(in) :: matrix
+        !> Order of the matrix norm being computed.
+        ${it}$, intent(in) :: order
+        !> [optional] state return flag. On error if not requested, the code will stop
+        type(linalg_state_type), intent(out), optional :: err
+        !> Norm of the matrix.
+        real(${k1}$) :: nrm
+        
+        type(linalg_state_type) :: err_
+        integer(ilp) :: norm_request, i
+        real(${k1}$) :: rorder
+        
+        ! Initialize norm to zero
+        nrm = 0.0_${k1}$
+        
+        ! Check matrix validity
+        if (matrix%nrows <= 0 .or. matrix%ncols <= 0 .or. matrix%nnz < 0) then
+            err_ = linalg_state_type(this,LINALG_VALUE_ERROR,'invalid sparse matrix dimensions')
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        if (matrix%nnz == 0) then
+            ! Empty matrix has norm 0
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        ! Check norm request
+        call parse_norm_type(order,norm_request,err_)
+        if (err_%error()) then 
+            call linalg_error_handling(err_,err)
+            return
+        endif         
+        
+        ! Compute norm based on request
+        select case(norm_request)
+            case(NORM_ONE)
+                ! 1-norm: maximum absolute column sum
+                call sparse_norm_one_coo_${s1}$(matrix, nrm)
+            case(NORM_TWO)            
+                ! Frobenius norm: sqrt(sum(|a_ij|^2))
+                do i = 1, matrix%nnz
+                    nrm = nrm + abs(matrix%data(i))**2
+                end do
+                nrm = sqrt(nrm)
+            case(NORM_INF)
+                ! Infinity norm: maximum absolute row sum
+                call sparse_norm_inf_coo_${s1}$(matrix, nrm)
+            case(NORM_MINUSINF)
+                ! Minimum of absolute values
+                if (matrix%nnz > 0) then
+                    nrm = minval(abs(matrix%data))
+                end if
+            case (NORM_POW_FIRST:NORM_POW_LAST)
+                ! p-norm: (sum(|a_ij|^p))^(1/p)
+                rorder = 1.0_${k1}$ / norm_request
+                do i = 1, matrix%nnz
+                    nrm = nrm + abs(matrix%data(i)) ** norm_request
+                end do
+                nrm = nrm ** rorder
+        end select
+        
+        call linalg_error_handling(err_,err)
+        
+    end function sparse_norm_${ii}$_coo_${s1}$
+
+    !> CSR (Compressed Sparse Row) format norm  
+    module function sparse_norm_${ii}$_csr_${s1}$(matrix, order, err) result(nrm)
+        !> Input CSR sparse matrix
+        class(CSR_${s1}$_type), intent(in) :: matrix
+        !> Order of the matrix norm being computed.
+        ${it}$, intent(in) :: order
+        !> [optional] state return flag. On error if not requested, the code will stop
+        type(linalg_state_type), intent(out), optional :: err
+        !> Norm of the matrix.
+        real(${k1}$) :: nrm
+        
+        type(linalg_state_type) :: err_
+        integer(ilp) :: norm_request, i
+        real(${k1}$) :: rorder
+        
+        ! Initialize norm to zero
+        nrm = 0.0_${k1}$
+        
+        ! Check matrix validity
+        if (matrix%nrows <= 0 .or. matrix%ncols <= 0 .or. matrix%nnz < 0) then
+            err_ = linalg_state_type(this,LINALG_VALUE_ERROR,'invalid sparse matrix dimensions')
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        if (matrix%nnz == 0) then
+            ! Empty matrix has norm 0
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        ! Check norm request
+        call parse_norm_type(order,norm_request,err_)
+        if (err_%error()) then 
+            call linalg_error_handling(err_,err)
+            return
+        endif         
+        
+        ! Compute norm based on request
+        select case(norm_request)
+            case(NORM_ONE)
+                ! 1-norm: maximum absolute column sum
+                call sparse_norm_one_csr_${s1}$(matrix, nrm)
+            case(NORM_TWO)            
+                ! Frobenius norm: sqrt(sum(|a_ij|^2))
+                do i = 1, matrix%nnz
+                    nrm = nrm + abs(matrix%data(i))**2
+                end do
+                nrm = sqrt(nrm)
+            case(NORM_INF)
+                ! Infinity norm: maximum absolute row sum
+                call sparse_norm_inf_csr_${s1}$(matrix, nrm)
+            case(NORM_MINUSINF)
+                ! Minimum of absolute values
+                if (matrix%nnz > 0) then
+                    nrm = minval(abs(matrix%data))
+                end if
+            case (NORM_POW_FIRST:NORM_POW_LAST)
+                ! p-norm: (sum(|a_ij|^p))^(1/p)
+                rorder = 1.0_${k1}$ / norm_request
+                do i = 1, matrix%nnz
+                    nrm = nrm + abs(matrix%data(i)) ** norm_request
+                end do
+                nrm = nrm ** rorder
+        end select
+        
+        call linalg_error_handling(err_,err)
+        
+    end function sparse_norm_${ii}$_csr_${s1}$
+
+    !> CSC (Compressed Sparse Column) format norm
+    module function sparse_norm_${ii}$_csc_${s1}$(matrix, order, err) result(nrm)
+        !> Input CSC sparse matrix
+        class(CSC_${s1}$_type), intent(in) :: matrix
+        !> Order of the matrix norm being computed.
+        ${it}$, intent(in) :: order
+        !> [optional] state return flag. On error if not requested, the code will stop
+        type(linalg_state_type), intent(out), optional :: err
+        !> Norm of the matrix.
+        real(${k1}$) :: nrm
+        
+        type(linalg_state_type) :: err_
+        integer(ilp) :: norm_request, i
+        real(${k1}$) :: rorder
+        
+        ! Initialize norm to zero
+        nrm = 0.0_${k1}$
+        
+        ! Check matrix validity
+        if (matrix%nrows <= 0 .or. matrix%ncols <= 0 .or. matrix%nnz < 0) then
+            err_ = linalg_state_type(this,LINALG_VALUE_ERROR,'invalid sparse matrix dimensions')
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        if (matrix%nnz == 0) then
+            ! Empty matrix has norm 0
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        ! Check norm request
+        call parse_norm_type(order,norm_request,err_)
+        if (err_%error()) then 
+            call linalg_error_handling(err_,err)
+            return
+        endif         
+        
+        ! Compute norm based on request
+        select case(norm_request)
+            case(NORM_ONE)
+                ! 1-norm: maximum absolute column sum
+                call sparse_norm_one_csc_${s1}$(matrix, nrm)
+            case(NORM_TWO)            
+                ! Frobenius norm: sqrt(sum(|a_ij|^2))
+                do i = 1, matrix%nnz
+                    nrm = nrm + abs(matrix%data(i))**2
+                end do
+                nrm = sqrt(nrm)
+            case(NORM_INF)
+                ! Infinity norm: maximum absolute row sum
+                call sparse_norm_inf_csc_${s1}$(matrix, nrm)
+            case(NORM_MINUSINF)
+                ! Minimum of absolute values
+                if (matrix%nnz > 0) then
+                    nrm = minval(abs(matrix%data))
+                end if
+            case (NORM_POW_FIRST:NORM_POW_LAST)
+                ! p-norm: (sum(|a_ij|^p))^(1/p)
+                rorder = 1.0_${k1}$ / norm_request
+                do i = 1, matrix%nnz
+                    nrm = nrm + abs(matrix%data(i)) ** norm_request
+                end do
+                nrm = nrm ** rorder
+        end select
+        
+        call linalg_error_handling(err_,err)
+        
+    end function sparse_norm_${ii}$_csc_${s1}$
+
+    !> ELL (ELLPACK) format norm
+    module function sparse_norm_${ii}$_ell_${s1}$(matrix, order, err) result(nrm)
+        !> Input ELL sparse matrix
+        class(ELL_${s1}$_type), intent(in) :: matrix
+        !> Order of the matrix norm being computed.
+        ${it}$, intent(in) :: order
+        !> [optional] state return flag. On error if not requested, the code will stop
+        type(linalg_state_type), intent(out), optional :: err
+        !> Norm of the matrix.
+        real(${k1}$) :: nrm
+        
+        type(linalg_state_type) :: err_
+        integer(ilp) :: norm_request, i, j
+        real(${k1}$) :: rorder
+        
+        ! Initialize norm to zero
+        nrm = 0.0_${k1}$
+        
+        ! Check matrix validity
+        if (matrix%nrows <= 0 .or. matrix%ncols <= 0 .or. matrix%K < 0) then
+            err_ = linalg_state_type(this,LINALG_VALUE_ERROR,'invalid sparse matrix dimensions')
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        if (matrix%K == 0) then
+            ! Empty matrix has norm 0
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        ! Check norm request
+        call parse_norm_type(order,norm_request,err_)
+        if (err_%error()) then 
+            call linalg_error_handling(err_,err)
+            return
+        endif         
+        
+        ! Compute norm based on request
+        select case(norm_request)
+            case(NORM_ONE)
+                ! 1-norm: maximum absolute column sum
+                call sparse_norm_one_ell_${s1}$(matrix, nrm)
+            case(NORM_TWO)            
+                ! Frobenius norm: sqrt(sum(|a_ij|^2))
+                do i = 1, matrix%nrows
+                    do j = 1, matrix%K
+                        if (matrix%index(i,j) > 0) then
+                            nrm = nrm + abs(matrix%data(i,j))**2
+                        end if
+                    end do
+                end do
+                nrm = sqrt(nrm)
+            case(NORM_INF)
+                ! Infinity norm: maximum absolute row sum
+                call sparse_norm_inf_ell_${s1}$(matrix, nrm)
+            case(NORM_MINUSINF)
+                ! Minimum of absolute values (excluding zeros)
+                nrm = huge(0.0_${k1}$)
+                do i = 1, matrix%nrows
+                    do j = 1, matrix%K
+                        if (matrix%index(i,j) > 0) then
+                            nrm = min(nrm, abs(matrix%data(i,j)))
+                        end if
+                    end do
+                end do
+                if (nrm == huge(0.0_${k1}$)) nrm = 0.0_${k1}$
+            case (NORM_POW_FIRST:NORM_POW_LAST)
+                ! p-norm: (sum(|a_ij|^p))^(1/p)
+                rorder = 1.0_${k1}$ / norm_request
+                do i = 1, matrix%nrows
+                    do j = 1, matrix%K
+                        if (matrix%index(i,j) > 0) then
+                            nrm = nrm + abs(matrix%data(i,j)) ** norm_request
+                        end if
+                    end do
+                end do
+                nrm = nrm ** rorder
+        end select
+        
+        call linalg_error_handling(err_,err)
+        
+    end function sparse_norm_${ii}$_ell_${s1}$
+
+    !> SELLC (SELL-C) format norm
+    module function sparse_norm_${ii}$_sellc_${s1}$(matrix, order, err) result(nrm)
+        !> Input SELLC sparse matrix
+        class(SELLC_${s1}$_type), intent(in) :: matrix
+        !> Order of the matrix norm being computed.
+        ${it}$, intent(in) :: order
+        !> [optional] state return flag. On error if not requested, the code will stop
+        type(linalg_state_type), intent(out), optional :: err
+        !> Norm of the matrix.
+        real(${k1}$) :: nrm
+        
+        type(linalg_state_type) :: err_
+        integer(ilp) :: norm_request, i, j, chunk_id, num_chunks
+        real(${k1}$) :: rorder
+        
+        ! Initialize norm to zero
+        nrm = 0.0_${k1}$
+        
+        ! Check matrix validity
+        if (matrix%nrows <= 0 .or. matrix%ncols <= 0 .or. matrix%chunk_size <= 0) then
+            err_ = linalg_state_type(this,LINALG_VALUE_ERROR,'invalid sparse matrix dimensions')
+            call linalg_error_handling(err_,err)
+            return
+        end if
+        
+        ! Check norm request
+        call parse_norm_type(order,norm_request,err_)
+        if (err_%error()) then 
+            call linalg_error_handling(err_,err)
+            return
+        endif         
+        
+        ! Compute norm based on request
+        select case(norm_request)
+            case(NORM_ONE)
+                ! 1-norm: maximum absolute column sum
+                call sparse_norm_one_sellc_${s1}$(matrix, nrm)
+            case(NORM_TWO)            
+                ! Frobenius norm: sqrt(sum(|a_ij|^2))
+                num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+                do chunk_id = 1, num_chunks
+                    do j = 1, matrix%chunk_size
+                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                            if (matrix%col(j,i) > 0) then
+                                nrm = nrm + abs(matrix%data(j,i))**2
+                            end if
+                        end do
+                    end do
+                end do
+                nrm = sqrt(nrm)
+            case(NORM_INF)
+                ! Infinity norm: maximum absolute row sum
+                call sparse_norm_inf_sellc_${s1}$(matrix, nrm)
+            case(NORM_MINUSINF)
+                ! Minimum of absolute values (excluding zeros)
+                nrm = huge(0.0_${k1}$)
+                num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+                do chunk_id = 1, num_chunks
+                    do j = 1, matrix%chunk_size
+                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                            if (matrix%col(j,i) > 0) then
+                                nrm = min(nrm, abs(matrix%data(j,i)))
+                            end if
+                        end do
+                    end do
+                end do
+                if (nrm == huge(0.0_${k1}$)) nrm = 0.0_${k1}$
+            case (NORM_POW_FIRST:NORM_POW_LAST)
+                ! p-norm: (sum(|a_ij|^p))^(1/p)
+                rorder = 1.0_${k1}$ / norm_request
+                num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+                do chunk_id = 1, num_chunks
+                    do j = 1, matrix%chunk_size
+                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                            if (matrix%col(j,i) > 0) then
+                                nrm = nrm + abs(matrix%data(j,i)) ** norm_request
+                            end if
+                        end do
+                    end do
+                end do
+                nrm = nrm ** rorder
+        end select
+        
+        call linalg_error_handling(err_,err)
+        
+    end function sparse_norm_${ii}$_sellc_${s1}$
+
+    #:endfor
+    #:endfor
+
+    ! Helper functions for computing specific norms
+    
+    #:for k1, t1, s1 in KINDS_TYPES
+    
+    !> COO 1-norm helper
+    pure subroutine sparse_norm_one_coo_${s1}$(matrix, nrm)
+        class(COO_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j
+        real(${k1}$), allocatable :: col_sums(:)
+        
+        allocate(col_sums(matrix%ncols), source=0.0_${k1}$)
+        
+        do i = 1, matrix%nnz
+            j = matrix%index(2,i)  ! column index
+            if (j >= 1 .and. j <= matrix%ncols) then
+                col_sums(j) = col_sums(j) + abs(matrix%data(i))
+            end if
+        end do
+        
+        nrm = maxval(col_sums)
+        
+    end subroutine sparse_norm_one_coo_${s1}$
+    
+    !> COO infinity-norm helper
+    pure subroutine sparse_norm_inf_coo_${s1}$(matrix, nrm)
+        class(COO_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j
+        real(${k1}$), allocatable :: row_sums(:)
+        
+        allocate(row_sums(matrix%nrows), source=0.0_${k1}$)
+        
+        do i = 1, matrix%nnz
+            j = matrix%index(1,i)  ! row index
+            if (j >= 1 .and. j <= matrix%nrows) then
+                row_sums(j) = row_sums(j) + abs(matrix%data(i))
+            end if
+        end do
+        
+        nrm = maxval(row_sums)
+        
+    end subroutine sparse_norm_inf_coo_${s1}$
+
+    !> CSR 1-norm helper
+    pure subroutine sparse_norm_one_csr_${s1}$(matrix, nrm)
+        class(CSR_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, k
+        real(${k1}$), allocatable :: col_sums(:)
+        
+        allocate(col_sums(matrix%ncols), source=0.0_${k1}$)
+        
+        do i = 1, matrix%nrows
+            do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                j = matrix%col(k)  ! column index
+                if (j >= 1 .and. j <= matrix%ncols) then
+                    col_sums(j) = col_sums(j) + abs(matrix%data(k))
+                end if
+            end do
+        end do
+        
+        nrm = maxval(col_sums)
+        
+    end subroutine sparse_norm_one_csr_${s1}$
+    
+    !> CSR infinity-norm helper
+    pure subroutine sparse_norm_inf_csr_${s1}$(matrix, nrm)
+        class(CSR_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, k
+        real(${k1}$) :: row_sum
+        
+        nrm = 0.0_${k1}$
+        
+        do i = 1, matrix%nrows
+            row_sum = 0.0_${k1}$
+            do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                row_sum = row_sum + abs(matrix%data(k))
+            end do
+            nrm = max(nrm, row_sum)
+        end do
+        
+    end subroutine sparse_norm_inf_csr_${s1}$
+
+    !> CSC 1-norm helper
+    pure subroutine sparse_norm_one_csc_${s1}$(matrix, nrm)
+        class(CSC_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: j, k
+        real(${k1}$) :: col_sum
+        
+        nrm = 0.0_${k1}$
+        
+        do j = 1, matrix%ncols
+            col_sum = 0.0_${k1}$
+            do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                col_sum = col_sum + abs(matrix%data(k))
+            end do
+            nrm = max(nrm, col_sum)
+        end do
+        
+    end subroutine sparse_norm_one_csc_${s1}$
+    
+    !> CSC infinity-norm helper
+    pure subroutine sparse_norm_inf_csc_${s1}$(matrix, nrm)
+        class(CSC_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, k
+        real(${k1}$), allocatable :: row_sums(:)
+        
+        allocate(row_sums(matrix%nrows), source=0.0_${k1}$)
+        
+        do j = 1, matrix%ncols
+            do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                i = matrix%row(k)  ! row index
+                if (i >= 1 .and. i <= matrix%nrows) then
+                    row_sums(i) = row_sums(i) + abs(matrix%data(k))
+                end if
+            end do
+        end do
+        
+        nrm = maxval(row_sums)
+        
+    end subroutine sparse_norm_inf_csc_${s1}$
+
+    !> ELL 1-norm helper
+    pure subroutine sparse_norm_one_ell_${s1}$(matrix, nrm)
+        class(ELL_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, col_idx
+        real(${k1}$), allocatable :: col_sums(:)
+        
+        allocate(col_sums(matrix%ncols), source=0.0_${k1}$)
+        
+        do i = 1, matrix%nrows
+            do j = 1, matrix%K
+                col_idx = matrix%index(i,j)
+                if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                    col_sums(col_idx) = col_sums(col_idx) + abs(matrix%data(i,j))
+                end if
+            end do
+        end do
+        
+        nrm = maxval(col_sums)
+        
+    end subroutine sparse_norm_one_ell_${s1}$
+    
+    !> ELL infinity-norm helper
+    pure subroutine sparse_norm_inf_ell_${s1}$(matrix, nrm)
+        class(ELL_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j
+        real(${k1}$) :: row_sum
+        
+        nrm = 0.0_${k1}$
+        
+        do i = 1, matrix%nrows
+            row_sum = 0.0_${k1}$
+            do j = 1, matrix%K
+                if (matrix%index(i,j) > 0) then
+                    row_sum = row_sum + abs(matrix%data(i,j))
+                end if
+            end do
+            nrm = max(nrm, row_sum)
+        end do
+        
+    end subroutine sparse_norm_inf_ell_${s1}$
+
+    !> SELLC 1-norm helper
+    pure subroutine sparse_norm_one_sellc_${s1}$(matrix, nrm)
+        class(SELLC_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, chunk_id, num_chunks, col_idx
+        real(${k1}$), allocatable :: col_sums(:)
+        
+        allocate(col_sums(matrix%ncols), source=0.0_${k1}$)
+        
+        num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+        do chunk_id = 1, num_chunks
+            do j = 1, matrix%chunk_size
+                do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                    col_idx = matrix%col(j,i)
+                    if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                        col_sums(col_idx) = col_sums(col_idx) + abs(matrix%data(j,i))
+                    end if
+                end do
+            end do
+        end do
+        
+        nrm = maxval(col_sums)
+        
+    end subroutine sparse_norm_one_sellc_${s1}$
+    
+    !> SELLC infinity-norm helper
+    pure subroutine sparse_norm_inf_sellc_${s1}$(matrix, nrm)
+        class(SELLC_${s1}$_type), intent(in) :: matrix
+        real(${k1}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, chunk_id, num_chunks, local_row_id, global_row_id
+        real(${k1}$), allocatable :: row_sums(:)
+        
+        allocate(row_sums(matrix%nrows), source=0.0_${k1}$)
+        
+        num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+        do chunk_id = 1, num_chunks
+            do local_row_id = 1, matrix%chunk_size
+                global_row_id = (chunk_id-1) * matrix%chunk_size + local_row_id
+                if (global_row_id <= matrix%nrows) then
+                    do j = 1, matrix%chunk_size
+                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                            if (matrix%col(j,i) > 0) then
+                                row_sums(global_row_id) = row_sums(global_row_id) + abs(matrix%data(j,i))
+                            end if
+                        end do
+                    end do
+                end if
+            end do
+        end do
+        
+        nrm = maxval(row_sums)
+        
+    end subroutine sparse_norm_inf_sellc_${s1}$
+
+    #:endfor
+
+end submodule stdlib_sparse_norms

@@ -1,0 +1,67 @@
+#:include "common.fypp"
+#:set R_KINDS_TYPES = list(zip(REAL_KINDS, REAL_TYPES, REAL_SUFFIX))
+#:set C_KINDS_TYPES = list(zip(CMPLX_KINDS, CMPLX_TYPES, CMPLX_SUFFIX))
+#:set KINDS_TYPES = R_KINDS_TYPES+C_KINDS_TYPES
+!! public API
+module stdlib_sparse
+    use stdlib_sparse_kinds
+    use stdlib_sparse_conversion
+    use stdlib_sparse_spmv
+    use stdlib_sparse_constants
+    use stdlib_linalg_state, only: linalg_state_type
+    implicit none
+    
+    public :: sparse_norm
+    
+    interface sparse_norm
+        !! version: experimental
+        !!
+        !! Norm of a sparse matrix
+        !! ([Specification](../page/specs/stdlib_sparse.html#sparse_norm))
+        !!
+        !!### Summary
+        !! Compute the matrix norm of a sparse matrix.
+        !!
+        !!### Description
+        !! 
+        !! This interface provides methods for computing the norm of a sparse matrix. 
+        !! Supported data types include `real` and `complex`. Supported sparse matrix formats include
+        !! COO, CSR, CSC, ELL, and SELLC. The norm can be specified as integer or character input.
+        !!
+        #:for it,ii in [("character(len=*)","char"),("integer(ilp)","int")]
+        #:for k1, t1, s1 in KINDS_TYPES
+        module function sparse_norm_${ii}$_coo_${s1}$(matrix, order, err) result(nrm)
+            class(COO_${s1}$_type), intent(in) :: matrix
+            ${it}$, intent(in) :: order
+            type(linalg_state_type), intent(out), optional :: err
+            real(${k1}$) :: nrm
+        end function sparse_norm_${ii}$_coo_${s1}$
+        module function sparse_norm_${ii}$_csr_${s1}$(matrix, order, err) result(nrm)
+            class(CSR_${s1}$_type), intent(in) :: matrix
+            ${it}$, intent(in) :: order
+            type(linalg_state_type), intent(out), optional :: err
+            real(${k1}$) :: nrm
+        end function sparse_norm_${ii}$_csr_${s1}$
+        module function sparse_norm_${ii}$_csc_${s1}$(matrix, order, err) result(nrm)
+            class(CSC_${s1}$_type), intent(in) :: matrix
+            ${it}$, intent(in) :: order
+            type(linalg_state_type), intent(out), optional :: err
+            real(${k1}$) :: nrm
+        end function sparse_norm_${ii}$_csc_${s1}$
+        module function sparse_norm_${ii}$_ell_${s1}$(matrix, order, err) result(nrm)
+            class(ELL_${s1}$_type), intent(in) :: matrix
+            ${it}$, intent(in) :: order
+            type(linalg_state_type), intent(out), optional :: err
+            real(${k1}$) :: nrm
+        end function sparse_norm_${ii}$_ell_${s1}$
+        module function sparse_norm_${ii}$_sellc_${s1}$(matrix, order, err) result(nrm)
+            class(SELLC_${s1}$_type), intent(in) :: matrix
+            ${it}$, intent(in) :: order
+            type(linalg_state_type), intent(out), optional :: err
+            real(${k1}$) :: nrm
+        end function sparse_norm_${ii}$_sellc_${s1}$
+        #:endfor
+        #:endfor
+    end interface sparse_norm
+
+end module stdlib_sparse

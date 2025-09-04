@@ -48,9 +48,11 @@ set(fppFiles
     stdlib_sorting_ord_sort.fypp
     stdlib_sorting_sort.fypp
     stdlib_sorting_sort_adjoint.fypp
+    stdlib_sparse.fypp
     stdlib_sparse_constants.fypp
     stdlib_sparse_conversion.fypp
     stdlib_sparse_kinds.fypp
+    stdlib_sparse_norms.fypp
     stdlib_sparse_spmv.fypp
     stdlib_specialfunctions_activations.fypp
     stdlib_specialfunctions_gamma.fypp
@@ -120,7 +122,6 @@ set(SRC
     stdlib_system_path.f90
     stdlib_system.c
     stdlib_system.F90
-    stdlib_sparse.f90
     stdlib_specialfunctions_legendre.f90
     stdlib_quadrature_gauss.f90
     stdlib_stringlist_type.f90
