@@ -5,6 +5,7 @@ module test_sparse_spmv
     use testdrive, only : new_unittest, unittest_type, error_type, check, skip_test
     use stdlib_kinds, only: sp, dp, xdp, qp, int8, int16, int32, int64
     use stdlib_sparse
+    use stdlib_linalg_state, only: linalg_state_type
 
     implicit none
 
@@ -25,7 +26,8 @@ contains
             new_unittest('sellc', test_sellc),  &
             new_unittest('symmetries', test_symmetries), &
             new_unittest('diagonal', test_diagonal), &
-            new_unittest('add_get_values', test_add_get_values) &
+            new_unittest('add_get_values', test_add_get_values), &
+            new_unittest('sparse_norms', test_sparse_norms) &
         ]
     end subroutine
 
@@ -382,6 +384,120 @@ contains
         end block
         #:endfor
     end subroutine
+
+    !> Test sparse matrix norms
+    subroutine test_sparse_norms(error)
+        type(error_type), allocatable, intent(out) :: error
+        
+        integer(ilp), parameter :: n = 3
+        real(dp), parameter :: tol = 10*sqrt(epsilon(0.0_dp))
+        real(dp), allocatable :: A(:,:)
+        type(COO_dp_type) :: COO
+        type(CSR_dp_type) :: CSR
+        type(CSC_dp_type) :: CSC
+        type(linalg_state_type) :: err
+        real(dp) :: expected_fro, expected_one, expected_inf
+        real(dp) :: norm_fro, norm_one, norm_inf
+
+        allocate(A(n,n))
+
+        ! Create test matrix:
+        ! A = [1, 0, 2]
+        !     [0, 3, 0]  
+        !     [4, 0, 5]
+        A = 0.0_dp
+        A(1,1) = 1.0_dp; A(1,3) = 2.0_dp
+        A(2,2) = 3.0_dp
+        A(3,1) = 4.0_dp; A(3,3) = 5.0_dp
+        
+        ! Expected norms:
+        ! Frobenius: sqrt(1^2 + 2^2 + 3^2 + 4^2 + 5^2) = sqrt(55)
+        ! 1-norm: max column sum = max(5, 3, 7) = 7
+        ! Infinity norm: max row sum = max(3, 3, 9) = 9
+        expected_fro = sqrt(55.0_dp)
+        expected_one = 7.0_dp
+        expected_inf = 9.0_dp
+        
+        ! Convert to sparse formats
+        call dense2coo(A, COO)
+        call coo2csr(COO, CSR)
+        call coo2csc(COO, CSC)
+        
+        ! Test COO format norms
+        norm_fro = sparse_norm(COO, 'frobenius', err)
+        call check(error, .not. err%error(), 'COO Frobenius norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_fro - expected_fro) < tol*expected_fro, &
+                   'COO Frobenius norm should match expected value')
+        if (allocated(error)) return
+        
+        norm_one = sparse_norm(COO, 1, err)
+        call check(error, .not. err%error(), 'COO 1-norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_one - expected_one) < tol*expected_one, &
+                   'COO 1-norm should match expected value')
+        if (allocated(error)) return
+        
+        norm_inf = sparse_norm(COO, 'inf', err)
+        call check(error, .not. err%error(), 'COO infinity norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_inf - expected_inf) < tol*expected_inf, &
+                   'COO infinity norm should match expected value')
+        if (allocated(error)) return
+        
+        ! Test CSR format norms  
+        norm_fro = sparse_norm(CSR, 'frobenius', err)
+        call check(error, .not. err%error(), 'CSR Frobenius norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_fro - expected_fro) < tol*expected_fro, &
+                   'CSR Frobenius norm should match expected value')
+        if (allocated(error)) return
+        
+        norm_one = sparse_norm(CSR, 1, err)
+        call check(error, .not. err%error(), 'CSR 1-norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_one - expected_one) < tol*expected_one, &
+                   'CSR 1-norm should match expected value')
+        if (allocated(error)) return
+        
+        norm_inf = sparse_norm(CSR, 'inf', err)
+        call check(error, .not. err%error(), 'CSR infinity norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_inf - expected_inf) < tol*expected_inf, &
+                   'CSR infinity norm should match expected value')
+        if (allocated(error)) return
+        
+        ! Test CSC format norms
+        norm_fro = sparse_norm(CSC, 'frobenius', err)
+        call check(error, .not. err%error(), 'CSC Frobenius norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_fro - expected_fro) < tol*expected_fro, &
+                   'CSC Frobenius norm should match expected value')
+        if (allocated(error)) return
+        
+        norm_one = sparse_norm(CSC, 1, err)
+        call check(error, .not. err%error(), 'CSC 1-norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_one - expected_one) < tol*expected_one, &
+                   'CSC 1-norm should match expected value')
+        if (allocated(error)) return
+        
+        norm_inf = sparse_norm(CSC, 'inf', err)
+        call check(error, .not. err%error(), 'CSC infinity norm should not error')
+        if (allocated(error)) return
+        call check(error, abs(norm_inf - expected_inf) < tol*expected_inf, &
+                   'CSC infinity norm should match expected value')
+        if (allocated(error)) return
+        
+        ! Test empty matrix case
+        COO%nnz = 0
+        norm_fro = sparse_norm(COO, 'frobenius', err)
+        call check(error, .not. err%error(), 'Empty matrix norm should not error')
+        if (allocated(error)) return
+        call check(error, norm_fro == 0.0_dp, 'Empty matrix norm should be zero')
+        if (allocated(error)) return
+        
+    end subroutine test_sparse_norms
 
 end module
 
