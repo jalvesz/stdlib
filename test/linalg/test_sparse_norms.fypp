@@ -23,6 +23,7 @@ module test_sparse_norms
         
         #:for k, t, s in KINDS_TYPES
         call add_test(tests,new_unittest("test_sparse_norms_${s}$",test_sparse_norms_${s}$))
+        call add_test(tests,new_unittest("test_sparse_symmetric_norms_${s}$",test_sparse_symmetric_norms_${s}$))
         #:endfor
         
     end subroutine test_sparse_matrix_norms
@@ -141,6 +142,140 @@ module test_sparse_norms
         if (allocated(error)) return
         
     end subroutine test_sparse_norms_${s}$
+
+    !> Test sparse matrix symmetric storage norms for ${t}$ matrices
+    subroutine test_sparse_symmetric_norms_${s}$(error)
+        type(error_type), allocatable, intent(out) :: error
+        
+        integer(ilp), parameter :: n = 3
+        real(${k}$), parameter :: tol = 10*sqrt(epsilon(0.0_${k}$))
+        ${t}$, allocatable :: A(:,:)
+        type(COO_${s}$_type) :: COO_lower, COO_upper, COO_full
+        type(linalg_state_type) :: err
+        real(${k}$) :: expected_fro, expected_one, expected_inf
+        real(${k}$) :: norm_fro_lower, norm_fro_upper, norm_fro_full
+        real(${k}$) :: norm_one_lower, norm_one_upper, norm_one_full  
+        real(${k}$) :: norm_inf_lower, norm_inf_upper, norm_inf_full
+        integer(ilp) :: i, j, new_nnz
+
+        allocate(A(n,n))
+
+        ! Create a symmetric test matrix:
+        ! A = [2, 1, 0]
+        !     [1, 3, 4]
+        !     [0, 4, 5]
+        A = zero_${s}$
+        A(1,1) = 2.0_${k}$; A(1,2) = 1.0_${k}$
+        A(2,1) = 1.0_${k}$; A(2,2) = 3.0_${k}$; A(2,3) = 4.0_${k}$  
+        A(3,2) = 4.0_${k}$; A(3,3) = 5.0_${k}$
+        
+        ! Expected norms for the full symmetric matrix:
+        ! Frobenius: sqrt(2^2 + 1^2 + 1^2 + 3^2 + 4^2 + 4^2 + 5^2) = sqrt(72)
+        ! 1-norm: max column sum = max(3, 8, 9) = 9
+        ! Infinity norm: max row sum = max(3, 8, 9) = 9
+        expected_fro = sqrt(72.0_${k}$)
+        expected_one = 9.0_${k}$
+        expected_inf = 9.0_${k}$
+        
+        ! Convert to sparse formats
+        call dense2coo(A, COO_full)
+        COO_full%storage = sparse_full
+        
+        call dense2coo(A, COO_lower)
+        COO_lower%storage = sparse_lower
+        ! Remove upper triangular elements (keep only i >= j)
+        new_nnz = 0
+        do i = 1, COO_lower%nnz
+            if (COO_lower%index(1,i) >= COO_lower%index(2,i)) then
+                new_nnz = new_nnz + 1
+                COO_lower%index(:,new_nnz) = COO_lower%index(:,i)
+                COO_lower%data(new_nnz) = COO_lower%data(i)
+            end if
+        end do
+        COO_lower%nnz = new_nnz
+        
+        call dense2coo(A, COO_upper)
+        COO_upper%storage = sparse_upper
+        ! Remove lower triangular elements (keep only i <= j)
+        new_nnz = 0
+        do i = 1, COO_upper%nnz
+            if (COO_upper%index(1,i) <= COO_upper%index(2,i)) then
+                new_nnz = new_nnz + 1
+                COO_upper%index(:,new_nnz) = COO_upper%index(:,i)
+                COO_upper%data(new_nnz) = COO_upper%data(i)
+            end if
+        end do
+        COO_upper%nnz = new_nnz
+        
+        ! Test norms for all storage types
+        norm_fro_full = sparse_norm(COO_full, 'frobenius', err)
+        call check(error, .not. err%error(), 'Full COO Frobenius norm should not error')
+        if (allocated(error)) return
+        
+        norm_fro_lower = sparse_norm(COO_lower, 'frobenius', err)
+        call check(error, .not. err%error(), 'Lower COO Frobenius norm should not error')
+        if (allocated(error)) return
+        
+        norm_fro_upper = sparse_norm(COO_upper, 'frobenius', err)
+        call check(error, .not. err%error(), 'Upper COO Frobenius norm should not error')
+        if (allocated(error)) return
+        
+        norm_one_full = sparse_norm(COO_full, 1, err)
+        call check(error, .not. err%error(), 'Full COO 1-norm should not error')
+        if (allocated(error)) return
+        
+        norm_one_lower = sparse_norm(COO_lower, 1, err)
+        call check(error, .not. err%error(), 'Lower COO 1-norm should not error')
+        if (allocated(error)) return
+        
+        norm_one_upper = sparse_norm(COO_upper, 1, err)
+        call check(error, .not. err%error(), 'Upper COO 1-norm should not error')
+        if (allocated(error)) return
+        
+        norm_inf_full = sparse_norm(COO_full, 'inf', err)
+        call check(error, .not. err%error(), 'Full COO infinity norm should not error')
+        if (allocated(error)) return
+        
+        norm_inf_lower = sparse_norm(COO_lower, 'inf', err)
+        call check(error, .not. err%error(), 'Lower COO infinity norm should not error')
+        if (allocated(error)) return
+        
+        norm_inf_upper = sparse_norm(COO_upper, 'inf', err)
+        call check(error, .not. err%error(), 'Upper COO infinity norm should not error')
+        if (allocated(error)) return
+        
+        ! Check that all storage types give the same result
+        call check(error, abs(norm_fro_full - expected_fro) < tol*expected_fro, &
+                   'Full COO Frobenius norm should match expected value')
+        if (allocated(error)) return
+        call check(error, abs(norm_fro_lower - expected_fro) < tol*expected_fro, &
+                   'Lower COO Frobenius norm should match expected value')
+        if (allocated(error)) return
+        call check(error, abs(norm_fro_upper - expected_fro) < tol*expected_fro, &
+                   'Upper COO Frobenius norm should match expected value')
+        if (allocated(error)) return
+        
+        call check(error, abs(norm_one_full - expected_one) < tol*expected_one, &
+                   'Full COO 1-norm should match expected value')
+        if (allocated(error)) return
+        call check(error, abs(norm_one_lower - expected_one) < tol*expected_one, &
+                   'Lower COO 1-norm should match expected value')
+        if (allocated(error)) return
+        call check(error, abs(norm_one_upper - expected_one) < tol*expected_one, &
+                   'Upper COO 1-norm should match expected value')
+        if (allocated(error)) return
+        
+        call check(error, abs(norm_inf_full - expected_inf) < tol*expected_inf, &
+                   'Full COO infinity norm should match expected value')
+        if (allocated(error)) return
+        call check(error, abs(norm_inf_lower - expected_inf) < tol*expected_inf, &
+                   'Lower COO infinity norm should match expected value')
+        if (allocated(error)) return
+        call check(error, abs(norm_inf_upper - expected_inf) < tol*expected_inf, &
+                   'Upper COO infinity norm should match expected value')
+        if (allocated(error)) return
+        
+    end subroutine test_sparse_symmetric_norms_${s}$
     #:endfor
 
 end module test_sparse_norms

@@ -143,25 +143,16 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
                 call sparse_norm_one_coo_${s}$(matrix, nrm)
             case(NORM_TWO)            
                 ! Frobenius norm: sqrt(sum(|a_ij|^2))
-                do i = 1, matrix%nnz
-                    nrm = nrm + abs(matrix%data(i))**2
-                end do
-                nrm = sqrt(nrm)
+                call sparse_norm_frobenius_coo_${s}$(matrix, nrm)
             case(NORM_INF)
                 ! Infinity norm: maximum absolute row sum
                 call sparse_norm_inf_coo_${s}$(matrix, nrm)
             case(NORM_MINUSINF)
                 ! Minimum of absolute values
-                if (matrix%nnz > 0) then
-                    nrm = minval(abs(matrix%data))
-                end if
+                call sparse_norm_minusinf_coo_${s}$(matrix, nrm)
             case (NORM_POW_FIRST:NORM_POW_LAST)
                 ! p-norm: (sum(|a_ij|^p))^(1/p)
-                rorder = 1.0_${k}$ / norm_request
-                do i = 1, matrix%nnz
-                    nrm = nrm + abs(matrix%data(i)) ** norm_request
-                end do
-                nrm = nrm ** rorder
+                call sparse_norm_p_coo_${s}$(matrix, norm_request, nrm)
         end select
         
         call linalg_error_handling(err_,err)
@@ -213,25 +204,16 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
                 call sparse_norm_one_csr_${s}$(matrix, nrm)
             case(NORM_TWO)            
                 ! Frobenius norm: sqrt(sum(|a_ij|^2))
-                do i = 1, matrix%nnz
-                    nrm = nrm + abs(matrix%data(i))**2
-                end do
-                nrm = sqrt(nrm)
+                call sparse_norm_frobenius_csr_${s}$(matrix, nrm)
             case(NORM_INF)
                 ! Infinity norm: maximum absolute row sum
                 call sparse_norm_inf_csr_${s}$(matrix, nrm)
             case(NORM_MINUSINF)
                 ! Minimum of absolute values
-                if (matrix%nnz > 0) then
-                    nrm = minval(abs(matrix%data))
-                end if
+                call sparse_norm_minusinf_csr_${s}$(matrix, nrm)
             case (NORM_POW_FIRST:NORM_POW_LAST)
                 ! p-norm: (sum(|a_ij|^p))^(1/p)
-                rorder = 1.0_${k}$ / norm_request
-                do i = 1, matrix%nnz
-                    nrm = nrm + abs(matrix%data(i)) ** norm_request
-                end do
-                nrm = nrm ** rorder
+                call sparse_norm_p_csr_${s}$(matrix, norm_request, nrm)
         end select
         
         call linalg_error_handling(err_,err)
@@ -283,25 +265,16 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
                 call sparse_norm_one_csc_${s}$(matrix, nrm)
             case(NORM_TWO)            
                 ! Frobenius norm: sqrt(sum(|a_ij|^2))
-                do i = 1, matrix%nnz
-                    nrm = nrm + abs(matrix%data(i))**2
-                end do
-                nrm = sqrt(nrm)
+                call sparse_norm_frobenius_csc_${s}$(matrix, nrm)
             case(NORM_INF)
                 ! Infinity norm: maximum absolute row sum
                 call sparse_norm_inf_csc_${s}$(matrix, nrm)
             case(NORM_MINUSINF)
                 ! Minimum of absolute values
-                if (matrix%nnz > 0) then
-                    nrm = minval(abs(matrix%data))
-                end if
+                call sparse_norm_minusinf_csc_${s}$(matrix, nrm)
             case (NORM_POW_FIRST:NORM_POW_LAST)
                 ! p-norm: (sum(|a_ij|^p))^(1/p)
-                rorder = 1.0_${k}$ / norm_request
-                do i = 1, matrix%nnz
-                    nrm = nrm + abs(matrix%data(i)) ** norm_request
-                end do
-                nrm = nrm ** rorder
+                call sparse_norm_p_csc_${s}$(matrix, norm_request, nrm)
         end select
         
         call linalg_error_handling(err_,err)
@@ -353,39 +326,16 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
                 call sparse_norm_one_ell_${s}$(matrix, nrm)
             case(NORM_TWO)            
                 ! Frobenius norm: sqrt(sum(|a_ij|^2))
-                do i = 1, matrix%nrows
-                    do j = 1, matrix%K
-                        if (matrix%index(i,j) > 0) then
-                            nrm = nrm + abs(matrix%data(i,j))**2
-                        end if
-                    end do
-                end do
-                nrm = sqrt(nrm)
+                call sparse_norm_frobenius_ell_${s}$(matrix, nrm)
             case(NORM_INF)
                 ! Infinity norm: maximum absolute row sum
                 call sparse_norm_inf_ell_${s}$(matrix, nrm)
             case(NORM_MINUSINF)
-                ! Minimum of absolute values (excluding zeros)
-                nrm = huge(0.0_${k}$)
-                do i = 1, matrix%nrows
-                    do j = 1, matrix%K
-                        if (matrix%index(i,j) > 0) then
-                            nrm = min(nrm, abs(matrix%data(i,j)))
-                        end if
-                    end do
-                end do
-                if (nrm == huge(0.0_${k}$)) nrm = 0.0_${k}$
+                ! Minimum of absolute values
+                call sparse_norm_minusinf_ell_${s}$(matrix, nrm)
             case (NORM_POW_FIRST:NORM_POW_LAST)
                 ! p-norm: (sum(|a_ij|^p))^(1/p)
-                rorder = 1.0_${k}$ / norm_request
-                do i = 1, matrix%nrows
-                    do j = 1, matrix%K
-                        if (matrix%index(i,j) > 0) then
-                            nrm = nrm + abs(matrix%data(i,j)) ** norm_request
-                        end if
-                    end do
-                end do
-                nrm = nrm ** rorder
+                call sparse_norm_p_ell_${s}$(matrix, norm_request, nrm)
         end select
         
         call linalg_error_handling(err_,err)
@@ -431,48 +381,16 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
                 call sparse_norm_one_sellc_${s}$(matrix, nrm)
             case(NORM_TWO)            
                 ! Frobenius norm: sqrt(sum(|a_ij|^2))
-                num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
-                do chunk_id = 1, num_chunks
-                    do j = 1, matrix%chunk_size
-                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
-                            if (matrix%col(j,i) > 0) then
-                                nrm = nrm + abs(matrix%data(j,i))**2
-                            end if
-                        end do
-                    end do
-                end do
-                nrm = sqrt(nrm)
+                call sparse_norm_frobenius_sellc_${s}$(matrix, nrm)
             case(NORM_INF)
                 ! Infinity norm: maximum absolute row sum
                 call sparse_norm_inf_sellc_${s}$(matrix, nrm)
             case(NORM_MINUSINF)
-                ! Minimum of absolute values (excluding zeros)
-                nrm = huge(0.0_${k}$)
-                num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
-                do chunk_id = 1, num_chunks
-                    do j = 1, matrix%chunk_size
-                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
-                            if (matrix%col(j,i) > 0) then
-                                nrm = min(nrm, abs(matrix%data(j,i)))
-                            end if
-                        end do
-                    end do
-                end do
-                if (nrm == huge(0.0_${k}$)) nrm = 0.0_${k}$
+                ! Minimum of absolute values
+                call sparse_norm_minusinf_sellc_${s}$(matrix, nrm)
             case (NORM_POW_FIRST:NORM_POW_LAST)
                 ! p-norm: (sum(|a_ij|^p))^(1/p)
-                rorder = 1.0_${k}$ / norm_request
-                num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
-                do chunk_id = 1, num_chunks
-                    do j = 1, matrix%chunk_size
-                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
-                            if (matrix%col(j,i) > 0) then
-                                nrm = nrm + abs(matrix%data(j,i)) ** norm_request
-                            end if
-                        end do
-                    end do
-                end do
-                nrm = nrm ** rorder
+                call sparse_norm_p_sellc_${s}$(matrix, norm_request, nrm)
         end select
         
         call linalg_error_handling(err_,err)
@@ -491,17 +409,61 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(COO_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j
+        integer(ilp) :: i, row_idx, col_idx
         real(${k}$), allocatable :: col_sums(:)
+        real(${k}$) :: val
         
         allocate(col_sums(matrix%ncols), source=0.0_${k}$)
         
-        do i = 1, matrix%nnz
-            j = matrix%index(2,i)  ! column index
-            if (j >= 1 .and. j <= matrix%ncols) then
-                col_sums(j) = col_sums(j) + abs(matrix%data(i))
-            end if
-        end do
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val = abs(matrix%data(i))
+                
+                if (row_idx >= 1 .and. row_idx <= matrix%nrows .and. &
+                    col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                    ! Add contribution to column col_idx
+                    col_sums(col_idx) = col_sums(col_idx) + val
+                end if
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val = abs(matrix%data(i))
+                
+                if (row_idx >= 1 .and. row_idx <= matrix%nrows .and. &
+                    col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                    ! Add contribution to column col_idx
+                    col_sums(col_idx) = col_sums(col_idx) + val
+                    
+                    ! For lower triangular storage, add symmetric contribution
+                    if (row_idx > col_idx) then
+                        ! Lower triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                        col_sums(row_idx) = col_sums(row_idx) + val
+                    end if
+                end if
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val = abs(matrix%data(i))
+                
+                if (row_idx >= 1 .and. row_idx <= matrix%nrows .and. &
+                    col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                    ! Add contribution to column col_idx
+                    col_sums(col_idx) = col_sums(col_idx) + val
+                    
+                    ! For upper triangular storage, add symmetric contribution
+                    if (row_idx < col_idx) then
+                        ! Upper triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                        col_sums(row_idx) = col_sums(row_idx) + val
+                    end if
+                end if
+            end do
+        end if
         
         nrm = maxval(col_sums)
         
@@ -512,17 +474,61 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(COO_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j
+        integer(ilp) :: i, row_idx, col_idx
         real(${k}$), allocatable :: row_sums(:)
+        real(${k}$) :: val
         
         allocate(row_sums(matrix%nrows), source=0.0_${k}$)
         
-        do i = 1, matrix%nnz
-            j = matrix%index(1,i)  ! row index
-            if (j >= 1 .and. j <= matrix%nrows) then
-                row_sums(j) = row_sums(j) + abs(matrix%data(i))
-            end if
-        end do
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val = abs(matrix%data(i))
+                
+                if (row_idx >= 1 .and. row_idx <= matrix%nrows .and. &
+                    col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                    ! Add contribution to row row_idx
+                    row_sums(row_idx) = row_sums(row_idx) + val
+                end if
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val = abs(matrix%data(i))
+                
+                if (row_idx >= 1 .and. row_idx <= matrix%nrows .and. &
+                    col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                    ! Add contribution to row row_idx
+                    row_sums(row_idx) = row_sums(row_idx) + val
+                    
+                    ! For lower triangular storage, add symmetric contribution
+                    if (row_idx > col_idx) then
+                        ! Lower triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                        row_sums(col_idx) = row_sums(col_idx) + val
+                    end if
+                end if
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val = abs(matrix%data(i))
+                
+                if (row_idx >= 1 .and. row_idx <= matrix%nrows .and. &
+                    col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                    ! Add contribution to row row_idx
+                    row_sums(row_idx) = row_sums(row_idx) + val
+                    
+                    ! For upper triangular storage, add symmetric contribution
+                    if (row_idx < col_idx) then
+                        ! Upper triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                        row_sums(col_idx) = row_sums(col_idx) + val
+                    end if
+                end if
+            end do
+        end if
         
         nrm = maxval(row_sums)
         
@@ -533,19 +539,61 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(CSR_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j, k
+        integer(ilp) :: i, j, k, row_idx, col_idx
         real(${k}$), allocatable :: col_sums(:)
+        real(${k}$) :: val
         
         allocate(col_sums(matrix%ncols), source=0.0_${k}$)
         
-        do i = 1, matrix%nrows
-            do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
-                j = matrix%col(k)  ! column index
-                if (j >= 1 .and. j <= matrix%ncols) then
-                    col_sums(j) = col_sums(j) + abs(matrix%data(k))
-                end if
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    col_idx = matrix%col(k)
+                    val = abs(matrix%data(k))
+                    
+                    if (col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                        ! Add contribution to column col_idx
+                        col_sums(col_idx) = col_sums(col_idx) + val
+                    end if
+                end do
             end do
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val = abs(matrix%data(k))
+                    
+                    if (col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                        ! Add contribution to column col_idx
+                        col_sums(col_idx) = col_sums(col_idx) + val
+                        
+                        ! For lower triangular storage, add symmetric contribution
+                        if (row_idx > col_idx) then
+                            col_sums(row_idx) = col_sums(row_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val = abs(matrix%data(k))
+                    
+                    if (col_idx >= 1 .and. col_idx <= matrix%ncols) then
+                        ! Add contribution to column col_idx
+                        col_sums(col_idx) = col_sums(col_idx) + val
+                        
+                        ! For upper triangular storage, add symmetric contribution
+                        if (row_idx < col_idx) then
+                            col_sums(row_idx) = col_sums(row_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         nrm = maxval(col_sums)
         
@@ -556,18 +604,55 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(CSR_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, k
-        real(${k}$) :: row_sum
+        integer(ilp) :: i, k, row_idx, col_idx
+        real(${k}$), allocatable :: row_sums(:)
+        real(${k}$) :: val
         
-        nrm = 0.0_${k}$
+        allocate(row_sums(matrix%nrows), source=0.0_${k}$)
         
-        do i = 1, matrix%nrows
-            row_sum = 0.0_${k}$
-            do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
-                row_sum = row_sum + abs(matrix%data(k))
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    val = abs(matrix%data(k))
+                    ! Add contribution to row row_idx
+                    row_sums(i) = row_sums(i) + val
+                end do
             end do
-            nrm = max(nrm, row_sum)
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val = abs(matrix%data(k))
+                    
+                    ! Add contribution to row row_idx
+                    row_sums(row_idx) = row_sums(row_idx) + val
+                    
+                    ! For lower triangular storage, add symmetric contribution
+                    if (row_idx > col_idx) then
+                        row_sums(col_idx) = row_sums(col_idx) + val
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val = abs(matrix%data(k))
+                    
+                    ! Add contribution to row row_idx
+                    row_sums(row_idx) = row_sums(row_idx) + val
+                    
+                    ! For upper triangular storage, add symmetric contribution
+                    if (row_idx < col_idx) then
+                        row_sums(col_idx) = row_sums(col_idx) + val
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = maxval(row_sums)
         
     end subroutine sparse_norm_inf_csr_${s}$
 
@@ -576,18 +661,55 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(CSC_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: j, k
-        real(${k}$) :: col_sum
+        integer(ilp) :: j, k, row_idx, col_idx
+        real(${k}$), allocatable :: col_sums(:)
+        real(${k}$) :: val
         
-        nrm = 0.0_${k}$
+        allocate(col_sums(matrix%ncols), source=0.0_${k}$)
         
-        do j = 1, matrix%ncols
-            col_sum = 0.0_${k}$
-            do k = matrix%colptr(j), matrix%colptr(j+1)-1
-                col_sum = col_sum + abs(matrix%data(k))
+        if (matrix%storage == sparse_full) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    val = abs(matrix%data(k))
+                    ! Add contribution to column col_idx
+                    col_sums(j) = col_sums(j) + val
+                end do
             end do
-            nrm = max(nrm, col_sum)
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val = abs(matrix%data(k))
+                    
+                    ! Add contribution to column col_idx
+                    col_sums(col_idx) = col_sums(col_idx) + val
+                    
+                    ! For lower triangular storage, add symmetric contribution
+                    if (row_idx > col_idx) then
+                        col_sums(row_idx) = col_sums(row_idx) + val
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val = abs(matrix%data(k))
+                    
+                    ! Add contribution to column col_idx
+                    col_sums(col_idx) = col_sums(col_idx) + val
+                    
+                    ! For upper triangular storage, add symmetric contribution
+                    if (row_idx < col_idx) then
+                        col_sums(row_idx) = col_sums(row_idx) + val
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = maxval(col_sums)
         
     end subroutine sparse_norm_one_csc_${s}$
     
@@ -596,19 +718,61 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(CSC_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j, k
+        integer(ilp) :: j, k, row_idx, col_idx
         real(${k}$), allocatable :: row_sums(:)
+        real(${k}$) :: val
         
         allocate(row_sums(matrix%nrows), source=0.0_${k}$)
         
-        do j = 1, matrix%ncols
-            do k = matrix%colptr(j), matrix%colptr(j+1)-1
-                i = matrix%row(k)  ! row index
-                if (i >= 1 .and. i <= matrix%nrows) then
-                    row_sums(i) = row_sums(i) + abs(matrix%data(k))
-                end if
+        if (matrix%storage == sparse_full) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    val = abs(matrix%data(k))
+                    
+                    if (row_idx >= 1 .and. row_idx <= matrix%nrows) then
+                        ! Add contribution to row row_idx
+                        row_sums(row_idx) = row_sums(row_idx) + val
+                    end if
+                end do
             end do
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val = abs(matrix%data(k))
+                    
+                    if (row_idx >= 1 .and. row_idx <= matrix%nrows) then
+                        ! Add contribution to row row_idx
+                        row_sums(row_idx) = row_sums(row_idx) + val
+                        
+                        ! For lower triangular storage, add symmetric contribution
+                        if (row_idx > col_idx) then
+                            row_sums(col_idx) = row_sums(col_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val = abs(matrix%data(k))
+                    
+                    if (row_idx >= 1 .and. row_idx <= matrix%nrows) then
+                        ! Add contribution to row row_idx
+                        row_sums(row_idx) = row_sums(row_idx) + val
+                        
+                        ! For upper triangular storage, add symmetric contribution
+                        if (row_idx < col_idx) then
+                            row_sums(col_idx) = row_sums(col_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         nrm = maxval(row_sums)
         
@@ -619,19 +783,60 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(ELL_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j, col_idx
+        integer(ilp) :: i, j, row_idx, col_idx
         real(${k}$), allocatable :: col_sums(:)
+        real(${k}$) :: val
         
         allocate(col_sums(matrix%ncols), source=0.0_${k}$)
         
-        do i = 1, matrix%nrows
-            do j = 1, matrix%K
-                col_idx = matrix%index(i,j)
-                if (col_idx > 0 .and. col_idx <= matrix%ncols) then
-                    col_sums(col_idx) = col_sums(col_idx) + abs(matrix%data(i,j))
-                end if
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    col_idx = matrix%index(i,j)
+                    if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                        val = abs(matrix%data(i,j))
+                        ! Add contribution to column col_idx
+                        col_sums(col_idx) = col_sums(col_idx) + val
+                    end if
+                end do
             end do
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    col_idx = matrix%index(i,j)
+                    if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                        row_idx = i
+                        val = abs(matrix%data(i,j))
+                        
+                        ! Add contribution to column col_idx
+                        col_sums(col_idx) = col_sums(col_idx) + val
+                        
+                        ! For lower triangular storage, add symmetric contribution
+                        if (row_idx > col_idx) then
+                            col_sums(row_idx) = col_sums(row_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    col_idx = matrix%index(i,j)
+                    if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                        row_idx = i
+                        val = abs(matrix%data(i,j))
+                        
+                        ! Add contribution to column col_idx
+                        col_sums(col_idx) = col_sums(col_idx) + val
+                        
+                        ! For upper triangular storage, add symmetric contribution
+                        if (row_idx < col_idx) then
+                            col_sums(row_idx) = col_sums(row_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        end if
         
         nrm = maxval(col_sums)
         
@@ -642,20 +847,61 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(ELL_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j
-        real(${k}$) :: row_sum
+        integer(ilp) :: i, j, row_idx, col_idx
+        real(${k}$), allocatable :: row_sums(:)
+        real(${k}$) :: val
         
-        nrm = 0.0_${k}$
+        allocate(row_sums(matrix%nrows), source=0.0_${k}$)
         
-        do i = 1, matrix%nrows
-            row_sum = 0.0_${k}$
-            do j = 1, matrix%K
-                if (matrix%index(i,j) > 0) then
-                    row_sum = row_sum + abs(matrix%data(i,j))
-                end if
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        val = abs(matrix%data(i,j))
+                        ! Add contribution to row row_idx
+                        row_sums(i) = row_sums(i) + val
+                    end if
+                end do
             end do
-            nrm = max(nrm, row_sum)
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        row_idx = i
+                        col_idx = matrix%index(i,j)
+                        val = abs(matrix%data(i,j))
+                        
+                        ! Add contribution to row row_idx
+                        row_sums(row_idx) = row_sums(row_idx) + val
+                        
+                        ! For lower triangular storage, add symmetric contribution
+                        if (row_idx > col_idx) then
+                            row_sums(col_idx) = row_sums(col_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        row_idx = i
+                        col_idx = matrix%index(i,j)
+                        val = abs(matrix%data(i,j))
+                        
+                        ! Add contribution to row row_idx
+                        row_sums(row_idx) = row_sums(row_idx) + val
+                        
+                        ! For upper triangular storage, add symmetric contribution
+                        if (row_idx < col_idx) then
+                            row_sums(col_idx) = row_sums(col_idx) + val
+                        end if
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = maxval(row_sums)
         
     end subroutine sparse_norm_inf_ell_${s}$
 
@@ -664,22 +910,68 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(SELLC_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j, chunk_id, num_chunks, col_idx
+        integer(ilp) :: i, j, chunk_id, num_chunks, col_idx, global_row_id
         real(${k}$), allocatable :: col_sums(:)
+        real(${k}$) :: val
         
         allocate(col_sums(matrix%ncols), source=0.0_${k}$)
         
         num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
-        do chunk_id = 1, num_chunks
-            do j = 1, matrix%chunk_size
-                do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
-                    col_idx = matrix%col(j,i)
-                    if (col_idx > 0 .and. col_idx <= matrix%ncols) then
-                        col_sums(col_idx) = col_sums(col_idx) + abs(matrix%data(j,i))
-                    end if
+        
+        if (matrix%storage == sparse_full) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        col_idx = matrix%col(j,i)
+                        if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                            val = abs(matrix%data(j,i))
+                            ! Add contribution to column col_idx
+                            col_sums(col_idx) = col_sums(col_idx) + val
+                        end if
+                    end do
                 end do
             end do
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        col_idx = matrix%col(j,i)
+                        if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            val = abs(matrix%data(j,i))
+                            
+                            ! Add contribution to column col_idx
+                            col_sums(col_idx) = col_sums(col_idx) + val
+                            
+                            ! For lower triangular storage, add symmetric contribution
+                            if (global_row_id > col_idx) then
+                                col_sums(global_row_id) = col_sums(global_row_id) + val
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        col_idx = matrix%col(j,i)
+                        if (col_idx > 0 .and. col_idx <= matrix%ncols) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            val = abs(matrix%data(j,i))
+                            
+                            ! Add contribution to column col_idx
+                            col_sums(col_idx) = col_sums(col_idx) + val
+                            
+                            ! For upper triangular storage, add symmetric contribution
+                            if (global_row_id < col_idx) then
+                                col_sums(global_row_id) = col_sums(global_row_id) + val
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        end if
         
         nrm = maxval(col_sums)
         
@@ -690,30 +982,755 @@ submodule(stdlib_sparse_norms) stdlib_sparse_norms_imp
         class(SELLC_${s}$_type), intent(in) :: matrix
         real(${k}$), intent(out) :: nrm
         
-        integer(ilp) :: i, j, chunk_id, num_chunks, local_row_id, global_row_id
+        integer(ilp) :: i, j, chunk_id, num_chunks, local_row_id, global_row_id, col_idx
         real(${k}$), allocatable :: row_sums(:)
+        real(${k}$) :: val
         
         allocate(row_sums(matrix%nrows), source=0.0_${k}$)
         
         num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
-        do chunk_id = 1, num_chunks
-            do local_row_id = 1, matrix%chunk_size
-                global_row_id = (chunk_id-1) * matrix%chunk_size + local_row_id
-                if (global_row_id <= matrix%nrows) then
-                    do j = 1, matrix%chunk_size
-                        do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
-                            if (matrix%col(j,i) > 0) then
-                                row_sums(global_row_id) = row_sums(global_row_id) + abs(matrix%data(j,i))
+        
+        if (matrix%storage == sparse_full) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        col_idx = matrix%col(j,i)
+                        if (col_idx > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            if (global_row_id <= matrix%nrows) then
+                                val = abs(matrix%data(j,i))
+                                ! Add contribution to row global_row_id
+                                row_sums(global_row_id) = row_sums(global_row_id) + val
                             end if
-                        end do
+                        end if
                     end do
-                end if
+                end do
             end do
-        end do
+        elseif (matrix%storage == sparse_lower) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        col_idx = matrix%col(j,i)
+                        if (col_idx > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            if (global_row_id <= matrix%nrows) then
+                                val = abs(matrix%data(j,i))
+                                
+                                ! Add contribution to row global_row_id
+                                row_sums(global_row_id) = row_sums(global_row_id) + val
+                                
+                                ! For lower triangular storage, add symmetric contribution
+                                if (global_row_id > col_idx) then
+                                    row_sums(col_idx) = row_sums(col_idx) + val
+                                end if
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        col_idx = matrix%col(j,i)
+                        if (col_idx > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            if (global_row_id <= matrix%nrows) then
+                                val = abs(matrix%data(j,i))
+                                
+                                ! Add contribution to row global_row_id
+                                row_sums(global_row_id) = row_sums(global_row_id) + val
+                                
+                                ! For upper triangular storage, add symmetric contribution
+                                if (global_row_id < col_idx) then
+                                    row_sums(col_idx) = row_sums(col_idx) + val
+                                end if
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        end if
         
         nrm = maxval(row_sums)
         
     end subroutine sparse_norm_inf_sellc_${s}$
+
+    !> COO Frobenius norm helper
+    pure subroutine sparse_norm_frobenius_coo_${s}$(matrix, nrm)
+        class(COO_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, row_idx, col_idx
+        real(${k}$) :: val_sq
+        
+        nrm = 0.0_${k}$
+        
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nnz
+                val_sq = abs(matrix%data(i))**2
+                ! Add contribution from the stored element
+                nrm = nrm + val_sq
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val_sq = abs(matrix%data(i))**2
+                
+                ! Add contribution from the stored element
+                nrm = nrm + val_sq
+                
+                ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                if (row_idx > col_idx) then
+                    ! Lower triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                    nrm = nrm + val_sq
+                end if
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val_sq = abs(matrix%data(i))**2
+                
+                ! Add contribution from the stored element
+                nrm = nrm + val_sq
+                
+                ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                if (row_idx < col_idx) then
+                    ! Upper triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                    nrm = nrm + val_sq
+                end if
+            end do
+        end if
+        
+        nrm = sqrt(nrm)
+        
+    end subroutine sparse_norm_frobenius_coo_${s}$
+
+    !> COO minimum absolute value norm helper
+    pure subroutine sparse_norm_minusinf_coo_${s}$(matrix, nrm)
+        class(COO_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        if (matrix%nnz > 0) then
+            nrm = minval(abs(matrix%data))
+        else
+            nrm = 0.0_${k}$
+        end if
+        
+    end subroutine sparse_norm_minusinf_coo_${s}$
+
+    !> COO p-norm helper
+    pure subroutine sparse_norm_p_coo_${s}$(matrix, p, nrm)
+        class(COO_${s}$_type), intent(in) :: matrix
+        integer(ilp), intent(in) :: p
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, row_idx, col_idx
+        real(${k}$) :: val_p, rorder
+        
+        nrm = 0.0_${k}$
+        rorder = 1.0_${k}$ / p
+        
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nnz
+                val_p = abs(matrix%data(i)) ** p
+                ! Add contribution from the stored element
+                nrm = nrm + val_p
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val_p = abs(matrix%data(i)) ** p
+                
+                ! Add contribution from the stored element
+                nrm = nrm + val_p
+                
+                ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                if (row_idx > col_idx) then
+                    ! Lower triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                    nrm = nrm + val_p
+                end if
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nnz
+                row_idx = matrix%index(1,i)  ! row index
+                col_idx = matrix%index(2,i)  ! column index
+                val_p = abs(matrix%data(i)) ** p
+                
+                ! Add contribution from the stored element
+                nrm = nrm + val_p
+                
+                ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                if (row_idx < col_idx) then
+                    ! Upper triangular: element (row_idx, col_idx) implies (col_idx, row_idx) exists
+                    nrm = nrm + val_p
+                end if
+            end do
+        end if
+        
+        nrm = nrm ** rorder
+        
+    end subroutine sparse_norm_p_coo_${s}$
+
+    !> CSR Frobenius norm helper
+    pure subroutine sparse_norm_frobenius_csr_${s}$(matrix, nrm)
+        class(CSR_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, k, row_idx, col_idx
+        real(${k}$) :: val_sq
+        
+        nrm = 0.0_${k}$
+        
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    val_sq = abs(matrix%data(k))**2
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_sq
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val_sq = abs(matrix%data(k))**2
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_sq
+                    
+                    ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx > col_idx) then
+                        nrm = nrm + val_sq
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val_sq = abs(matrix%data(k))**2
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_sq
+                    
+                    ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx < col_idx) then
+                        nrm = nrm + val_sq
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = sqrt(nrm)
+        
+    end subroutine sparse_norm_frobenius_csr_${s}$
+
+    !> CSR minimum absolute value norm helper
+    pure subroutine sparse_norm_minusinf_csr_${s}$(matrix, nrm)
+        class(CSR_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        if (matrix%nnz > 0) then
+            nrm = minval(abs(matrix%data))
+        else
+            nrm = 0.0_${k}$
+        end if
+        
+    end subroutine sparse_norm_minusinf_csr_${s}$
+
+    !> CSR p-norm helper
+    pure subroutine sparse_norm_p_csr_${s}$(matrix, p, nrm)
+        class(CSR_${s}$_type), intent(in) :: matrix
+        integer(ilp), intent(in) :: p
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, k, row_idx, col_idx
+        real(${k}$) :: val_p, rorder
+        
+        nrm = 0.0_${k}$
+        rorder = 1.0_${k}$ / p
+        
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    val_p = abs(matrix%data(k)) ** p
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_p
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val_p = abs(matrix%data(k)) ** p
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_p
+                    
+                    ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx > col_idx) then
+                        nrm = nrm + val_p
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do k = matrix%rowptr(i), matrix%rowptr(i+1)-1
+                    row_idx = i
+                    col_idx = matrix%col(k)
+                    val_p = abs(matrix%data(k)) ** p
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_p
+                    
+                    ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx < col_idx) then
+                        nrm = nrm + val_p
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = nrm ** rorder
+        
+    end subroutine sparse_norm_p_csr_${s}$
+
+    !> CSC Frobenius norm helper
+    pure subroutine sparse_norm_frobenius_csc_${s}$(matrix, nrm)
+        class(CSC_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: j, k, row_idx, col_idx
+        real(${k}$) :: val_sq
+        
+        nrm = 0.0_${k}$
+        
+        if (matrix%storage == sparse_full) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    val_sq = abs(matrix%data(k))**2
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_sq
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val_sq = abs(matrix%data(k))**2
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_sq
+                    
+                    ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx > col_idx) then
+                        nrm = nrm + val_sq
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val_sq = abs(matrix%data(k))**2
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_sq
+                    
+                    ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx < col_idx) then
+                        nrm = nrm + val_sq
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = sqrt(nrm)
+        
+    end subroutine sparse_norm_frobenius_csc_${s}$
+
+    !> CSC minimum absolute value norm helper
+    pure subroutine sparse_norm_minusinf_csc_${s}$(matrix, nrm)
+        class(CSC_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        if (matrix%nnz > 0) then
+            nrm = minval(abs(matrix%data))
+        else
+            nrm = 0.0_${k}$
+        end if
+        
+    end subroutine sparse_norm_minusinf_csc_${s}$
+
+    !> CSC p-norm helper
+    pure subroutine sparse_norm_p_csc_${s}$(matrix, p, nrm)
+        class(CSC_${s}$_type), intent(in) :: matrix
+        integer(ilp), intent(in) :: p
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: j, k, row_idx, col_idx
+        real(${k}$) :: val_p, rorder
+        
+        nrm = 0.0_${k}$
+        rorder = 1.0_${k}$ / p
+        
+        if (matrix%storage == sparse_full) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    val_p = abs(matrix%data(k)) ** p
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_p
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val_p = abs(matrix%data(k)) ** p
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_p
+                    
+                    ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx > col_idx) then
+                        nrm = nrm + val_p
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do j = 1, matrix%ncols
+                do k = matrix%colptr(j), matrix%colptr(j+1)-1
+                    row_idx = matrix%row(k)
+                    col_idx = j
+                    val_p = abs(matrix%data(k)) ** p
+                    
+                    ! Add contribution from the stored element
+                    nrm = nrm + val_p
+                    
+                    ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                    if (row_idx < col_idx) then
+                        nrm = nrm + val_p
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = nrm ** rorder
+        
+    end subroutine sparse_norm_p_csc_${s}$
+
+    !> ELL Frobenius norm helper
+    pure subroutine sparse_norm_frobenius_ell_${s}$(matrix, nrm)
+        class(ELL_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, row_idx, col_idx
+        real(${k}$) :: val_sq
+        
+        nrm = 0.0_${k}$
+        
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        val_sq = abs(matrix%data(i,j))**2
+                        ! Add contribution from the stored element
+                        nrm = nrm + val_sq
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        row_idx = i
+                        col_idx = matrix%index(i,j)
+                        val_sq = abs(matrix%data(i,j))**2
+                        
+                        ! Add contribution from the stored element
+                        nrm = nrm + val_sq
+                        
+                        ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                        if (row_idx > col_idx) then
+                            nrm = nrm + val_sq
+                        end if
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        row_idx = i
+                        col_idx = matrix%index(i,j)
+                        val_sq = abs(matrix%data(i,j))**2
+                        
+                        ! Add contribution from the stored element
+                        nrm = nrm + val_sq
+                        
+                        ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                        if (row_idx < col_idx) then
+                            nrm = nrm + val_sq
+                        end if
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = sqrt(nrm)
+        
+    end subroutine sparse_norm_frobenius_ell_${s}$
+
+    !> ELL minimum absolute value norm helper
+    pure subroutine sparse_norm_minusinf_ell_${s}$(matrix, nrm)
+        class(ELL_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j
+        
+        nrm = huge(0.0_${k}$)
+        do i = 1, matrix%nrows
+            do j = 1, matrix%K
+                if (matrix%index(i,j) > 0) then
+                    nrm = min(nrm, abs(matrix%data(i,j)))
+                end if
+            end do
+        end do
+        if (nrm == huge(0.0_${k}$)) nrm = 0.0_${k}$
+        
+    end subroutine sparse_norm_minusinf_ell_${s}$
+
+    !> ELL p-norm helper
+    pure subroutine sparse_norm_p_ell_${s}$(matrix, p, nrm)
+        class(ELL_${s}$_type), intent(in) :: matrix
+        integer(ilp), intent(in) :: p
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, row_idx, col_idx
+        real(${k}$) :: val_p, rorder
+        
+        nrm = 0.0_${k}$
+        rorder = 1.0_${k}$ / p
+        
+        if (matrix%storage == sparse_full) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        val_p = abs(matrix%data(i,j)) ** p
+                        ! Add contribution from the stored element
+                        nrm = nrm + val_p
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        row_idx = i
+                        col_idx = matrix%index(i,j)
+                        val_p = abs(matrix%data(i,j)) ** p
+                        
+                        ! Add contribution from the stored element
+                        nrm = nrm + val_p
+                        
+                        ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                        if (row_idx > col_idx) then
+                            nrm = nrm + val_p
+                        end if
+                    end if
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do i = 1, matrix%nrows
+                do j = 1, matrix%K
+                    if (matrix%index(i,j) > 0) then
+                        row_idx = i
+                        col_idx = matrix%index(i,j)
+                        val_p = abs(matrix%data(i,j)) ** p
+                        
+                        ! Add contribution from the stored element
+                        nrm = nrm + val_p
+                        
+                        ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                        if (row_idx < col_idx) then
+                            nrm = nrm + val_p
+                        end if
+                    end if
+                end do
+            end do
+        end if
+        
+        nrm = nrm ** rorder
+        
+    end subroutine sparse_norm_p_ell_${s}$
+
+    !> SELLC Frobenius norm helper
+    pure subroutine sparse_norm_frobenius_sellc_${s}$(matrix, nrm)
+        class(SELLC_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, chunk_id, num_chunks, local_row_id, global_row_id
+        real(${k}$) :: val_sq
+        
+        nrm = 0.0_${k}$
+        num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+        
+        if (matrix%storage == sparse_full) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        if (matrix%col(j,i) > 0) then
+                            val_sq = abs(matrix%data(j,i))**2
+                            ! Add contribution from the stored element
+                            nrm = nrm + val_sq
+                        end if
+                    end do
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        if (matrix%col(j,i) > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            val_sq = abs(matrix%data(j,i))**2
+                            
+                            ! Add contribution from the stored element
+                            nrm = nrm + val_sq
+                            
+                            ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                            if (global_row_id > matrix%col(j,i)) then
+                                nrm = nrm + val_sq
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        if (matrix%col(j,i) > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            val_sq = abs(matrix%data(j,i))**2
+                            
+                            ! Add contribution from the stored element
+                            nrm = nrm + val_sq
+                            
+                            ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                            if (global_row_id < matrix%col(j,i)) then
+                                nrm = nrm + val_sq
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        end if
+        
+        nrm = sqrt(nrm)
+        
+    end subroutine sparse_norm_frobenius_sellc_${s}$
+
+    !> SELLC minimum absolute value norm helper
+    pure subroutine sparse_norm_minusinf_sellc_${s}$(matrix, nrm)
+        class(SELLC_${s}$_type), intent(in) :: matrix
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, chunk_id, num_chunks
+        
+        nrm = huge(0.0_${k}$)
+        num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+        do chunk_id = 1, num_chunks
+            do j = 1, matrix%chunk_size
+                do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                    if (matrix%col(j,i) > 0) then
+                        nrm = min(nrm, abs(matrix%data(j,i)))
+                    end if
+                end do
+            end do
+        end do
+        if (nrm == huge(0.0_${k}$)) nrm = 0.0_${k}$
+        
+    end subroutine sparse_norm_minusinf_sellc_${s}$
+
+    !> SELLC p-norm helper
+    pure subroutine sparse_norm_p_sellc_${s}$(matrix, p, nrm)
+        class(SELLC_${s}$_type), intent(in) :: matrix
+        integer(ilp), intent(in) :: p
+        real(${k}$), intent(out) :: nrm
+        
+        integer(ilp) :: i, j, chunk_id, num_chunks, global_row_id
+        real(${k}$) :: val_p, rorder
+        
+        nrm = 0.0_${k}$
+        rorder = 1.0_${k}$ / p
+        num_chunks = (matrix%nrows + matrix%chunk_size - 1) / matrix%chunk_size
+        
+        if (matrix%storage == sparse_full) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        if (matrix%col(j,i) > 0) then
+                            val_p = abs(matrix%data(j,i)) ** p
+                            ! Add contribution from the stored element
+                            nrm = nrm + val_p
+                        end if
+                    end do
+                end do
+            end do
+        elseif (matrix%storage == sparse_lower) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        if (matrix%col(j,i) > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            val_p = abs(matrix%data(j,i)) ** p
+                            
+                            ! Add contribution from the stored element
+                            nrm = nrm + val_p
+                            
+                            ! For lower triangular storage, add symmetric contribution (but not for diagonal)
+                            if (global_row_id > matrix%col(j,i)) then
+                                nrm = nrm + val_p
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        elseif (matrix%storage == sparse_upper) then
+            do chunk_id = 1, num_chunks
+                do j = 1, matrix%chunk_size
+                    do i = matrix%rowptr(chunk_id), matrix%rowptr(chunk_id+1)-1
+                        if (matrix%col(j,i) > 0) then
+                            global_row_id = (chunk_id-1) * matrix%chunk_size + j
+                            val_p = abs(matrix%data(j,i)) ** p
+                            
+                            ! Add contribution from the stored element
+                            nrm = nrm + val_p
+                            
+                            ! For upper triangular storage, add symmetric contribution (but not for diagonal)
+                            if (global_row_id < matrix%col(j,i)) then
+                                nrm = nrm + val_p
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+        end if
+        
+        nrm = nrm ** rorder
+        
+    end subroutine sparse_norm_p_sellc_${s}$
 
     #:endfor
 
