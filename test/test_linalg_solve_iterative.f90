@@ -18,12 +18,12 @@ module test_linalg_solve_iterative
 
         allocate(tests(0))
 
-        tests = [ new_unittest("solve_cg",test_solve_cg), &
-                  new_unittest("solve_pcg",test_solve_pcg) ]
+        tests = [ new_unittest("stdlib_solve_cg",test_stdlib_solve_cg), &
+                  new_unittest("stdlib_solve_pcg",test_stdlib_solve_pcg) ]
 
     end subroutine test_linear_systems    
 
-    subroutine test_solve_cg(error)
+    subroutine test_stdlib_solve_cg(error)
         type(error_type), allocatable, intent(out) :: error
 
         block
@@ -36,7 +36,7 @@ module test_linalg_solve_iterative
         x    = real( [2,1] , kind = sp ) ! initial guess
         load = real( [1,2] , kind = sp ) ! load vector
 
-        call solve_cg(A, load, x)
+        call stdlib_solve_cg(A, load, x)
         
         call check(error, norm2(x-xref)<1.e-4_sp, 'error in conjugate gradient solver')
         if (allocated(error)) return
@@ -52,15 +52,15 @@ module test_linalg_solve_iterative
         x    = real( [2,1] , kind = dp ) ! initial guess
         load = real( [1,2] , kind = dp ) ! load vector
 
-        call solve_cg(A, load, x)
+        call stdlib_solve_cg(A, load, x)
         
         call check(error, norm2(x-xref)<1.e-4_dp, 'error in conjugate gradient solver')
         if (allocated(error)) return
         end block
 
-    end subroutine test_solve_cg
+    end subroutine test_stdlib_solve_cg
 
-    subroutine test_solve_pcg(error)
+    subroutine test_stdlib_solve_pcg(error)
         type(error_type), allocatable, intent(out) :: error
 
         block
@@ -79,7 +79,7 @@ module test_linalg_solve_iterative
         dirichlet = .false._int8
         dirichlet([1,5]) = .true._int8
 
-        call solve_pcg(A, load, x, di=dirichlet, tol=1.e-6_sp)
+        call stdlib_solve_pcg(A, load, x, di=dirichlet, tol=1.e-6_sp)
 
         call check(error, norm2(x-xref)<1.e-6_sp*norm2(xref), 'error in preconditionned conjugate gradient solver')
         if (allocated(error)) return
@@ -101,13 +101,13 @@ module test_linalg_solve_iterative
         dirichlet = .false._int8
         dirichlet([1,5]) = .true._int8
 
-        call solve_pcg(A, load, x, di=dirichlet, tol=1.e-6_dp)
+        call stdlib_solve_pcg(A, load, x, di=dirichlet, tol=1.e-6_dp)
 
         call check(error, norm2(x-xref)<1.e-6_dp*norm2(xref), 'error in preconditionned conjugate gradient solver')
         if (allocated(error)) return
         end block
 
-    end subroutine test_solve_pcg
+    end subroutine test_stdlib_solve_pcg
 
 end module test_linalg_solve_iterative
 
