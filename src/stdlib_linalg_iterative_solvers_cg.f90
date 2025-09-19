@@ -9,12 +9,12 @@ submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_cg
 
 contains
 
-    module subroutine solve_cg_kernel_sp(A,b,x,tol,maxiter,workspace)
-        class(linop_sp_type), intent(in) :: A
+    module subroutine stdlib_solve_cg_kernel_sp(A,b,x,tol,maxiter,workspace)
+        class(stdlib_linop_sp_type), intent(in) :: A
         real(sp), intent(in) :: b(:), tol
         real(sp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter
-        type(solver_workspace_sp_type), intent(inout) :: workspace
+        type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace
         !-------------------------
         integer :: iter
         real(sp) :: norm_sq, norm_sq_old, norm_sq0
@@ -57,12 +57,12 @@ contains
             end do
         end associate
     end subroutine
-    module subroutine solve_cg_kernel_dp(A,b,x,tol,maxiter,workspace)
-        class(linop_dp_type), intent(in) :: A
+    module subroutine stdlib_solve_cg_kernel_dp(A,b,x,tol,maxiter,workspace)
+        class(stdlib_linop_dp_type), intent(in) :: A
         real(dp), intent(in) :: b(:), tol
         real(dp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter
-        type(solver_workspace_dp_type), intent(inout) :: workspace
+        type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace
         !-------------------------
         integer :: iter
         real(dp) :: norm_sq, norm_sq_old, norm_sq0
@@ -106,7 +106,7 @@ contains
         end associate
     end subroutine
 
-    module subroutine solve_cg_dense_sp(A,b,x,di,tol,maxiter,restart,workspace)
+    module subroutine stdlib_solve_cg_dense_sp(A,b,x,di,tol,maxiter,restart,workspace)
         real(sp), intent(in) :: A(:,:)
         real(sp), intent(in) :: b(:)
         real(sp), intent(inout) :: x(:)
@@ -114,10 +114,10 @@ contains
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional :: maxiter
         logical, intent(in), optional  :: restart
-        type(solver_workspace_sp_type), optional, intent(inout), target :: workspace
+        type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace
         !-------------------------
-        type(linop_sp_type) :: op
-        type(solver_workspace_sp_type), pointer :: workspace_
+        type(stdlib_linop_sp_type) :: op
+        type(stdlib_solver_workspace_sp_type), pointer :: workspace_
         integer :: n, maxiter_
         real(sp) :: tol_
         logical :: restart_
@@ -148,7 +148,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_sp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -174,7 +174,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine solve_cg_dense_dp(A,b,x,di,tol,maxiter,restart,workspace)
+    module subroutine stdlib_solve_cg_dense_dp(A,b,x,di,tol,maxiter,restart,workspace)
         real(dp), intent(in) :: A(:,:)
         real(dp), intent(in) :: b(:)
         real(dp), intent(inout) :: x(:)
@@ -182,10 +182,10 @@ contains
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional :: maxiter
         logical, intent(in), optional  :: restart
-        type(solver_workspace_dp_type), optional, intent(inout), target :: workspace
+        type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace
         !-------------------------
-        type(linop_dp_type) :: op
-        type(solver_workspace_dp_type), pointer :: workspace_
+        type(stdlib_linop_dp_type) :: op
+        type(stdlib_solver_workspace_dp_type), pointer :: workspace_
         integer :: n, maxiter_
         real(dp) :: tol_
         logical :: restart_
@@ -216,7 +216,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_dp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -242,7 +242,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine solve_cg_CSR_sp(A,b,x,di,tol,maxiter,restart,workspace)
+    module subroutine stdlib_solve_cg_CSR_sp(A,b,x,di,tol,maxiter,restart,workspace)
         type(CSR_sp_type), intent(in) :: A
         real(sp), intent(in) :: b(:)
         real(sp), intent(inout) :: x(:)
@@ -250,10 +250,10 @@ contains
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional :: maxiter
         logical, intent(in), optional  :: restart
-        type(solver_workspace_sp_type), optional, intent(inout), target :: workspace
+        type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace
         !-------------------------
-        type(linop_sp_type) :: op
-        type(solver_workspace_sp_type), pointer :: workspace_
+        type(stdlib_linop_sp_type) :: op
+        type(stdlib_solver_workspace_sp_type), pointer :: workspace_
         integer :: n, maxiter_
         real(sp) :: tol_
         logical :: restart_
@@ -284,7 +284,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_sp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -309,7 +309,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine solve_cg_CSR_dp(A,b,x,di,tol,maxiter,restart,workspace)
+    module subroutine stdlib_solve_cg_CSR_dp(A,b,x,di,tol,maxiter,restart,workspace)
         type(CSR_dp_type), intent(in) :: A
         real(dp), intent(in) :: b(:)
         real(dp), intent(inout) :: x(:)
@@ -317,10 +317,10 @@ contains
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional :: maxiter
         logical, intent(in), optional  :: restart
-        type(solver_workspace_dp_type), optional, intent(inout), target :: workspace
+        type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace
         !-------------------------
-        type(linop_dp_type) :: op
-        type(solver_workspace_dp_type), pointer :: workspace_
+        type(stdlib_linop_dp_type) :: op
+        type(stdlib_solver_workspace_dp_type), pointer :: workspace_
         integer :: n, maxiter_
         real(dp) :: tol_
         logical :: restart_
@@ -351,7 +351,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_dp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_cg_kernel(op,b,x,tol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
