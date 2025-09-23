@@ -79,7 +79,7 @@ module test_linalg_solve_iterative
         dirichlet = .false._int8
         dirichlet([1,5]) = .true._int8
 
-        call stdlib_solve_pcg(A, load, x, di=dirichlet, tol=1.e-6_sp)
+        call stdlib_solve_pcg(A, load, x, di=dirichlet, rtol=1.e-6_sp)
 
         call check(error, norm2(x-xref)<1.e-6_sp*norm2(xref), 'error in preconditionned conjugate gradient solver')
         if (allocated(error)) return
@@ -101,7 +101,7 @@ module test_linalg_solve_iterative
         dirichlet = .false._int8
         dirichlet([1,5]) = .true._int8
 
-        call stdlib_solve_pcg(A, load, x, di=dirichlet, tol=1.e-6_dp)
+        call stdlib_solve_pcg(A, load, x, di=dirichlet, rtol=1.e-6_dp)
 
         call check(error, norm2(x-xref)<1.e-6_dp*norm2(xref), 'error in preconditionned conjugate gradient solver')
         if (allocated(error)) return

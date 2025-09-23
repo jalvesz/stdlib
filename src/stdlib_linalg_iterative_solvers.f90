@@ -86,19 +86,21 @@ module stdlib_linalg_iterative_solvers
     !! stdlib_solve_cg_kernel interface for the conjugate gradient method.
     !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_cg_kernel)
     interface stdlib_solve_cg_kernel
-        module subroutine stdlib_solve_cg_kernel_sp(A,b,x,tol,maxiter,workspace)
+        module subroutine stdlib_solve_cg_kernel_sp(A,b,x,rtol,atol,maxiter,workspace)
             class(stdlib_linop_sp_type), intent(in) :: A !! linear operator
             real(sp), intent(in) :: b(:) !! right-hand side vector
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in) :: tol !! tolerance for convergence
+            real(sp), intent(in) :: rtol !! relative tolerance for convergence
+            real(sp), intent(in) :: atol !! absolut tolerance for convergence
             integer, intent(in) :: maxiter !! maximum number of iterations
             type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_cg_kernel_dp(A,b,x,tol,maxiter,workspace)
+        module subroutine stdlib_solve_cg_kernel_dp(A,b,x,rtol,atol,maxiter,workspace)
             class(stdlib_linop_dp_type), intent(in) :: A !! linear operator
             real(dp), intent(in) :: b(:) !! right-hand side vector
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in) :: tol !! tolerance for convergence
+            real(dp), intent(in) :: rtol !! relative tolerance for convergence
+            real(dp), intent(in) :: atol !! absolut tolerance for convergence
             integer, intent(in) :: maxiter !! maximum number of iterations
             type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace !! workspace for the solver
         end subroutine
@@ -106,45 +108,49 @@ module stdlib_linalg_iterative_solvers
     public :: stdlib_solve_cg_kernel
 
     interface stdlib_solve_cg
-        module subroutine stdlib_solve_cg_dense_sp(A,b,x,di,tol,maxiter,restart,workspace)
+        module subroutine stdlib_solve_cg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,workspace)
             !! linear operator matrix
             real(sp), intent(in) :: A(:,:) 
             real(sp), intent(in) :: b(:) !! right-hand side vector
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in), optional :: tol !! tolerance for convergence
+            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_cg_dense_dp(A,b,x,di,tol,maxiter,restart,workspace)
+        module subroutine stdlib_solve_cg_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,workspace)
             !! linear operator matrix
             real(dp), intent(in) :: A(:,:) 
             real(dp), intent(in) :: b(:) !! right-hand side vector
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in), optional :: tol !! tolerance for convergence
+            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_cg_CSR_sp(A,b,x,di,tol,maxiter,restart,workspace)
+        module subroutine stdlib_solve_cg_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,workspace)
             !! linear operator matrix
             type(CSR_sp_type), intent(in) :: A
             real(sp), intent(in) :: b(:) !! right-hand side vector
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in), optional :: tol !! tolerance for convergence
+            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_cg_CSR_dp(A,b,x,di,tol,maxiter,restart,workspace)
+        module subroutine stdlib_solve_cg_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,workspace)
             !! linear operator matrix
             type(CSR_dp_type), intent(in) :: A
             real(dp), intent(in) :: b(:) !! right-hand side vector
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in), optional :: tol !! tolerance for convergence
+            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
@@ -158,21 +164,23 @@ module stdlib_linalg_iterative_solvers
     !! stdlib_solve_pcg_kernel interface for the preconditionned conjugate gradient method.
     !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_pcg_kernel)
     interface stdlib_solve_pcg_kernel
-        module subroutine stdlib_solve_pcg_kernel_sp(A,M,b,x,tol,maxiter,workspace)
+        module subroutine stdlib_solve_pcg_kernel_sp(A,M,b,x,rtol,atol,maxiter,workspace)
             class(stdlib_linop_sp_type), intent(in) :: A !! linear operator
             class(stdlib_linop_sp_type), intent(in) :: M !! preconditioner linear operator
             real(sp), intent(in) :: b(:) !! right-hand side vector
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in) :: tol !! tolerance for convergence
+            real(sp), intent(in) :: rtol !! relative tolerance for convergence
+            real(sp), intent(in) :: atol !! absolute tolerance for convergence
             integer, intent(in) :: maxiter !! maximum number of iterations
             type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_pcg_kernel_dp(A,M,b,x,tol,maxiter,workspace)
+        module subroutine stdlib_solve_pcg_kernel_dp(A,M,b,x,rtol,atol,maxiter,workspace)
             class(stdlib_linop_dp_type), intent(in) :: A !! linear operator
             class(stdlib_linop_dp_type), intent(in) :: M !! preconditioner linear operator
             real(dp), intent(in) :: b(:) !! right-hand side vector
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in) :: tol !! tolerance for convergence
+            real(dp), intent(in) :: rtol !! relative tolerance for convergence
+            real(dp), intent(in) :: atol !! absolute tolerance for convergence
             integer, intent(in) :: maxiter !! maximum number of iterations
             type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace !! workspace for the solver
         end subroutine
@@ -180,12 +188,13 @@ module stdlib_linalg_iterative_solvers
     public :: stdlib_solve_pcg_kernel
 
     interface stdlib_solve_pcg
-        module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+        module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
             real(sp), intent(in) :: A(:,:)
             real(sp), intent(in) :: b(:) !! right-hand side vector
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in), optional :: tol !! tolerance for convergence
+            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
@@ -193,12 +202,13 @@ module stdlib_linalg_iterative_solvers
             class(stdlib_linop_sp_type), optional , intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_pcg_dense_dp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+        module subroutine stdlib_solve_pcg_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
             real(dp), intent(in) :: A(:,:)
             real(dp), intent(in) :: b(:) !! right-hand side vector
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in), optional :: tol !! tolerance for convergence
+            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
@@ -206,12 +216,13 @@ module stdlib_linalg_iterative_solvers
             class(stdlib_linop_dp_type), optional , intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_pcg_CSR_sp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+        module subroutine stdlib_solve_pcg_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
             type(CSR_sp_type), intent(in) :: A
             real(sp), intent(in) :: b(:) !! right-hand side vector
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in), optional :: tol !! tolerance for convergence
+            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
@@ -219,12 +230,13 @@ module stdlib_linalg_iterative_solvers
             class(stdlib_linop_sp_type), optional , intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
         end subroutine
-        module subroutine stdlib_solve_pcg_CSR_dp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+        module subroutine stdlib_solve_pcg_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
             type(CSR_dp_type), intent(in) :: A
             real(dp), intent(in) :: b(:) !! right-hand side vector
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in), optional :: tol !! tolerance for convergence
+            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
             logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
