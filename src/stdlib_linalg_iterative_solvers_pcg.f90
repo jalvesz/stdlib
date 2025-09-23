@@ -14,10 +14,10 @@ submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_pcg
 
 contains
 
-    module subroutine stdlib_solve_pcg_kernel_sp(A,M,b,x,tol,maxiter,workspace)
+    module subroutine stdlib_solve_pcg_kernel_sp(A,M,b,x,rtol,atol,maxiter,workspace)
         class(stdlib_linop_sp_type), intent(in) :: A
         class(stdlib_linop_sp_type), intent(in) :: M 
-        real(sp), intent(in) :: b(:), tol
+        real(sp), intent(in) :: b(:), rtol, atol
         real(sp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter
         type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace
@@ -42,11 +42,11 @@ contains
             
             call M%matvec(R,P, alpha= one_sp, beta=zero_sp, op='N') ! P = M^{-1}*R
             
-            tolsq = tol*tol
+            tolsq = max(rtol*rtol * norm_sq0, atol*atol)
             
             zr1 = zero_sp
             zr2 = one_sp
-            do while ( (iter < maxiter) .AND. (norm_sq > tolsq * norm_sq0) )
+            do while ( (iter < maxiter) .AND. (norm_sq >= tolsq) )
 
                 call M%matvec(R,S, alpha= one_sp, beta=zero_sp, op='N') ! S = M^{-1}*R
                 zr2 = A%inner_product( R, S )
@@ -74,10 +74,10 @@ contains
         end if
         end associate
     end subroutine
-    module subroutine stdlib_solve_pcg_kernel_dp(A,M,b,x,tol,maxiter,workspace)
+    module subroutine stdlib_solve_pcg_kernel_dp(A,M,b,x,rtol,atol,maxiter,workspace)
         class(stdlib_linop_dp_type), intent(in) :: A
         class(stdlib_linop_dp_type), intent(in) :: M 
-        real(dp), intent(in) :: b(:), tol
+        real(dp), intent(in) :: b(:), rtol, atol
         real(dp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter
         type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace
@@ -102,11 +102,11 @@ contains
             
             call M%matvec(R,P, alpha= one_dp, beta=zero_dp, op='N') ! P = M^{-1}*R
             
-            tolsq = tol*tol
+            tolsq = max(rtol*rtol * norm_sq0, atol*atol)
             
             zr1 = zero_dp
             zr2 = one_dp
-            do while ( (iter < maxiter) .AND. (norm_sq > tolsq * norm_sq0) )
+            do while ( (iter < maxiter) .AND. (norm_sq >= tolsq) )
 
                 call M%matvec(R,S, alpha= one_dp, beta=zero_dp, op='N') ! S = M^{-1}*R
                 zr2 = A%inner_product( R, S )
@@ -135,12 +135,12 @@ contains
         end associate
     end subroutine
 
-    module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         use stdlib_linalg, only: diag
         real(sp), intent(in) :: A(:,:)
         real(sp), intent(in) :: b(:)
         real(sp), intent(inout) :: x(:)
-        real(sp), intent(in), optional :: tol
+        real(sp), intent(in), optional :: rtol, atol
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional  :: maxiter
         logical, intent(in), optional  :: restart
@@ -152,7 +152,7 @@ contains
         type(stdlib_linop_sp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_sp_type), pointer :: workspace_
         integer :: n, maxiter_
-        real(sp) :: tol_
+        real(sp) :: rtol_, atol_
         logical :: restart_
         logical(int8), pointer :: di_(:)
         !-------------------------
@@ -164,7 +164,8 @@ contains
         n = size(b)
         maxiter_ = optval(x=maxiter, default=n)
         restart_ = optval(x=restart, default=.true.)
-        tol_     = optval(x=tol,     default=1.e-4_sp)
+        rtol_    = optval(x=rtol,    default=1.e-5_sp)
+        atol_    = optval(x=atol,    default=epsilon(one_sp))
         precond_ = optval(x=precond, default=pc_none)
         !-------------------------
         ! internal memory setup
@@ -205,7 +206,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_sp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -249,12 +250,12 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_pcg_dense_dp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_pcg_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         use stdlib_linalg, only: diag
         real(dp), intent(in) :: A(:,:)
         real(dp), intent(in) :: b(:)
         real(dp), intent(inout) :: x(:)
-        real(dp), intent(in), optional :: tol
+        real(dp), intent(in), optional :: rtol, atol
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional  :: maxiter
         logical, intent(in), optional  :: restart
@@ -266,7 +267,7 @@ contains
         type(stdlib_linop_dp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_dp_type), pointer :: workspace_
         integer :: n, maxiter_
-        real(dp) :: tol_
+        real(dp) :: rtol_, atol_
         logical :: restart_
         logical(int8), pointer :: di_(:)
         !-------------------------
@@ -278,7 +279,8 @@ contains
         n = size(b)
         maxiter_ = optval(x=maxiter, default=n)
         restart_ = optval(x=restart, default=.true.)
-        tol_     = optval(x=tol,     default=1.e-4_dp)
+        rtol_    = optval(x=rtol,    default=1.e-5_dp)
+        atol_    = optval(x=atol,    default=epsilon(one_dp))
         precond_ = optval(x=precond, default=pc_none)
         !-------------------------
         ! internal memory setup
@@ -319,7 +321,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_dp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -363,11 +365,11 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_pcg_CSR_sp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_pcg_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         type(CSR_sp_type), intent(in) :: A
         real(sp), intent(in) :: b(:)
         real(sp), intent(inout) :: x(:)
-        real(sp), intent(in), optional :: tol
+        real(sp), intent(in), optional :: rtol, atol
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional  :: maxiter
         logical, intent(in), optional  :: restart
@@ -379,7 +381,7 @@ contains
         type(stdlib_linop_sp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_sp_type), pointer :: workspace_
         integer :: n, maxiter_
-        real(sp) :: tol_
+        real(sp) :: rtol_, atol_
         logical :: restart_
         logical(int8), pointer :: di_(:)
         !-------------------------
@@ -391,7 +393,8 @@ contains
         n = size(b)
         maxiter_ = optval(x=maxiter, default=n)
         restart_ = optval(x=restart, default=.true.)
-        tol_     = optval(x=tol,     default=1.e-4_sp)
+        rtol_    = optval(x=rtol,    default=1.e-5_sp)
+        atol_    = optval(x=atol,    default=epsilon(one_sp))
         precond_ = optval(x=precond, default=pc_none)
         !-------------------------
         ! internal memory setup
@@ -432,7 +435,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_sp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -475,11 +478,11 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_pcg_CSR_dp(A,b,x,di,tol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_pcg_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         type(CSR_dp_type), intent(in) :: A
         real(dp), intent(in) :: b(:)
         real(dp), intent(inout) :: x(:)
-        real(dp), intent(in), optional :: tol
+        real(dp), intent(in), optional :: rtol, atol
         logical(int8), intent(in), optional, target  :: di(:)
         integer, intent(in), optional  :: maxiter
         logical, intent(in), optional  :: restart
@@ -491,7 +494,7 @@ contains
         type(stdlib_linop_dp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_dp_type), pointer :: workspace_
         integer :: n, maxiter_
-        real(dp) :: tol_
+        real(dp) :: rtol_, atol_
         logical :: restart_
         logical(int8), pointer :: di_(:)
         !-------------------------
@@ -503,7 +506,8 @@ contains
         n = size(b)
         maxiter_ = optval(x=maxiter, default=n)
         restart_ = optval(x=restart, default=.true.)
-        tol_     = optval(x=tol,     default=1.e-4_dp)
+        rtol_    = optval(x=rtol,    default=1.e-5_dp)
+        atol_    = optval(x=atol,    default=epsilon(one_dp))
         precond_ = optval(x=precond, default=pc_none)
         !-------------------------
         ! internal memory setup
@@ -544,7 +548,7 @@ contains
         ! main call to the solver
         if(restart_) x = zero_dp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,tol_,maxiter_,workspace_)
+        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
