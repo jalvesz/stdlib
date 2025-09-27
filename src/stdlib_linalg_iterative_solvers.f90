@@ -122,7 +122,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -134,7 +134,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -146,7 +146,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -158,7 +158,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -230,7 +230,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -244,7 +244,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -258,7 +258,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -272,7 +272,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -290,7 +290,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -304,7 +304,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -318,7 +318,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -332,7 +332,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
