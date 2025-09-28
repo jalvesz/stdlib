@@ -1,5 +1,5 @@
 
-submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_pcg
+submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_bicgstab
     use stdlib_kinds
     use stdlib_sparse
     use stdlib_constants
@@ -9,7 +9,7 @@ submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_pcg
 
 contains
 
-    module subroutine stdlib_solve_pcg_kernel_sp(A,M,b,x,rtol,atol,maxiter,workspace)
+    module subroutine stdlib_solve_bicgstab_kernel_sp(A,M,b,x,rtol,atol,maxiter,workspace)
         class(stdlib_linop_sp_type), intent(in) :: A
         class(stdlib_linop_sp_type), intent(in) :: M 
         real(sp), intent(in) :: b(:), rtol, atol
@@ -18,58 +18,96 @@ contains
         type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace
         !-------------------------
         integer :: iter
-        real(sp) :: norm_sq, norm_sq0, norm_sq_old
-        real(sp) :: zr1, zr2, zv2, alpha, beta, tolsq
+        real(sp) :: norm_sq, norm_sq0, tolsq
+        real(sp) :: rho, rho_prev, alpha, beta, omega, rv
+        real(sp), parameter :: rhotol = epsilon(one_sp)**2
+        real(sp), parameter :: omegatol = epsilon(one_sp)**2
         !-------------------------
         iter = 0
-        associate(  R => workspace%tmp(:,1), &
-                    S => workspace%tmp(:,2), &
-                    P => workspace%tmp(:,3), &
-                    Q => workspace%tmp(:,4))
+        associate(  R  => workspace%tmp(:,1), &
+                    Rt => workspace%tmp(:,2), &
+                    P  => workspace%tmp(:,3), &
+                    Pt => workspace%tmp(:,4), &
+                    V  => workspace%tmp(:,5), &
+                    S  => workspace%tmp(:,6), &
+                    St => workspace%tmp(:,7), &
+                    T  => workspace%tmp(:,8))
+
         norm_sq = A%inner_product( b, b )
         norm_sq0 = norm_sq
         if(associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
         
         if ( norm_sq0 > zero_sp ) then
             
+            ! Compute initial residual: r = b - A*x
             R = B
             call A%matvec(X, R, alpha= -one_sp, beta=one_sp, op='N') ! R = B - A*X
             
-            call M%matvec(R,P, alpha= one_sp, beta=zero_sp, op='N') ! P = M^{-1}*R
+            ! Choose arbitrary Rt (often Rt = r0)
+            Rt = R
             
             tolsq = max(rtol*rtol * norm_sq0, atol*atol)
             
-            zr1 = zero_sp
-            zr2 = one_sp
+            rho_prev = one_sp
+            alpha = one_sp
+            omega = one_sp
+            
             do while ( (iter < maxiter) .AND. (norm_sq >= tolsq) )
 
-                call M%matvec(R,S, alpha= one_sp, beta=zero_sp, op='N') ! S = M^{-1}*R
-                zr2 = A%inner_product( R, S )
-            
-                if (iter>0) then
-                    beta = zr2 / zr1
-                    P = S + beta * P
+                rho = A%inner_product( Rt, R )
+                
+                ! Check for rho breakdown
+                if (abs(rho) < rhotol) exit
+                
+                if (iter > 0) then
+                    ! Check for omega breakdown
+                    if (abs(omega) < omegatol) exit
+                    
+                    beta = (rho / rho_prev) * (alpha / omega)
+                    P = R + beta * (P - omega * V)
+                else
+                    P = R
                 end if
-
-                call A%matvec(P, Q, alpha= one_sp, beta=zero_sp, op='N') ! Q = A*P
-                zv2 = A%inner_product( P, Q )
-            
-                alpha = zr2 / zv2
-            
-                X = X + alpha * P
-                R = R - alpha * Q
-
+                
+                ! Preconditioned BiCGSTAB step
+                call M%matvec(P, Pt, alpha=one_sp, beta=zero_sp, op='N') ! Pt = M^{-1}*P
+                call A%matvec(Pt, V, alpha=one_sp, beta=zero_sp, op='N') ! V = A*Pt
+                
+                rv = A%inner_product( Rt, V )
+                if (abs(rv) < epsilon(one_sp)) exit ! rv breakdown
+                
+                alpha = rho / rv
+                
+                ! Update residual: s = r - alpha*v
+                S = R - alpha * V
+                
+                ! Check if s is small enough
+                norm_sq = A%inner_product( S, S )
+                if (norm_sq < tolsq) then
+                    X = X + alpha * Pt
+                    exit
+                end if
+                
+                ! Preconditioned update for t = A * M^{-1} * s
+                call M%matvec(S, St, alpha=one_sp, beta=zero_sp, op='N') ! St = M^{-1}*S
+                call A%matvec(St, T, alpha=one_sp, beta=zero_sp, op='N') ! T = A*St
+                
+                ! Compute omega
+                omega = A%inner_product( T, S ) / A%inner_product( T, T )
+                
+                ! Update solution and residual
+                X = X + alpha * Pt + omega * St
+                R = S - omega * T
+                
                 norm_sq = A%inner_product( R, R )
-                norm_sq_old = norm_sq
-
-                zr1 = zr2
+                rho_prev = rho
                 iter = iter + 1
                 if(associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
             end do
         end if
         end associate
     end subroutine
-    module subroutine stdlib_solve_pcg_kernel_dp(A,M,b,x,rtol,atol,maxiter,workspace)
+    module subroutine stdlib_solve_bicgstab_kernel_dp(A,M,b,x,rtol,atol,maxiter,workspace)
         class(stdlib_linop_dp_type), intent(in) :: A
         class(stdlib_linop_dp_type), intent(in) :: M 
         real(dp), intent(in) :: b(:), rtol, atol
@@ -78,51 +116,89 @@ contains
         type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace
         !-------------------------
         integer :: iter
-        real(dp) :: norm_sq, norm_sq0, norm_sq_old
-        real(dp) :: zr1, zr2, zv2, alpha, beta, tolsq
+        real(dp) :: norm_sq, norm_sq0, tolsq
+        real(dp) :: rho, rho_prev, alpha, beta, omega, rv
+        real(dp), parameter :: rhotol = epsilon(one_dp)**2
+        real(dp), parameter :: omegatol = epsilon(one_dp)**2
         !-------------------------
         iter = 0
-        associate(  R => workspace%tmp(:,1), &
-                    S => workspace%tmp(:,2), &
-                    P => workspace%tmp(:,3), &
-                    Q => workspace%tmp(:,4))
+        associate(  R  => workspace%tmp(:,1), &
+                    Rt => workspace%tmp(:,2), &
+                    P  => workspace%tmp(:,3), &
+                    Pt => workspace%tmp(:,4), &
+                    V  => workspace%tmp(:,5), &
+                    S  => workspace%tmp(:,6), &
+                    St => workspace%tmp(:,7), &
+                    T  => workspace%tmp(:,8))
+
         norm_sq = A%inner_product( b, b )
         norm_sq0 = norm_sq
         if(associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
         
         if ( norm_sq0 > zero_dp ) then
             
+            ! Compute initial residual: r = b - A*x
             R = B
             call A%matvec(X, R, alpha= -one_dp, beta=one_dp, op='N') ! R = B - A*X
             
-            call M%matvec(R,P, alpha= one_dp, beta=zero_dp, op='N') ! P = M^{-1}*R
+            ! Choose arbitrary Rt (often Rt = r0)
+            Rt = R
             
             tolsq = max(rtol*rtol * norm_sq0, atol*atol)
             
-            zr1 = zero_dp
-            zr2 = one_dp
+            rho_prev = one_dp
+            alpha = one_dp
+            omega = one_dp
+            
             do while ( (iter < maxiter) .AND. (norm_sq >= tolsq) )
 
-                call M%matvec(R,S, alpha= one_dp, beta=zero_dp, op='N') ! S = M^{-1}*R
-                zr2 = A%inner_product( R, S )
-            
-                if (iter>0) then
-                    beta = zr2 / zr1
-                    P = S + beta * P
+                rho = A%inner_product( Rt, R )
+                
+                ! Check for rho breakdown
+                if (abs(rho) < rhotol) exit
+                
+                if (iter > 0) then
+                    ! Check for omega breakdown
+                    if (abs(omega) < omegatol) exit
+                    
+                    beta = (rho / rho_prev) * (alpha / omega)
+                    P = R + beta * (P - omega * V)
+                else
+                    P = R
                 end if
-
-                call A%matvec(P, Q, alpha= one_dp, beta=zero_dp, op='N') ! Q = A*P
-                zv2 = A%inner_product( P, Q )
-            
-                alpha = zr2 / zv2
-            
-                X = X + alpha * P
-                R = R - alpha * Q
-
+                
+                ! Preconditioned BiCGSTAB step
+                call M%matvec(P, Pt, alpha=one_dp, beta=zero_dp, op='N') ! Pt = M^{-1}*P
+                call A%matvec(Pt, V, alpha=one_dp, beta=zero_dp, op='N') ! V = A*Pt
+                
+                rv = A%inner_product( Rt, V )
+                if (abs(rv) < epsilon(one_dp)) exit ! rv breakdown
+                
+                alpha = rho / rv
+                
+                ! Update residual: s = r - alpha*v
+                S = R - alpha * V
+                
+                ! Check if s is small enough
+                norm_sq = A%inner_product( S, S )
+                if (norm_sq < tolsq) then
+                    X = X + alpha * Pt
+                    exit
+                end if
+                
+                ! Preconditioned update for t = A * M^{-1} * s
+                call M%matvec(S, St, alpha=one_dp, beta=zero_dp, op='N') ! St = M^{-1}*S
+                call A%matvec(St, T, alpha=one_dp, beta=zero_dp, op='N') ! T = A*St
+                
+                ! Compute omega
+                omega = A%inner_product( T, S ) / A%inner_product( T, T )
+                
+                ! Update solution and residual
+                X = X + alpha * Pt + omega * St
+                R = S - omega * T
+                
                 norm_sq = A%inner_product( R, R )
-                norm_sq_old = norm_sq
-
-                zr1 = zr2
+                rho_prev = rho
                 iter = iter + 1
                 if(associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
             end do
@@ -130,7 +206,7 @@ contains
         end associate
     end subroutine
 
-    module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_bicgstab_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         use stdlib_linalg, only: diag
         real(sp), intent(in) :: A(:,:)
         real(sp), intent(in) :: b(:)
@@ -196,12 +272,12 @@ contains
         else
             allocate( workspace_ )
         end if
-        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_pcg) , source = zero_sp )
+        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_bicgstab) , source = zero_sp )
         !-------------------------
         ! main call to the solver
         if(restart_) x = zero_sp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
+        call stdlib_solve_bicgstab_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -245,7 +321,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_pcg_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_bicgstab_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         use stdlib_linalg, only: diag
         real(dp), intent(in) :: A(:,:)
         real(dp), intent(in) :: b(:)
@@ -311,12 +387,12 @@ contains
         else
             allocate( workspace_ )
         end if
-        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_pcg) , source = zero_dp )
+        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_bicgstab) , source = zero_dp )
         !-------------------------
         ! main call to the solver
         if(restart_) x = zero_dp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
+        call stdlib_solve_bicgstab_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -360,7 +436,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_pcg_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_bicgstab_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         type(CSR_sp_type), intent(in) :: A
         real(sp), intent(in) :: b(:)
         real(sp), intent(inout) :: x(:)
@@ -425,12 +501,12 @@ contains
         else
             allocate( workspace_ )
         end if
-        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_pcg) , source = zero_sp )
+        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_bicgstab) , source = zero_sp )
         !-------------------------
         ! main call to the solver
         if(restart_) x = zero_sp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
+        call stdlib_solve_bicgstab_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -473,7 +549,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_pcg_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+    module subroutine stdlib_solve_bicgstab_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
         type(CSR_dp_type), intent(in) :: A
         real(dp), intent(in) :: b(:)
         real(dp), intent(inout) :: x(:)
@@ -538,12 +614,12 @@ contains
         else
             allocate( workspace_ )
         end if
-        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_pcg) , source = zero_dp )
+        if(.not.allocated(workspace_%tmp)) allocate( workspace_%tmp(n,stdlib_size_wksp_bicgstab) , source = zero_dp )
         !-------------------------
         ! main call to the solver
         if(restart_) x = zero_dp
         x = merge( b, x, di_ ) ! copy dirichlet load conditions encoded in B and indicated by di
-        call stdlib_solve_pcg_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
+        call stdlib_solve_bicgstab_kernel(op,M_,b,x,rtol_,atol_,maxiter_,workspace_)
 
         !-------------------------
         ! internal memory cleanup
@@ -587,4 +663,4 @@ contains
     end subroutine
 
 
-end submodule stdlib_linalg_iterative_pcg
+end submodule stdlib_linalg_iterative_bicgstab
