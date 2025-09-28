@@ -22,6 +22,8 @@ module stdlib_linalg_iterative_solvers
     
     !! version: experimental
     !!
+    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_linop)
+    !!
     !! linop type holding the linear operator and its associated methods.
     !! The `linop` type is used to define the linear operator for the iterative solvers.
     type, public :: stdlib_linop_sp_type
@@ -34,6 +36,8 @@ module stdlib_linalg_iterative_solvers
     end type
 
     !! version: experimental
+    !!
+    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solver_workspace)
     !!
     !! solver_workspace type holding temporal array data for the iterative solvers.
     type, public :: stdlib_solver_workspace_sp_type
@@ -113,7 +117,10 @@ module stdlib_linalg_iterative_solvers
         end subroutine
     end interface
     public :: stdlib_solve_cg_kernel
-
+    
+    !! version: experimental
+    !!
+    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_cg)
     interface stdlib_solve_cg
         module subroutine stdlib_solve_cg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,workspace)
             !! linear operator matrix
@@ -222,6 +229,9 @@ module stdlib_linalg_iterative_solvers
     end interface
     public :: stdlib_solve_bicgstab_kernel
 
+    !! version: experimental
+    !!
+    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_pcg)
     interface stdlib_solve_pcg
         module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
@@ -282,6 +292,9 @@ module stdlib_linalg_iterative_solvers
     end interface
     public :: stdlib_solve_pcg 
 
+    !! version: experimental
+    !!
+    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_bicgstab)
     interface stdlib_solve_bicgstab
         module subroutine stdlib_solve_bicgstab_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
