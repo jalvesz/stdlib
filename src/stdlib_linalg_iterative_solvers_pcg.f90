@@ -7,6 +7,11 @@ submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_pcg
     use stdlib_optval, only: optval
     implicit none
 
+    enum, bind(c)
+        enumerator :: pc_none = 0
+        enumerator :: pc_jacobi
+    end enum
+
 contains
 
     module subroutine stdlib_solve_pcg_kernel_sp(A,M,b,x,rtol,atol,maxiter,workspace)
