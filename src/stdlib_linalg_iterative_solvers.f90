@@ -10,9 +10,16 @@ module stdlib_linalg_iterative_solvers
     enum, bind(c)
         enumerator :: stdlib_size_wksp_cg = 3
         enumerator :: stdlib_size_wksp_pcg = 4
+        enumerator :: stdlib_size_wksp_bicgstab = 8
     end enum
-    public :: stdlib_size_wksp_cg, stdlib_size_wksp_pcg
+    public :: stdlib_size_wksp_cg, stdlib_size_wksp_pcg, stdlib_size_wksp_bicgstab
 
+    enum, bind(c)
+        enumerator :: pc_none = 0
+        enumerator :: pc_jacobi
+    end enum
+    public :: pc_none, pc_jacobi
+    
     !! version: experimental
     !!
     !! linop type holding the linear operator and its associated methods.
@@ -115,7 +122,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -127,7 +134,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -139,7 +146,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -151,7 +158,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
@@ -187,6 +194,34 @@ module stdlib_linalg_iterative_solvers
     end interface
     public :: stdlib_solve_pcg_kernel
 
+    !! version: experimental
+    !!
+    !! stdlib_solve_bicgstab_kernel interface for the biconjugate gradient stabilized method.
+    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_bicgstab_kernel)
+    interface stdlib_solve_bicgstab_kernel
+        module subroutine stdlib_solve_bicgstab_kernel_sp(A,M,b,x,rtol,atol,maxiter,workspace)
+            class(stdlib_linop_sp_type), intent(in) :: A !! linear operator
+            class(stdlib_linop_sp_type), intent(in) :: M !! preconditioner linear operator
+            real(sp), intent(in) :: b(:) !! right-hand side vector
+            real(sp), intent(inout) :: x(:) !! solution vector and initial guess
+            real(sp), intent(in) :: rtol !! relative tolerance for convergence
+            real(sp), intent(in) :: atol !! absolute tolerance for convergence
+            integer, intent(in) :: maxiter !! maximum number of iterations
+            type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace !! workspace for the solver
+        end subroutine
+        module subroutine stdlib_solve_bicgstab_kernel_dp(A,M,b,x,rtol,atol,maxiter,workspace)
+            class(stdlib_linop_dp_type), intent(in) :: A !! linear operator
+            class(stdlib_linop_dp_type), intent(in) :: M !! preconditioner linear operator
+            real(dp), intent(in) :: b(:) !! right-hand side vector
+            real(dp), intent(inout) :: x(:) !! solution vector and initial guess
+            real(dp), intent(in) :: rtol !! relative tolerance for convergence
+            real(dp), intent(in) :: atol !! absolute tolerance for convergence
+            integer, intent(in) :: maxiter !! maximum number of iterations
+            type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace !! workspace for the solver
+        end subroutine
+    end interface
+    public :: stdlib_solve_bicgstab_kernel
+
     interface stdlib_solve_pcg
         module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
             !! linear operator matrix
@@ -195,7 +230,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -209,7 +244,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -223,7 +258,7 @@ module stdlib_linalg_iterative_solvers
             real(sp), intent(inout) :: x(:) !! solution vector and initial guess
             real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -237,7 +272,7 @@ module stdlib_linalg_iterative_solvers
             real(dp), intent(inout) :: x(:) !! solution vector and initial guess
             real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
             real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(1), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
             integer, intent(in), optional  :: maxiter !! maximum number of iterations
             logical, intent(in), optional :: restart !! restart flag
             integer, intent(in), optional  :: precond !! preconditioner method enumerator
@@ -246,6 +281,66 @@ module stdlib_linalg_iterative_solvers
         end subroutine
     end interface
     public :: stdlib_solve_pcg 
+
+    interface stdlib_solve_bicgstab
+        module subroutine stdlib_solve_bicgstab_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+            !! linear operator matrix
+            real(sp), intent(in) :: A(:,:)
+            real(sp), intent(in) :: b(:) !! right-hand side vector
+            real(sp), intent(inout) :: x(:) !! solution vector and initial guess
+            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            integer, intent(in), optional  :: maxiter !! maximum number of iterations
+            logical, intent(in), optional :: restart !! restart flag
+            integer, intent(in), optional  :: precond !! preconditioner method enumerator
+            class(stdlib_linop_sp_type), optional , intent(in), target :: M !! preconditioner linear operator
+            type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+        end subroutine
+        module subroutine stdlib_solve_bicgstab_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+            !! linear operator matrix
+            real(dp), intent(in) :: A(:,:)
+            real(dp), intent(in) :: b(:) !! right-hand side vector
+            real(dp), intent(inout) :: x(:) !! solution vector and initial guess
+            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            integer, intent(in), optional  :: maxiter !! maximum number of iterations
+            logical, intent(in), optional :: restart !! restart flag
+            integer, intent(in), optional  :: precond !! preconditioner method enumerator
+            class(stdlib_linop_dp_type), optional , intent(in), target :: M !! preconditioner linear operator
+            type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+        end subroutine
+        module subroutine stdlib_solve_bicgstab_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+            !! linear operator matrix
+            type(CSR_sp_type), intent(in) :: A
+            real(sp), intent(in) :: b(:) !! right-hand side vector
+            real(sp), intent(inout) :: x(:) !! solution vector and initial guess
+            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            integer, intent(in), optional  :: maxiter !! maximum number of iterations
+            logical, intent(in), optional :: restart !! restart flag
+            integer, intent(in), optional  :: precond !! preconditioner method enumerator
+            class(stdlib_linop_sp_type), optional , intent(in), target :: M !! preconditioner linear operator
+            type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+        end subroutine
+        module subroutine stdlib_solve_bicgstab_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
+            !! linear operator matrix
+            type(CSR_dp_type), intent(in) :: A
+            real(dp), intent(in) :: b(:) !! right-hand side vector
+            real(dp), intent(inout) :: x(:) !! solution vector and initial guess
+            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
+            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
+            logical(int8), intent(in), optional, target  :: di(:) !! dirichlet conditions mask
+            integer, intent(in), optional  :: maxiter !! maximum number of iterations
+            logical, intent(in), optional :: restart !! restart flag
+            integer, intent(in), optional  :: precond !! preconditioner method enumerator
+            class(stdlib_linop_dp_type), optional , intent(in), target :: M !! preconditioner linear operator
+            type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+        end subroutine
+    end interface
+    public :: stdlib_solve_bicgstab
 
 contains
 
