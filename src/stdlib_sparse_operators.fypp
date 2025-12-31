@@ -1,0 +1,50 @@
+#:include "common.fypp"
+#:set R_KINDS_TYPES = list(zip(REAL_KINDS, REAL_TYPES, REAL_SUFFIX))
+#:set C_KINDS_TYPES = list(zip(CMPLX_KINDS, CMPLX_TYPES, CMPLX_SUFFIX))
+#:set KINDS_TYPES = R_KINDS_TYPES+C_KINDS_TYPES
+#:set OP_NAMES = ["add","sub","mul","div"]
+#:set OP_SYMBOLS = ["+","-","*","/"]
+#:set OPERATORS = list(zip(OP_NAMES, OP_SYMBOLS))
+
+submodule(stdlib_sparse_kinds) stdlib_sparse_operators
+  use stdlib_error, only: error_stop
+  implicit none
+
+  contains
+
+#:for op, sym in OPERATORS
+#:for matrix in SPARSE_KINDS
+#:for k, t, s in (KINDS_TYPES)
+    pure module function sparse_${op}$_${matrix}$_${s}$(a, b) result(c)
+      type(${matrix}$_${s}$_type), intent(in) :: a, b
+      type(${matrix}$_${s}$_type) :: c
+      if(shape(a%data)==shape(b%data)) then
+        c%data = a%data ${sym}$ b%data
+      else
+        call error_stop("The shapes of the sparse array expressions do not conform.")
+      end if
+    end function
+
+    pure module function sparse_${op}$_${matrix}$_scalar_${s}$(a, b) result(c)
+      ${t}$, intent(in) :: a
+      type(${matrix}$_${s}$_type), intent(in) :: b
+      type(${matrix}$_${s}$_type) :: c
+      
+      c%data = a ${sym}$ b%data
+      
+    end function
+
+    pure module function sparse_${op}$_scalar_${matrix}$_${s}$(a, b) result(c)
+      type(${matrix}$_${s}$_type), intent(in) :: a
+      ${t}$, intent(in) :: b
+      type(${matrix}$_${s}$_type) :: c
+      
+      c%data = a%data ${sym}$ b
+      
+    end function
+
+#:endfor
+#:endfor
+#:endfor
+
+end submodule stdlib_sparse_operators
