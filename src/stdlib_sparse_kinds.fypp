@@ -135,6 +135,8 @@ module stdlib_sparse_kinds
     #:endfor
 
     #:for op, sym in OPERATORS
+    !! Overload the `${sym}$` operator for sparse matrices
+    !! [Specifications](../page/specs/stdlib_sparse.html#operators)    
     interface operator(${sym}$)
         #:for matrix in SPARSE_KINDS
         #:for k, t, s in (KINDS_TYPES)
@@ -157,6 +159,7 @@ module stdlib_sparse_kinds
         #:endfor
         #:endfor
     end interface
+    
     #:endfor
 
 contains

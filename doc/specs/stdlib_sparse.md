@@ -338,7 +338,7 @@ If the `diagonal` array has not been previously allocated, the `diag` subroutine
 
 ### Syntax
 
-`call ` [[stdlib_sparse_conversion(module):csr2sellc(interface)]] `(csr,ell[,num_nz_rows])`
+`call ` [[stdlib_sparse_conversion(module):csr2ell(interface)]] `(csr,ell[,num_nz_rows])`
 
 ### Arguments
 
@@ -362,3 +362,36 @@ If the `diagonal` array has not been previously allocated, the `diag` subroutine
 ```fortran
 {!example/linalg/example_sparse_spmv.f90!}
 ```
+
+<!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
+## Operator overloading (`+`, `-`, `*`, `/`) {#operators}
+
+### Status
+
+Experimental
+
+### Description
+
+The definition of all standard artihmetic operators have been overloaded to be applicable for the matrix types defined by `stdlib_sparse`. The operators have been overloaded to support the following tupple combinations of the left-hand-side of the operation: same type and kind matrix-matrix, matrix-scalar and scalar-matrix.
+
+### Syntax
+
+- Matrix-matrix operators :
+
+`C = A + B`
+
+`C = A - B`
+
+`C = A * B`
+
+`C = A / B`
+
+- Matrix scalar operators : 
+
+`B = alpha + A`
+
+`B = A - alpha`
+
+`B = alpha * A`
+
+`B = A / alpha`
