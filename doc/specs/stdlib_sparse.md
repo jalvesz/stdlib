@@ -372,7 +372,7 @@ Experimental
 
 ### Description
 
-The definition of all standard arithmetic operators have been overloaded to be applicable for the matrix types defined by `stdlib_sparse`. The operators have been overloaded to support the following tupple combinations of the left-hand-side of the operation: same type and kind matrix-matrix, matrix-scalar and scalar-matrix.
+The definition of all standard arithmetic operators have been overloaded to be applicable for the matrix types defined by `stdlib_sparse`. The operators have been overloaded to support the following tuple combinations of the left-hand-side of the operation: same type and kind matrix-matrix, matrix-scalar and scalar-matrix.
 
 ### Syntax
 
@@ -395,3 +395,5 @@ The definition of all standard arithmetic operators have been overloaded to be a
 `B = alpha * A`
 
 `B = A / alpha`
+
+*Note*: scalar addition and subtraction operators perform element-wise operations only on the stored (non-zero) values, not on the full mathematical matrix. Meaning, the sparsity pattern is preserved. 
