@@ -18,6 +18,7 @@ module stdlib_sparse_kinds
     public :: sparse_full, sparse_lower, sparse_upper
     public :: sparse_op_none, sparse_op_transpose, sparse_op_hermitian
     public :: operator(+), operator(-), operator(*), operator(/)
+    
     !! version: experimental
     !!
     !! Base sparse type holding the meta data related to the storage capacity of a matrix.
