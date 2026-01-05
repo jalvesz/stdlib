@@ -271,7 +271,6 @@ contains
             allocate( CSC%colptr(CSC%ncols+1) , source = 0 )
             allocate( CSC%data(CSC%nnz) , source = data(1:COO%nnz) )
         end if
-        
         CSC%colptr(1) = 1
         do i = 1, COO%nnz
             CSC%colptr( temp(1,i)+1 ) = CSC%colptr( temp(1,i)+1 ) + 1
