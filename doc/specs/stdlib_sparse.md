@@ -388,11 +388,11 @@ The definition of all standard arithmetic operators have been overloaded to be a
 
 - Matrix scalar operators : 
 
-`B = alpha + A`
+`B = A + alpha`
 
 `B = A - alpha`
 
-`B = alpha * A`
+`B = A * alpha`
 
 `B = A / alpha`
 
