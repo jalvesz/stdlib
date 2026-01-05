@@ -388,12 +388,12 @@ The definition of all standard arithmetic operators have been overloaded to be a
 
 - Matrix scalar operators : 
 
-`B = A + alpha`
+`B = A + alpha` or `B = alpha + A` 
 
-`B = A - alpha`
+`B = A - alpha` or `B = alpha - A`
 
-`B = A * alpha`
+`B = A * alpha` or `B = alpha * A`
 
-`B = A / alpha`
+`B = A / alpha` or `B = alpha / A`
 
 *Note*: scalar addition and subtraction operators perform element-wise operations only on the stored (non-zero) values, not on the full mathematical matrix. Meaning, the sparsity pattern is preserved. 
