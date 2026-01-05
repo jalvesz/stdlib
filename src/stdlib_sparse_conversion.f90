@@ -476,7 +476,6 @@ contains
         
         nnz = COO%nnz
         call sort_coo_unique_sp( temp, data, nnz, COO%ncols, COO%nrows )
-        
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -513,7 +512,6 @@ contains
         
         nnz = COO%nnz
         call sort_coo_unique_dp( temp, data, nnz, COO%ncols, COO%nrows )
-        
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -550,7 +548,6 @@ contains
         
         nnz = COO%nnz
         call sort_coo_unique_csp( temp, data, nnz, COO%ncols, COO%nrows )
-        
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -587,7 +584,6 @@ contains
         
         nnz = COO%nnz
         call sort_coo_unique_cdp( temp, data, nnz, COO%ncols, COO%nrows )
-        
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
