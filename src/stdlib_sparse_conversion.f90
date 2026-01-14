@@ -179,22 +179,18 @@ module stdlib_sparse_conversion
         module procedure :: coo_from_ijv_type
         module procedure :: coo_from_ijv_sp
         module procedure :: csr_from_ijv_sp
-        module procedure :: csc_from_ijv_sp
         module procedure :: ell_from_ijv_sp
         module procedure :: sellc_from_ijv_sp
         module procedure :: coo_from_ijv_dp
         module procedure :: csr_from_ijv_dp
-        module procedure :: csc_from_ijv_dp
         module procedure :: ell_from_ijv_dp
         module procedure :: sellc_from_ijv_dp
         module procedure :: coo_from_ijv_csp
         module procedure :: csr_from_ijv_csp
-        module procedure :: csc_from_ijv_csp
         module procedure :: ell_from_ijv_csp
         module procedure :: sellc_from_ijv_csp
         module procedure :: coo_from_ijv_cdp
         module procedure :: csr_from_ijv_cdp
-        module procedure :: csc_from_ijv_cdp
         module procedure :: ell_from_ijv_cdp
         module procedure :: sellc_from_ijv_cdp
     end interface
@@ -473,9 +469,9 @@ contains
         temp(1,1:COO%nnz) = COO%index(2,1:COO%nnz)
         temp(2,1:COO%nnz) = COO%index(1,1:COO%nnz)
         allocate(data, source = COO%data )
-        
         nnz = COO%nnz
-        call sort_coo_unique_sp( temp, data, nnz, COO%ncols, COO%nrows )
+        call sort_coo_unique_sp( temp, data, nnz, COO%nrows, COO%ncols )
+
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -485,6 +481,7 @@ contains
             allocate( CSC%colptr(CSC%ncols+1) , source = 0 )
             allocate( CSC%data(CSC%nnz) , source = data(1:COO%nnz) )
         end if
+
         CSC%colptr(1) = 1
         do i = 1, COO%nnz
             CSC%colptr( temp(1,i)+1 ) = CSC%colptr( temp(1,i)+1 ) + 1
@@ -508,9 +505,9 @@ contains
         temp(1,1:COO%nnz) = COO%index(2,1:COO%nnz)
         temp(2,1:COO%nnz) = COO%index(1,1:COO%nnz)
         allocate(data, source = COO%data )
-        
         nnz = COO%nnz
-        call sort_coo_unique_dp( temp, data, nnz, COO%ncols, COO%nrows )
+        call sort_coo_unique_dp( temp, data, nnz, COO%nrows, COO%ncols )
+
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -520,6 +517,7 @@ contains
             allocate( CSC%colptr(CSC%ncols+1) , source = 0 )
             allocate( CSC%data(CSC%nnz) , source = data(1:COO%nnz) )
         end if
+
         CSC%colptr(1) = 1
         do i = 1, COO%nnz
             CSC%colptr( temp(1,i)+1 ) = CSC%colptr( temp(1,i)+1 ) + 1
@@ -543,9 +541,9 @@ contains
         temp(1,1:COO%nnz) = COO%index(2,1:COO%nnz)
         temp(2,1:COO%nnz) = COO%index(1,1:COO%nnz)
         allocate(data, source = COO%data )
-        
         nnz = COO%nnz
-        call sort_coo_unique_csp( temp, data, nnz, COO%ncols, COO%nrows )
+        call sort_coo_unique_csp( temp, data, nnz, COO%nrows, COO%ncols )
+
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -555,6 +553,7 @@ contains
             allocate( CSC%colptr(CSC%ncols+1) , source = 0 )
             allocate( CSC%data(CSC%nnz) , source = data(1:COO%nnz) )
         end if
+
         CSC%colptr(1) = 1
         do i = 1, COO%nnz
             CSC%colptr( temp(1,i)+1 ) = CSC%colptr( temp(1,i)+1 ) + 1
@@ -578,9 +577,9 @@ contains
         temp(1,1:COO%nnz) = COO%index(2,1:COO%nnz)
         temp(2,1:COO%nnz) = COO%index(1,1:COO%nnz)
         allocate(data, source = COO%data )
-        
         nnz = COO%nnz
-        call sort_coo_unique_cdp( temp, data, nnz, COO%ncols, COO%nrows )
+        call sort_coo_unique_cdp( temp, data, nnz, COO%nrows, COO%ncols )
+
         if( allocated(CSC%row) ) then
             CSC%row(1:COO%nnz)  = temp(2,1:COO%nnz)
             CSC%colptr(1:CSC%ncols) = 0
@@ -590,6 +589,7 @@ contains
             allocate( CSC%colptr(CSC%ncols+1) , source = 0 )
             allocate( CSC%data(CSC%nnz) , source = data(1:COO%nnz) )
         end if
+
         CSC%colptr(1) = 1
         do i = 1, COO%nnz
             CSC%colptr( temp(1,i)+1 ) = CSC%colptr( temp(1,i)+1 ) + 1
@@ -1998,131 +1998,6 @@ contains
                 call from_ijv(COO,row,col,nrows=nrows_,ncols=ncols_)
             end if
             call coo2csr(COO,CSR)
-        end block
-    end subroutine
-
-    subroutine csc_from_ijv_sp(CSC,row,col,data,nrows,ncols)
-        type(CSC_sp_type), intent(inout) :: CSC
-        integer(ilp), intent(in) :: row(:)
-        integer(ilp), intent(in) :: col(:)
-        real(sp), intent(in), optional :: data(:)
-        integer(ilp), intent(in), optional :: nrows
-        integer(ilp), intent(in), optional :: ncols
-
-        integer(ilp) :: nrows_, ncols_
-        !---------------------------------------------------------
-        if(present(nrows)) then
-            nrows_ = nrows
-        else 
-            nrows_ = maxval(row)
-        end if
-        if(present(ncols)) then
-            ncols_ = ncols
-        else 
-            ncols_ = maxval(col)
-        end if
-        !---------------------------------------------------------
-        block
-            type(COO_sp_type) :: COO
-            if(present(data)) then
-                call from_ijv(COO,row,col,data=data,nrows=nrows_,ncols=ncols_)
-            else 
-                call from_ijv(COO,row,col,nrows=nrows_,ncols=ncols_)
-            end if
-            call coo2csc(COO,CSC)
-        end block
-    end subroutine
-    subroutine csc_from_ijv_dp(CSC,row,col,data,nrows,ncols)
-        type(CSC_dp_type), intent(inout) :: CSC
-        integer(ilp), intent(in) :: row(:)
-        integer(ilp), intent(in) :: col(:)
-        real(dp), intent(in), optional :: data(:)
-        integer(ilp), intent(in), optional :: nrows
-        integer(ilp), intent(in), optional :: ncols
-
-        integer(ilp) :: nrows_, ncols_
-        !---------------------------------------------------------
-        if(present(nrows)) then
-            nrows_ = nrows
-        else 
-            nrows_ = maxval(row)
-        end if
-        if(present(ncols)) then
-            ncols_ = ncols
-        else 
-            ncols_ = maxval(col)
-        end if
-        !---------------------------------------------------------
-        block
-            type(COO_dp_type) :: COO
-            if(present(data)) then
-                call from_ijv(COO,row,col,data=data,nrows=nrows_,ncols=ncols_)
-            else 
-                call from_ijv(COO,row,col,nrows=nrows_,ncols=ncols_)
-            end if
-            call coo2csc(COO,CSC)
-        end block
-    end subroutine
-    subroutine csc_from_ijv_csp(CSC,row,col,data,nrows,ncols)
-        type(CSC_csp_type), intent(inout) :: CSC
-        integer(ilp), intent(in) :: row(:)
-        integer(ilp), intent(in) :: col(:)
-        complex(sp), intent(in), optional :: data(:)
-        integer(ilp), intent(in), optional :: nrows
-        integer(ilp), intent(in), optional :: ncols
-
-        integer(ilp) :: nrows_, ncols_
-        !---------------------------------------------------------
-        if(present(nrows)) then
-            nrows_ = nrows
-        else 
-            nrows_ = maxval(row)
-        end if
-        if(present(ncols)) then
-            ncols_ = ncols
-        else 
-            ncols_ = maxval(col)
-        end if
-        !---------------------------------------------------------
-        block
-            type(COO_csp_type) :: COO
-            if(present(data)) then
-                call from_ijv(COO,row,col,data=data,nrows=nrows_,ncols=ncols_)
-            else 
-                call from_ijv(COO,row,col,nrows=nrows_,ncols=ncols_)
-            end if
-            call coo2csc(COO,CSC)
-        end block
-    end subroutine
-    subroutine csc_from_ijv_cdp(CSC,row,col,data,nrows,ncols)
-        type(CSC_cdp_type), intent(inout) :: CSC
-        integer(ilp), intent(in) :: row(:)
-        integer(ilp), intent(in) :: col(:)
-        complex(dp), intent(in), optional :: data(:)
-        integer(ilp), intent(in), optional :: nrows
-        integer(ilp), intent(in), optional :: ncols
-
-        integer(ilp) :: nrows_, ncols_
-        !---------------------------------------------------------
-        if(present(nrows)) then
-            nrows_ = nrows
-        else 
-            nrows_ = maxval(row)
-        end if
-        if(present(ncols)) then
-            ncols_ = ncols
-        else 
-            ncols_ = maxval(col)
-        end if
-        !---------------------------------------------------------
-        block
-            type(COO_cdp_type) :: COO
-            if(present(data)) then
-                call from_ijv(COO,row,col,data=data,nrows=nrows_,ncols=ncols_)
-            else 
-                call from_ijv(COO,row,col,nrows=nrows_,ncols=ncols_)
-            end if
-            call coo2csc(COO,CSC)
         end block
     end subroutine
 
