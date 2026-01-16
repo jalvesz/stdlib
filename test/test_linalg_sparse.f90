@@ -16,6 +16,7 @@ contains
         testsuite = [ &
             new_unittest('coo', test_coo), &
             new_unittest('coo2ordered', test_coo2ordered), &
+            new_unittest('bsr', test_bsr), &
             new_unittest('csr', test_csr), &
             new_unittest('csc', test_csc), &
             new_unittest('ell', test_ell),  &
@@ -128,6 +129,83 @@ contains
         if (allocated(error)) return
 
     end subroutine 
+
+    subroutine test_bsr(error)
+        !> Error handling
+        type(error_type), allocatable, intent(out) :: error
+        block
+            integer, parameter :: wp = sp
+            type(BSR_sp_type) :: BSR
+            real(wp) :: dense(4,4)
+            real(sp), allocatable :: vec_x(:)
+            real(sp), allocatable :: vec_y(:)
+            real(sp), allocatable :: vec_ref(:)
+
+            dense = 0._wp
+            dense(1:2,1:2) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            dense(3:4,3:4) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            call BSR%malloc([2,2],4,4,2)
+            BSR%rowptr = [1,2,3]
+            BSR%col = [1,2]
+            BSR%data(:,:,1) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            BSR%data(:,:,2) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            allocate( vec_x(4) , source = 1._wp )
+            allocate( vec_y(4) , source = 0._wp )
+            allocate( vec_ref(4) , source = 0._wp )
+
+            vec_ref = matmul( dense, vec_x )
+            call spmv( BSR, vec_x, vec_y )
+            call check(error, all(vec_y == vec_ref) )
+            if (allocated(error)) return
+
+            ! Test in-place transpose
+            vec_y = 1._wp
+            vec_ref = matmul( transpose(dense), vec_y )
+            vec_x = 0._wp
+            call spmv( BSR, vec_y, vec_x, op=sparse_op_transpose )
+            call check(error, all(vec_x == vec_ref) )
+            if (allocated(error)) return
+
+        end block
+        block
+            integer, parameter :: wp = dp
+            type(BSR_dp_type) :: BSR
+            real(wp) :: dense(4,4)
+            real(dp), allocatable :: vec_x(:)
+            real(dp), allocatable :: vec_y(:)
+            real(dp), allocatable :: vec_ref(:)
+
+            dense = 0._wp
+            dense(1:2,1:2) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            dense(3:4,3:4) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            call BSR%malloc([2,2],4,4,2)
+            BSR%rowptr = [1,2,3]
+            BSR%col = [1,2]
+            BSR%data(:,:,1) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            BSR%data(:,:,2) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            allocate( vec_x(4) , source = 1._wp )
+            allocate( vec_y(4) , source = 0._wp )
+            allocate( vec_ref(4) , source = 0._wp )
+
+            vec_ref = matmul( dense, vec_x )
+            call spmv( BSR, vec_x, vec_y )
+            call check(error, all(vec_y == vec_ref) )
+            if (allocated(error)) return
+
+            ! Test in-place transpose
+            vec_y = 1._wp
+            vec_ref = matmul( transpose(dense), vec_y )
+            vec_x = 0._wp
+            call spmv( BSR, vec_y, vec_x, op=sparse_op_transpose )
+            call check(error, all(vec_x == vec_ref) )
+            if (allocated(error)) return
+
+        end block
+    end subroutine
 
     subroutine test_csr(error)
         !> Error handling
