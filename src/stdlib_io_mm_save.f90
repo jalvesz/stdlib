@@ -417,8 +417,9 @@ contains
         character(len=:), allocatable :: msg
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: symmetry_
-        logical :: expand = .false.
+        logical :: expand
 
+        expand = .false.
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             if (present(iostat)) then
@@ -525,8 +526,9 @@ contains
         character(len=:), allocatable :: msg
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: symmetry_
-        logical :: expand = .false.
+        logical :: expand
 
+        expand = .false.
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             if (present(iostat)) then
@@ -634,8 +636,9 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: symmetry_
         real(sp) :: real_part, imag_part
-        logical :: expand = .false.
+        logical :: expand
 
+        expand = .false.
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             if (present(iostat)) then
@@ -748,8 +751,9 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: symmetry_
         real(dp) :: real_part, imag_part
-        logical :: expand = .false.
+        logical :: expand
 
+        expand = .false.
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             if (present(iostat)) then
