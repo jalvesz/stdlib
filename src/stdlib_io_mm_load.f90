@@ -244,7 +244,7 @@ contains
             do i = 1, nrows
                 val_r = to_num_from_stream(ffp, mold, stat)
                 val_i = to_num_from_stream(ffp, mold, stat)
-                matrix(i,j) = complex( val_r, val_i )
+                matrix(i,j) = cmplx(val_r, val_i, kind = sp)
                 if( stat /= 0 ) return
             end do
         end do
@@ -318,7 +318,7 @@ contains
             do i = 1, nrows
                 val_r = to_num_from_stream(ffp, mold, stat)
                 val_i = to_num_from_stream(ffp, mold, stat)
-                matrix(i,j) = complex( val_r, val_i )
+                matrix(i,j) = cmplx(val_r, val_i, kind = dp)
                 if( stat /= 0 ) return
             end do
         end do
@@ -635,7 +635,7 @@ contains
             if(rows(i) == cols(i)) n_diag = n_diag + 1
             val_r = to_num_from_stream(ffp, mold, stat)
             val_i = to_num_from_stream(ffp, mold, stat)
-            vals(i) = complex( val_r, val_i)
+            vals(i) = cmplx(val_r, val_i, kind = sp)
         end do
 
         !----------------------------------------- 
@@ -754,7 +754,7 @@ contains
             if(rows(i) == cols(i)) n_diag = n_diag + 1
             val_r = to_num_from_stream(ffp, mold, stat)
             val_i = to_num_from_stream(ffp, mold, stat)
-            vals(i) = complex( val_r, val_i)
+            vals(i) = cmplx(val_r, val_i, kind = dp)
         end do
 
         !----------------------------------------- 
