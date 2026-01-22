@@ -1,4 +1,3 @@
-
 !! The `stdlib_sparse_kinds` module provides derived type definitions for different sparse matrices
 !!
 ! This code was modified from https://github.com/jalvesz/FSPARSE by its author: Alves Jose
@@ -9,8 +8,6 @@ module stdlib_sparse_kinds
     private
     public :: sparse_full, sparse_lower, sparse_upper
     public :: sparse_op_none, sparse_op_transpose, sparse_op_hermitian
-    public :: operator(+), operator(-), operator(*), operator(/)
-    
     !! version: experimental
     !!
     !! Base sparse type holding the meta data related to the storage capacity of a matrix.
@@ -61,6 +58,50 @@ module stdlib_sparse_kinds
         procedure, non_overridable :: at => at_value_coo_cdp
         procedure, non_overridable :: add_value => add_value_coo_cdp
         procedure, non_overridable :: add_block => add_block_coo_cdp
+        generic :: add => add_value, add_block
+    end type
+
+    !! version: experimental
+    !!
+    !! BSR: Compressed sparse row or Yale format
+    type, public, extends(sparse_type) :: BSR_type  
+      integer(ilp) :: block_shape(2) = (/1,1/) !! shape of the blocks
+      integer(ilp), allocatable  :: col(:)    !! matrix column pointer
+      integer(ilp), allocatable  :: rowptr(:) !! matrix row pointer
+    contains
+      procedure :: malloc => malloc_bsr
+    end type
+  
+    type, public, extends(BSR_type) :: BSR_sp_type
+        real(sp), allocatable :: data(:,:,:) 
+    contains
+        procedure, non_overridable :: at => at_value_bsr_sp
+        procedure, non_overridable :: add_value => add_bvalue_bsr_sp
+        procedure, non_overridable :: add_block => add_block_bsr_sp
+        generic :: add => add_value, add_block
+    end type
+    type, public, extends(BSR_type) :: BSR_dp_type
+        real(dp), allocatable :: data(:,:,:) 
+    contains
+        procedure, non_overridable :: at => at_value_bsr_dp
+        procedure, non_overridable :: add_value => add_bvalue_bsr_dp
+        procedure, non_overridable :: add_block => add_block_bsr_dp
+        generic :: add => add_value, add_block
+    end type
+    type, public, extends(BSR_type) :: BSR_csp_type
+        complex(sp), allocatable :: data(:,:,:) 
+    contains
+        procedure, non_overridable :: at => at_value_bsr_csp
+        procedure, non_overridable :: add_value => add_bvalue_bsr_csp
+        procedure, non_overridable :: add_block => add_block_bsr_csp
+        generic :: add => add_value, add_block
+    end type
+    type, public, extends(BSR_type) :: BSR_cdp_type
+        complex(dp), allocatable :: data(:,:,:) 
+    contains
+        procedure, non_overridable :: at => at_value_bsr_cdp
+        procedure, non_overridable :: add_value => add_bvalue_bsr_cdp
+        procedure, non_overridable :: add_block => add_block_bsr_cdp
         generic :: add => add_value, add_block
     end type
 
@@ -235,1307 +276,6 @@ module stdlib_sparse_kinds
         procedure, non_overridable :: add_block => add_block_sellc_cdp
         generic :: add => add_value, add_block
     end type
-
-    !! Overload the `+` operator for sparse matrices
-    !! [Specifications](../page/specs/stdlib_sparse.html#operators)    
-    interface operator(+)
-        pure module function sparse_add_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a, b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_add_COO_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(COO_sp_type), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-        pure module function sparse_add_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a, b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_add_COO_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(COO_dp_type), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-        pure module function sparse_add_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a, b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_add_COO_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(COO_csp_type), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-        pure module function sparse_add_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a, b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_COO_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(COO_cdp_type), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-        pure module function sparse_add_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a, b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_add_CSR_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSR_sp_type), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-        pure module function sparse_add_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a, b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_add_CSR_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSR_dp_type), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-        pure module function sparse_add_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a, b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_add_CSR_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSR_csp_type), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-        pure module function sparse_add_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a, b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_CSR_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSR_cdp_type), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-        pure module function sparse_add_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a, b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_add_CSC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSC_sp_type), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-        pure module function sparse_add_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a, b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_add_CSC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSC_dp_type), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-        pure module function sparse_add_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a, b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_add_CSC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSC_csp_type), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-        pure module function sparse_add_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a, b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_CSC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSC_cdp_type), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-        pure module function sparse_add_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a, b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_add_ELL_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(ELL_sp_type), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-        pure module function sparse_add_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a, b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_add_ELL_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(ELL_dp_type), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-        pure module function sparse_add_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a, b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_add_ELL_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(ELL_csp_type), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-        pure module function sparse_add_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a, b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_ELL_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(ELL_cdp_type), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-        pure module function sparse_add_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a, b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_add_SELLC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(SELLC_sp_type), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-        pure module function sparse_add_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a, b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_add_SELLC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(SELLC_dp_type), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-        pure module function sparse_add_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a, b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_add_SELLC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(SELLC_csp_type), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-        pure module function sparse_add_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a, b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_SELLC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(SELLC_cdp_type), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_add_scalar_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-    end interface
-    
-    !! Overload the `-` operator for sparse matrices
-    !! [Specifications](../page/specs/stdlib_sparse.html#operators)    
-    interface operator(-)
-        pure module function sparse_sub_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a, b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_COO_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(COO_sp_type), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-        pure module function sparse_sub_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a, b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_COO_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(COO_dp_type), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-        pure module function sparse_sub_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a, b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_COO_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(COO_csp_type), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-        pure module function sparse_sub_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a, b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_COO_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(COO_cdp_type), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-        pure module function sparse_sub_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a, b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSR_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSR_sp_type), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-        pure module function sparse_sub_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a, b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSR_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSR_dp_type), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-        pure module function sparse_sub_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a, b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSR_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSR_csp_type), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-        pure module function sparse_sub_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a, b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSR_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSR_cdp_type), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-        pure module function sparse_sub_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a, b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSC_sp_type), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-        pure module function sparse_sub_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a, b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSC_dp_type), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-        pure module function sparse_sub_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a, b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSC_csp_type), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-        pure module function sparse_sub_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a, b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_CSC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSC_cdp_type), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-        pure module function sparse_sub_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a, b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_ELL_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(ELL_sp_type), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-        pure module function sparse_sub_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a, b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_ELL_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(ELL_dp_type), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-        pure module function sparse_sub_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a, b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_ELL_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(ELL_csp_type), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-        pure module function sparse_sub_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a, b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_ELL_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(ELL_cdp_type), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-        pure module function sparse_sub_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a, b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_SELLC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(SELLC_sp_type), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-        pure module function sparse_sub_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a, b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_SELLC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(SELLC_dp_type), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-        pure module function sparse_sub_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a, b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_SELLC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(SELLC_csp_type), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-        pure module function sparse_sub_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a, b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_SELLC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(SELLC_cdp_type), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_sub_scalar_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-    end interface
-    
-    !! Overload the `*` operator for sparse matrices
-    !! [Specifications](../page/specs/stdlib_sparse.html#operators)    
-    interface operator(*)
-        pure module function sparse_mul_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a, b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_COO_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(COO_sp_type), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-        pure module function sparse_mul_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a, b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_COO_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(COO_dp_type), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-        pure module function sparse_mul_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a, b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_COO_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(COO_csp_type), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-        pure module function sparse_mul_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a, b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_COO_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(COO_cdp_type), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-        pure module function sparse_mul_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a, b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSR_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSR_sp_type), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-        pure module function sparse_mul_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a, b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSR_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSR_dp_type), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-        pure module function sparse_mul_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a, b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSR_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSR_csp_type), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-        pure module function sparse_mul_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a, b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSR_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSR_cdp_type), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-        pure module function sparse_mul_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a, b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSC_sp_type), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-        pure module function sparse_mul_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a, b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSC_dp_type), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-        pure module function sparse_mul_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a, b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSC_csp_type), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-        pure module function sparse_mul_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a, b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_CSC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSC_cdp_type), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-        pure module function sparse_mul_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a, b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_ELL_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(ELL_sp_type), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-        pure module function sparse_mul_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a, b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_ELL_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(ELL_dp_type), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-        pure module function sparse_mul_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a, b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_ELL_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(ELL_csp_type), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-        pure module function sparse_mul_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a, b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_ELL_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(ELL_cdp_type), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-        pure module function sparse_mul_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a, b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_SELLC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(SELLC_sp_type), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-        pure module function sparse_mul_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a, b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_SELLC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(SELLC_dp_type), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-        pure module function sparse_mul_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a, b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_SELLC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(SELLC_csp_type), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-        pure module function sparse_mul_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a, b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_SELLC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(SELLC_cdp_type), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_mul_scalar_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-    end interface
-    
-    !! Overload the `/` operator for sparse matrices
-    !! [Specifications](../page/specs/stdlib_sparse.html#operators)    
-    interface operator(/)
-        pure module function sparse_div_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a, b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_div_COO_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(COO_sp_type), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_COO_sp(a, b) result(c)
-        type(COO_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(COO_sp_type) :: c
-        end function
-        pure module function sparse_div_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a, b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_div_COO_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(COO_dp_type), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_COO_dp(a, b) result(c)
-        type(COO_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(COO_dp_type) :: c
-        end function
-        pure module function sparse_div_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a, b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_div_COO_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(COO_csp_type), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_COO_csp(a, b) result(c)
-        type(COO_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(COO_csp_type) :: c
-        end function
-        pure module function sparse_div_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a, b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_COO_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(COO_cdp_type), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_COO_cdp(a, b) result(c)
-        type(COO_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(COO_cdp_type) :: c
-        end function
-        pure module function sparse_div_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a, b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_div_CSR_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSR_sp_type), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSR_sp(a, b) result(c)
-        type(CSR_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSR_sp_type) :: c
-        end function
-        pure module function sparse_div_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a, b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_div_CSR_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSR_dp_type), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSR_dp(a, b) result(c)
-        type(CSR_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSR_dp_type) :: c
-        end function
-        pure module function sparse_div_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a, b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_div_CSR_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSR_csp_type), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSR_csp(a, b) result(c)
-        type(CSR_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSR_csp_type) :: c
-        end function
-        pure module function sparse_div_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a, b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_CSR_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSR_cdp_type), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSR_cdp(a, b) result(c)
-        type(CSR_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSR_cdp_type) :: c
-        end function
-        pure module function sparse_div_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a, b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_div_CSC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(CSC_sp_type), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSC_sp(a, b) result(c)
-        type(CSC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(CSC_sp_type) :: c
-        end function
-        pure module function sparse_div_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a, b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_div_CSC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(CSC_dp_type), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSC_dp(a, b) result(c)
-        type(CSC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(CSC_dp_type) :: c
-        end function
-        pure module function sparse_div_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a, b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_div_CSC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(CSC_csp_type), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSC_csp(a, b) result(c)
-        type(CSC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(CSC_csp_type) :: c
-        end function
-        pure module function sparse_div_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a, b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_CSC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(CSC_cdp_type), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_CSC_cdp(a, b) result(c)
-        type(CSC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(CSC_cdp_type) :: c
-        end function
-        pure module function sparse_div_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a, b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_div_ELL_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(ELL_sp_type), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_ELL_sp(a, b) result(c)
-        type(ELL_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(ELL_sp_type) :: c
-        end function
-        pure module function sparse_div_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a, b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_div_ELL_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(ELL_dp_type), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_ELL_dp(a, b) result(c)
-        type(ELL_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(ELL_dp_type) :: c
-        end function
-        pure module function sparse_div_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a, b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_div_ELL_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(ELL_csp_type), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_ELL_csp(a, b) result(c)
-        type(ELL_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(ELL_csp_type) :: c
-        end function
-        pure module function sparse_div_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a, b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_ELL_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(ELL_cdp_type), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_ELL_cdp(a, b) result(c)
-        type(ELL_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(ELL_cdp_type) :: c
-        end function
-        pure module function sparse_div_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a, b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_div_SELLC_scalar_sp(a, b) result(c)
-        real(sp), intent(in) :: a
-        type(SELLC_sp_type), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_SELLC_sp(a, b) result(c)
-        type(SELLC_sp_type), intent(in) :: a
-        real(sp), intent(in) :: b
-        type(SELLC_sp_type) :: c
-        end function
-        pure module function sparse_div_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a, b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_div_SELLC_scalar_dp(a, b) result(c)
-        real(dp), intent(in) :: a
-        type(SELLC_dp_type), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_SELLC_dp(a, b) result(c)
-        type(SELLC_dp_type), intent(in) :: a
-        real(dp), intent(in) :: b
-        type(SELLC_dp_type) :: c
-        end function
-        pure module function sparse_div_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a, b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_div_SELLC_scalar_csp(a, b) result(c)
-        complex(sp), intent(in) :: a
-        type(SELLC_csp_type), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_SELLC_csp(a, b) result(c)
-        type(SELLC_csp_type), intent(in) :: a
-        complex(sp), intent(in) :: b
-        type(SELLC_csp_type) :: c
-        end function
-        pure module function sparse_div_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a, b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_SELLC_scalar_cdp(a, b) result(c)
-        complex(dp), intent(in) :: a
-        type(SELLC_cdp_type), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-
-        pure module function sparse_div_scalar_SELLC_cdp(a, b) result(c)
-        type(SELLC_cdp_type), intent(in) :: a
-        complex(dp), intent(in) :: b
-        type(SELLC_cdp_type) :: c
-        end function
-    end interface
-    
 
 contains
 
@@ -1807,6 +547,83 @@ contains
                     allocate(temp_data_cdp(num_rows,num_nz_rows) , source = zero_cdp )
                 else
                     allocate(temp_data_cdp(num_rows,num_nz_rows) , source = self%data )
+                end if
+                call move_alloc(from=temp_data_cdp,to=self%data)
+                end block
+        end select
+    end subroutine
+
+    !! (re)Allocate matrix memory for the BSR type
+    subroutine malloc_bsr(self,block_shape,num_brows,num_bcols,bnnz)
+        class(BSR_type) :: self
+        integer(ilp), intent(in) :: block_shape(2) !! shape of the blocks
+        integer(ilp), intent(in) :: num_brows !! number of block rows
+        integer(ilp), intent(in) :: num_bcols !! number of block columns
+        integer(ilp), intent(in) :: bnnz      !! number of non-zero blocks
+        integer(ilp), allocatable :: temp_idx(:)
+        integer(ilp) :: br, bc
+        !-----------------------------------------------------
+
+        br = max(block_shape(1), 1)
+        bc = max(block_shape(2), 1)
+
+        self%block_shape = (/br,bc/)
+        self%nrows = num_brows * br
+        self%ncols = num_bcols * bc
+        self%nnz   = br*bc*bnnz
+
+        if(.not.allocated(self%col)) then
+            allocate(temp_idx(bnnz) , source = 0 )
+        else
+            allocate(temp_idx(bnnz) , source = self%col )
+        end if
+        call move_alloc(from=temp_idx,to=self%col)
+
+        if(.not.allocated(self%rowptr)) then
+            allocate(temp_idx(num_brows+1) , source = 0 )
+        else
+            allocate(temp_idx(num_brows+1) , source = self%rowptr )
+        end if
+        call move_alloc(from=temp_idx,to=self%rowptr)
+
+        select type(self)
+            type is(BSR_sp_type)
+                block
+                real(sp), allocatable :: temp_data_sp(:,:,:)
+                if(.not.allocated(self%data)) then
+                    allocate(temp_data_sp(br,bc,bnnz) , source = zero_sp )
+                else
+                    allocate(temp_data_sp(br,bc,bnnz) , source = self%data )
+                end if
+                call move_alloc(from=temp_data_sp,to=self%data)
+                end block
+            type is(BSR_dp_type)
+                block
+                real(dp), allocatable :: temp_data_dp(:,:,:)
+                if(.not.allocated(self%data)) then
+                    allocate(temp_data_dp(br,bc,bnnz) , source = zero_dp )
+                else
+                    allocate(temp_data_dp(br,bc,bnnz) , source = self%data )
+                end if
+                call move_alloc(from=temp_data_dp,to=self%data)
+                end block
+            type is(BSR_csp_type)
+                block
+                complex(sp), allocatable :: temp_data_csp(:,:,:)
+                if(.not.allocated(self%data)) then
+                    allocate(temp_data_csp(br,bc,bnnz) , source = zero_csp )
+                else
+                    allocate(temp_data_csp(br,bc,bnnz) , source = self%data )
+                end if
+                call move_alloc(from=temp_data_csp,to=self%data)
+                end block
+            type is(BSR_cdp_type)
+                block
+                complex(dp), allocatable :: temp_data_cdp(:,:,:)
+                if(.not.allocated(self%data)) then
+                    allocate(temp_data_cdp(br,bc,bnnz) , source = zero_cdp )
+                else
+                    allocate(temp_data_cdp(br,bc,bnnz) , source = self%data )
                 end if
                 call move_alloc(from=temp_data_cdp,to=self%data)
                 end block
@@ -2937,5 +1754,337 @@ contains
         end do
     end subroutine
 
+
+    pure real(sp) function at_value_bsr_sp(self,ik,jk) result(val)
+        class(BSR_sp_type), intent(in) :: self
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k, br, bc, ib, jb, ii, jj, ik_, jk_
+        logical :: transpose
+
+        if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
+            val = ieee_value( 0._sp , ieee_quiet_nan)
+            return
+        end if
+
+        ik_ = ik; jk_ = jk
+        transpose = (self%storage == sparse_lower .and. ik > jk) .or. (self%storage == sparse_upper .and. ik < jk)
+        if(transpose) then
+            ik_ = jk; jk_ = ik
+        end if
+
+        br = self%block_shape(1)
+        bc = self%block_shape(2)
+
+        ib = (ik_ - 1) / br + 1
+        jb = (jk_ - 1) / bc + 1
+        ii = modulo(ik_ - 1, br) + 1
+        jj = modulo(jk_ - 1, bc) + 1
+
+        if(.not.allocated(self%rowptr) .or. ib < 1 .or. ib >= size(self%rowptr)) then
+            val = zero_sp
+            return
+        end if
+
+        do k = self%rowptr(ib), self%rowptr(ib+1)-1
+            if( jb == self%col(k) ) then
+                val = self%data(ii,jj,k)
+                return
+            end if
+        end do
+        val = zero_sp
+    end function
+
+    !> add a single block value to the BSR matrix
+    subroutine add_bvalue_bsr_sp(self,ik,jk,val)
+        class(BSR_sp_type), intent(inout) :: self
+        real(sp), intent(in) :: val(:,:)
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+
+        do k = self%rowptr(ik), self%rowptr(ik+1)-1
+            if( jk == self%col(k) ) then
+                self%data(:,:,k) = self%data(:,:,k) + val(:,:)
+                return
+            end if
+        end do
+
+    end subroutine
+
+    !> add a blocks matrices to the BSR matrix
+    subroutine add_block_bsr_sp(self,ik,jk,val)
+        class(BSR_sp_type), intent(inout) :: self
+        real(sp), intent(in) :: val(:,:,:,:)
+        integer(ilp), intent(in) :: ik(:), jk(:)
+        integer(ilp) :: i, j, k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+        
+        do i = 1, size(ik)
+            do k = self%rowptr(ik(i)), self%rowptr(ik(i)+1)-1
+                do j = 1, size(jk)
+                    if( jk(j) == self%col(k) ) then
+                        self%data(:,:,k) = self%data(:,:,k) + val(:,:,i,j)
+                    end if
+                end do
+            end do
+        end do
+    end subroutine
+
+    pure real(dp) function at_value_bsr_dp(self,ik,jk) result(val)
+        class(BSR_dp_type), intent(in) :: self
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k, br, bc, ib, jb, ii, jj, ik_, jk_
+        logical :: transpose
+
+        if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
+            val = ieee_value( 0._dp , ieee_quiet_nan)
+            return
+        end if
+
+        ik_ = ik; jk_ = jk
+        transpose = (self%storage == sparse_lower .and. ik > jk) .or. (self%storage == sparse_upper .and. ik < jk)
+        if(transpose) then
+            ik_ = jk; jk_ = ik
+        end if
+
+        br = self%block_shape(1)
+        bc = self%block_shape(2)
+
+        ib = (ik_ - 1) / br + 1
+        jb = (jk_ - 1) / bc + 1
+        ii = modulo(ik_ - 1, br) + 1
+        jj = modulo(jk_ - 1, bc) + 1
+
+        if(.not.allocated(self%rowptr) .or. ib < 1 .or. ib >= size(self%rowptr)) then
+            val = zero_dp
+            return
+        end if
+
+        do k = self%rowptr(ib), self%rowptr(ib+1)-1
+            if( jb == self%col(k) ) then
+                val = self%data(ii,jj,k)
+                return
+            end if
+        end do
+        val = zero_dp
+    end function
+
+    !> add a single block value to the BSR matrix
+    subroutine add_bvalue_bsr_dp(self,ik,jk,val)
+        class(BSR_dp_type), intent(inout) :: self
+        real(dp), intent(in) :: val(:,:)
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+
+        do k = self%rowptr(ik), self%rowptr(ik+1)-1
+            if( jk == self%col(k) ) then
+                self%data(:,:,k) = self%data(:,:,k) + val(:,:)
+                return
+            end if
+        end do
+
+    end subroutine
+
+    !> add a blocks matrices to the BSR matrix
+    subroutine add_block_bsr_dp(self,ik,jk,val)
+        class(BSR_dp_type), intent(inout) :: self
+        real(dp), intent(in) :: val(:,:,:,:)
+        integer(ilp), intent(in) :: ik(:), jk(:)
+        integer(ilp) :: i, j, k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+        
+        do i = 1, size(ik)
+            do k = self%rowptr(ik(i)), self%rowptr(ik(i)+1)-1
+                do j = 1, size(jk)
+                    if( jk(j) == self%col(k) ) then
+                        self%data(:,:,k) = self%data(:,:,k) + val(:,:,i,j)
+                    end if
+                end do
+            end do
+        end do
+    end subroutine
+
+    pure complex(sp) function at_value_bsr_csp(self,ik,jk) result(val)
+        class(BSR_csp_type), intent(in) :: self
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k, br, bc, ib, jb, ii, jj, ik_, jk_
+        logical :: transpose
+
+        if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
+            val = ieee_value( 0._sp , ieee_quiet_nan)
+            return
+        end if
+
+        ik_ = ik; jk_ = jk
+        transpose = (self%storage == sparse_lower .and. ik > jk) .or. (self%storage == sparse_upper .and. ik < jk)
+        if(transpose) then
+            ik_ = jk; jk_ = ik
+        end if
+
+        br = self%block_shape(1)
+        bc = self%block_shape(2)
+
+        ib = (ik_ - 1) / br + 1
+        jb = (jk_ - 1) / bc + 1
+        ii = modulo(ik_ - 1, br) + 1
+        jj = modulo(jk_ - 1, bc) + 1
+
+        if(.not.allocated(self%rowptr) .or. ib < 1 .or. ib >= size(self%rowptr)) then
+            val = zero_csp
+            return
+        end if
+
+        do k = self%rowptr(ib), self%rowptr(ib+1)-1
+            if( jb == self%col(k) ) then
+                val = self%data(ii,jj,k)
+                return
+            end if
+        end do
+        val = zero_csp
+    end function
+
+    !> add a single block value to the BSR matrix
+    subroutine add_bvalue_bsr_csp(self,ik,jk,val)
+        class(BSR_csp_type), intent(inout) :: self
+        complex(sp), intent(in) :: val(:,:)
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+
+        do k = self%rowptr(ik), self%rowptr(ik+1)-1
+            if( jk == self%col(k) ) then
+                self%data(:,:,k) = self%data(:,:,k) + val(:,:)
+                return
+            end if
+        end do
+
+    end subroutine
+
+    !> add a blocks matrices to the BSR matrix
+    subroutine add_block_bsr_csp(self,ik,jk,val)
+        class(BSR_csp_type), intent(inout) :: self
+        complex(sp), intent(in) :: val(:,:,:,:)
+        integer(ilp), intent(in) :: ik(:), jk(:)
+        integer(ilp) :: i, j, k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+        
+        do i = 1, size(ik)
+            do k = self%rowptr(ik(i)), self%rowptr(ik(i)+1)-1
+                do j = 1, size(jk)
+                    if( jk(j) == self%col(k) ) then
+                        self%data(:,:,k) = self%data(:,:,k) + val(:,:,i,j)
+                    end if
+                end do
+            end do
+        end do
+    end subroutine
+
+    pure complex(dp) function at_value_bsr_cdp(self,ik,jk) result(val)
+        class(BSR_cdp_type), intent(in) :: self
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k, br, bc, ib, jb, ii, jj, ik_, jk_
+        logical :: transpose
+
+        if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
+            val = ieee_value( 0._dp , ieee_quiet_nan)
+            return
+        end if
+
+        ik_ = ik; jk_ = jk
+        transpose = (self%storage == sparse_lower .and. ik > jk) .or. (self%storage == sparse_upper .and. ik < jk)
+        if(transpose) then
+            ik_ = jk; jk_ = ik
+        end if
+
+        br = self%block_shape(1)
+        bc = self%block_shape(2)
+
+        ib = (ik_ - 1) / br + 1
+        jb = (jk_ - 1) / bc + 1
+        ii = modulo(ik_ - 1, br) + 1
+        jj = modulo(jk_ - 1, bc) + 1
+
+        if(.not.allocated(self%rowptr) .or. ib < 1 .or. ib >= size(self%rowptr)) then
+            val = zero_cdp
+            return
+        end if
+
+        do k = self%rowptr(ib), self%rowptr(ib+1)-1
+            if( jb == self%col(k) ) then
+                val = self%data(ii,jj,k)
+                return
+            end if
+        end do
+        val = zero_cdp
+    end function
+
+    !> add a single block value to the BSR matrix
+    subroutine add_bvalue_bsr_cdp(self,ik,jk,val)
+        class(BSR_cdp_type), intent(inout) :: self
+        complex(dp), intent(in) :: val(:,:)
+        integer(ilp), intent(in) :: ik, jk
+        integer(ilp) :: k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+
+        do k = self%rowptr(ik), self%rowptr(ik+1)-1
+            if( jk == self%col(k) ) then
+                self%data(:,:,k) = self%data(:,:,k) + val(:,:)
+                return
+            end if
+        end do
+
+    end subroutine
+
+    !> add a blocks matrices to the BSR matrix
+    subroutine add_block_bsr_cdp(self,ik,jk,val)
+        class(BSR_cdp_type), intent(inout) :: self
+        complex(dp), intent(in) :: val(:,:,:,:)
+        integer(ilp), intent(in) :: ik(:), jk(:)
+        integer(ilp) :: i, j, k
+
+        if(size(val,1) /= self%block_shape(1) .or. size(val,2) /= self%block_shape(2)) then
+            print *, "Warning: block size mismatch in add_bvalue_bsr"
+            return
+        end if
+        
+        do i = 1, size(ik)
+            do k = self%rowptr(ik(i)), self%rowptr(ik(i)+1)-1
+                do j = 1, size(jk)
+                    if( jk(j) == self%col(k) ) then
+                        self%data(:,:,k) = self%data(:,:,k) + val(:,:,i,j)
+                    end if
+                end do
+            end do
+        end do
+    end subroutine
 
 end module stdlib_sparse_kinds

@@ -16,14 +16,14 @@ contains
         testsuite = [ &
             new_unittest('coo', test_coo), &
             new_unittest('coo2ordered', test_coo2ordered), &
+            new_unittest('bsr', test_bsr), &
             new_unittest('csr', test_csr), &
             new_unittest('csc', test_csc), &
             new_unittest('ell', test_ell),  &
             new_unittest('sellc', test_sellc),  &
             new_unittest('symmetries', test_symmetries), &
             new_unittest('diagonal', test_diagonal), &
-            new_unittest('add_get_values', test_add_get_values), &
-            new_unittest('sparse_operators', test_sparse_operators) &
+            new_unittest('add_get_values', test_add_get_values) &
         ]
     end subroutine
 
@@ -129,6 +129,83 @@ contains
         if (allocated(error)) return
 
     end subroutine 
+
+    subroutine test_bsr(error)
+        !> Error handling
+        type(error_type), allocatable, intent(out) :: error
+        block
+            integer, parameter :: wp = sp
+            type(BSR_sp_type) :: BSR
+            real(wp) :: dense(4,4)
+            real(sp), allocatable :: vec_x(:)
+            real(sp), allocatable :: vec_y(:)
+            real(sp), allocatable :: vec_ref(:)
+
+            dense = 0._wp
+            dense(1:2,1:2) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            dense(3:4,3:4) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            call BSR%malloc([2,2],4,4,2)
+            BSR%rowptr = [1,2,3]
+            BSR%col = [1,2]
+            BSR%data(:,:,1) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            BSR%data(:,:,2) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            allocate( vec_x(4) , source = 1._wp )
+            allocate( vec_y(4) , source = 0._wp )
+            allocate( vec_ref(4) , source = 0._wp )
+
+            vec_ref = matmul( dense, vec_x )
+            call spmv( BSR, vec_x, vec_y )
+            call check(error, all(vec_y == vec_ref) )
+            if (allocated(error)) return
+
+            ! Test in-place transpose
+            vec_y = 1._wp
+            vec_ref = matmul( transpose(dense), vec_y )
+            vec_x = 0._wp
+            call spmv( BSR, vec_y, vec_x, op=sparse_op_transpose )
+            call check(error, all(vec_x == vec_ref) )
+            if (allocated(error)) return
+
+        end block
+        block
+            integer, parameter :: wp = dp
+            type(BSR_dp_type) :: BSR
+            real(wp) :: dense(4,4)
+            real(dp), allocatable :: vec_x(:)
+            real(dp), allocatable :: vec_y(:)
+            real(dp), allocatable :: vec_ref(:)
+
+            dense = 0._wp
+            dense(1:2,1:2) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            dense(3:4,3:4) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            call BSR%malloc([2,2],4,4,2)
+            BSR%rowptr = [1,2,3]
+            BSR%col = [1,2]
+            BSR%data(:,:,1) = reshape(real([1,3,2,4],kind=wp),[2,2])
+            BSR%data(:,:,2) = reshape(real([5,7,6,8],kind=wp),[2,2])
+
+            allocate( vec_x(4) , source = 1._wp )
+            allocate( vec_y(4) , source = 0._wp )
+            allocate( vec_ref(4) , source = 0._wp )
+
+            vec_ref = matmul( dense, vec_x )
+            call spmv( BSR, vec_x, vec_y )
+            call check(error, all(vec_y == vec_ref) )
+            if (allocated(error)) return
+
+            ! Test in-place transpose
+            vec_y = 1._wp
+            vec_ref = matmul( transpose(dense), vec_y )
+            vec_x = 0._wp
+            call spmv( BSR, vec_y, vec_x, op=sparse_op_transpose )
+            call check(error, all(vec_x == vec_ref) )
+            if (allocated(error)) return
+
+        end block
+    end subroutine
 
     subroutine test_csr(error)
         !> Error handling
@@ -631,551 +708,6 @@ contains
 
             call check(error, err <= epsilon(0._wp) )
             if (allocated(error)) return
-        end block
-    end subroutine
-
-    subroutine test_sparse_operators(error)
-        !> Error handling
-        type(error_type), allocatable, intent(out) :: error
-        block
-            integer, parameter :: wp = sp
-            real(wp), parameter :: tol = 1000*epsilon(0._wp)
-            real(wp) :: scalar
-            integer :: row(10), col(10)
-            real(wp) :: data(10)
-            type(COO_sp_type) :: a, b, c
-            real(sp):: err
-            
-            data(:)   = real([9,-3,4,7,8,-1,8,4,5,6],kind=wp)
-            col(:)    = [1,5,1,2,2,3,4,1,3,4]
-            row(:)    = [1,1,2,2,3,3,3,4,4,4]
-
-            call from_ijv(a, row, col, data)
-            call from_ijv(b, row, col, data)
-            scalar = 2.0_wp
-            
-            ! Test sparse + sparse
-            c = a + b
-            err = sum( abs( c%data - 2.0_wp*a%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar + sparse
-            c = scalar + a
-            err = sum( abs( c%data - (scalar + a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar + sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse + scalar
-            c = a + scalar
-            err = sum( abs( c%data - (a%data + scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse * sparse
-            c = a * b
-            err = sum( abs( c%data - a%data*b%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar * sparse
-            c = scalar * a
-            err = sum( abs( c%data - (scalar*a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar * sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse * scalar
-            c = a * scalar
-            err = sum( abs( c%data - (a%data*scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse - sparse
-            c = a - b
-            err = sum( abs( c%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar - sparse
-            c = scalar - a
-            err = sum( abs( c%data - (scalar - a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar - sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse - scalar
-            c = a - scalar
-            err = sum( abs( c%data - (a%data - scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse / sparse
-            c = a / b
-            err = sum( abs( c%data - 1.0_wp ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar / sparse
-            c = scalar / a
-            err = sum( abs( c%data - (scalar / a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar / sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse / scalar
-            c = a / scalar
-            err = sum( abs( c%data - (a%data / scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / scalar" )
-            if (allocated(error)) return
-
-        end block
-        block
-            integer, parameter :: wp = dp
-            real(wp), parameter :: tol = 1000*epsilon(0._wp)
-            real(wp) :: scalar
-            integer :: row(10), col(10)
-            real(wp) :: data(10)
-            type(COO_dp_type) :: a, b, c
-            real(dp):: err
-            
-            data(:)   = real([9,-3,4,7,8,-1,8,4,5,6],kind=wp)
-            col(:)    = [1,5,1,2,2,3,4,1,3,4]
-            row(:)    = [1,1,2,2,3,3,3,4,4,4]
-
-            call from_ijv(a, row, col, data)
-            call from_ijv(b, row, col, data)
-            scalar = 2.0_wp
-            
-            ! Test sparse + sparse
-            c = a + b
-            err = sum( abs( c%data - 2.0_wp*a%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar + sparse
-            c = scalar + a
-            err = sum( abs( c%data - (scalar + a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar + sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse + scalar
-            c = a + scalar
-            err = sum( abs( c%data - (a%data + scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse * sparse
-            c = a * b
-            err = sum( abs( c%data - a%data*b%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar * sparse
-            c = scalar * a
-            err = sum( abs( c%data - (scalar*a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar * sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse * scalar
-            c = a * scalar
-            err = sum( abs( c%data - (a%data*scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse - sparse
-            c = a - b
-            err = sum( abs( c%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar - sparse
-            c = scalar - a
-            err = sum( abs( c%data - (scalar - a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar - sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse - scalar
-            c = a - scalar
-            err = sum( abs( c%data - (a%data - scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse / sparse
-            c = a / b
-            err = sum( abs( c%data - 1.0_wp ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar / sparse
-            c = scalar / a
-            err = sum( abs( c%data - (scalar / a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar / sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse / scalar
-            c = a / scalar
-            err = sum( abs( c%data - (a%data / scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / scalar" )
-            if (allocated(error)) return
-
-        end block
-        block
-            integer, parameter :: wp = sp
-            real(wp), parameter :: tol = 1000*epsilon(0._wp)
-            real(wp) :: scalar
-            integer :: row(10), col(10)
-            real(wp) :: data(10)
-            type(CSR_sp_type) :: a, b, c
-            real(sp):: err
-            
-            data(:)   = real([9,-3,4,7,8,-1,8,4,5,6],kind=wp)
-            col(:)    = [1,5,1,2,2,3,4,1,3,4]
-            row(:)    = [1,1,2,2,3,3,3,4,4,4]
-
-            call from_ijv(a, row, col, data)
-            call from_ijv(b, row, col, data)
-            scalar = 2.0_wp
-            
-            ! Test sparse + sparse
-            c = a + b
-            err = sum( abs( c%data - 2.0_wp*a%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar + sparse
-            c = scalar + a
-            err = sum( abs( c%data - (scalar + a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar + sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse + scalar
-            c = a + scalar
-            err = sum( abs( c%data - (a%data + scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse * sparse
-            c = a * b
-            err = sum( abs( c%data - a%data*b%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar * sparse
-            c = scalar * a
-            err = sum( abs( c%data - (scalar*a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar * sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse * scalar
-            c = a * scalar
-            err = sum( abs( c%data - (a%data*scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse - sparse
-            c = a - b
-            err = sum( abs( c%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar - sparse
-            c = scalar - a
-            err = sum( abs( c%data - (scalar - a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar - sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse - scalar
-            c = a - scalar
-            err = sum( abs( c%data - (a%data - scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse / sparse
-            c = a / b
-            err = sum( abs( c%data - 1.0_wp ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar / sparse
-            c = scalar / a
-            err = sum( abs( c%data - (scalar / a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar / sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse / scalar
-            c = a / scalar
-            err = sum( abs( c%data - (a%data / scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / scalar" )
-            if (allocated(error)) return
-
-        end block
-        block
-            integer, parameter :: wp = dp
-            real(wp), parameter :: tol = 1000*epsilon(0._wp)
-            real(wp) :: scalar
-            integer :: row(10), col(10)
-            real(wp) :: data(10)
-            type(CSR_dp_type) :: a, b, c
-            real(dp):: err
-            
-            data(:)   = real([9,-3,4,7,8,-1,8,4,5,6],kind=wp)
-            col(:)    = [1,5,1,2,2,3,4,1,3,4]
-            row(:)    = [1,1,2,2,3,3,3,4,4,4]
-
-            call from_ijv(a, row, col, data)
-            call from_ijv(b, row, col, data)
-            scalar = 2.0_wp
-            
-            ! Test sparse + sparse
-            c = a + b
-            err = sum( abs( c%data - 2.0_wp*a%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar + sparse
-            c = scalar + a
-            err = sum( abs( c%data - (scalar + a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar + sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse + scalar
-            c = a + scalar
-            err = sum( abs( c%data - (a%data + scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse * sparse
-            c = a * b
-            err = sum( abs( c%data - a%data*b%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar * sparse
-            c = scalar * a
-            err = sum( abs( c%data - (scalar*a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar * sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse * scalar
-            c = a * scalar
-            err = sum( abs( c%data - (a%data*scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse - sparse
-            c = a - b
-            err = sum( abs( c%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar - sparse
-            c = scalar - a
-            err = sum( abs( c%data - (scalar - a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar - sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse - scalar
-            c = a - scalar
-            err = sum( abs( c%data - (a%data - scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse / sparse
-            c = a / b
-            err = sum( abs( c%data - 1.0_wp ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar / sparse
-            c = scalar / a
-            err = sum( abs( c%data - (scalar / a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar / sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse / scalar
-            c = a / scalar
-            err = sum( abs( c%data - (a%data / scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / scalar" )
-            if (allocated(error)) return
-
-        end block
-        block
-            integer, parameter :: wp = sp
-            real(wp), parameter :: tol = 1000*epsilon(0._wp)
-            real(wp) :: scalar
-            integer :: row(10), col(10)
-            real(wp) :: data(10)
-            type(CSC_sp_type) :: a, b, c
-            real(sp):: err
-            
-            data(:)   = real([9,-3,4,7,8,-1,8,4,5,6],kind=wp)
-            col(:)    = [1,5,1,2,2,3,4,1,3,4]
-            row(:)    = [1,1,2,2,3,3,3,4,4,4]
-
-            call from_ijv(a, row, col, data)
-            call from_ijv(b, row, col, data)
-            scalar = 2.0_wp
-            
-            ! Test sparse + sparse
-            c = a + b
-            err = sum( abs( c%data - 2.0_wp*a%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar + sparse
-            c = scalar + a
-            err = sum( abs( c%data - (scalar + a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar + sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse + scalar
-            c = a + scalar
-            err = sum( abs( c%data - (a%data + scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse * sparse
-            c = a * b
-            err = sum( abs( c%data - a%data*b%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar * sparse
-            c = scalar * a
-            err = sum( abs( c%data - (scalar*a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar * sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse * scalar
-            c = a * scalar
-            err = sum( abs( c%data - (a%data*scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse - sparse
-            c = a - b
-            err = sum( abs( c%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar - sparse
-            c = scalar - a
-            err = sum( abs( c%data - (scalar - a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar - sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse - scalar
-            c = a - scalar
-            err = sum( abs( c%data - (a%data - scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse / sparse
-            c = a / b
-            err = sum( abs( c%data - 1.0_wp ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar / sparse
-            c = scalar / a
-            err = sum( abs( c%data - (scalar / a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar / sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse / scalar
-            c = a / scalar
-            err = sum( abs( c%data - (a%data / scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / scalar" )
-            if (allocated(error)) return
-
-        end block
-        block
-            integer, parameter :: wp = dp
-            real(wp), parameter :: tol = 1000*epsilon(0._wp)
-            real(wp) :: scalar
-            integer :: row(10), col(10)
-            real(wp) :: data(10)
-            type(CSC_dp_type) :: a, b, c
-            real(dp):: err
-            
-            data(:)   = real([9,-3,4,7,8,-1,8,4,5,6],kind=wp)
-            col(:)    = [1,5,1,2,2,3,4,1,3,4]
-            row(:)    = [1,1,2,2,3,3,3,4,4,4]
-
-            call from_ijv(a, row, col, data)
-            call from_ijv(b, row, col, data)
-            scalar = 2.0_wp
-            
-            ! Test sparse + sparse
-            c = a + b
-            err = sum( abs( c%data - 2.0_wp*a%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar + sparse
-            c = scalar + a
-            err = sum( abs( c%data - (scalar + a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar + sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse + scalar
-            c = a + scalar
-            err = sum( abs( c%data - (a%data + scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse + scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse * sparse
-            c = a * b
-            err = sum( abs( c%data - a%data*b%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar * sparse
-            c = scalar * a
-            err = sum( abs( c%data - (scalar*a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar * sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse * scalar
-            c = a * scalar
-            err = sum( abs( c%data - (a%data*scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse * scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse - sparse
-            c = a - b
-            err = sum( abs( c%data ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar - sparse
-            c = scalar - a
-            err = sum( abs( c%data - (scalar - a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar - sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse - scalar
-            c = a - scalar
-            err = sum( abs( c%data - (a%data - scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse - scalar" )
-            if (allocated(error)) return
-
-            ! Test sparse / sparse
-            c = a / b
-            err = sum( abs( c%data - 1.0_wp ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / sparse" )
-            if (allocated(error)) return
-
-            ! Test scalar / sparse
-            c = scalar / a
-            err = sum( abs( c%data - (scalar / a%data) ) ) / size(data)
-            call check(error, err <= tol, "error in scalar / sparse" )
-            if (allocated(error)) return
-
-            ! Test sparse / scalar
-            c = a / scalar
-            err = sum( abs( c%data - (a%data / scalar) ) ) / size(data)
-            call check(error, err <= tol, "error in sparse / scalar" )
-            if (allocated(error)) return
-
         end block
     end subroutine
 
