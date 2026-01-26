@@ -1,0 +1,1691 @@
+! SPDX-Identifier: MIT
+
+
+submodule (stdlib_io_mm) stdlib_io_mm_load
+    use stdlib_error, only : error_stop
+    use stdlib_strings, only : to_string, starts_with
+    use stdlib_str2num, only: to_num_from_stream
+    use stdlib_kinds
+    use stdlib_sparse_kinds
+    implicit none
+
+    
+    enum, bind(c)
+        enumerator :: MF_array = 1
+        enumerator :: MF_coordinate = 2
+    end enum    
+    enum, bind(c)
+        enumerator :: MQ_real = 1
+        enumerator :: MQ_integer = 2
+        enumerator :: MQ_complex = 3
+        enumerator :: MQ_pattern = 4
+    end enum    
+    enum, bind(c)
+        enumerator :: MS_general = 1
+        enumerator :: MS_symmetric = 2
+        enumerator :: MS_skew_symmetric = 3
+        enumerator :: MS_hermitian = 4
+    end enum
+
+    integer(int8), parameter :: LF = 10, CR = 13, PP=iachar('%')
+
+contains
+
+    module subroutine load_mm_dense_sp(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        real(sp), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        real(sp) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_dp(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        real(dp), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        real(dp) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_csp(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        complex(sp), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        real(sp) :: mold, val_r, val_i
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                val_r = to_num_from_stream(ffp, mold, stat)
+                val_i = to_num_from_stream(ffp, mold, stat)
+                matrix(i,j) = cmplx(val_r, val_i, kind = sp)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_cdp(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        complex(dp), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        real(dp) :: mold, val_r, val_i
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                val_r = to_num_from_stream(ffp, mold, stat)
+                val_i = to_num_from_stream(ffp, mold, stat)
+                matrix(i,j) = cmplx(val_r, val_i, kind = dp)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_int8(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        integer(int8), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer(int8) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_int16(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        integer(int16), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer(int16) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_int32(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        integer(int32), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer(int32) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+    module subroutine load_mm_dense_int64(filename, matrix, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix to be loaded from the Matrix Market file
+        integer(int64), allocatable, intent(out) :: matrix(:,:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: nrows, ncols, i, j
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer(int64) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_array ) then
+          err = 2
+          print *, "warning: a dense matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+
+        !----------------------------------------- 
+        ! Read actual matrix data
+        allocate(matrix(nrows, ncols), stat=err)
+        if( err /= 0 ) return
+        do j = 1, ncols
+            do i = 1, nrows
+                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                if( stat /= 0 ) return
+            end do
+        end do
+    end subroutine
+
+    module subroutine load_mm_coo_sp(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        real(sp), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        real(sp), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        real(sp) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            vals(i) = to_num_from_stream(ffp, mold, stat)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_dp(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        real(dp), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        real(dp), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        real(dp) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            vals(i) = to_num_from_stream(ffp, mold, stat)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_csp(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        complex(sp), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        complex(sp), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        real(sp) :: mold, val_r, val_i
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            val_r = to_num_from_stream(ffp, mold, stat)
+            val_i = to_num_from_stream(ffp, mold, stat)
+            vals(i) = cmplx(val_r, val_i, kind = sp)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                if(header%symmetry==MS_hermitian) data(nnz+adr) = conjg(data(i))
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_cdp(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        complex(dp), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        complex(dp), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        real(dp) :: mold, val_r, val_i
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            val_r = to_num_from_stream(ffp, mold, stat)
+            val_i = to_num_from_stream(ffp, mold, stat)
+            vals(i) = cmplx(val_r, val_i, kind = dp)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                if(header%symmetry==MS_hermitian) data(nnz+adr) = conjg(data(i))
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_int8(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        integer(int8), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        integer(int8), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        integer(int8) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            vals(i) = to_num_from_stream(ffp, mold, stat)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_int16(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        integer(int16), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        integer(int16), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        integer(int16) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            vals(i) = to_num_from_stream(ffp, mold, stat)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_int32(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        integer(int32), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        integer(int32), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        integer(int32) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            vals(i) = to_num_from_stream(ffp, mold, stat)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+    end subroutine
+    module subroutine load_mm_coo_int64(filename, index, data, iostat, iomsg)
+        !> Name of the Matrix Market file to load from
+        character(len=*), intent(in) :: filename
+        !> Matrix indices in COO format read from the file:
+        !> index(1, :) = row indices, index(2, :) = column indices
+        integer, allocatable, intent(out) :: index(:, :)
+        !> Nonzero matrix values corresponding to each (row, column) index pair
+        integer(int64), allocatable, intent(out) :: data(:)
+        !> Error status of loading, zero on success
+        integer, intent(out), optional :: iostat
+        !> Associated error message in case of non-zero status code
+        character(len=:), allocatable, intent(out), optional :: iomsg
+
+        ! Internal variables
+        type(mm_header_type) :: header
+        integer :: u , fsze, err, eol_position
+        integer :: i, nnz, adr
+        integer(int8) :: stat
+        character(:), allocatable, target :: ff
+        character(len=:), pointer :: ffp
+        integer, allocatable :: rows(:), cols(:)
+        integer(int64), allocatable :: vals(:)
+        integer :: nrows, ncols, n_diag
+        integer(int64) :: mold
+
+        if (present(iostat)) iostat = 0
+        if (present(iomsg)) iomsg  = ''
+        !-----------------------------------------------------------------------------
+        ! Open file for regular reading
+        open( newunit = u , file=filename, status = 'old' , access='stream', action="read", iostat=err  )
+        if( err /= 0 ) return
+        err = 1
+
+        !----------------------------------------- 
+        ! Load file in a single string
+        inquire(unit=u, size=fsze)
+        allocate(character(fsze) :: ff)
+        read(u) ff
+        ffp => ff(1:)
+        close(u)
+
+        !----------------------------------------- 
+        ! Read header
+        call read_mm_header(ffp, header, err)
+        if( err /= 0 ) return
+        if( header%format /= MF_coordinate ) then
+          err = 2
+          print *, "warning: a coordinate matrix is expected for the current file"
+          return
+        end if
+
+        !----------------------------------------- 
+        ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
+        do while( iachar(ffp(1:1))==PP )
+            eol_position = shift_to_eol(ffp)
+            ffp => ffp(eol_position+1:)
+        end do
+        
+        !----------------------------------------- 
+        ! Read matrix dimensions
+        nrows = to_num_from_stream(ffp, nrows, stat)
+        if( stat /= 0 ) return
+        ncols = to_num_from_stream(ffp, ncols, stat)
+        if( stat /= 0 ) return
+        nnz = to_num_from_stream(ffp, nnz, stat)
+        if( stat /= 0 ) return
+        
+        !-----------------------------------------
+        ! Allocate temporary arrays to hold the file data
+        allocate(rows(nnz))
+        allocate(cols(nnz))
+        allocate(vals(nnz))
+
+        !-----------------------------------------
+        ! Read actual matrix data and store inside temporary arrays
+        n_diag = 0
+        do i = 1, nnz ! read entries from file
+            rows(i) = to_num_from_stream(ffp, rows(i), stat)
+            cols(i) = to_num_from_stream(ffp, cols(i), stat)
+            if(rows(i) == cols(i)) n_diag = n_diag + 1
+            vals(i) = to_num_from_stream(ffp, mold, stat)
+        end do
+
+        !----------------------------------------- 
+        ! check storage hypothesis
+        if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
+            allocate(index(2, 2*nnz-n_diag))
+            allocate(data(2*nnz-n_diag))
+        else if(header%symmetry == MS_skew_symmetric) then
+            allocate(index(2, 2*nnz))
+            allocate(data(2*nnz))
+        else
+            allocate(index(2, nnz))
+            allocate(data(nnz))
+        end if
+
+
+        !----------------------------------------- 
+        ! Fill in matrix entries from temporary arrays
+        do i = 1, nnz
+            index(1,i) = rows(i)
+            index(2,i) = cols(i)
+            data(i) = vals(i)
+        end do
+
+        if(allocated(rows)) deallocate(rows)
+        if(allocated(cols)) deallocate(cols)
+        if(allocated(vals)) deallocate(vals)
+
+        !----------------------------------------- 
+        ! Fill in symmetric entries if needed
+        if(header%symmetry==MS_general) return
+            adr = 1
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+    end subroutine
+
+    subroutine read_mm_header(ffp, header, err)
+        character(len=:), intent(inout), pointer :: ffp
+        type(mm_header_type), intent(out) :: header
+        integer, intent(out) :: err
+        !----------------------------------------------
+        err = 0
+        if( .not. starts_with(ffp, "%%MatrixMarket ") ) return
+        ffp => ffp(16:)
+        
+        ! Read object type: matrix
+        if( .not. starts_with(ffp, "matrix ") ) return
+        ffp => ffp(8:)
+        header%object = 1 ! matrix
+        
+        ! Read format type: coordinate or array
+        if( starts_with(ffp, "arr") ) then 
+            ffp => ffp(7:) ! array
+            header%format = MF_array
+        else if( starts_with(ffp, "coo") ) then
+            ffp => ffp(12:) ! coordinate
+            header%format = MF_coordinate
+        else
+            return
+        end if
+
+        ! Read first qualifier: real, complex, integer, pattern (sparse)
+        if( starts_with(ffp, "real") ) then
+            ffp => ffp(6:) ! real
+            header%qualifier = MQ_real
+        else if( starts_with(ffp, "complex") ) then
+            ffp => ffp(9:) ! complex
+            header%qualifier = MQ_complex
+        else if( starts_with(ffp, "integer") ) then
+            ffp => ffp(9:) ! integer
+            header%qualifier = MQ_integer
+        else if( starts_with(ffp, "pattern") ) then
+            ffp => ffp(9:) ! pattern
+            header%qualifier = MQ_pattern
+        else
+            return
+        end if
+
+        ! Read second qualifier: general, symmetric, skew-symmetric, hermitian
+        if( starts_with(ffp, "general") ) then
+            ffp => ffp(9:) ! general
+            header%symmetry = MS_general
+        else if( starts_with(ffp, "symmetric") ) then
+            ffp => ffp(11:) ! symmetric
+            header%symmetry = MS_symmetric
+        else if( starts_with(ffp, "skew-symmetric") ) then
+            ffp => ffp(16:) ! skew-symmetric
+            header%symmetry = MS_skew_symmetric
+        else if( starts_with(ffp, "hermitian") ) then
+            ffp => ffp(11:) ! hermitian
+            header%symmetry = MS_hermitian
+        else
+            return
+        end if
+    end subroutine
+
+    elemental function shift_to_eol(s) result(p)
+      !! move string to position of the next end-of-line character
+      character(*),intent(in) :: s !! character chain
+      integer :: p !! position
+      !----------------------------------------------
+      p = 1
+      do while( p<len(s) .and. .not.(iachar(s(p:p))==LF .or. iachar(s(p:p))==CR) ) 
+          p = p + 1
+      end do
+      ! If CRLF, move to LF
+      if (p < len(s)) then
+        if (iachar(s(p:p)) == CR .and. iachar(s(p+1:p+1)) == LF) then
+            p = p + 1
+        end if
+      end if
+    end function
+
+end submodule stdlib_io_mm_load
