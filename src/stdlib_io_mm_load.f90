@@ -94,13 +94,28 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_dp(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -166,13 +181,28 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_csp(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -238,15 +268,33 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                val_r = to_num_from_stream(ffp, mold, stat)
-                val_i = to_num_from_stream(ffp, mold, stat)
-                matrix(i,j) = cmplx(val_r, val_i, kind = sp)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    val_r = to_num_from_stream(ffp, mold, stat)
+                    val_i = to_num_from_stream(ffp, mold, stat)
+                    matrix(i,j) = cmplx(val_r, val_i, kind = sp)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    val_r = to_num_from_stream(ffp, mold, stat)
+                    val_i = to_num_from_stream(ffp, mold, stat)
+                    matrix(i,j) = cmplx(val_r, val_i, kind = sp)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                    if(header%symmetry==MS_hermitian) matrix(j, i) = conjg(matrix(j, i))
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_cdp(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -312,15 +360,33 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                val_r = to_num_from_stream(ffp, mold, stat)
-                val_i = to_num_from_stream(ffp, mold, stat)
-                matrix(i,j) = cmplx(val_r, val_i, kind = dp)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    val_r = to_num_from_stream(ffp, mold, stat)
+                    val_i = to_num_from_stream(ffp, mold, stat)
+                    matrix(i,j) = cmplx(val_r, val_i, kind = dp)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    val_r = to_num_from_stream(ffp, mold, stat)
+                    val_i = to_num_from_stream(ffp, mold, stat)
+                    matrix(i,j) = cmplx(val_r, val_i, kind = dp)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                    if(header%symmetry==MS_hermitian) matrix(j, i) = conjg(matrix(j, i))
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_int8(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -386,13 +452,28 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_int16(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -458,13 +539,28 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_int32(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -530,13 +626,28 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                end do
+            end do
+        end if
     end subroutine
     module subroutine load_mm_dense_int64(filename, matrix, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -602,13 +713,28 @@ contains
         !----------------------------------------- 
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
+        matrix = 0
         if( err /= 0 ) return
-        do j = 1, ncols
-            do i = 1, nrows
-                matrix(i,j) = to_num_from_stream(ffp, mold, stat)
-                if( stat /= 0 ) return
+        if(header%symmetry==MS_general) then
+            do j = 1, ncols
+                do i = 1, nrows
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                end do
             end do
-        end do
+        else
+            do j = 1, ncols
+                do i = j, nrows
+                    ! Keep diagonal elements as zero incase of skew-symmetric cases
+                    if(header%symmetry==MS_skew_symmetric .and. i==j) cycle
+                    matrix(i,j) = to_num_from_stream(ffp, mold, stat)
+                    if( stat /= 0 ) return
+                    ! Assign transpose of the current element
+                    matrix(j, i) = matrix(i, j)
+                    if(header%symmetry==MS_skew_symmetric) matrix(j, i) = -matrix(j, i)
+                end do
+            end do
+        end if
     end subroutine
 
     module subroutine load_mm_coo_sp(filename, index, data, iostat, iomsg)

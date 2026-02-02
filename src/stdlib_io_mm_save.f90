@@ -79,7 +79,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -106,10 +106,13 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         write(io, fmt=fmt_, iostat=stat) matrix(i, j)
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -174,7 +177,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -201,10 +204,13 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         write(io, fmt=fmt_, iostat=stat) matrix(i, j)
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -270,7 +276,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -299,12 +305,16 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         real_part = real(matrix(i, j), kind=sp)
                         imag_part = aimag(matrix(i, j))
+                        if(i==j .and. symmetry_ == MM_HERMITIAN) imag_part = 0
                         write(io, fmt=fmt_, iostat=stat) real_part, imag_part
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -370,7 +380,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -399,12 +409,16 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         real_part = real(matrix(i, j), kind=dp)
                         imag_part = aimag(matrix(i, j))
+                        if(i==j .and. symmetry_ == MM_HERMITIAN) imag_part = 0
                         write(io, fmt=fmt_, iostat=stat) real_part, imag_part
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -469,7 +483,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -496,10 +510,13 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         write(io, fmt=fmt_, iostat=stat) matrix(i, j)
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -564,7 +581,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -591,10 +608,13 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         write(io, fmt=fmt_, iostat=stat) matrix(i, j)
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -659,7 +679,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -686,10 +706,13 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         write(io, fmt=fmt_, iostat=stat) matrix(i, j)
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -754,7 +777,7 @@ contains
         end if
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry))
         end if
@@ -781,10 +804,13 @@ contains
                     end do
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle (including diagonal)
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do j = 1, size(matrix, 2)
                     do i = j, size(matrix, 1)
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. i == j) cycle
                         write(io, fmt=fmt_, iostat=stat) matrix(i, j)
                         if (stat /= 0) then
                             msg = "Error writing array element (" // &
@@ -855,7 +881,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -888,8 +914,10 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
@@ -961,7 +989,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -994,8 +1022,10 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
@@ -1068,7 +1098,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -1103,13 +1133,16 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
                     real_part = real(data(i), kind=sp)
                     imag_part = aimag(data(i))
+                    if(index(1,i)==index(2,i) .and. symmetry_ == MM_HERMITIAN) imag_part = 0
                     write(io, fmt=fmt_, iostat=stat) &
                         index(1,i), index(2,i), real_part, imag_part
                     if (stat /= 0) then
@@ -1179,7 +1212,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -1214,13 +1247,16 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
                     real_part = real(data(i), kind=dp)
                     imag_part = aimag(data(i))
+                    if(index(1,i)==index(2,i) .and. symmetry_ == MM_HERMITIAN) imag_part = 0
                     write(io, fmt=fmt_, iostat=stat) &
                         index(1,i), index(2,i), real_part, imag_part
                     if (stat /= 0) then
@@ -1289,7 +1325,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -1322,8 +1358,10 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
@@ -1395,7 +1433,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -1428,8 +1466,10 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
@@ -1501,7 +1541,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -1534,8 +1574,10 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
@@ -1607,7 +1649,7 @@ contains
         if(size(index, dim=1)/=2) return
 
         ! Determine symmetry type
-        symmetry_ = "general"
+        symmetry_ = MM_GENERAL
         if (present(symmetry)) then
             symmetry_ = to_lower(trim(symmetry)) 
         end if
@@ -1640,8 +1682,10 @@ contains
                     end if
                 end do
             else
-                ! For symmetric, skew-symmetric, hermitian matrices, only write the
-                ! lower triangle
+                ! For symmetric and hermitian matrices, only the lower triangle
+                ! (including the diagonal) is written.
+                ! For skew-symmetric matrices, only the strictly lower triangle is written
+                ! (the diagonal is omitted and assumed zero).
                 do i = 1, size(index, dim=2)
                     if(index(1,i) < index(2,i)) cycle
                     if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
