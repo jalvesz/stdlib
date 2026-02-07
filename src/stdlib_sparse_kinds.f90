@@ -513,7 +513,7 @@ contains
     ! data accessors
     !==================================================================
 
-    logical(int8) elemental function skip(sym,row,col)
+    logical(lk8) elemental function skip(sym,row,col)
         integer(ilp), intent(in) :: sym, row, col
         skip = (sym == sparse_lower .and. row < col) .or. (sym == sparse_upper .and. row > col)
     end function
@@ -522,7 +522,7 @@ contains
         class(COO_sp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -581,7 +581,7 @@ contains
         class(COO_dp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -640,7 +640,7 @@ contains
         class(COO_csp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -699,7 +699,7 @@ contains
         class(COO_cdp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -759,7 +759,7 @@ contains
         class(CSR_sp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -818,7 +818,7 @@ contains
         class(CSR_dp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -877,7 +877,7 @@ contains
         class(CSR_csp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -936,7 +936,7 @@ contains
         class(CSR_cdp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -996,7 +996,7 @@ contains
         class(CSC_sp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -1055,7 +1055,7 @@ contains
         class(CSC_dp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -1114,7 +1114,7 @@ contains
         class(CSC_csp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -1173,7 +1173,7 @@ contains
         class(CSC_cdp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -1233,7 +1233,7 @@ contains
         class(ELL_sp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -1292,7 +1292,7 @@ contains
         class(ELL_dp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -1351,7 +1351,7 @@ contains
         class(ELL_csp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -1410,7 +1410,7 @@ contains
         class(ELL_cdp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -1470,7 +1470,7 @@ contains
         class(SELLC_sp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_, idx
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -1533,7 +1533,7 @@ contains
         class(SELLC_dp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_, idx
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
@@ -1596,7 +1596,7 @@ contains
         class(SELLC_csp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_, idx
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._sp , ieee_quiet_nan)
@@ -1659,7 +1659,7 @@ contains
         class(SELLC_cdp_type), intent(in) :: self
         integer(ilp), intent(in) :: ik, jk
         integer(ilp) :: k, ik_, jk_, idx
-        logical :: transpose
+        logical(lk8) :: transpose
         ! naive implementation
         if( (ik<1 .or. ik>self%nrows) .or. (jk<1 .or. jk>self%ncols) ) then
             val = ieee_value( 0._dp , ieee_quiet_nan)
