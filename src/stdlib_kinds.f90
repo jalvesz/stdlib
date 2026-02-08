@@ -22,5 +22,5 @@ module stdlib_kinds
 
   !> Default logical kind parameter
   integer, parameter :: lk = kind(.true.)
-  
+
 end module stdlib_kinds
