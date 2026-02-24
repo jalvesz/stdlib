@@ -7,7 +7,6 @@ submodule (stdlib_io_mm) stdlib_io_mm_save
     use stdlib_strings, only : to_string
     use stdlib_io, only : open
     use stdlib_ascii, only : to_lower
-    use stdlib_constants, only : zero_sp, zero_dp, zero_sp, zero_dp, zero_int8, zero_int16, zero_int32, zero_int64
     implicit none
 
     ! Matrix Market format constants
