@@ -526,25 +526,14 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         real(sp) :: alpha_, beta_
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
-
-        type(linalg_state_type) :: err0
         logical :: is_alpha_special, is_beta_special
 
         real(sp), pointer :: xmat(:, :), ymat(:, :)
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_sp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_sp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
         is_alpha_special = (alpha_ ==  1.0_sp  .or. alpha_ ==  0.0_sp  .or. alpha_ == -1.0_sp)
         is_beta_special  = (beta_  ==  1.0_sp  .or. beta_  ==  0.0_sp  .or. beta_  == -1.0_sp)
 
@@ -572,24 +561,13 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         real(sp) :: alpha_, beta_
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
-
-        type(linalg_state_type) :: err0
         logical :: is_alpha_special, is_beta_special
 
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_sp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_sp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
         is_alpha_special = (alpha_ ==  1.0_sp  .or. alpha_ ==  0.0_sp  .or. alpha_ == -1.0_sp)
         is_beta_special  = (beta_  ==  1.0_sp  .or. beta_  ==  0.0_sp  .or. beta_  == -1.0_sp)
 
@@ -615,25 +593,14 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         real(dp) :: alpha_, beta_
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
-
-        type(linalg_state_type) :: err0
         logical :: is_alpha_special, is_beta_special
 
         real(dp), pointer :: xmat(:, :), ymat(:, :)
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_dp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_dp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
         is_alpha_special = (alpha_ ==  1.0_dp  .or. alpha_ ==  0.0_dp  .or. alpha_ == -1.0_dp)
         is_beta_special  = (beta_  ==  1.0_dp  .or. beta_  ==  0.0_dp  .or. beta_  == -1.0_dp)
 
@@ -661,24 +628,13 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         real(dp) :: alpha_, beta_
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
-
-        type(linalg_state_type) :: err0
         logical :: is_alpha_special, is_beta_special
 
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_dp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_dp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
         is_alpha_special = (alpha_ ==  1.0_dp  .or. alpha_ ==  0.0_dp  .or. alpha_ == -1.0_dp)
         is_beta_special  = (beta_  ==  1.0_dp  .or. beta_  ==  0.0_dp  .or. beta_  == -1.0_dp)
 
@@ -705,23 +661,12 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
 
-        type(linalg_state_type) :: err0
-
         complex(sp), pointer :: xmat(:, :), ymat(:, :)
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_sp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_sp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
 
         ! Prepare Lapack arguments.
         n = A%n ; ldx = n ; ldy = n ;
@@ -744,22 +689,11 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
 
-        type(linalg_state_type) :: err0
-
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_sp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_sp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
 
         ! Prepare Lapack arguments.
         n = A%n ; ldx = n ; ldy = n ;
@@ -780,23 +714,12 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
 
-        type(linalg_state_type) :: err0
-
         complex(dp), pointer :: xmat(:, :), ymat(:, :)
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_dp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_dp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
 
         ! Prepare Lapack arguments.
         n = A%n ; ldx = n ; ldy = n ;
@@ -819,22 +742,11 @@ submodule (stdlib_specialmatrices) tridiagonal_matrices
         integer(ilp) :: n, nrhs, ldx, ldy
         character(1) :: op_
 
-        type(linalg_state_type) :: err0
-
-
-        if(present(op)) then
-            if(.not.(op == "N" .or. op == "T" .or. op == "C" .or. op == "H")) then
-                err0 = linalg_state_type(this, LINALG_VALUE_ERROR, "Invalid matrix operation; expected 'N', 'T', 'C' or 'H'.")
-                call linalg_error_handling(err0)
-            end if
-        end if
 
         ! Deal with optional arguments.
         alpha_ = 1.0_dp ; if (present(alpha)) alpha_ = alpha
         beta_  = 0.0_dp ; if (present(beta))  beta_  = beta
         op_    = "N"        ; if (present(op))    op_    = op
-        if (op_ == "H") op_ = "C"
-
 
         ! Prepare Lapack arguments.
         n = A%n ; ldx = n ; ldy = n ;
