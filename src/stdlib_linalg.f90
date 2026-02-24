@@ -2143,7 +2143,8 @@ module stdlib_linalg
     !! This interface provides methods for computing the determinant of a matrix.
     !! Supported data types include `real` and `complex`.
     !! 
-    !!@note The provided functions are intended for square matrices only.
+    !!@note The provided functions are intended for square matrices only.          
+    !!@note BLAS/LAPACK backends do not currently support extended precision (``xdp``).
     !! 
     !!### Example
     !!
@@ -2188,6 +2189,7 @@ module stdlib_linalg
     !! Supported data types include real and complex.
     !!
     !!@note The provided functions are intended for square matrices.
+    !!@note BLAS/LAPACK backends do not currently support extended precision (``xdp``).
     !!
     !!### Example
     !!
@@ -2691,6 +2693,7 @@ module stdlib_linalg
      !! Preallocated space for both eigenvalues `lambda` and the eigenvector matrices must be user-provided.      
      !! 
      !!@note The solution is based on LAPACK's general eigenproblem solvers `*GEEV`.
+     !!@note BLAS/LAPACK backends do not currently support extended precision (``xdp``).
      !!       
     module subroutine stdlib_linalg_eig_standard_s(a,lambda,right,left, &
                                                       overwrite_a,err)
@@ -3032,6 +3035,7 @@ module stdlib_linalg
      !! as an optional `type(linalg_state_type)` output flag. 
      !! 
      !!@note The solution is based on LAPACK's general eigenproblem solvers `*GEEV`.
+     !!@note BLAS/LAPACK backends do not currently support extended precision (``xdp``).
      !!       
     module function stdlib_linalg_eigvals_standard_s(a,err) result(lambda)
      !! Return an array of eigenvalues of matrix A.
@@ -3209,6 +3213,7 @@ module stdlib_linalg
      !! Preallocated space for both eigenvalues `lambda` and the eigenvector matrix must be user-provided.      
      !! 
      !!@note The solution is based on LAPACK's eigenproblem solvers `*SYEV`/`*HEEV`.
+     !!@note BLAS/LAPACK backends do not currently support extended precision (``xdp``).
      !!      
     module subroutine stdlib_linalg_eigh_s(a,lambda,vectors,upper_a,overwrite_a,err)
      !! Eigendecomposition of a real symmetric or complex Hermitian matrix A returning an array `lambda` 
@@ -3297,6 +3302,7 @@ module stdlib_linalg
      !! as an optional `type(linalg_state_type)` output flag. 
      !! 
      !!@note The solution is based on LAPACK's eigenproblem solvers `*SYEV`/`*HEEV`.
+     !!@note BLAS/LAPACK backends do not currently support extended precision (``xdp``).
      !!         
     module function stdlib_linalg_eigvalsh_s(a,upper_a,err) result(lambda)
      !! Return an array of eigenvalues of real symmetric / complex hermitian A
