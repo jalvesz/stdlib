@@ -12,24 +12,24 @@ submodule (stdlib_io_mm) stdlib_io_mm_save
     ! Matrix Market format constants
     character(len=*), parameter :: MM_BANNER = "%%MatrixMarket"
     character(len=*), parameter :: MM_COMMENT_CHAR = "%"
-    
+
     ! Matrix Market object types
     character(len=*), parameter :: &
         MM_MATRIX = "matrix", &
         MM_VECTOR = "vector"
-    
-    ! Matrix Market format types  
+
+    ! Matrix Market format types
     character(len=*), parameter :: &
         MM_COORDINATE = "coordinate", &
         MM_ARRAY = "array"
-    
+
     ! Matrix Market data types
     character(len=*), parameter :: &
         MM_REAL = "real", &
         MM_COMPLEX = "complex", &
         MM_INTEGER = "integer", &
         MM_PATTERN = "pattern"
-    
+
     ! Matrix Market storage schemes
     character(len=*), parameter :: &
         MM_GENERAL = "general", &
@@ -163,7 +163,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -172,7 +172,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_dp(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -296,7 +296,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -305,7 +305,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_csp(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -447,7 +447,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -456,7 +456,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_cdp(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -598,7 +598,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -607,7 +607,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_int8(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -731,7 +731,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -740,7 +740,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_int16(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -864,7 +864,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -873,7 +873,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_int32(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -997,7 +997,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -1006,7 +1006,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_dense_int64(filename, matrix, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1130,7 +1130,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
@@ -1139,7 +1139,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
 
     module subroutine save_mm_coo_sp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
@@ -1188,7 +1188,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1242,7 +1242,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1251,7 +1251,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_dp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1299,7 +1299,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1353,7 +1353,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1362,7 +1362,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_csp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1411,7 +1411,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1470,7 +1470,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1479,7 +1479,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_cdp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1528,7 +1528,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1587,7 +1587,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1596,7 +1596,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_int8(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1644,7 +1644,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1698,7 +1698,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1707,7 +1707,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_int16(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1755,7 +1755,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1809,7 +1809,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1818,7 +1818,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_int32(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1866,7 +1866,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -1920,7 +1920,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -1929,7 +1929,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
     module subroutine save_mm_coo_int64(filename, index, data, comment, format, symmetry, iostat, iomsg)
         !> Name of the Matrix Market file to save to
         character(len=*), intent(in) :: filename
@@ -1977,7 +1977,7 @@ contains
         ! Determine symmetry type
         symmetry_ = MM_GENERAL
         if (present(symmetry)) then
-            symmetry_ = to_lower(trim(symmetry)) 
+            symmetry_ = to_lower(trim(symmetry))
         end if
 
         ! Determine field type based on matrix type
@@ -2031,7 +2031,7 @@ contains
                 end do
             end if
         end block catch
-        
+
         close(io)
 
         if(stat/=0) then
@@ -2040,7 +2040,7 @@ contains
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
-    end subroutine 
+    end subroutine
 
     !> Write Matrix Market header
     subroutine write_mm_header(io, format, field, symmetry, nrows, ncols, nnz, &
@@ -2097,7 +2097,7 @@ contains
         else
             write(io, '(I0,1X,I0)', iostat=stat) nrows, ncols
         end if
-        
+
         if (stat /= 0) then
             iostat = stat
             iomsg = "Error writing matrix dimensions"
