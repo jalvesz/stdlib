@@ -31,7 +31,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         call random_number(A)
     end subroutine
     pure function compare_dense_sp(A, B) result(result)
@@ -47,7 +47,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         call random_number(A)
     end subroutine
     pure function compare_dense_dp(A, B) result(result)
@@ -64,7 +64,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         allocate(R(n,n,2))
         call random_number(R(:,:,1))
         call random_number(R(:,:,2))
@@ -84,7 +84,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         allocate(R(n,n,2))
         call random_number(R(:,:,1))
         call random_number(R(:,:,2))
@@ -105,7 +105,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         do j = 1, n
             do i = 1,n
                 call random_number(rnd)
@@ -128,7 +128,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         do j = 1, n
             do i = 1,n
                 call random_number(rnd)
@@ -151,7 +151,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         do j = 1, n
             do i = 1,n
                 call random_number(rnd)
@@ -174,7 +174,7 @@ contains
         integer :: n
 
         n = size(A,dim=1)
-        
+
         do j = 1, n
             do i = 1,n
                 call random_number(rnd)
@@ -199,6 +199,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_sp_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -259,6 +260,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_dp_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -319,6 +321,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_csp_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -396,6 +399,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_cdp_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -473,6 +477,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_int8_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -533,6 +538,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_int16_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -593,6 +599,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_int32_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -653,6 +660,7 @@ contains
             allocate(matrix_save(n,n))
             allocate(A(n,n))
 
+            call random_seed()
             ! General matrix
             call generate_random_int64_dense_matrix(matrix_save)
             call save_mm("test_mmio_dense.mtx", matrix_save, format = "G0")
@@ -709,19 +717,17 @@ contains
     end subroutine
 
     subroutine generate_random_positions(pos, t_entries)
-        integer, intent(inout) :: pos(:)
+        integer, intent(out) :: pos(:)
         integer, intent(in) :: t_entries
 
         ! Internal variables
         integer :: i, j, temp
         real(dp) :: rnd
 
-        do i = 1, t_entries
-            pos(i) = i
-        end do
-        do i = t_entries, 1, -1
+        pos = [(i,i=1,t_entries)]
+        do i = t_entries, 2, -1
             call random_number(rnd)
-            j = ceiling(t_entries*rnd)
+            j = int(i*rnd) + 1
             temp = pos(i)
             pos(i) = pos(j)
             pos(j) = temp
@@ -772,7 +778,7 @@ contains
         real(sp), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all_close(data_save, data_load)
     end function
 
@@ -803,7 +809,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_sp_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         real(sp), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -818,7 +824,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -843,6 +849,7 @@ contains
             call generate_random_data_for_sp_coo(data_save, nnz_lower)
             call fill_other_half_sp(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_dp_coo(A, nnz_to_write)
         real(dp), intent(out) :: A(:)
@@ -857,7 +864,7 @@ contains
         real(dp), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all_close(data_save, data_load)
     end function
 
@@ -888,7 +895,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_dp_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         real(dp), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -903,7 +910,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -928,6 +935,7 @@ contains
             call generate_random_data_for_dp_coo(data_save, nnz_lower)
             call fill_other_half_dp(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_csp_coo(A, nnz_to_write)
         complex(sp), intent(out) :: A(:)
@@ -946,7 +954,7 @@ contains
         complex(sp), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all_close(data_save, data_load)
     end function
 
@@ -985,7 +993,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_csp_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         complex(sp), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -1000,7 +1008,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -1036,6 +1044,7 @@ contains
             call generate_random_data_for_csp_coo(data_save, nnz_lower)
             call fill_other_half_csp(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_cdp_coo(A, nnz_to_write)
         complex(dp), intent(out) :: A(:)
@@ -1054,7 +1063,7 @@ contains
         complex(dp), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all_close(data_save, data_load)
     end function
 
@@ -1093,7 +1102,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_cdp_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         complex(dp), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -1108,7 +1117,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -1144,6 +1153,7 @@ contains
             call generate_random_data_for_cdp_coo(data_save, nnz_lower)
             call fill_other_half_cdp(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_int8_coo(A, nnz_to_write)
         integer(int8), intent(out) :: A(:)
@@ -1163,7 +1173,7 @@ contains
         integer(int8), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all(data_save == data_load)
     end function
 
@@ -1194,7 +1204,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_int8_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         integer(int8), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -1209,7 +1219,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -1234,6 +1244,7 @@ contains
             call generate_random_data_for_int8_coo(data_save, nnz_lower)
             call fill_other_half_int8(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_int16_coo(A, nnz_to_write)
         integer(int16), intent(out) :: A(:)
@@ -1253,7 +1264,7 @@ contains
         integer(int16), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all(data_save == data_load)
     end function
 
@@ -1284,7 +1295,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_int16_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         integer(int16), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -1299,7 +1310,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -1324,6 +1335,7 @@ contains
             call generate_random_data_for_int16_coo(data_save, nnz_lower)
             call fill_other_half_int16(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_int32_coo(A, nnz_to_write)
         integer(int32), intent(out) :: A(:)
@@ -1343,7 +1355,7 @@ contains
         integer(int32), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all(data_save == data_load)
     end function
 
@@ -1374,7 +1386,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_int32_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         integer(int32), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -1389,7 +1401,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -1414,6 +1426,7 @@ contains
             call generate_random_data_for_int32_coo(data_save, nnz_lower)
             call fill_other_half_int32(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
     subroutine generate_random_data_for_int64_coo(A, nnz_to_write)
         integer(int64), intent(out) :: A(:)
@@ -1433,7 +1446,7 @@ contains
         integer(int64), intent(in) :: data_save(:), data_load(:)
         integer, intent(in) :: index_save(:, :), index_load(:,:)
         logical :: result
-        
+
         result = all(index_save == index_load) .and. all(data_save == data_load)
     end function
 
@@ -1464,7 +1477,7 @@ contains
             end do
         end if
     end subroutine
-    
+
     subroutine generate_random_int64_coo_matrix(index_save, data_save, nrows, ncols, symmetry)
         integer(int64), allocatable, intent(out) :: data_save(:)
         integer, allocatable, intent(out) :: index_save(:, :)
@@ -1479,7 +1492,7 @@ contains
         call generate_random_positions(pos, nrows * ncols)
         call random_number(density)
         nnz = ceiling(density*nrows*ncols)
-        
+
         if(symmetry == MS_general) then
             allocate(index_save(2, nnz))
             allocate(data_save(nnz))
@@ -1504,6 +1517,7 @@ contains
             call generate_random_data_for_int64_coo(data_save, nnz_lower)
             call fill_other_half_int64(index_save, data_save, j, nnz_lower, MS_skew_symmetric)
         end if
+        if(allocated(pos)) deallocate(pos)
     end subroutine
 
     subroutine test_io_mm_coordinate(error)
@@ -1551,7 +1565,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
         end block
         block
             integer :: nrows, ncols
@@ -1595,7 +1609,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
         end block
         block
             integer :: nrows, ncols
@@ -1639,7 +1653,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
             ! Hermitian matrix
             call generate_random_csp_coo_matrix(index_save, data_save, nrows, ncols, MS_hermitian)
             call save_mm("test_mmio_sparse.mtx", index_save, data_save, symmetry = "hermitian", format = "G0")
@@ -1693,7 +1707,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
             ! Hermitian matrix
             call generate_random_cdp_coo_matrix(index_save, data_save, nrows, ncols, MS_hermitian)
             call save_mm("test_mmio_sparse.mtx", index_save, data_save, symmetry = "hermitian", format = "G0")
@@ -1747,7 +1761,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
         end block
         block
             integer :: nrows, ncols
@@ -1791,7 +1805,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
         end block
         block
             integer :: nrows, ncols
@@ -1835,7 +1849,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
         end block
         block
             integer :: nrows, ncols
@@ -1879,7 +1893,7 @@ contains
             if(allocated(error)) return
             if(allocated(index_save)) deallocate(index_save)
             if(allocated(data_save)) deallocate(data_save)
-            
+
         end block
     end subroutine
 
