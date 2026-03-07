@@ -1,9 +1,9 @@
 ! SPDX-Identifier: MIT
 
 
-!> The Matrix Market (MM) format is a simple, human-readable, ASCII format for sparse 
-!> and dense matrices. The format was developed at NIST (National Institute of Standards 
-!> and Technology) for the Matrix Market, a repository of test matrices for use in 
+!> The Matrix Market (MM) format is a simple, human-readable, ASCII format for sparse
+!> and dense matrices. The format was developed at NIST (National Institute of Standards
+!> and Technology) for the Matrix Market, a repository of test matrices for use in
 !> comparative studies of algorithms for numerical linear algebra.
 !>
 !> For more information, see: https://math.nist.gov/MatrixMarket/formats.html
@@ -217,7 +217,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_dp(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         real(dp), intent(in) :: matrix(:,:)
@@ -226,7 +226,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_csp(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         complex(sp), intent(in) :: matrix(:,:)
@@ -235,7 +235,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_cdp(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         complex(dp), intent(in) :: matrix(:,:)
@@ -244,7 +244,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_int8(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer(int8), intent(in) :: matrix(:,:)
@@ -253,7 +253,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_int16(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer(int16), intent(in) :: matrix(:,:)
@@ -262,7 +262,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_int32(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer(int32), intent(in) :: matrix(:,:)
@@ -271,7 +271,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_dense_int64(filename, matrix, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer(int64), intent(in) :: matrix(:,:)
@@ -280,7 +280,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
 
         module subroutine save_mm_coo_sp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
@@ -291,7 +291,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_dp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -301,7 +301,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_csp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -311,7 +311,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_cdp(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -321,7 +321,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_int8(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -331,7 +331,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_int16(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -341,7 +341,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_int32(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -351,7 +351,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
         module subroutine save_mm_coo_int64(filename, index, data, comment, format, symmetry, iostat, iomsg)
         character(len=*), intent(in) :: filename
         integer, intent(in) :: index(:,:)
@@ -361,7 +361,7 @@ module stdlib_io_mm
         character(len=*), intent(in), optional :: symmetry
         integer, intent(out), optional :: iostat
         character(len=:), allocatable, intent(out), optional :: iomsg
-        end subroutine 
+        end subroutine
     end interface save_mm
     public :: save_mm
 

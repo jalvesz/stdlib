@@ -8,17 +8,17 @@ submodule (stdlib_io_mm) stdlib_io_mm_load
     use stdlib_kinds
     implicit none
 
-    
+
     enum, bind(c)
         enumerator :: MF_array = 1
         enumerator :: MF_coordinate = 2
-    end enum    
+    end enum
     enum, bind(c)
         enumerator :: MQ_real = 1
         enumerator :: MQ_integer = 2
         enumerator :: MQ_complex = 3
         enumerator :: MQ_pattern = 4
-    end enum    
+    end enum
     enum, bind(c)
         enumerator :: MS_general = 1
         enumerator :: MS_symmetric = 2
@@ -63,7 +63,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -71,7 +71,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -86,7 +86,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -95,7 +95,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -110,7 +110,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -180,7 +180,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -188,7 +188,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -203,7 +203,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -212,7 +212,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -227,7 +227,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -297,7 +297,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -305,7 +305,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -320,7 +320,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -329,7 +329,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -344,7 +344,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -421,7 +421,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -429,7 +429,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -444,7 +444,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -453,7 +453,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -468,7 +468,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -545,7 +545,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -553,7 +553,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -568,7 +568,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -577,7 +577,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -592,7 +592,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -662,7 +662,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -670,7 +670,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -685,7 +685,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -694,7 +694,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -709,7 +709,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -779,7 +779,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -787,7 +787,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -802,7 +802,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -811,7 +811,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -826,7 +826,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -896,7 +896,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -904,7 +904,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -919,7 +919,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -928,7 +928,7 @@ contains
             ffp => ffp(eol_position+1:)
         end do
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -943,7 +943,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read actual matrix data
         allocate(matrix(nrows, ncols), stat=err)
         matrix = 0
@@ -1020,7 +1020,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1028,7 +1028,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1043,7 +1043,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -1051,8 +1051,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -1072,7 +1072,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -1099,7 +1099,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -1113,7 +1113,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -1125,7 +1125,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -1177,7 +1177,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1185,7 +1185,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1200,7 +1200,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -1208,8 +1208,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -1229,7 +1229,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -1256,7 +1256,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -1270,7 +1270,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -1282,7 +1282,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -1334,7 +1334,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1342,7 +1342,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1357,7 +1357,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -1365,8 +1365,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -1386,7 +1386,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -1416,7 +1416,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -1430,7 +1430,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -1442,7 +1442,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -1495,7 +1495,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1503,7 +1503,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1518,7 +1518,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -1526,8 +1526,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -1547,7 +1547,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -1577,7 +1577,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -1591,7 +1591,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -1603,7 +1603,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -1656,7 +1656,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1664,7 +1664,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1679,7 +1679,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -1687,8 +1687,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -1708,7 +1708,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -1735,7 +1735,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -1749,7 +1749,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -1761,7 +1761,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -1813,7 +1813,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1821,7 +1821,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1836,7 +1836,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -1844,8 +1844,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -1865,7 +1865,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -1892,7 +1892,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -1906,7 +1906,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -1918,7 +1918,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -1970,7 +1970,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -1978,7 +1978,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -1993,7 +1993,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -2001,8 +2001,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -2022,7 +2022,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -2049,7 +2049,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -2063,7 +2063,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -2075,7 +2075,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -2127,7 +2127,7 @@ contains
         end if
         err = 1
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Load file in a single string
         inquire(unit=u, size=fsze)
         allocate(character(fsze) :: ff)
@@ -2135,7 +2135,7 @@ contains
         ffp => ff(1:)
         close(u)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Read header
         call read_mm_header(ffp, header, err)
         if( err /= 0 ) then
@@ -2150,7 +2150,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Skip comments
         eol_position = shift_to_eol(ffp)
         ffp => ffp(eol_position+1:)
@@ -2158,8 +2158,8 @@ contains
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
         end do
-        
-        !----------------------------------------- 
+
+        !-----------------------------------------
         ! Read matrix dimensions
         nrows = to_num_from_stream(ffp, nrows, stat)
         if( stat /= 0 ) then
@@ -2179,7 +2179,7 @@ contains
                 message = 'Error reading nnz')
             return
         end if
-        
+
         !-----------------------------------------
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
@@ -2206,7 +2206,7 @@ contains
             return
         end if
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
@@ -2220,7 +2220,7 @@ contains
         end if
 
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
         do i = 1, nnz
             index(1,i) = rows(i)
@@ -2232,7 +2232,7 @@ contains
         if(allocated(cols)) deallocate(cols)
         if(allocated(vals)) deallocate(vals)
 
-        !----------------------------------------- 
+        !-----------------------------------------
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
@@ -2257,7 +2257,7 @@ contains
             return
         end if
         ffp => ffp(16:)
-        
+
         ! Read object type: matrix
         if( .not. starts_with(ffp, "matrix ") ) then
             err = 1
@@ -2265,9 +2265,9 @@ contains
         end if
         ffp => ffp(8:)
         header%object = 1 ! matrix
-        
+
         ! Read format type: coordinate or array
-        if( starts_with(ffp, "arr") ) then 
+        if( starts_with(ffp, "arr") ) then
             ffp => ffp(7:) ! array
             header%format = MF_array
         else if( starts_with(ffp, "coo") ) then
@@ -2321,7 +2321,7 @@ contains
       integer :: p !! position
       !----------------------------------------------
       p = 1
-      do while( p<len(s) .and. .not.(iachar(s(p:p))==LF .or. iachar(s(p:p))==CR) ) 
+      do while( p<len(s) .and. .not.(iachar(s(p:p))==LF .or. iachar(s(p:p))==CR) )
           p = p + 1
       end do
       ! If CRLF, move to LF
