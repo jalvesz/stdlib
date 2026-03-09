@@ -1077,12 +1077,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -1092,6 +1102,7 @@ contains
                 vals(i) = to_num_from_stream(ffp, mold, stat)
                 if(stat/=0) exit read_vals
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -1103,23 +1114,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -1129,14 +1147,23 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_dp(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -1234,12 +1261,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -1249,6 +1286,7 @@ contains
                 vals(i) = to_num_from_stream(ffp, mold, stat)
                 if(stat/=0) exit read_vals
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -1260,23 +1298,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -1286,14 +1331,23 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_csp(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -1391,12 +1445,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -1409,6 +1473,7 @@ contains
                 if(stat/=0) exit read_vals
                 vals(i) = cmplx(val_r, val_i, kind = sp)
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -1420,23 +1485,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -1446,15 +1518,24 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            if(header%symmetry==MS_hermitian) data(nnz+adr) = conjg(data(i))
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                if(header%symmetry==MS_hermitian) data(nnz+adr) = conjg(data(i))
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_cdp(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -1552,12 +1633,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -1570,6 +1661,7 @@ contains
                 if(stat/=0) exit read_vals
                 vals(i) = cmplx(val_r, val_i, kind = dp)
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -1581,23 +1673,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -1607,15 +1706,24 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            if(header%symmetry==MS_hermitian) data(nnz+adr) = conjg(data(i))
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                if(header%symmetry==MS_hermitian) data(nnz+adr) = conjg(data(i))
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_int8(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -1713,12 +1821,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -1728,6 +1846,7 @@ contains
                 vals(i) = to_num_from_stream(ffp, mold, stat)
                 if(stat/=0) exit read_vals
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -1739,23 +1858,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -1765,14 +1891,23 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_int16(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -1870,12 +2005,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -1885,6 +2030,7 @@ contains
                 vals(i) = to_num_from_stream(ffp, mold, stat)
                 if(stat/=0) exit read_vals
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -1896,23 +2042,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -1922,14 +2075,23 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_int32(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -2027,12 +2189,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -2042,6 +2214,7 @@ contains
                 vals(i) = to_num_from_stream(ffp, mold, stat)
                 if(stat/=0) exit read_vals
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -2053,23 +2226,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -2079,14 +2259,23 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+        end if
     end subroutine
     module subroutine load_mm_coo_int64(filename, index, data, iostat, iomsg)
         !> Name of the Matrix Market file to load from
@@ -2184,12 +2373,22 @@ contains
         ! Allocate temporary arrays to hold the file data
         allocate(rows(nnz))
         allocate(cols(nnz))
-        allocate(vals(nnz))
+        if(header%qualifier/=MQ_pattern) allocate(vals(nnz))
 
         !-----------------------------------------
         ! Read actual matrix data and store inside temporary arrays
         n_diag = 0
         read_vals: block
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz ! read entries from file
+                rows(i) = to_num_from_stream(ffp, rows(i), stat)
+                if(stat/=0) exit read_vals
+                cols(i) = to_num_from_stream(ffp, cols(i), stat)
+                if(stat/=0) exit read_vals
+                if(rows(i) == cols(i)) n_diag = n_diag + 1
+                if(stat/=0) exit read_vals
+            end do
+        else
             do i = 1, nnz ! read entries from file
                 rows(i) = to_num_from_stream(ffp, rows(i), stat)
                 if(stat/=0) exit read_vals
@@ -2199,6 +2398,7 @@ contains
                 vals(i) = to_num_from_stream(ffp, mold, stat)
                 if(stat/=0) exit read_vals
             end do
+        end if
         end block read_vals
         if(stat /= 0 ) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = int(stat), &
@@ -2210,23 +2410,30 @@ contains
         ! check storage hypothesis
         if(header%symmetry == MS_symmetric .or. header%symmetry == MS_hermitian) then
             allocate(index(2, 2*nnz-n_diag))
-            allocate(data(2*nnz-n_diag))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz-n_diag))
         else if(header%symmetry == MS_skew_symmetric) then
             allocate(index(2, 2*nnz))
-            allocate(data(2*nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(2*nnz))
         else
             allocate(index(2, nnz))
-            allocate(data(nnz))
+            if(header%qualifier/=MQ_pattern) allocate(data(nnz))
         end if
 
 
         !-----------------------------------------
         ! Fill in matrix entries from temporary arrays
-        do i = 1, nnz
-            index(1,i) = rows(i)
-            index(2,i) = cols(i)
-            data(i) = vals(i)
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+            end do
+        else
+            do i = 1, nnz
+                index(1,i) = rows(i)
+                index(2,i) = cols(i)
+                data(i) = vals(i)
+            end do
+        end if
 
         if(allocated(rows)) deallocate(rows)
         if(allocated(cols)) deallocate(cols)
@@ -2236,14 +2443,23 @@ contains
         ! Fill in symmetric entries if needed
         if(header%symmetry==MS_general) return
         adr = 1
-        do i = 1, nnz
-            if(index(1,i)==index(2,i)) cycle
-            index(1,nnz+adr) = index(2,i)
-            index(2,nnz+adr) = index(1,i)
-            data(nnz+adr) = data(i)
-            if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
-            adr = adr + 1
-        end do
+        if(header%qualifier==MQ_pattern) then
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                adr = adr + 1
+            end do
+        else
+            do i = 1, nnz
+                if(index(1,i)==index(2,i)) cycle
+                index(1,nnz+adr) = index(2,i)
+                index(2,nnz+adr) = index(1,i)
+                data(nnz+adr) = data(i)
+                if(header%symmetry==MS_skew_symmetric) data(nnz+adr) = -data(i)
+                adr = adr + 1
+            end do
+        end if
     end subroutine
 
     subroutine read_mm_header(ffp, header, err)
