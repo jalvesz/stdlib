@@ -1165,24 +1165,42 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "ES24.16E3"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,' // fmt_ //')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "ES24.16E3"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,' // fmt_ //')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1192,7 +1210,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_REAL
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_REAL
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1217,29 +1239,53 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1248,6 +1294,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1276,24 +1323,42 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "ES24.16E3"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,' // fmt_ //')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "ES24.16E3"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,' // fmt_ //')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1303,7 +1368,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_REAL
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_REAL
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1328,29 +1397,53 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1359,6 +1452,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1387,25 +1481,43 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         real(sp) :: real_part, imag_part
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "ES24.16E3"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,' // fmt_//',1X,'//fmt_//')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "ES24.16E3"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,' // fmt_//',1X,'//fmt_//')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1415,7 +1527,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_COMPLEX
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_COMPLEX
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1440,34 +1556,58 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    real_part = real(data(i), kind=sp)
-                    imag_part = aimag(data(i))
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), real_part, imag_part
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        real_part = real(data(i), kind=sp)
+                        imag_part = aimag(data(i))
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), real_part, imag_part
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    real_part = real(data(i), kind=sp)
-                    imag_part = aimag(data(i))
-                    if(index(1,i)==index(2,i) .and. symmetry_ == MM_HERMITIAN) imag_part = 0
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), real_part, imag_part
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        real_part = real(data(i), kind=sp)
+                        imag_part = aimag(data(i))
+                        if(index(1,i)==index(2,i) .and. symmetry_ == MM_HERMITIAN) imag_part = 0
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), real_part, imag_part
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1476,6 +1616,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1504,25 +1645,43 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         real(dp) :: real_part, imag_part
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "ES24.16E3"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,' // fmt_//',1X,'//fmt_//')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "ES24.16E3"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,' // fmt_//',1X,'//fmt_//')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1532,7 +1691,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_COMPLEX
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_COMPLEX
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1557,34 +1720,58 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    real_part = real(data(i), kind=dp)
-                    imag_part = aimag(data(i))
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), real_part, imag_part
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        real_part = real(data(i), kind=dp)
+                        imag_part = aimag(data(i))
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), real_part, imag_part
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    real_part = real(data(i), kind=dp)
-                    imag_part = aimag(data(i))
-                    if(index(1,i)==index(2,i) .and. symmetry_ == MM_HERMITIAN) imag_part = 0
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), real_part, imag_part
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        real_part = real(data(i), kind=dp)
+                        imag_part = aimag(data(i))
+                        if(index(1,i)==index(2,i) .and. symmetry_ == MM_HERMITIAN) imag_part = 0
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), real_part, imag_part
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1593,6 +1780,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1621,24 +1809,42 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "I0"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "I0"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1648,7 +1854,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_INTEGER
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_INTEGER
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1673,29 +1883,53 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1704,6 +1938,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1732,24 +1967,42 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "I0"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "I0"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1759,7 +2012,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_INTEGER
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_INTEGER
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1784,29 +2041,53 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1815,6 +2096,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1843,24 +2125,42 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "I0"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "I0"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1870,7 +2170,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_INTEGER
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_INTEGER
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -1895,29 +2199,53 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -1926,6 +2254,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
@@ -1954,24 +2283,42 @@ contains
         character(len=:), allocatable :: field_type
         character(len=:), allocatable :: fmt_
         character(len=:), allocatable :: symmetry_
+        logical :: is_pattern
         if(present(iostat)) iostat = 0
         if(present(iomsg)) iomsg = ''
         stat = 0
 
-            fmt_ = "I0"
-        if(present(format)) fmt_ = format
+        if(size(data)==1 .and. size(data)/=size(index,dim=2)) then
+            is_pattern = .true.
+        else
+            is_pattern = .false.
+        end if
 
-        fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        if(is_pattern) then
+            fmt_ = '(I0,1X,I0)'
+        else
+                fmt_ = "I0"
+            if(present(format)) fmt_ = format
+            fmt_ = '(I0,1X,I0,1X,'// fmt_ //')'
+        end if
 
         io = open(filename, "w", iostat=stat)
         if (stat /= 0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Could not create file: " // filename)
+            return
+        end if
+
+        if (.not. is_pattern .and. size(data) /= size(index,dim=2)) then
+            call mm_fail_process(iostat=iostat, iomsg=iomsg, code=1, &
+                message="Invalid COO data size")
+            return
         end if
 
         if(size(index, dim=1)/=2) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Invalid index dimensions: first dimension must be 2")
+            return
         end if
 
         ! Determine symmetry type
@@ -1981,7 +2328,11 @@ contains
         end if
 
         ! Determine field type based on matrix type
-        field_type = MM_INTEGER
+        if(is_pattern) then
+            field_type = MM_PATTERN
+        else
+            field_type = MM_INTEGER
+        end if
 
         catch: block
             ! Calculate the nnz to write inside mtx file
@@ -2006,29 +2357,53 @@ contains
 
             ! Write coordinate format (row, column, value)
             if(symmetry_ == MM_GENERAL) then
-                do i = 1, nnz_to_write
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, nnz_to_write
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             else
                 ! For symmetric and hermitian matrices, only the lower triangle
                 ! (including the diagonal) is written.
                 ! For skew-symmetric matrices, only the strictly lower triangle is written
                 ! (the diagonal is omitted and assumed zero).
-                do i = 1, size(index, dim=2)
-                    if(index(1,i) < index(2,i)) cycle
-                    if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
-                    write(io, fmt=fmt_, iostat=stat) &
-                        index(1,i), index(2,i), data(i)
-                    if (stat /= 0) then
-                        msg = "Error writing array element (" // to_string(i) // ")"
-                        exit catch
-                    end if
-                end do
+                if(is_pattern) then
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                else
+                    do i = 1, size(index, dim=2)
+                        if(index(1,i) < index(2,i)) cycle
+                        if(symmetry_ == MM_SKEW_SYMMETRIC .and. index(1,i) == index(2,i)) cycle
+                        write(io, fmt=fmt_, iostat=stat) &
+                            index(1,i), index(2,i), data(i)
+                        if (stat /= 0) then
+                            msg = "Error writing array element (" // to_string(i) // ")"
+                            exit catch
+                        end if
+                    end do
+                end if
             end if
         end block catch
 
@@ -2037,6 +2412,7 @@ contains
         if(stat/=0) then
             call mm_fail_process(iostat = iostat, iomsg = iomsg, code = stat,&
                 message = "Failed to save Matrix Market file '" // filename // "': " // msg)
+                return
         end if
 
         if (present(iomsg) .and. allocated(msg)) call move_alloc(msg, iomsg)
