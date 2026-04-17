@@ -11,7 +11,7 @@ contains
         character(1), intent(in), optional :: op
         real(sp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_sp
@@ -26,37 +26,37 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
@@ -73,7 +73,7 @@ contains
         character(1), intent(in), optional :: op
         real(sp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_sp
@@ -88,37 +88,37 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
@@ -135,7 +135,7 @@ contains
         character(1), intent(in), optional :: op
         real(dp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_dp
@@ -150,37 +150,37 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
@@ -197,7 +197,7 @@ contains
         character(1), intent(in), optional :: op
         real(dp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_dp
@@ -212,37 +212,37 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
@@ -259,7 +259,7 @@ contains
         character(1), intent(in), optional :: op
         complex(sp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_sp
@@ -274,55 +274,55 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
         case(sparse_op_hermitian)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(entry_index)) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(k)) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(entry_index)) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(k)) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*conjg(data(entry_index)) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*conjg(data(k)) * vec_x(row_index)
                 end do
 
             end if
@@ -339,7 +339,7 @@ contains
         character(1), intent(in), optional :: op
         complex(sp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_sp
@@ -354,55 +354,55 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
         case(sparse_op_hermitian)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(entry_index)) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(k)) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(entry_index)) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(k)) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*conjg(data(entry_index)) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*conjg(data(k)) * vec_x(:,row_index)
                 end do
 
             end if
@@ -419,7 +419,7 @@ contains
         character(1), intent(in), optional :: op
         complex(dp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_dp
@@ -434,55 +434,55 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*data(entry_index) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*data(k) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*data(entry_index) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*data(k) * vec_x(row_index)
                 end do
 
             end if
         case(sparse_op_hermitian)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(entry_index)) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(k)) * vec_x(col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(entry_index)) * vec_x(col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(row_index) = vec_y(row_index) + alpha_*conjg(data(k)) * vec_x(col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(col_index) = vec_y(col_index) + alpha_*conjg(data(entry_index)) * vec_x(row_index)
+                    vec_y(col_index) = vec_y(col_index) + alpha_*conjg(data(k)) * vec_x(row_index)
                 end do
 
             end if
@@ -499,7 +499,7 @@ contains
         character(1), intent(in), optional :: op
         complex(dp) :: alpha_
         character(1) :: op_
-        integer(ilp) :: col_index, entry_index, row_index
+        integer(ilp) :: col_index, k, row_index
 
         op_ = sparse_op_none; if(present(op)) op_ = op
         alpha_ = one_dp
@@ -514,55 +514,55 @@ contains
         select case(op_)
         case(sparse_op_none)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    row_index = index(1,entry_index)
-                    col_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    row_index = index(1,k)
+                    col_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
         case(sparse_op_transpose)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(entry_index) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*data(k) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(entry_index) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*data(k) * vec_x(:,row_index)
                 end do
 
             end if
         case(sparse_op_hermitian)
             if(storage == sparse_full) then
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(entry_index)) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(k)) * vec_x(:,col_index)
                 end do
 
             else 
-                do concurrent (entry_index = 1:nnz)
-                    col_index = index(1,entry_index)
-                    row_index = index(2,entry_index)
-                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(entry_index)) * vec_x(:,col_index)
+                do k = 1, nnz
+                    col_index = index(1,k)
+                    row_index = index(2,k)
+                    vec_y(:,row_index) = vec_y(:,row_index) + alpha_*conjg(data(k)) * vec_x(:,col_index)
                     if( row_index==col_index ) cycle
-                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*conjg(data(entry_index)) * vec_x(:,row_index)
+                    vec_y(:,col_index) = vec_y(:,col_index) + alpha_*conjg(data(k)) * vec_x(:,row_index)
                 end do
 
             end if
