@@ -55,9 +55,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_sp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(j)
-                        vec_y(i) = vec_y(i) + alpha_ * data(i) * vec_x(row(i))
+                        vec_y(row(i)) = vec_y(row(i)) + alpha_ * data(i) * vec_x(row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(j)
                     vec_y(j) = vec_y(j) + alpha_ * aux
@@ -120,9 +120,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_sp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(:,j)
-                        vec_y(:,i) = vec_y(:,i) + alpha_ * data(i) * vec_x(:,row(i))
+                        vec_y(:,row(i)) = vec_y(:,row(i)) + alpha_ * data(i) * vec_x(:,row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(:,j)
                     vec_y(:,j) = vec_y(:,j) + alpha_ * aux
@@ -185,9 +185,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_dp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(j)
-                        vec_y(i) = vec_y(i) + alpha_ * data(i) * vec_x(row(i))
+                        vec_y(row(i)) = vec_y(row(i)) + alpha_ * data(i) * vec_x(row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(j)
                     vec_y(j) = vec_y(j) + alpha_ * aux
@@ -250,9 +250,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_dp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(:,j)
-                        vec_y(:,i) = vec_y(:,i) + alpha_ * data(i) * vec_x(:,row(i))
+                        vec_y(:,row(i)) = vec_y(:,row(i)) + alpha_ * data(i) * vec_x(:,row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(:,j)
                     vec_y(:,j) = vec_y(:,j) + alpha_ * aux
@@ -315,9 +315,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_csp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(j)
-                        vec_y(i) = vec_y(i) + alpha_ * data(i) * vec_x(row(i))
+                        vec_y(row(i)) = vec_y(row(i)) + alpha_ * data(i) * vec_x(row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(j)
                     vec_y(j) = vec_y(j) + alpha_ * aux
@@ -345,9 +345,9 @@ contains
             else if( storage == sparse_upper .and. op_==sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_csp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + conjg(data(i)) * vec_x(j)
-                        vec_y(i) = vec_y(i) + alpha_ * conjg(data(i)) * vec_x(row(i))
+                        vec_y(row(i)) = vec_y(row(i)) + alpha_ * conjg(data(i)) * vec_x(row(i))
                     end do
                     aux = aux + conjg(data(colptr(j))) * vec_x(j)
                     vec_y(j) = vec_y(j) + alpha_ * aux
@@ -409,9 +409,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_csp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(:,j)
-                        vec_y(:,i) = vec_y(:,i) + alpha_ * data(i) * vec_x(:,row(i))
+                        vec_y(:,row(i)) = vec_y(:,row(i)) + alpha_ * data(i) * vec_x(:,row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(:,j)
                     vec_y(:,j) = vec_y(:,j) + alpha_ * aux
@@ -439,9 +439,9 @@ contains
             else if( storage == sparse_upper .and. op_==sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_csp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + conjg(data(i)) * vec_x(:,j)
-                        vec_y(:,i) = vec_y(:,i) + alpha_ * conjg(data(i)) * vec_x(:,row(i))
+                        vec_y(:,row(i)) = vec_y(:,row(i)) + alpha_ * conjg(data(i)) * vec_x(:,row(i))
                     end do
                     aux = aux + conjg(data(colptr(j))) * vec_x(:,j)
                     vec_y(:,j) = vec_y(:,j) + alpha_ * aux
@@ -503,9 +503,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_cdp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(j)
-                        vec_y(i) = vec_y(i) + alpha_ * data(i) * vec_x(row(i))
+                        vec_y(row(i)) = vec_y(row(i)) + alpha_ * data(i) * vec_x(row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(j)
                     vec_y(j) = vec_y(j) + alpha_ * aux
@@ -533,9 +533,9 @@ contains
             else if( storage == sparse_upper .and. op_==sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_cdp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + conjg(data(i)) * vec_x(j)
-                        vec_y(i) = vec_y(i) + alpha_ * conjg(data(i)) * vec_x(row(i))
+                        vec_y(row(i)) = vec_y(row(i)) + alpha_ * conjg(data(i)) * vec_x(row(i))
                     end do
                     aux = aux + conjg(data(colptr(j))) * vec_x(j)
                     vec_y(j) = vec_y(j) + alpha_ * aux
@@ -597,9 +597,9 @@ contains
             else if( storage == sparse_upper .and. op_/=sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_cdp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + data(i) * vec_x(:,j)
-                        vec_y(:,i) = vec_y(:,i) + alpha_ * data(i) * vec_x(:,row(i))
+                        vec_y(:,row(i)) = vec_y(:,row(i)) + alpha_ * data(i) * vec_x(:,row(i))
                     end do
                     aux = aux + data(colptr(j)) * vec_x(:,j)
                     vec_y(:,j) = vec_y(:,j) + alpha_ * aux
@@ -627,9 +627,9 @@ contains
             else if( storage == sparse_upper .and. op_==sparse_op_hermitian )then
                 do j = 1 , ncols
                     aux  = zero_cdp
-                    do i = colptr(j), colptr(i+1)-2
+                    do i = colptr(j), colptr(j+1)-2
                         aux = aux + conjg(data(i)) * vec_x(:,j)
-                        vec_y(:,i) = vec_y(:,i) + alpha_ * conjg(data(i)) * vec_x(:,row(i))
+                        vec_y(:,row(i)) = vec_y(:,row(i)) + alpha_ * conjg(data(i)) * vec_x(:,row(i))
                     end do
                     aux = aux + conjg(data(colptr(j))) * vec_x(:,j)
                     vec_y(:,j) = vec_y(:,j) + alpha_ * aux
