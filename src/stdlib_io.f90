@@ -11,7 +11,7 @@ module stdlib_io
                                  FMT_COMPLEX_SP, FMT_COMPLEX_DP, FMT_COMPLEX_XDP, FMT_COMPLEX_QP
   use stdlib_error, only: error_stop, state_type, STDLIB_IO_ERROR
   use stdlib_optval, only: optval
-  use stdlib_ascii, only: is_blank, whitespace, CR, LF, VT, FF
+  use stdlib_ascii, only: is_blank
   use stdlib_string_type, only : string_type, assignment(=), move
   implicit none
   private
@@ -45,8 +45,6 @@ module stdlib_io
 
   !> Default delimiter for loadtxt, savetxt and number_of_columns
   character(len=1), parameter :: delimiter_default = " "
-  character(len=1), parameter :: comment_default = "#"
-  character(len=1), parameter :: nl = new_line('a')
 
   public :: FMT_INT, FMT_REAL_SP, FMT_REAL_DP, FMT_REAL_XDP, FMT_REAL_QP
   public :: FMT_COMPLEX_SP, FMT_COMPLEX_DP, FMT_COMPLEX_XDP, FMT_COMPLEX_QP
@@ -81,22 +79,14 @@ module stdlib_io
     !!
     !! Saves a 2D array into a text file
     !! ([Specification](../page/specs/stdlib_io.html#description_2))
-      module procedure savetxt_rspf
-      module procedure savetxt_rdpf
-      module procedure savetxt_iint8f
-      module procedure savetxt_iint16f
-      module procedure savetxt_iint32f
-      module procedure savetxt_iint64f
-      module procedure savetxt_cspf
-      module procedure savetxt_cdpf
-      module procedure savetxt_rspu
-      module procedure savetxt_rdpu
-      module procedure savetxt_iint8u
-      module procedure savetxt_iint16u
-      module procedure savetxt_iint32u
-      module procedure savetxt_iint64u
-      module procedure savetxt_cspu
-      module procedure savetxt_cdpu
+      module procedure savetxt_rsp
+      module procedure savetxt_rdp
+      module procedure savetxt_iint8
+      module procedure savetxt_iint16
+      module procedure savetxt_iint32
+      module procedure savetxt_iint64
+      module procedure savetxt_csp
+      module procedure savetxt_cdp
   end interface
 
 contains
@@ -182,7 +172,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -202,7 +192,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -210,7 +200,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -221,7 +211,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -317,7 +307,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -337,7 +327,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -345,7 +335,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -356,7 +346,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -452,7 +442,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -472,7 +462,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -480,7 +470,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -491,7 +481,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -587,7 +577,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -607,7 +597,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -615,7 +605,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -626,7 +616,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -722,7 +712,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -742,7 +732,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -750,7 +740,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -761,7 +751,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -857,7 +847,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -877,7 +867,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -885,7 +875,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -896,7 +886,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -993,7 +983,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -1013,7 +1003,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -1021,7 +1011,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -1032,7 +1022,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -1129,7 +1119,7 @@ contains
         ! Use list directed read if user has specified fmt='*'
         if (is_blank(delimiter_) .or. delimiter_ == ",") then
           do i = 1, max_rows_
-            read(s,*,iostat=ios,iomsg=iomsg) d(i, :)
+            read (s,*,iostat=ios,iomsg=iomsg) d(i, :)
             
             if (ios/=0) then 
               write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -1149,7 +1139,7 @@ contains
             istart = 0
             do j = 1, ncol - 1
               iend = index(line(istart+1:), delimiter_)
-              read(line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
+              read (line(istart+1:istart+iend-1),*,iostat=ios,iomsg=iomsg) d(i, j)
               if (ios/=0) then 
                  write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                  call error_stop(msg=trim(msgout))
@@ -1157,7 +1147,7 @@ contains
               istart = istart + iend
             end do
   
-            read(line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
+            read (line(istart+1:),*,iostat=ios,iomsg=iomsg) d(i, ncol)
             if (ios/=0) then 
                write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
                call error_stop(msg=trim(msgout))
@@ -1168,7 +1158,7 @@ contains
       else
         ! Otherwise pass default or user specified fmt string.
         do i = 1, max_rows_
-          read(s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
+          read (s,fmt_,iostat=ios,iomsg=iomsg) d(i, :)
           
           if (ios/=0) then 
              write(msgout,2) trim(iomsg),size(d,2),i,trim(filename)
@@ -1184,7 +1174,8 @@ contains
 
     end subroutine loadtxt_cdp
 
-    subroutine savetxt_rspf (filename, d, delimiter, fmt, header, footer, comments)
+
+    subroutine savetxt_rsp(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1194,11 +1185,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       real(sp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1208,93 +1195,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_REAL_sp(1:len(FMT_REAL_sp)-1)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_REAL_sp(2:len(FMT_REAL_sp)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_rspf
-    subroutine savetxt_rdpf (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_rsp
+    subroutine savetxt_rdp(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1304,11 +1231,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       real(dp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1318,93 +1241,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_REAL_dp(1:len(FMT_REAL_dp)-1)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_REAL_dp(2:len(FMT_REAL_dp)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_rdpf
-    subroutine savetxt_iint8f (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_rdp
+    subroutine savetxt_iint8(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1414,11 +1277,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       integer(int8), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1428,93 +1287,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_INT(1:len(FMT_INT)-1)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_iint8f
-    subroutine savetxt_iint16f (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_iint8
+    subroutine savetxt_iint16(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1524,11 +1323,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       integer(int16), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1538,93 +1333,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_INT(1:len(FMT_INT)-1)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_iint16f
-    subroutine savetxt_iint32f (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_iint16
+    subroutine savetxt_iint32(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1634,11 +1369,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       integer(int32), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1648,93 +1379,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_INT(1:len(FMT_INT)-1)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_iint32f
-    subroutine savetxt_iint64f (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_iint32
+    subroutine savetxt_iint64(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1744,11 +1415,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       integer(int64), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1758,93 +1425,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_INT(1:len(FMT_INT)-1)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_iint64f
-    subroutine savetxt_cspf (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_iint64
+    subroutine savetxt_csp(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1854,11 +1461,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       complex(sp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1868,93 +1471,33 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_COMPLEX_sp(1:11)//delim_str//FMT_COMPLEX_sp(14:23)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_COMPLEX_sp(2:11)//delim_str//FMT_COMPLEX_sp(14:23)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_cspf
-    subroutine savetxt_cdpf (filename, d, delimiter, fmt, header, footer, comments)
+    end subroutine savetxt_csp
+    subroutine savetxt_cdp(filename, d, delimiter)
       !! version: experimental
       !!
       !! Saves a 2D array into a text file.
@@ -1964,11 +1507,7 @@ contains
       !!
       character(len=*), intent(in) :: filename  ! File to save the array to
       complex(dp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
+      character(len=1), intent(in), optional :: delimiter  ! Column delimiter. Default is a space.
       !!
       !! Example
       !! -------
@@ -1978,940 +1517,32 @@ contains
       !! call savetxt("log.txt", data)
       !!```
       !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
+      integer :: s, i, ios
+      character(len=1) :: delimiter_
+      character(len=3) :: delim_str
       character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      integer :: unit
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
+      character(len=1024) :: iomsg, msgout
 
       delimiter_ = optval(delimiter, delimiter_default)
       delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
+        fmt_ = "(*"//FMT_COMPLEX_dp(1:11)//delim_str//FMT_COMPLEX_dp(14:23)//",:,"//delim_str//"))"
 
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_COMPLEX_dp(2:11)//delim_str//FMT_COMPLEX_dp(14:23)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      ! Check if it is open
-      inquire(file=filename, opened=opened)
-      if(.not. opened) then
-          unit = open(filename, "w")
-      else                      ! Check that it is writable
-          inquire(file=filename, number=unit, write=writable)
-          if ((unit == -1) .or. (writable(1:1) /= 'Y')) then
-              write(msgout,'(a)') 'savetxt error: file '//filename//' not open for writing'
-              call error_stop(msg=trim(msgout))
-          end if
-      end if
-      fout = filename           ! fout is used for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
+      s = open(filename, "w")
       do i = 1, size(d, 1)
-          write(unit, fmt_, &
+          write(s, fmt_, &
                 iostat=ios,iomsg=iomsg) d(i, :)
         
         if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
+           write(msgout,1) trim(iomsg),size(d,2),i,trim(filename) 
+           call error_stop(msg=trim(msgout))
         end if           
+        
       end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-      if (.not. opened)  close(unit) ! Only close if opened in the routine
-
+      close(s)
+      
       1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
       
-    end subroutine savetxt_cdpf
-    subroutine savetxt_rspu (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      real(sp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! real(sp) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_REAL_sp(2:len(FMT_REAL_sp)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_rspu
-    subroutine savetxt_rdpu (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      real(dp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! real(dp) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_REAL_dp(2:len(FMT_REAL_dp)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_rdpu
-    subroutine savetxt_iint8u (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      integer(int8), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! integer(int8) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_iint8u
-    subroutine savetxt_iint16u (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      integer(int16), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! integer(int16) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_iint16u
-    subroutine savetxt_iint32u (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      integer(int32), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! integer(int32) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_iint32u
-    subroutine savetxt_iint64u (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      integer(int64), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! integer(int64) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_INT(2:len(FMT_INT)-1)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_iint64u
-    subroutine savetxt_cspu (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      complex(sp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! complex(sp) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_COMPLEX_sp(2:11)//delim_str//FMT_COMPLEX_sp(14:23)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_cspu
-    subroutine savetxt_cdpu (unit, d, delimiter, fmt, header, footer, comments)
-      !! version: experimental
-      !!
-      !! Saves a 2D array into a text file.
-      !!
-      !! Arguments
-      !! ---------
-      !!
-      integer, intent(in) :: unit
-      complex(dp), intent(in) :: d(:,:)           ! The 2D array to save
-      character(len=*), intent(in), optional :: delimiter  ! Column delimiter. Default is a space ' '.
-      character(len=*), intent(in), optional :: fmt  !< Fortran format specifier. Defaults to the write format for the data type.
-      character(len=*), intent(in), optional :: header  !< If present, text to write before data.
-      character(len=*), intent(in), optional :: footer  !< If present, text to write after data.
-      character(len=*), intent(in), optional :: comments  !< Comment character. Default "#".
-      !!
-      !! Example
-      !! -------
-      !!
-      !!```fortran
-      !! complex(dp) :: data(3, 2)
-      !! call savetxt("log.txt", data)
-      !!```
-      !!
-      integer :: i, ios
-      character(len=:), allocatable :: delimiter_
-      character(len=:), allocatable :: delim_str
-      character(len=:), allocatable :: default_fmt
-      character(len=:), allocatable :: fmt_
-      character(len=:), allocatable :: comments_
-      character(len=:), allocatable :: header_
-      character(len=:), allocatable :: footer_
-      !
-      logical :: opened
-      character(len=7) :: writable
-      character(len=1024) :: iomsg, msgout, fout
-
-      delimiter_ = optval(delimiter, delimiter_default)
-      delim_str = "'"//delimiter_//"'"
-      comments_ = optval(comments, comment_default)
-      header_ = optval(trim(header), '')
-      footer_ = optval(trim(footer), '')
-
-      if(index(delimiter_, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter string cannot include the comments string'
-          call error_stop(msg=trim(msgout))
-      end if
-
-      if(scan(whitespace, comments_) /= 0) then
-          write(msgout,'(a)') 'savetxt error: comments string cannot include whitespaces'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-      if(scan(LF//CR//VT//FF, delimiter_ ) /= 0) then
-          write(msgout,'(a)') 'savetxt error: delimiter cannot include newline'
-          call error_stop(msg=trim(msgout))
-      end if
-        
-
-        default_fmt = FMT_COMPLEX_dp(2:11)//delim_str//FMT_COMPLEX_dp(14:23)
-      fmt_ = "(*("//optval(fmt, default_fmt)//",:,"//delim_str//"))"
-
-      ! !!! Check first argument (filename or unit) !!!!!!!!
-      inquire(unit=unit, opened=opened, write=writable) ! Check that was opened and is writable
-      if((.not. opened) .or. (writable(1:1) /= 'Y')) then
-          write(msgout,'(a,i0,a)') 'savetxt error: unit ',unit,' not open for writing'
-          call error_stop(msg=trim(msgout))
-      end if
-      write(fout,'(i0)') unit
-      fout = adjustl(fout)  ! fout is used only for unified error message later
-      ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-      ! Write the header if non-empty
-      if (header_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(header_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> header to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-        
-      do i = 1, size(d, 1)
-          write(unit, fmt_, &
-                iostat=ios,iomsg=iomsg) d(i, :)
-        
-        if (ios/=0) then 
-            write(msgout,1) trim(iomsg),size(d,2),i,trim(fout)
-            call error_stop(msg=trim(msgout))
-        end if           
-      end do
-
-      if (footer_ /= '') then
-          write(unit, '(A)', iostat=ios, iomsg=iomsg) prepend(footer_, comments_)
-          if (ios/=0) then
-              write(msgout,'(a)') 'savetxt: error <'//trim(iomsg)//"> footer to "//trim(fout)
-              call error_stop(msg=trim(msgout))
-          end if           
-      end if
-
-
-      1 format('savetxt: error <',a,'> writing ',i0,' values to line ',i0,' of ',a,'.')
-      
-    end subroutine savetxt_cdpu
-  pure function prepend(Sin, comment) result(Sout)
-    character(len=*), intent(in) :: Sin
-    character(len=:), allocatable :: Sout
-    character(len=*), intent(in) :: comment 
-    character(len=len(comment)+1) :: com_
-    integer :: bol, eol       ! indexes of beginning and end of line
-
-    if (trim(Sin) == '') then
-        Sout = ''
-        return
-    end if
-    
-    com_ = comment//" "
-    bol = 1
-    Sout = com_              ! Initialize to comment the first line
-    do
-      eol = index(Sin(bol:), nl) + bol - 1 ! position of end of line in original string
-      if (eol == bol - 1) exit             ! index returned 0
-      Sout = Sout//Sin(bol:eol)//com_
-      bol = eol + 1
-    end do
-    if (eol < len(Sin)) Sout = Sout//Sin(eol + 1:) ! Add last line if not newline present
-
-  end function prepend
+    end subroutine savetxt_cdp
 
 
   integer function number_of_columns(s, skiprows, delimiter)
