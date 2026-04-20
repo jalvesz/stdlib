@@ -503,7 +503,7 @@ contains
         if (associated(process%oncomplete)) &
             call process%oncomplete(process%id,        &
                                     process%exit_code, &
-                                    process%stdin,    &
+                                    process%stderr,    &
                                     process%stdout,    &
                                     process%stderr,    &
                                     process%payload)
