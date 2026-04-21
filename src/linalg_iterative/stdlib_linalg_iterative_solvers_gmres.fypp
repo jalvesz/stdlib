@@ -1,0 +1,278 @@
+#:include "common.fypp"
+#:set R_KINDS_TYPES = list(zip(REAL_KINDS, REAL_TYPES, REAL_SUFFIX))
+#:set C_KINDS_TYPES = list(zip(CMPLX_KINDS, CMPLX_TYPES, CMPLX_SUFFIX))
+#:set MATRIX_TYPES = ["dense", "CSR"]
+#:set RANKS = range(1, 2+1)
+
+submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_gmres
+    use stdlib_kinds
+    use stdlib_sparse
+    use stdlib_constants
+    use stdlib_optval, only: optval
+    implicit none
+
+contains
+
+    #:for k, t, s in R_KINDS_TYPES
+    module subroutine stdlib_solve_gmres_kernel_${s}$(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
+        class(stdlib_linop_${s}$_type), intent(in) :: A
+        class(stdlib_linop_${s}$_type), intent(in) :: M
+        ${t}$, intent(in) :: b(:), rtol, atol
+        ${t}$, intent(inout) :: x(:)
+        integer, intent(in) :: maxiter, kdim
+        type(stdlib_solver_workspace_${s}$_type), intent(inout) :: workspace
+        integer :: i, iter, inner_iter, j
+        ${t}$ :: beta, denom, hnext, norm_sq, norm_sq0, temp, tolsq
+        ${t}$, allocatable :: cs(:), g(:), h(:,:), sn(:), x_base(:), y(:)
+
+        allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim), x_base(size(x)))
+
+        associate( r => workspace%tmp(:,1), &
+                   w => workspace%tmp(:,2), &
+                   v => workspace%tmp(:,3:kdim+3), &
+                   z => workspace%tmp(:,kdim+4:2*kdim+3) )
+
+            norm_sq0 = A%inner_product(b, b)
+            tolsq = max(rtol*rtol*norm_sq0, atol*atol)
+
+            r = b
+            call A%matvec(x, r, alpha=-one_${s}$, beta=one_${s}$, op='N')
+            norm_sq = A%inner_product(r, r)
+            if (associated(workspace%callback)) call workspace%callback(x, norm_sq, 0)
+
+            if (norm_sq <= tolsq .or. maxiter <= 0) then
+                deallocate(h, cs, sn, g, y, x_base)
+                return
+            end if
+
+            iter = 0
+            do while (iter < maxiter .and. norm_sq >= tolsq)
+                beta = sqrt(max(norm_sq, zero_${s}$))
+                if (beta <= epsilon(one_${s}$)) exit
+
+                inner_iter = min(kdim, maxiter - iter)
+                x_base = x
+                h = zero_${s}$
+                cs = zero_${s}$
+                sn = zero_${s}$
+                g = zero_${s}$
+                y = zero_${s}$
+
+                v(:,1) = r / beta
+                g(1) = beta
+
+                do j = 1, inner_iter
+                    call M%matvec(v(:,j), z(:,j), alpha=one_${s}$, beta=zero_${s}$, op='N')
+                    call A%matvec(z(:,j), w, alpha=one_${s}$, beta=zero_${s}$, op='N')
+
+                    do i = 1, j
+                        h(i,j) = A%inner_product(v(:,i), w)
+                        w = w - h(i,j) * v(:,i)
+                    end do
+
+                    hnext = sqrt(max(A%inner_product(w, w), zero_${s}$))
+                    h(j+1,j) = hnext
+                    if (hnext > epsilon(one_${s}$)) then
+                        v(:,j+1) = w / hnext
+                    else
+                        v(:,j+1) = zero_${s}$
+                    end if
+
+                    do i = 1, j - 1
+                        temp = cs(i) * h(i,j) + sn(i) * h(i+1,j)
+                        h(i+1,j) = -sn(i) * h(i,j) + cs(i) * h(i+1,j)
+                        h(i,j) = temp
+                    end do
+
+                    denom = sqrt(h(j,j) * h(j,j) + h(j+1,j) * h(j+1,j))
+                    if (denom > epsilon(one_${s}$)) then
+                        cs(j) = h(j,j) / denom
+                        sn(j) = h(j+1,j) / denom
+                    else
+                        cs(j) = one_${s}$
+                        sn(j) = zero_${s}$
+                    end if
+
+                    temp = cs(j) * h(j,j) + sn(j) * h(j+1,j)
+                    h(j+1,j) = -sn(j) * h(j,j) + cs(j) * h(j+1,j)
+                    h(j,j) = temp
+
+                    temp = cs(j) * g(j) + sn(j) * g(j+1)
+                    g(j+1) = -sn(j) * g(j) + cs(j) * g(j+1)
+                    g(j) = temp
+
+                    call upper_triangular_solve(h, g, y, j)
+                    x = x_base
+                    do i = 1, j
+                        x = x + y(i) * z(:,i)
+                    end do
+
+                    norm_sq = g(j+1) * g(j+1)
+                    iter = iter + 1
+                    if (associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
+
+                    if (norm_sq < tolsq .or. hnext <= epsilon(one_${s}$) .or. iter >= maxiter) exit
+                end do
+
+                if (norm_sq < tolsq .or. iter >= maxiter) exit
+
+                r = b
+                call A%matvec(x, r, alpha=-one_${s}$, beta=one_${s}$, op='N')
+                norm_sq = A%inner_product(r, r)
+            end do
+        end associate
+
+        deallocate(h, cs, sn, g, y, x_base)
+
+    contains
+
+        subroutine upper_triangular_solve(h, g, y, n)
+            ${t}$, intent(in) :: h(:,:), g(:)
+            ${t}$, intent(inout) :: y(:)
+            integer, intent(in) :: n
+            integer :: row
+
+            y(1:n) = g(1:n)
+            do row = n, 1, -1
+                if (row < n) y(row) = y(row) - sum(h(row,row+1:n) * y(row+1:n))
+                if (abs(h(row,row)) > epsilon(one_${s}$)) then
+                    y(row) = y(row) / h(row,row)
+                else
+                    y(row) = zero_${s}$
+                end if
+            end do
+        end subroutine
+    end subroutine
+    #:endfor
+
+    #:for matrix in MATRIX_TYPES
+    #:for k, t, s in R_KINDS_TYPES
+    module subroutine stdlib_solve_gmres_${matrix}$_${s}$(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+        #:if matrix == "dense"
+        use stdlib_linalg, only: diag
+        ${t}$, intent(in) :: A(:,:)
+        #:else
+        type(${matrix}$_${s}$_type), intent(in) :: A
+        #:endif
+        ${t}$, intent(in) :: b(:)
+        ${t}$, intent(inout) :: x(:)
+        ${t}$, intent(in), optional :: rtol, atol
+        logical(int8), intent(in), optional, target :: di(:)
+        integer, intent(in), optional :: maxiter, kdim
+        logical, intent(in), optional :: restart
+        integer, intent(in), optional :: precond
+        class(stdlib_linop_${s}$_type), optional, intent(in), target :: M
+        type(stdlib_solver_workspace_${s}$_type), optional, intent(inout), target :: workspace
+        type(stdlib_linop_${s}$_type) :: op
+        type(stdlib_linop_${s}$_type), pointer :: M_ => null()
+        type(stdlib_solver_workspace_${s}$_type), pointer :: workspace_
+        integer :: kdim_, maxiter_, n, ncols, precond_
+        ${t}$ :: rtol_, atol_
+        logical :: restart_
+        logical(int8), pointer :: di_(:)
+        ${t}$, allocatable :: diagonal(:)
+
+        n = size(b)
+        maxiter_ = optval(x=maxiter, default=n)
+        kdim_ = max(1, min(optval(x=kdim, default=min(30, n)), n))
+        restart_ = optval(x=restart, default=.true.)
+        rtol_ = optval(x=rtol, default=1.e-5_${s}$)
+        atol_ = optval(x=atol, default=epsilon(one_${s}$))
+        precond_ = optval(x=precond, default=pc_none)
+        ncols = 2 * kdim_ + stdlib_size_wksp_gmres
+
+        if (present(M)) then
+            M_ => M
+        else
+            allocate(M_)
+            allocate(diagonal(n), source=zero_${s}$)
+
+            select case(precond_)
+            case(pc_jacobi)
+                #:if matrix == "dense"
+                diagonal = diag(A)
+                #:else
+                call diag(A, diagonal)
+                #:endif
+                M_%matvec => precond_jacobi
+            case default
+                M_%matvec => precond_none
+            end select
+            where(abs(diagonal) > epsilon(zero_${s}$)) diagonal = one_${s}$ / diagonal
+        end if
+
+        op%matvec => matvec
+
+        if (present(di)) then
+            di_ => di
+        else
+            allocate(di_(n), source=.false._int8)
+        end if
+
+        if (present(workspace)) then
+            workspace_ => workspace
+        else
+            allocate(workspace_)
+        end if
+        if (.not.allocated(workspace_%tmp)) then
+            allocate(workspace_%tmp(n, ncols), source=zero_${s}$)
+        else if (size(workspace_%tmp,1) /= n .or. size(workspace_%tmp,2) < ncols) then
+            deallocate(workspace_%tmp)
+            allocate(workspace_%tmp(n, ncols), source=zero_${s}$)
+        end if
+
+        if (restart_) x = zero_${s}$
+        x = merge(b, x, di_)
+        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_)
+
+        if (.not.present(di)) deallocate(di_)
+        di_ => null()
+
+        if (.not.present(workspace)) then
+            deallocate(workspace_%tmp)
+            deallocate(workspace_)
+        end if
+        M_ => null()
+        workspace_ => null()
+
+    contains
+
+        subroutine matvec(x,y,alpha,beta,op)
+            #:if matrix == "dense"
+            use stdlib_linalg_blas, only: gemv
+            #:endif
+            ${t}$, intent(in) :: x(:)
+            ${t}$, intent(inout) :: y(:)
+            ${t}$, intent(in) :: alpha
+            ${t}$, intent(in) :: beta
+            character(1), intent(in) :: op
+            #:if matrix == "dense"
+            call gemv(op, m=size(A,1), n=size(A,2), alpha=alpha, a=A, lda=size(A,1), x=x, incx=1, beta=beta, y=y, incy=1)
+            #:else
+            call spmv(A, x, y, alpha, beta, op)
+            #:endif
+            y = merge(zero_${s}$, y, di_)
+        end subroutine
+
+        subroutine precond_none(x,y,alpha,beta,op)
+            ${t}$, intent(in) :: x(:)
+            ${t}$, intent(inout) :: y(:)
+            ${t}$, intent(in) :: alpha
+            ${t}$, intent(in) :: beta
+            character(1), intent(in) :: op
+            y = merge(zero_${s}$, x, di_)
+        end subroutine
+
+        subroutine precond_jacobi(x,y,alpha,beta,op)
+            ${t}$, intent(in) :: x(:)
+            ${t}$, intent(inout) :: y(:)
+            ${t}$, intent(in) :: alpha
+            ${t}$, intent(in) :: beta
+            character(1), intent(in) :: op
+            y = merge(zero_${s}$, diagonal * x, di_)
+        end subroutine
+    end subroutine
+    #:endfor
+    #:endfor
+
+end submodule stdlib_linalg_iterative_gmres

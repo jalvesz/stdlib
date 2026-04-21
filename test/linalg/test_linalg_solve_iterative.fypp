@@ -23,6 +23,7 @@ module test_linalg_solve_iterative
 
         tests = [ new_unittest("stdlib_solve_cg",test_stdlib_solve_cg), &
                   new_unittest("stdlib_solve_pcg",test_stdlib_solve_pcg), &
+                  new_unittest("stdlib_solve_gmres",test_stdlib_solve_gmres), &
                   new_unittest("stdlib_solve_bicgstab",test_stdlib_solve_bicgstab), &
                   new_unittest("stdlib_solve_bicgstab_nonsymmetric",test_stdlib_solve_bicgstab_nonsymmetric) ]
 
@@ -79,6 +80,48 @@ module test_linalg_solve_iterative
 
         #:endfor
     end subroutine test_stdlib_solve_pcg
+
+    subroutine test_stdlib_solve_gmres(error)
+        type(error_type), allocatable, intent(out) :: error
+
+        #:for k, t, s in R_KINDS_TYPES
+        block
+        ${t}$, parameter :: tol = 1000*epsilon(0.0_${k}$)
+        ${t}$ :: A(4,4) = reshape([${t}$ :: 5,  1,  2,  0, &
+                                           0,  4, -1,  1, &
+                                           1,  0,  3,  2, &
+                                           2, -1,  0,  6], [4,4])
+        ${t}$ :: x(4), load(4), xref(4)
+
+        xref = [1.0_${k}$, 2.0_${k}$, -1.0_${k}$, 0.5_${k}$]
+        load = matmul(A, xref)
+        x = 0.0_${k}$
+
+        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_${k}$, atol=1.e-12_${k}$, kdim=2, maxiter=12)
+
+        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (restarted dense test)')
+        if (allocated(error)) return
+        end block
+
+        block
+        ${t}$, parameter :: tol = 1000*epsilon(0.0_${k}$)
+        ${t}$ :: A(3,3) = reshape([${t}$ :: 10,  1,  2, &
+                                            1, 10,  3, &
+                                            2,  3, 10], [3,3])
+        ${t}$ :: x(3), load(3), xref(3)
+
+        xref = [(137._${k}$/218._${k}$), -(9._${k}$/109._${k}$), (87._${k}$/218._${k}$)]
+        load = [7.0_${k}$, 1.0_${k}$, 5.0_${k}$]
+        x = [0.2_${k}$, -0.1_${k}$, 0.3_${k}$]
+
+        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_${k}$, precond=pc_jacobi)
+
+        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (Jacobi preconditioned test)')
+        if (allocated(error)) return
+        end block
+
+        #:endfor
+    end subroutine test_stdlib_solve_gmres
 
     subroutine test_stdlib_solve_bicgstab(error)
         type(error_type), allocatable, intent(out) :: error
