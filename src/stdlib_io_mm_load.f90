@@ -1045,6 +1045,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -1227,6 +1229,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -1409,6 +1413,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -1595,6 +1601,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -1781,6 +1789,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -1963,6 +1973,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -2145,6 +2157,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)
@@ -2327,6 +2341,8 @@ contains
 
         !-----------------------------------------
         ! Skip comments
+        eol_position = shift_to_eol(ffp)
+        ffp => ffp(eol_position+1:)
         do while( iachar(ffp(1:1))==PP )
             eol_position = shift_to_eol(ffp)
             ffp => ffp(eol_position+1:)

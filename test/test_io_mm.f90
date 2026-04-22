@@ -2169,8 +2169,8 @@ contains
                 else
                     path = "data/"
                 end if
+                path = path // "matrix_market/"
             end if 
-            path = path // "matrix_market/"
 
             ! coordinate real symmetric
             filename = "bcsstk01"
