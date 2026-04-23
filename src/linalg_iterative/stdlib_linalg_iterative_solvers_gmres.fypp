@@ -144,7 +144,7 @@ contains
 
             y(1:n) = g(1:n)
             do row = n, 1, -1
-                if (row < n) y(row) = y(row) - sum(h(row,row+1:n) * y(row+1:n))
+                if (row < n) y(row) = y(row) - dot_product(h(row,row+1:n) , y(row+1:n))
                 if (abs(h(row,row)) > epsilon(one_${s}$)) then
                     y(row) = y(row) / h(row,row)
                 else
