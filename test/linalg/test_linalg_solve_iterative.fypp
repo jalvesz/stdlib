@@ -97,8 +97,8 @@ module test_linalg_solve_iterative
         load = matmul(A, xref)
         x = 0.0_${k}$
 
-        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_${k}$, atol=1.e-12_${k}$, kdim=2, maxiter=12)
-
+        call stdlib_solve_gmres(A, load, x, rtol=tol, maxiter=12)
+        
         call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (restarted dense test)')
         if (allocated(error)) return
         end block
