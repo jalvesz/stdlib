@@ -32,9 +32,11 @@ contains
                    v => workspace%tmp(:,3:kdim+3), &
                    z => workspace%tmp(:,kdim+4:2*kdim+3) )
 
+            ! Initialize convergence targets from the right-hand side norm.
             norm_sq0 = A%inner_product(b, b)
             tolsq = max(rtol*rtol*norm_sq0, atol*atol)
 
+            ! Form the initial residual and report the starting iterate.
             r = b
             call A%matvec(x, r, alpha=-one_${s}$, beta=one_${s}$, op='N')
             norm_sq = A%inner_product(r, r)
@@ -47,6 +49,7 @@ contains
 
             iter = 0
             do while (iter < maxiter .and. norm_sq >= tolsq)
+                ! Start a new GMRES cycle from the current residual.
                 beta = sqrt(max(norm_sq, zero_${s}$))
                 if (beta <= epsilon(one_${s}$)) exit
 
@@ -58,10 +61,12 @@ contains
                 g = zero_${s}$
                 y = zero_${s}$
 
+                ! Initialize the Krylov basis and least-squares right-hand side.
                 v(:,1) = r / beta
                 g(1) = beta
 
                 do j = 1, inner_iter
+                    ! Run Arnoldi with the preconditioned basis vector.
                     call M%matvec(v(:,j), z(:,j), alpha=one_${s}$, beta=zero_${s}$, op='N')
                     call A%matvec(z(:,j), w, alpha=one_${s}$, beta=zero_${s}$, op='N')
 
@@ -78,12 +83,14 @@ contains
                         v(:,j+1) = zero_${s}$
                     end if
 
+                    ! Apply the previously accumulated Givens rotations.
                     do i = 1, j - 1
                         temp = cs(i) * h(i,j) + sn(i) * h(i+1,j)
                         h(i+1,j) = -sn(i) * h(i,j) + cs(i) * h(i+1,j)
                         h(i,j) = temp
                     end do
 
+                    ! Build and apply the next Givens rotation.
                     denom = sqrt(h(j,j) * h(j,j) + h(j+1,j) * h(j+1,j))
                     if (denom > epsilon(one_${s}$)) then
                         cs(j) = h(j,j) / denom
@@ -101,12 +108,14 @@ contains
                     g(j+1) = -sn(j) * g(j) + cs(j) * g(j+1)
                     g(j) = temp
 
+                    ! Solve the reduced system and update the current iterate.
                     call upper_triangular_solve(h, g, y, j)
                     x = x_base
                     do i = 1, j
                         x = x + y(i) * z(:,i)
                     end do
 
+                    ! Track the residual norm estimate for convergence.
                     norm_sq = g(j+1) * g(j+1)
                     iter = iter + 1
                     if (associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
@@ -116,6 +125,7 @@ contains
 
                 if (norm_sq < tolsq .or. iter >= maxiter) exit
 
+                ! Refresh the residual before the next restarted cycle.
                 r = b
                 call A%matvec(x, r, alpha=-one_${s}$, beta=one_${s}$, op='N')
                 norm_sq = A%inner_product(r, r)
