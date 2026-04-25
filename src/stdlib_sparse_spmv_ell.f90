@@ -24,23 +24,28 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
                         if(i==j) cycle 
                         vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -68,23 +73,28 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
                         if(i==j) cycle 
                         vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -112,23 +122,28 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
                         if(i==j) cycle 
                         vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -156,23 +171,28 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
                         if(i==j) cycle 
                         vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -200,37 +220,45 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
                         if(i==j) cycle 
                         vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
-                    end if
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(j) = vec_y(j) + alpha_*conjg(data(i,k)) * vec_x(i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(j) = vec_y(j) + alpha_*conjg(data(i,k)) * vec_x(i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(i) = vec_y(i) + alpha_*conjg(data(i,k)) * vec_x(j)
                         if(i==j) cycle 
                         vec_y(j) = vec_y(j) + alpha_*conjg(data(i,k)) * vec_x(i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -258,37 +286,45 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
                         if(i==j) cycle 
                         vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
-                    end if
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*conjg(data(i,k)) * vec_x(:,i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*conjg(data(i,k)) * vec_x(:,i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(:,i) = vec_y(:,i) + alpha_*conjg(data(i,k)) * vec_x(:,j)
                         if(i==j) cycle 
                         vec_y(:,j) = vec_y(:,j) + alpha_*conjg(data(i,k)) * vec_x(:,i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -316,37 +352,45 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(i) = vec_y(i) + alpha_*data(i,k) * vec_x(j)
                         if(i==j) cycle 
                         vec_y(j) = vec_y(j) + alpha_*data(i,k) * vec_x(i)
-                    end if
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(j) = vec_y(j) + alpha_*conjg(data(i,k)) * vec_x(i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(j) = vec_y(j) + alpha_*conjg(data(i,k)) * vec_x(i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(i) = vec_y(i) + alpha_*conjg(data(i,k)) * vec_x(j)
                         if(i==j) cycle 
                         vec_y(j) = vec_y(j) + alpha_*conjg(data(i,k)) * vec_x(i)
-                    end if
+                    end do
                 end do
             end if
         end associate
@@ -374,37 +418,45 @@ contains
         associate( data => matrix%data, index => matrix%index, MNZ_P_ROW => matrix%K, &
             & nnz => matrix%nnz, nrows => matrix%nrows, ncols => matrix%ncols, storage => matrix%storage )
             if( storage == sparse_full .and. op_==sparse_op_none ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_transpose ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_/=sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(:,i) = vec_y(:,i) + alpha_*data(i,k) * vec_x(:,j)
                         if(i==j) cycle 
                         vec_y(:,j) = vec_y(:,j) + alpha_*data(i,k) * vec_x(:,i)
-                    end if
+                    end do
                 end do
             else if( storage == sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*conjg(data(i,k)) * vec_x(:,i)
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j>0) vec_y(:,j) = vec_y(:,j) + alpha_*conjg(data(i,k)) * vec_x(:,i)
+                    end do
                 end do
             else if( storage /= sparse_full .and. op_==sparse_op_hermitian ) then
-                do concurrent (i = 1:nrows, k = 1:MNZ_P_ROW)
-                    j = index(i,k)
-                    if(j>0) then
+                do i = 1, nrows
+                    do k = 1, MNZ_P_ROW
+                        j = index(i,k)
+                        if(j<=0) cycle
                         vec_y(:,i) = vec_y(:,i) + alpha_*conjg(data(i,k)) * vec_x(:,j)
                         if(i==j) cycle 
                         vec_y(:,j) = vec_y(:,j) + alpha_*conjg(data(i,k)) * vec_x(:,i)
-                    end if
+                    end do
                 end do
             end if
         end associate
