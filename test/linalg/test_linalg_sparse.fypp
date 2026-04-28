@@ -260,21 +260,20 @@ contains
             type(CSR_${s1}$_type) :: CSR_low, CSR_upper
             type(CSC_${s1}$_type) :: CSC_low, CSC_upper
             type(ELL_${s1}$_type) :: ELL_low, ELL_upper
-            ${t1}$, allocatable :: dense(:,:), dense_low(:,:), dense_upper(:,:)
-            ${t1}$, allocatable :: vec_x(:), vec_y(:), vec_y_ref(:)
+            ${t1}$, parameter :: dense(4,4) = reshape(real([1,2,0,0, &
+                                                            2,3,4,0, &
+                                                            0,4,5,6, &
+                                                            0,0,6,7], kind=wp), [4,4])
+            ${t1}$, parameter :: vec_x(4) = real([1,2,3,4], kind=wp)
+            ${t1}$, parameter :: vec_y_ref(4) = matmul(dense, vec_x)
+            ${t1}$ :: dense_low(4,4), dense_upper(4,4)
+            ${t1}$ :: vec_y(4)
             integer :: i, j
 
-            allocate( vec_x(4), source = real([1,2,3,4], kind=wp) )
-            allocate( vec_y(4), source = 0._wp )
-            allocate( vec_y_ref(4), source = 0._wp )
+            vec_y = 0._wp
 
-            allocate( dense(4,4), source = &
-                    reshape(real([1,2,0,0, &
-                                  2,3,4,0, &
-                                  0,4,5,6, &
-                                  0,0,6,7], kind=wp), [4,4]) )
-            allocate( dense_low(4,4), source = dense )
-            allocate( dense_upper(4,4), source = dense )
+            dense_low = dense
+            dense_upper = dense
 
             do i = 1, 4
                 do j = i + 1, 4
@@ -282,8 +281,6 @@ contains
                     dense_upper(j,i) = 0._wp
                 end do
             end do
-
-            vec_y_ref = matmul(dense, vec_x)
 
             call dense2coo(dense_low, COO_low)
             COO_low%storage = sparse_lower
