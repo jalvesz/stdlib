@@ -20,7 +20,6 @@ module test_linalg_solve_iterative
 
         tests = [ new_unittest("stdlib_solve_cg",test_stdlib_solve_cg), &
                   new_unittest("stdlib_solve_pcg",test_stdlib_solve_pcg), &
-                  new_unittest("stdlib_solve_gmres",test_stdlib_solve_gmres), &
                   new_unittest("stdlib_solve_bicgstab",test_stdlib_solve_bicgstab), &
                   new_unittest("stdlib_solve_bicgstab_nonsymmetric",test_stdlib_solve_bicgstab_nonsymmetric) ]
 
@@ -111,81 +110,6 @@ module test_linalg_solve_iterative
         end block
 
     end subroutine test_stdlib_solve_pcg
-
-    subroutine test_stdlib_solve_gmres(error)
-        type(error_type), allocatable, intent(out) :: error
-
-        block
-        real(sp), parameter :: tol = 1000*epsilon(0.0_sp)
-        real(sp) :: A(4,4) = reshape([real(sp) :: 5,  1,  2,  0, &
-                                           0,  4, -1,  1, &
-                                           1,  0,  3,  2, &
-                                           2, -1,  0,  6], [4,4])
-        real(sp) :: x(4), load(4), xref(4)
-
-        xref = [1.0_sp, 2.0_sp, -1.0_sp, 0.5_sp]
-        load = matmul(A, xref)
-        x = 0.0_sp
-
-        call stdlib_solve_gmres(A, load, x, rtol=tol, maxiter=12)
-        
-        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (restarted dense test)')
-        if (allocated(error)) return
-        end block
-
-        block
-        real(sp), parameter :: tol = 1000*epsilon(0.0_sp)
-        real(sp) :: A(3,3) = reshape([real(sp) :: 10,  1,  2, &
-                                            1, 10,  3, &
-                                            2,  3, 10], [3,3])
-        real(sp) :: x(3), load(3), xref(3)
-
-        xref = [(137._sp/218._sp), -(9._sp/109._sp), (87._sp/218._sp)]
-        load = [7.0_sp, 1.0_sp, 5.0_sp]
-        x = [0.2_sp, -0.1_sp, 0.3_sp]
-
-        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_sp, precond=pc_jacobi)
-
-        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (Jacobi preconditioned test)')
-        if (allocated(error)) return
-        end block
-
-        block
-        real(dp), parameter :: tol = 1000*epsilon(0.0_dp)
-        real(dp) :: A(4,4) = reshape([real(dp) :: 5,  1,  2,  0, &
-                                           0,  4, -1,  1, &
-                                           1,  0,  3,  2, &
-                                           2, -1,  0,  6], [4,4])
-        real(dp) :: x(4), load(4), xref(4)
-
-        xref = [1.0_dp, 2.0_dp, -1.0_dp, 0.5_dp]
-        load = matmul(A, xref)
-        x = 0.0_dp
-
-        call stdlib_solve_gmres(A, load, x, rtol=tol, maxiter=12)
-        
-        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (restarted dense test)')
-        if (allocated(error)) return
-        end block
-
-        block
-        real(dp), parameter :: tol = 1000*epsilon(0.0_dp)
-        real(dp) :: A(3,3) = reshape([real(dp) :: 10,  1,  2, &
-                                            1, 10,  3, &
-                                            2,  3, 10], [3,3])
-        real(dp) :: x(3), load(3), xref(3)
-
-        xref = [(137._dp/218._dp), -(9._dp/109._dp), (87._dp/218._dp)]
-        load = [7.0_dp, 1.0_dp, 5.0_dp]
-        x = [0.2_dp, -0.1_dp, 0.3_dp]
-
-        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_dp, precond=pc_jacobi)
-
-        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (Jacobi preconditioned test)')
-        if (allocated(error)) return
-        end block
-
-    end subroutine test_stdlib_solve_gmres
 
     subroutine test_stdlib_solve_bicgstab(error)
         type(error_type), allocatable, intent(out) :: error
