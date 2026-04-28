@@ -11,9 +11,8 @@ module stdlib_linalg_iterative_solvers
         enumerator :: stdlib_size_wksp_cg = 3
         enumerator :: stdlib_size_wksp_pcg = 4
         enumerator :: stdlib_size_wksp_bicgstab = 8
-        enumerator :: stdlib_size_wksp_gmres = 3
     end enum
-    public :: stdlib_size_wksp_cg, stdlib_size_wksp_pcg, stdlib_size_wksp_bicgstab, stdlib_size_wksp_gmres
+    public :: stdlib_size_wksp_cg, stdlib_size_wksp_pcg, stdlib_size_wksp_bicgstab
 
     enum, bind(c)
         enumerator :: pc_none = 0
@@ -232,36 +231,6 @@ module stdlib_linalg_iterative_solvers
 
     !! version: experimental
     !!
-    !! stdlib_solve_gmres_kernel interface for the restarted generalized minimal residual method.
-    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_gmres_kernel)
-    interface stdlib_solve_gmres_kernel
-        module subroutine stdlib_solve_gmres_kernel_sp(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
-            class(stdlib_linop_sp_type), intent(in) :: A !! linear operator
-            class(stdlib_linop_sp_type), intent(in) :: M !! preconditioner linear operator
-            real(sp), intent(in) :: b(:) !! right-hand side vector
-            real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in) :: rtol !! relative tolerance for convergence
-            real(sp), intent(in) :: atol !! absolute tolerance for convergence
-            integer, intent(in) :: maxiter !! maximum number of iterations
-            integer, intent(in) :: kdim !! Krylov subspace size before restart
-            type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace !! workspace for the solver
-        end subroutine
-        module subroutine stdlib_solve_gmres_kernel_dp(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
-            class(stdlib_linop_dp_type), intent(in) :: A !! linear operator
-            class(stdlib_linop_dp_type), intent(in) :: M !! preconditioner linear operator
-            real(dp), intent(in) :: b(:) !! right-hand side vector
-            real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in) :: rtol !! relative tolerance for convergence
-            real(dp), intent(in) :: atol !! absolute tolerance for convergence
-            integer, intent(in) :: maxiter !! maximum number of iterations
-            integer, intent(in) :: kdim !! Krylov subspace size before restart
-            type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace !! workspace for the solver
-        end subroutine
-    end interface
-    public :: stdlib_solve_gmres_kernel
-
-    !! version: experimental
-    !!
     !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_pcg)
     interface stdlib_solve_pcg
         module subroutine stdlib_solve_pcg_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,precond,M,workspace)
@@ -385,73 +354,6 @@ module stdlib_linalg_iterative_solvers
         end subroutine
     end interface
     public :: stdlib_solve_bicgstab
-
-    !! version: experimental
-    !!
-    !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_gmres)
-    interface stdlib_solve_gmres
-        module subroutine stdlib_solve_gmres_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
-            !! linear operator matrix
-            real(sp), intent(in) :: A(:,:)
-            real(sp), intent(in) :: b(:) !! right-hand side vector
-            real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
-            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(int8), intent(in), optional, target :: di(:) !! dirichlet conditions mask
-            integer, intent(in), optional :: maxiter !! maximum number of iterations
-            logical, intent(in), optional :: restart !! restart flag
-            integer, intent(in), optional :: kdim !! Krylov subspace size before restart
-            integer, intent(in), optional :: precond !! preconditioner method enumerator
-            class(stdlib_linop_sp_type), optional, intent(in), target :: M !! preconditioner linear operator
-            type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
-        end subroutine
-        module subroutine stdlib_solve_gmres_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
-            !! linear operator matrix
-            real(dp), intent(in) :: A(:,:)
-            real(dp), intent(in) :: b(:) !! right-hand side vector
-            real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
-            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(int8), intent(in), optional, target :: di(:) !! dirichlet conditions mask
-            integer, intent(in), optional :: maxiter !! maximum number of iterations
-            logical, intent(in), optional :: restart !! restart flag
-            integer, intent(in), optional :: kdim !! Krylov subspace size before restart
-            integer, intent(in), optional :: precond !! preconditioner method enumerator
-            class(stdlib_linop_dp_type), optional, intent(in), target :: M !! preconditioner linear operator
-            type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
-        end subroutine
-        module subroutine stdlib_solve_gmres_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
-            !! linear operator matrix
-            type(CSR_sp_type), intent(in) :: A
-            real(sp), intent(in) :: b(:) !! right-hand side vector
-            real(sp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(sp), intent(in), optional :: rtol !! relative tolerance for convergence
-            real(sp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(int8), intent(in), optional, target :: di(:) !! dirichlet conditions mask
-            integer, intent(in), optional :: maxiter !! maximum number of iterations
-            logical, intent(in), optional :: restart !! restart flag
-            integer, intent(in), optional :: kdim !! Krylov subspace size before restart
-            integer, intent(in), optional :: precond !! preconditioner method enumerator
-            class(stdlib_linop_sp_type), optional, intent(in), target :: M !! preconditioner linear operator
-            type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
-        end subroutine
-        module subroutine stdlib_solve_gmres_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
-            !! linear operator matrix
-            type(CSR_dp_type), intent(in) :: A
-            real(dp), intent(in) :: b(:) !! right-hand side vector
-            real(dp), intent(inout) :: x(:) !! solution vector and initial guess
-            real(dp), intent(in), optional :: rtol !! relative tolerance for convergence
-            real(dp), intent(in), optional :: atol !! absolute tolerance for convergence
-            logical(int8), intent(in), optional, target :: di(:) !! dirichlet conditions mask
-            integer, intent(in), optional :: maxiter !! maximum number of iterations
-            logical, intent(in), optional :: restart !! restart flag
-            integer, intent(in), optional :: kdim !! Krylov subspace size before restart
-            integer, intent(in), optional :: precond !! preconditioner method enumerator
-            class(stdlib_linop_dp_type), optional, intent(in), target :: M !! preconditioner linear operator
-            type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
-        end subroutine
-    end interface
-    public :: stdlib_solve_gmres
 
 contains
 
