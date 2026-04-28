@@ -395,14 +395,15 @@ contains
             type(CSR_sp_type) :: CSR_low, CSR_upper
             type(CSC_sp_type) :: CSC_low, CSC_upper
             type(ELL_sp_type) :: ELL_low, ELL_upper
-            real(sp), parameter :: dense(4,4) = reshape(real([1,2,0,0, &
+            integer, parameter :: ndim = 4
+            real(sp), parameter :: dense(ndim,ndim) = reshape(real([1,2,0,0, &
                                                             2,3,4,0, &
                                                             0,4,5,6, &
-                                                            0,0,6,7], kind=wp), [4,4])
-            real(sp), parameter :: vec_x(4) = real([1,2,3,4], kind=wp)
-            real(sp), parameter :: vec_y_ref(4) = matmul(dense, vec_x)
-            real(sp) :: dense_low(4,4), dense_upper(4,4)
-            real(sp) :: vec_y(4)
+                                                            0,0,6,7], kind=wp), [ndim,ndim])
+            real(sp), parameter :: vec_x(ndim) = real([1,2,3,4], kind=wp)
+            real(sp), parameter :: vec_y_ref(ndim) = matmul(dense, vec_x)
+            real(sp) :: dense_low(ndim,ndim), dense_upper(ndim,ndim)
+            real(sp) :: vec_y(ndim)
             integer :: i, j
 
             vec_y = 0._wp
@@ -515,14 +516,15 @@ contains
             type(CSR_dp_type) :: CSR_low, CSR_upper
             type(CSC_dp_type) :: CSC_low, CSC_upper
             type(ELL_dp_type) :: ELL_low, ELL_upper
-            real(dp), parameter :: dense(4,4) = reshape(real([1,2,0,0, &
+            integer, parameter :: ndim = 4
+            real(dp), parameter :: dense(ndim,ndim) = reshape(real([1,2,0,0, &
                                                             2,3,4,0, &
                                                             0,4,5,6, &
-                                                            0,0,6,7], kind=wp), [4,4])
-            real(dp), parameter :: vec_x(4) = real([1,2,3,4], kind=wp)
-            real(dp), parameter :: vec_y_ref(4) = matmul(dense, vec_x)
-            real(dp) :: dense_low(4,4), dense_upper(4,4)
-            real(dp) :: vec_y(4)
+                                                            0,0,6,7], kind=wp), [ndim,ndim])
+            real(dp), parameter :: vec_x(ndim) = real([1,2,3,4], kind=wp)
+            real(dp), parameter :: vec_y_ref(ndim) = matmul(dense, vec_x)
+            real(dp) :: dense_low(ndim,ndim), dense_upper(ndim,ndim)
+            real(dp) :: vec_y(ndim)
             integer :: i, j
 
             vec_y = 0._wp
