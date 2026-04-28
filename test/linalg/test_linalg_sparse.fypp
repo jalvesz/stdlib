@@ -276,8 +276,8 @@ contains
             dense_low = dense
             dense_upper = dense
 
-            do i = 1, 4
-                do j = i + 1, 4
+            do i = 1, ndim
+                do j = i + 1, ndim
                     dense_low(i,j) = 0._wp
                     dense_upper(j,i) = 0._wp
                 end do
