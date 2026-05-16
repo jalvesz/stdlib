@@ -21,6 +21,7 @@ module test_linalg_solve_iterative
         tests = [ new_unittest("stdlib_solve_cg",test_stdlib_solve_cg), &
                   new_unittest("stdlib_solve_pcg",test_stdlib_solve_pcg), &
                   new_unittest("stdlib_solve_gmres",test_stdlib_solve_gmres), &
+                  new_unittest("stdlib_solve_gmres_hilbert",test_stdlib_solve_gmres_hilbert), &
                   new_unittest("stdlib_solve_bicgstab",test_stdlib_solve_bicgstab), &
                   new_unittest("stdlib_solve_bicgstab_nonsymmetric",test_stdlib_solve_bicgstab_nonsymmetric) ]
 
@@ -186,6 +187,59 @@ module test_linalg_solve_iterative
         end block
 
     end subroutine test_stdlib_solve_gmres
+
+    subroutine test_stdlib_solve_gmres_hilbert(error)
+    ! This test uses a Hilbert matrix (n=10) to validate the numerical stability 
+    ! of the GMRES solver. The Hilbert matrix is notoriously ill-conditioned 
+    ! (cond(A) ~ 10^13 for n=10), making it an excellent benchmark for 
+    ! orthogonality maintenance. By setting rtol=0 and maxiter=n, we force 
+    ! the construction of the full Krylov basis, which only converges to 
+    ! the reference solution if the MGS with reorthogonalization 
+    ! preserves the basis' orthogonality.
+        type(error_type), allocatable, intent(out) :: error
+        integer, parameter :: n = 10
+        integer :: r, c
+        block
+            !Hilbert sp is almost useless. 
+            real(sp), parameter :: tol = 1.e-0_sp
+            
+            real(sp) :: A(n, n), b(n), x(n), x_ref(n)
+            do r = 1, n
+                do c = 1, n
+                    A(r, c) = 1.0_sp / real(r + c - 1, sp)
+                end do
+            end do
+
+            x_ref = 1.0_sp
+            b = matmul(A, x_ref)
+            x = 0.0_sp
+
+            call stdlib_solve_gmres(A, b, x, rtol=0.0_sp, maxiter=n)
+            call check(error, norm2(x-x_ref) < tol*norm2(x_ref), & 
+            'error in GMRES sp: Hilbert matrix')
+            if (allocated(error)) return
+        end block
+        block
+            !Hilbert sp is almost useless. 
+            real(dp), parameter :: tol = 1.e-3_dp
+            
+            real(dp) :: A(n, n), b(n), x(n), x_ref(n)
+            do r = 1, n
+                do c = 1, n
+                    A(r, c) = 1.0_dp / real(r + c - 1, dp)
+                end do
+            end do
+
+            x_ref = 1.0_dp
+            b = matmul(A, x_ref)
+            x = 0.0_dp
+
+            call stdlib_solve_gmres(A, b, x, rtol=0.0_dp, maxiter=n)
+            call check(error, norm2(x-x_ref) < tol*norm2(x_ref), & 
+            'error in GMRES dp: Hilbert matrix')
+            if (allocated(error)) return
+        end block
+    end subroutine test_stdlib_solve_gmres_hilbert
 
     subroutine test_stdlib_solve_bicgstab(error)
         type(error_type), allocatable, intent(out) :: error

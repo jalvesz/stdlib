@@ -15,8 +15,8 @@ contains
         real(sp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter, kdim
         type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace
-        integer :: i, iter, inner_iter, j
-        real(sp) :: beta, denom, hnext, norm_sq, norm_sq0, temp, tolsq
+        integer :: i, iter, inner_iter, j, iorth
+        real(sp) :: beta, denom, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
         real(sp), allocatable :: cs(:), g(:), h(:,:), sn(:), x_base(:), y(:)
 
         allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim), x_base(size(x)))
@@ -64,9 +64,13 @@ contains
                     call M%matvec(v(:,j), z(:,j), alpha=one_sp, beta=zero_sp, op='N')
                     call A%matvec(z(:,j), w, alpha=one_sp, beta=zero_sp, op='N')
 
-                    do i = 1, j
-                        h(i,j) = A%inner_product(v(:,i), w)
-                        w = w - h(i,j) * v(:,i)
+                ! Modified Gram Schmidt (MGSR) 
+                    do iorth = 1, 2 ! reorthogonalization
+                        do i = 1, j
+                            htmp   = A%inner_product(v(:,i), w)
+                            h(i,j) = h(i,j) + htmp
+                            w      = w - htmp*v(:,i)
+                        end do
                     end do
 
                     hnext = sqrt(max(A%inner_product(w, w), zero_sp))
@@ -154,8 +158,8 @@ contains
         real(dp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter, kdim
         type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace
-        integer :: i, iter, inner_iter, j
-        real(dp) :: beta, denom, hnext, norm_sq, norm_sq0, temp, tolsq
+        integer :: i, iter, inner_iter, j, iorth
+        real(dp) :: beta, denom, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
         real(dp), allocatable :: cs(:), g(:), h(:,:), sn(:), x_base(:), y(:)
 
         allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim), x_base(size(x)))
@@ -203,9 +207,13 @@ contains
                     call M%matvec(v(:,j), z(:,j), alpha=one_dp, beta=zero_dp, op='N')
                     call A%matvec(z(:,j), w, alpha=one_dp, beta=zero_dp, op='N')
 
-                    do i = 1, j
-                        h(i,j) = A%inner_product(v(:,i), w)
-                        w = w - h(i,j) * v(:,i)
+                ! Modified Gram Schmidt (MGSR) 
+                    do iorth = 1, 2 ! reorthogonalization
+                        do i = 1, j
+                            htmp   = A%inner_product(v(:,i), w)
+                            h(i,j) = h(i,j) + htmp
+                            w      = w - htmp*v(:,i)
+                        end do
                     end do
 
                     hnext = sqrt(max(A%inner_product(w, w), zero_dp))
