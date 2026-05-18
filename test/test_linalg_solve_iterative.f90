@@ -122,9 +122,8 @@ module test_linalg_solve_iterative
                                            0,  4, -1,  1, &
                                            1,  0,  3,  2, &
                                            2, -1,  0,  6], [4,4])
-        real(sp) :: x(4), load(4), xref(4)
-
-        xref = [1.0_sp, 2.0_sp, -1.0_sp, 0.5_sp]
+        real(sp) :: x(4), load(4)
+        real(sp), parameter :: xref(*) = [1.0_sp, 2.0_sp, -1.0_sp, 0.5_sp]
         load = matmul(A, xref)
         x = 0.0_sp
 
@@ -157,9 +156,8 @@ module test_linalg_solve_iterative
                                            0,  4, -1,  1, &
                                            1,  0,  3,  2, &
                                            2, -1,  0,  6], [4,4])
-        real(dp) :: x(4), load(4), xref(4)
-
-        xref = [1.0_dp, 2.0_dp, -1.0_dp, 0.5_dp]
+        real(dp) :: x(4), load(4)
+        real(dp), parameter :: xref(*) = [1.0_dp, 2.0_dp, -1.0_dp, 0.5_dp]
         load = matmul(A, xref)
         x = 0.0_dp
 
