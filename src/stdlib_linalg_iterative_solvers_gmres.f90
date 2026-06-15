@@ -4,28 +4,32 @@ submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_gmres
     use stdlib_sparse
     use stdlib_constants
     use stdlib_optval, only: optval
+    use stdlib_linalg_blas, only: gemv
     implicit none
 
 contains
 
-    module subroutine stdlib_solve_gmres_kernel_sp(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
+    module subroutine stdlib_solve_gmres_kernel_sp(A,M,b,x,rtol,atol,maxiter,kdim,workspace,compact)
         class(stdlib_linop_sp_type), intent(in) :: A
         class(stdlib_linop_sp_type), intent(in) :: M
         real(sp), intent(in) :: b(:), rtol, atol
         real(sp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter, kdim
         type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace
-        integer :: i, iter, inner_iter, j, iorth
+        logical, intent(in) :: compact
+        integer :: i, iter, inner_iter, j, j_final, iorth, jz, zbase
         real(sp) :: beta, denom, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
-        real(sp), allocatable :: cs(:), g(:), h(:,:), sn(:), x_base(:), y(:)
+        real(sp), allocatable :: cs(:), g(:), h(:,:), sn(:), y(:)
 
-        allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim), x_base(size(x)))
+        allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim) )
+        zbase = kdim + 4
 
         associate( r => workspace%tmp(:,1), &
-                   w => workspace%tmp(:,2), &
-                   v => workspace%tmp(:,3:kdim+3), &
-                   z => workspace%tmp(:,kdim+4:2*kdim+3) )
-
+               w => workspace%tmp(:,2), &
+               v => workspace%tmp(:,3:kdim+3), &
+               z => workspace%tmp(:,zbase:zbase+merge(0,kdim-1,compact)) )
+            
+            iter = 0
             ! Initialize convergence targets from the right-hand side norm.
             norm_sq0 = A%inner_product(b, b)
             tolsq = max(rtol*rtol*norm_sq0, atol*atol)
@@ -34,21 +38,16 @@ contains
             r = b
             call A%matvec(x, r, alpha=-one_sp, beta=one_sp, op='N')
             norm_sq = A%inner_product(r, r)
-            if (associated(workspace%callback)) call workspace%callback(x, norm_sq, 0)
+            if (associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
 
-            if (norm_sq <= tolsq .or. maxiter <= 0) then
-                deallocate(h, cs, sn, g, y, x_base)
-                return
-            end if
+            if (norm_sq <= tolsq) return
 
-            iter = 0
             do while (iter < maxiter .and. norm_sq >= tolsq)
                 ! Start a new GMRES cycle from the current residual.
                 beta = sqrt(max(norm_sq, zero_sp))
                 if (beta <= epsilon(one_sp)) exit
 
                 inner_iter = min(kdim, maxiter - iter)
-                x_base = x
                 h = zero_sp
                 cs = zero_sp
                 sn = zero_sp
@@ -59,12 +58,14 @@ contains
                 v(:,1) = r / beta
                 g(1) = beta
 
+                j_final = 0
                 do j = 1, inner_iter
                     ! Run Arnoldi with the preconditioned basis vector.
-                    call M%matvec(v(:,j), z(:,j), alpha=one_sp, beta=zero_sp, op='N')
-                    call A%matvec(z(:,j), w, alpha=one_sp, beta=zero_sp, op='N')
+                    jz = merge(1, j, compact)
+                    call M%matvec(v(:,j), z(:,jz), alpha=one_sp, beta=zero_sp, op='N')
+                    call A%matvec(z(:,jz), w, alpha=one_sp, beta=zero_sp, op='N')
 
-                ! Modified Gram Schmidt (MGSR) 
+                    ! Modified Gram Schmidt (MGSR) 
                     do iorth = 1, 2 ! reorthogonalization
                         do i = 1, j
                             htmp   = A%inner_product(v(:,i), w)
@@ -106,20 +107,33 @@ contains
                     g(j+1) = -sn(j) * g(j) + cs(j) * g(j+1)
                     g(j) = temp
 
-                    ! Solve the reduced system and update the current iterate.
-                    call upper_triangular_solve(h, g, y, j)
-                    x = x_base
-                    do i = 1, j
-                        x = x + y(i) * z(:,i)
-                    end do
-
-                    ! Track the residual norm estimate for convergence.
+                    ! Cheap residual-norm estimate; no solution rebuild needed.
                     norm_sq = g(j+1) * g(j+1)
                     iter = iter + 1
+                    j_final = j
+                    ! x is kept constant for the logger through out the inner iteration
                     if (associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
 
                     if (norm_sq < tolsq .or. hnext <= epsilon(one_sp) .or. iter >= maxiter) exit
                 end do
+
+                ! Cycle-end update from the least-squares correction.
+                if (j_final > 0) then
+                    call upper_triangular_solve(h, g, y, j_final)
+                    if (compact) then
+                        call gemv('N', m=size(x), n=j_final, alpha=one_sp, &
+                            a=v, lda=size(v,1), &
+                            x=y, incx=1, &
+                            beta=zero_sp, y=w, incy=1)
+                        call M%matvec(w, z(:,1), alpha=one_sp, beta=zero_sp, op='N')
+                        x = x + z(:,1)
+                    else
+                        call gemv('N', m=size(x), n=j_final, alpha=one_sp, &
+                            a=z, lda=size(z,1), &
+                            x=y, incx=1, &
+                            beta=one_sp, y=x, incy=1)
+                    end if
+                end if
 
                 if (norm_sq < tolsq .or. iter >= maxiter) exit
 
@@ -129,8 +143,6 @@ contains
                 norm_sq = A%inner_product(r, r)
             end do
         end associate
-
-        deallocate(h, cs, sn, g, y, x_base)
 
     contains
 
@@ -151,24 +163,27 @@ contains
             end do
         end subroutine
     end subroutine
-    module subroutine stdlib_solve_gmres_kernel_dp(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
+    module subroutine stdlib_solve_gmres_kernel_dp(A,M,b,x,rtol,atol,maxiter,kdim,workspace,compact)
         class(stdlib_linop_dp_type), intent(in) :: A
         class(stdlib_linop_dp_type), intent(in) :: M
         real(dp), intent(in) :: b(:), rtol, atol
         real(dp), intent(inout) :: x(:)
         integer, intent(in) :: maxiter, kdim
         type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace
-        integer :: i, iter, inner_iter, j, iorth
+        logical, intent(in) :: compact
+        integer :: i, iter, inner_iter, j, j_final, iorth, jz, zbase
         real(dp) :: beta, denom, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
-        real(dp), allocatable :: cs(:), g(:), h(:,:), sn(:), x_base(:), y(:)
+        real(dp), allocatable :: cs(:), g(:), h(:,:), sn(:), y(:)
 
-        allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim), x_base(size(x)))
+        allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim) )
+        zbase = kdim + 4
 
         associate( r => workspace%tmp(:,1), &
-                   w => workspace%tmp(:,2), &
-                   v => workspace%tmp(:,3:kdim+3), &
-                   z => workspace%tmp(:,kdim+4:2*kdim+3) )
-
+               w => workspace%tmp(:,2), &
+               v => workspace%tmp(:,3:kdim+3), &
+               z => workspace%tmp(:,zbase:zbase+merge(0,kdim-1,compact)) )
+            
+            iter = 0
             ! Initialize convergence targets from the right-hand side norm.
             norm_sq0 = A%inner_product(b, b)
             tolsq = max(rtol*rtol*norm_sq0, atol*atol)
@@ -177,21 +192,16 @@ contains
             r = b
             call A%matvec(x, r, alpha=-one_dp, beta=one_dp, op='N')
             norm_sq = A%inner_product(r, r)
-            if (associated(workspace%callback)) call workspace%callback(x, norm_sq, 0)
+            if (associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
 
-            if (norm_sq <= tolsq .or. maxiter <= 0) then
-                deallocate(h, cs, sn, g, y, x_base)
-                return
-            end if
+            if (norm_sq <= tolsq) return
 
-            iter = 0
             do while (iter < maxiter .and. norm_sq >= tolsq)
                 ! Start a new GMRES cycle from the current residual.
                 beta = sqrt(max(norm_sq, zero_dp))
                 if (beta <= epsilon(one_dp)) exit
 
                 inner_iter = min(kdim, maxiter - iter)
-                x_base = x
                 h = zero_dp
                 cs = zero_dp
                 sn = zero_dp
@@ -202,12 +212,14 @@ contains
                 v(:,1) = r / beta
                 g(1) = beta
 
+                j_final = 0
                 do j = 1, inner_iter
                     ! Run Arnoldi with the preconditioned basis vector.
-                    call M%matvec(v(:,j), z(:,j), alpha=one_dp, beta=zero_dp, op='N')
-                    call A%matvec(z(:,j), w, alpha=one_dp, beta=zero_dp, op='N')
+                    jz = merge(1, j, compact)
+                    call M%matvec(v(:,j), z(:,jz), alpha=one_dp, beta=zero_dp, op='N')
+                    call A%matvec(z(:,jz), w, alpha=one_dp, beta=zero_dp, op='N')
 
-                ! Modified Gram Schmidt (MGSR) 
+                    ! Modified Gram Schmidt (MGSR) 
                     do iorth = 1, 2 ! reorthogonalization
                         do i = 1, j
                             htmp   = A%inner_product(v(:,i), w)
@@ -249,20 +261,33 @@ contains
                     g(j+1) = -sn(j) * g(j) + cs(j) * g(j+1)
                     g(j) = temp
 
-                    ! Solve the reduced system and update the current iterate.
-                    call upper_triangular_solve(h, g, y, j)
-                    x = x_base
-                    do i = 1, j
-                        x = x + y(i) * z(:,i)
-                    end do
-
-                    ! Track the residual norm estimate for convergence.
+                    ! Cheap residual-norm estimate; no solution rebuild needed.
                     norm_sq = g(j+1) * g(j+1)
                     iter = iter + 1
+                    j_final = j
+                    ! x is kept constant for the logger through out the inner iteration
                     if (associated(workspace%callback)) call workspace%callback(x, norm_sq, iter)
 
                     if (norm_sq < tolsq .or. hnext <= epsilon(one_dp) .or. iter >= maxiter) exit
                 end do
+
+                ! Cycle-end update from the least-squares correction.
+                if (j_final > 0) then
+                    call upper_triangular_solve(h, g, y, j_final)
+                    if (compact) then
+                        call gemv('N', m=size(x), n=j_final, alpha=one_dp, &
+                            a=v, lda=size(v,1), &
+                            x=y, incx=1, &
+                            beta=zero_dp, y=w, incy=1)
+                        call M%matvec(w, z(:,1), alpha=one_dp, beta=zero_dp, op='N')
+                        x = x + z(:,1)
+                    else
+                        call gemv('N', m=size(x), n=j_final, alpha=one_dp, &
+                            a=z, lda=size(z,1), &
+                            x=y, incx=1, &
+                            beta=one_dp, y=x, incy=1)
+                    end if
+                end if
 
                 if (norm_sq < tolsq .or. iter >= maxiter) exit
 
@@ -272,8 +297,6 @@ contains
                 norm_sq = A%inner_product(r, r)
             end do
         end associate
-
-        deallocate(h, cs, sn, g, y, x_base)
 
     contains
 
@@ -295,7 +318,7 @@ contains
         end subroutine
     end subroutine
 
-    module subroutine stdlib_solve_gmres_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+    module subroutine stdlib_solve_gmres_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
         use stdlib_linalg, only: diag
         real(sp), intent(in) :: A(:,:)
         real(sp), intent(in) :: b(:)
@@ -307,12 +330,13 @@ contains
         integer, intent(in), optional :: precond
         class(stdlib_linop_sp_type), optional, intent(in), target :: M
         type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace
+        logical, intent(in), optional :: compact
         type(stdlib_linop_sp_type) :: op
         type(stdlib_linop_sp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_sp_type), pointer :: workspace_
         integer :: kdim_, maxiter_, n, ncols, precond_
         real(sp) :: rtol_, atol_
-        logical :: restart_
+        logical :: compact_, restart_
         logical(int8), pointer :: di_(:)
         real(sp), allocatable :: diagonal(:)
 
@@ -320,10 +344,11 @@ contains
         maxiter_ = optval(x=maxiter, default=n)
         kdim_ = max(1, min(optval(x=kdim, default=min(30, n)), n))
         restart_ = optval(x=restart, default=.true.)
+        compact_ = optval(x=compact, default=.true.)
         rtol_ = optval(x=rtol, default=1.e-5_sp)
         atol_ = optval(x=atol, default=epsilon(one_sp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = 2 * kdim_ + stdlib_size_wksp_gmres
+        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
 
         if (present(M)) then
             M_ => M
@@ -363,7 +388,7 @@ contains
 
         if (restart_) x = zero_sp
         x = merge(b, x, di_)
-        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_)
+        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_, compact=compact_)
 
         if (.not.present(di)) deallocate(di_)
         di_ => null()
@@ -406,7 +431,7 @@ contains
             y = merge(zero_sp, diagonal * x, di_)
         end subroutine
     end subroutine
-    module subroutine stdlib_solve_gmres_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+    module subroutine stdlib_solve_gmres_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
         use stdlib_linalg, only: diag
         real(dp), intent(in) :: A(:,:)
         real(dp), intent(in) :: b(:)
@@ -418,12 +443,13 @@ contains
         integer, intent(in), optional :: precond
         class(stdlib_linop_dp_type), optional, intent(in), target :: M
         type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace
+        logical, intent(in), optional :: compact
         type(stdlib_linop_dp_type) :: op
         type(stdlib_linop_dp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_dp_type), pointer :: workspace_
         integer :: kdim_, maxiter_, n, ncols, precond_
         real(dp) :: rtol_, atol_
-        logical :: restart_
+        logical :: compact_, restart_
         logical(int8), pointer :: di_(:)
         real(dp), allocatable :: diagonal(:)
 
@@ -431,10 +457,11 @@ contains
         maxiter_ = optval(x=maxiter, default=n)
         kdim_ = max(1, min(optval(x=kdim, default=min(30, n)), n))
         restart_ = optval(x=restart, default=.true.)
+        compact_ = optval(x=compact, default=.true.)
         rtol_ = optval(x=rtol, default=1.e-5_dp)
         atol_ = optval(x=atol, default=epsilon(one_dp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = 2 * kdim_ + stdlib_size_wksp_gmres
+        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
 
         if (present(M)) then
             M_ => M
@@ -474,7 +501,7 @@ contains
 
         if (restart_) x = zero_dp
         x = merge(b, x, di_)
-        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_)
+        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_, compact=compact_)
 
         if (.not.present(di)) deallocate(di_)
         di_ => null()
@@ -517,7 +544,7 @@ contains
             y = merge(zero_dp, diagonal * x, di_)
         end subroutine
     end subroutine
-    module subroutine stdlib_solve_gmres_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+    module subroutine stdlib_solve_gmres_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
         type(CSR_sp_type), intent(in) :: A
         real(sp), intent(in) :: b(:)
         real(sp), intent(inout) :: x(:)
@@ -528,12 +555,13 @@ contains
         integer, intent(in), optional :: precond
         class(stdlib_linop_sp_type), optional, intent(in), target :: M
         type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace
+        logical, intent(in), optional :: compact
         type(stdlib_linop_sp_type) :: op
         type(stdlib_linop_sp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_sp_type), pointer :: workspace_
         integer :: kdim_, maxiter_, n, ncols, precond_
         real(sp) :: rtol_, atol_
-        logical :: restart_
+        logical :: compact_, restart_
         logical(int8), pointer :: di_(:)
         real(sp), allocatable :: diagonal(:)
 
@@ -541,10 +569,11 @@ contains
         maxiter_ = optval(x=maxiter, default=n)
         kdim_ = max(1, min(optval(x=kdim, default=min(30, n)), n))
         restart_ = optval(x=restart, default=.true.)
+        compact_ = optval(x=compact, default=.true.)
         rtol_ = optval(x=rtol, default=1.e-5_sp)
         atol_ = optval(x=atol, default=epsilon(one_sp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = 2 * kdim_ + stdlib_size_wksp_gmres
+        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
 
         if (present(M)) then
             M_ => M
@@ -584,7 +613,7 @@ contains
 
         if (restart_) x = zero_sp
         x = merge(b, x, di_)
-        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_)
+        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_, compact=compact_)
 
         if (.not.present(di)) deallocate(di_)
         di_ => null()
@@ -626,7 +655,7 @@ contains
             y = merge(zero_sp, diagonal * x, di_)
         end subroutine
     end subroutine
-    module subroutine stdlib_solve_gmres_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+    module subroutine stdlib_solve_gmres_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
         type(CSR_dp_type), intent(in) :: A
         real(dp), intent(in) :: b(:)
         real(dp), intent(inout) :: x(:)
@@ -637,12 +666,13 @@ contains
         integer, intent(in), optional :: precond
         class(stdlib_linop_dp_type), optional, intent(in), target :: M
         type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace
+        logical, intent(in), optional :: compact
         type(stdlib_linop_dp_type) :: op
         type(stdlib_linop_dp_type), pointer :: M_ => null()
         type(stdlib_solver_workspace_dp_type), pointer :: workspace_
         integer :: kdim_, maxiter_, n, ncols, precond_
         real(dp) :: rtol_, atol_
-        logical :: restart_
+        logical :: compact_, restart_
         logical(int8), pointer :: di_(:)
         real(dp), allocatable :: diagonal(:)
 
@@ -650,10 +680,11 @@ contains
         maxiter_ = optval(x=maxiter, default=n)
         kdim_ = max(1, min(optval(x=kdim, default=min(30, n)), n))
         restart_ = optval(x=restart, default=.true.)
+        compact_ = optval(x=compact, default=.true.)
         rtol_ = optval(x=rtol, default=1.e-5_dp)
         atol_ = optval(x=atol, default=epsilon(one_dp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = 2 * kdim_ + stdlib_size_wksp_gmres
+        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
 
         if (present(M)) then
             M_ => M
@@ -693,7 +724,7 @@ contains
 
         if (restart_) x = zero_dp
         x = merge(b, x, di_)
-        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_)
+        call stdlib_solve_gmres_kernel(op, M_, b, x, rtol_, atol_, maxiter_, kdim_, workspace_, compact=compact_)
 
         if (.not.present(di)) deallocate(di_)
         di_ => null()

@@ -235,7 +235,7 @@ module stdlib_linalg_iterative_solvers
     !! stdlib_solve_gmres_kernel interface for the restarted generalized minimal residual method.
     !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_gmres_kernel)
     interface stdlib_solve_gmres_kernel
-        module subroutine stdlib_solve_gmres_kernel_sp(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
+        module subroutine stdlib_solve_gmres_kernel_sp(A,M,b,x,rtol,atol,maxiter,kdim,workspace,compact)
             class(stdlib_linop_sp_type), intent(in) :: A !! linear operator
             class(stdlib_linop_sp_type), intent(in) :: M !! preconditioner linear operator
             real(sp), intent(in) :: b(:) !! right-hand side vector
@@ -245,8 +245,9 @@ module stdlib_linalg_iterative_solvers
             integer, intent(in) :: maxiter !! maximum number of iterations
             integer, intent(in) :: kdim !! Krylov subspace size before restart
             type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace !! workspace for the solver
+            logical, intent(in) :: compact !! keep only one preconditioned basis vector and rebuild the cycle update at restart
         end subroutine
-        module subroutine stdlib_solve_gmres_kernel_dp(A,M,b,x,rtol,atol,maxiter,kdim,workspace)
+        module subroutine stdlib_solve_gmres_kernel_dp(A,M,b,x,rtol,atol,maxiter,kdim,workspace,compact)
             class(stdlib_linop_dp_type), intent(in) :: A !! linear operator
             class(stdlib_linop_dp_type), intent(in) :: M !! preconditioner linear operator
             real(dp), intent(in) :: b(:) !! right-hand side vector
@@ -256,6 +257,7 @@ module stdlib_linalg_iterative_solvers
             integer, intent(in) :: maxiter !! maximum number of iterations
             integer, intent(in) :: kdim !! Krylov subspace size before restart
             type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace !! workspace for the solver
+            logical, intent(in) :: compact !! keep only one preconditioned basis vector and rebuild the cycle update at restart
         end subroutine
     end interface
     public :: stdlib_solve_gmres_kernel
@@ -390,7 +392,7 @@ module stdlib_linalg_iterative_solvers
     !!
     !! [Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_gmres)
     interface stdlib_solve_gmres
-        module subroutine stdlib_solve_gmres_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+        module subroutine stdlib_solve_gmres_dense_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
             !! linear operator matrix
             real(sp), intent(in) :: A(:,:)
             real(sp), intent(in) :: b(:) !! right-hand side vector
@@ -404,8 +406,9 @@ module stdlib_linalg_iterative_solvers
             integer, intent(in), optional :: precond !! preconditioner method enumerator
             class(stdlib_linop_sp_type), optional, intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+            logical, intent(in), optional :: compact !! if true, favor lower memory use over cycle-end update speed
         end subroutine
-        module subroutine stdlib_solve_gmres_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+        module subroutine stdlib_solve_gmres_dense_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
             !! linear operator matrix
             real(dp), intent(in) :: A(:,:)
             real(dp), intent(in) :: b(:) !! right-hand side vector
@@ -419,8 +422,9 @@ module stdlib_linalg_iterative_solvers
             integer, intent(in), optional :: precond !! preconditioner method enumerator
             class(stdlib_linop_dp_type), optional, intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+            logical, intent(in), optional :: compact !! if true, favor lower memory use over cycle-end update speed
         end subroutine
-        module subroutine stdlib_solve_gmres_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+        module subroutine stdlib_solve_gmres_CSR_sp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
             !! linear operator matrix
             type(CSR_sp_type), intent(in) :: A
             real(sp), intent(in) :: b(:) !! right-hand side vector
@@ -434,8 +438,9 @@ module stdlib_linalg_iterative_solvers
             integer, intent(in), optional :: precond !! preconditioner method enumerator
             class(stdlib_linop_sp_type), optional, intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_sp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+            logical, intent(in), optional :: compact !! if true, favor lower memory use over cycle-end update speed
         end subroutine
-        module subroutine stdlib_solve_gmres_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace)
+        module subroutine stdlib_solve_gmres_CSR_dp(A,b,x,di,rtol,atol,maxiter,restart,kdim,precond,M,workspace,compact)
             !! linear operator matrix
             type(CSR_dp_type), intent(in) :: A
             real(dp), intent(in) :: b(:) !! right-hand side vector
@@ -449,6 +454,7 @@ module stdlib_linalg_iterative_solvers
             integer, intent(in), optional :: precond !! preconditioner method enumerator
             class(stdlib_linop_dp_type), optional, intent(in), target :: M !! preconditioner linear operator
             type(stdlib_solver_workspace_dp_type), optional, intent(inout), target :: workspace !! workspace for the solver
+            logical, intent(in), optional :: compact !! if true, favor lower memory use over cycle-end update speed
         end subroutine
     end interface
     public :: stdlib_solve_gmres

@@ -150,6 +150,22 @@ module test_linalg_solve_iterative
         end block
 
         block
+        real(sp), parameter :: tol = 1000*epsilon(0.0_sp)
+        real(sp), parameter :: A(3,3) = reshape([real(sp) :: 10,  1,  2, &
+                                            1, 10,  3, &
+                                            2,  3, 10], [3,3])
+        real(sp) :: x(3)
+        real(sp), parameter :: xref(3) = [(137._sp/218._sp), -(9._sp/109._sp), (87._sp/218._sp)]
+        real(sp), parameter :: load(3) = [7.0_sp, 1.0_sp, 5.0_sp]
+        x = [0.2_sp, -0.1_sp, 0.3_sp]
+
+        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_sp, precond=pc_jacobi, compact=.false.)
+
+        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (Jacobi preconditioned speed mode test)')
+        if (allocated(error)) return
+        end block
+
+        block
         real(dp), parameter :: tol = 1000*epsilon(0.0_dp)
         real(dp), parameter :: A(4,4) = reshape([real(dp) :: 5,  1,  2,  0, &
                                            0,  4, -1,  1, &
@@ -179,6 +195,22 @@ module test_linalg_solve_iterative
         call stdlib_solve_gmres(A, load, x, rtol=1.e-10_dp, precond=pc_jacobi)
 
         call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (Jacobi preconditioned test)')
+        if (allocated(error)) return
+        end block
+
+        block
+        real(dp), parameter :: tol = 1000*epsilon(0.0_dp)
+        real(dp), parameter :: A(3,3) = reshape([real(dp) :: 10,  1,  2, &
+                                            1, 10,  3, &
+                                            2,  3, 10], [3,3])
+        real(dp) :: x(3)
+        real(dp), parameter :: xref(3) = [(137._dp/218._dp), -(9._dp/109._dp), (87._dp/218._dp)]
+        real(dp), parameter :: load(3) = [7.0_dp, 1.0_dp, 5.0_dp]
+        x = [0.2_dp, -0.1_dp, 0.3_dp]
+
+        call stdlib_solve_gmres(A, load, x, rtol=1.e-10_dp, precond=pc_jacobi, compact=.false.)
+
+        call check(error, norm2(x-xref)<tol*norm2(xref), 'error in GMRES solver (Jacobi preconditioned speed mode test)')
         if (allocated(error)) return
         end block
 
