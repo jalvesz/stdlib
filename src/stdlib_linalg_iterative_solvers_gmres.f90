@@ -348,7 +348,7 @@ contains
         rtol_ = optval(x=rtol, default=1.e-5_sp)
         atol_ = optval(x=atol, default=epsilon(one_sp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
+        ncols = stdlib_size_wksp_gmres(kdim_,compact_)
 
         if (present(M)) then
             M_ => M
@@ -461,7 +461,7 @@ contains
         rtol_ = optval(x=rtol, default=1.e-5_dp)
         atol_ = optval(x=atol, default=epsilon(one_dp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
+        ncols = stdlib_size_wksp_gmres(kdim_,compact_)
 
         if (present(M)) then
             M_ => M
@@ -573,7 +573,7 @@ contains
         rtol_ = optval(x=rtol, default=1.e-5_sp)
         atol_ = optval(x=atol, default=epsilon(one_sp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
+        ncols = stdlib_size_wksp_gmres(kdim_,compact_)
 
         if (present(M)) then
             M_ => M
@@ -684,7 +684,7 @@ contains
         rtol_ = optval(x=rtol, default=1.e-5_dp)
         atol_ = optval(x=atol, default=epsilon(one_dp))
         precond_ = optval(x=precond, default=pc_none)
-        ncols = kdim_ + stdlib_size_wksp_gmres + merge(1, kdim_, compact_)
+        ncols = stdlib_size_wksp_gmres(kdim_,compact_)
 
         if (present(M)) then
             M_ => M
