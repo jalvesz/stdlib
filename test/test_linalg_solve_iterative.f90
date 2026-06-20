@@ -228,27 +228,6 @@ module test_linalg_solve_iterative
         integer, parameter :: n = 10
         integer :: r, c
         block
-            !Hilbert sp is almost useless. 
-            real(sp), parameter :: tol = 1.e-0_sp
-            
-            real(sp) :: A(n, n), b(n), x(n)
-            real(sp), parameter :: x_ref(n) = 1.0_sp
-            do r = 1, n
-                do c = 1, n
-                    A(r, c) = 1.0_sp / real(r + c - 1, sp)
-                end do
-            end do
-
-            b = matmul(A, x_ref)
-            x = 0.0_sp
-
-            call stdlib_solve_gmres(A, b, x, rtol=0.0_sp, maxiter=n)
-            call check(error, norm2(x-x_ref) < tol*norm2(x_ref), & 
-            'error in GMRES sp: Hilbert matrix')
-            if (allocated(error)) return
-        end block
-        block
-            !Hilbert sp is almost useless. 
             real(dp), parameter :: tol = 1.e-3_dp
             
             real(dp) :: A(n, n), b(n), x(n)
