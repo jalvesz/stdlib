@@ -5,6 +5,8 @@ submodule(stdlib_linalg_iterative_solvers) stdlib_linalg_iterative_gmres
     use stdlib_constants
     use stdlib_optval, only: optval
     use stdlib_linalg_blas, only: gemv
+    use stdlib_linalg_lapack, only: lartg, lasr, trtrs
+    use stdlib_linalg_constants, only: ilp
     implicit none
 
 contains
@@ -17,17 +19,16 @@ contains
         integer, intent(in) :: maxiter, kdim
         type(stdlib_solver_workspace_sp_type), intent(inout) :: workspace
         logical, intent(in) :: compact
-        integer :: i, iter, j, j_final, iorth, jz, zbase
-        real(sp) :: beta, denom, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
+        integer :: i, iter, j, j_final, iorth, jz, info
+        real(sp) :: beta, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
         real(sp), allocatable :: cs(:), g(:), h(:,:), sn(:), y(:)
 
         allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim) )
-        zbase = kdim + 4
 
         associate( r => workspace%tmp(:,1), &
                w => workspace%tmp(:,2), &
                v => workspace%tmp(:,3:kdim+3), &
-               z => workspace%tmp(:,zbase:zbase+merge(0,kdim-1,compact)) )
+               z => workspace%tmp(:,kdim + 4:) )
             
             iter = 0
             ! Initialize convergence targets from the right-hand side norm.
@@ -82,26 +83,8 @@ contains
                         v(:,j+1) = zero_sp
                     end if
 
-                    ! Apply the previously accumulated Givens rotations.
-                    do i = 1, j - 1
-                        temp = cs(i) * h(i,j) + sn(i) * h(i+1,j)
-                        h(i+1,j) = -sn(i) * h(i,j) + cs(i) * h(i+1,j)
-                        h(i,j) = temp
-                    end do
-
-                    ! Build and apply the next Givens rotation.
-                    denom = sqrt(h(j,j) * h(j,j) + h(j+1,j) * h(j+1,j))
-                    if (denom > epsilon(one_sp)) then
-                        cs(j) = h(j,j) / denom
-                        sn(j) = h(j+1,j) / denom
-                    else
-                        cs(j) = one_sp
-                        sn(j) = zero_sp
-                    end if
-
-                    temp = cs(j) * h(j,j) + sn(j) * h(j+1,j)
-                    h(j+1,j) = -sn(j) * h(j,j) + cs(j) * h(j+1,j)
-                    h(j,j) = temp
+                    ! Apply previous rotations to the new column, then generate the next one.
+                    call apply_givens_rotation(h(1:j+1,j), cs, sn)
 
                     temp = cs(j) * g(j) + sn(j) * g(j+1)
                     g(j+1) = -sn(j) * g(j) + cs(j) * g(j+1)
@@ -116,7 +99,9 @@ contains
 
                 ! Cycle-end update from the least-squares correction.
                 if (j_final > 0) then
-                    call upper_triangular_solve(h, g, y, j_final)
+                    call upper_triangular_solve(h, g, y, j_final, info)
+                    if(info /= 0) exit
+
                     if (compact) then
                         call gemv('N', m=size(x), n=j_final, alpha=one_sp, &
                             a=v, lda=size(v,1), &
@@ -144,21 +129,41 @@ contains
 
     contains
 
-        subroutine upper_triangular_solve(h, g, y, n)
+        subroutine apply_givens_rotation(hcol, c, s)
+            ! implementation inspired by https://github.com/nekStab/LightKrylov
+            real(sp), target, contiguous, intent(inout) :: hcol(:)
+            real(sp), intent(inout) :: c(:), s(:)
+            integer :: k
+            real(sp) :: r
+            real(sp), pointer :: hmat(:, :)
+            ! Size of the column.
+            k = int(size(hcol) - 1, kind=ilp)
+            ! Apply previous Givens rotations to this new column.
+            hmat(1:k, 1:1) => hcol(:k)
+            call lasr('L', 'V', 'F', k, 1_ilp, c(:k-1), s(:k-1), hmat, k)
+            ! Compute the sine and cosine components for the next rotation.
+            call lartg(hcol(k), hcol(k+1), c(k), s(k), r)
+            ! Eliminate H(k+1, k).
+            hcol(k) = r
+            hcol(k+1) = zero_sp
+        end subroutine
+
+        subroutine upper_triangular_solve(h, g, y, n, info)
             real(sp), intent(in) :: h(:,:), g(:)
-            real(sp), intent(inout) :: y(:)
+            real(sp), target, contiguous, intent(inout) :: y(:)
             integer, intent(in) :: n
-            integer :: row
+            integer, intent(out) :: info
+            integer(ilp) :: n_, lda_
+            real(sp), pointer :: rhs(:, :)
 
             y(1:n) = g(1:n)
-            do row = n, 1, -1
-                if (row < n) y(row) = y(row) - dot_product(h(row,row+1:n) , y(row+1:n))
-                if (abs(h(row,row)) > epsilon(one_sp)) then
-                    y(row) = y(row) / h(row,row)
-                else
-                    y(row) = zero_sp
-                end if
-            end do
+
+            n_ = int(n, kind=ilp)
+            lda_ = int(size(h,1), kind=ilp)
+
+            rhs(1:n,1:1) => y(:n)
+
+            call trtrs('U','N','N', n_, 1_ilp, h, lda_, rhs, n_, info)
         end subroutine
     end subroutine
     module subroutine stdlib_solve_gmres_kernel_dp(A,M,b,x,rtol,atol,maxiter,kdim,workspace,compact)
@@ -169,17 +174,16 @@ contains
         integer, intent(in) :: maxiter, kdim
         type(stdlib_solver_workspace_dp_type), intent(inout) :: workspace
         logical, intent(in) :: compact
-        integer :: i, iter, j, j_final, iorth, jz, zbase
-        real(dp) :: beta, denom, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
+        integer :: i, iter, j, j_final, iorth, jz, info
+        real(dp) :: beta, hnext, htmp, norm_sq, norm_sq0, temp, tolsq
         real(dp), allocatable :: cs(:), g(:), h(:,:), sn(:), y(:)
 
         allocate(h(kdim+1, kdim), cs(kdim), sn(kdim), g(kdim+1), y(kdim) )
-        zbase = kdim + 4
 
         associate( r => workspace%tmp(:,1), &
                w => workspace%tmp(:,2), &
                v => workspace%tmp(:,3:kdim+3), &
-               z => workspace%tmp(:,zbase:zbase+merge(0,kdim-1,compact)) )
+               z => workspace%tmp(:,kdim + 4:) )
             
             iter = 0
             ! Initialize convergence targets from the right-hand side norm.
@@ -234,26 +238,8 @@ contains
                         v(:,j+1) = zero_dp
                     end if
 
-                    ! Apply the previously accumulated Givens rotations.
-                    do i = 1, j - 1
-                        temp = cs(i) * h(i,j) + sn(i) * h(i+1,j)
-                        h(i+1,j) = -sn(i) * h(i,j) + cs(i) * h(i+1,j)
-                        h(i,j) = temp
-                    end do
-
-                    ! Build and apply the next Givens rotation.
-                    denom = sqrt(h(j,j) * h(j,j) + h(j+1,j) * h(j+1,j))
-                    if (denom > epsilon(one_dp)) then
-                        cs(j) = h(j,j) / denom
-                        sn(j) = h(j+1,j) / denom
-                    else
-                        cs(j) = one_dp
-                        sn(j) = zero_dp
-                    end if
-
-                    temp = cs(j) * h(j,j) + sn(j) * h(j+1,j)
-                    h(j+1,j) = -sn(j) * h(j,j) + cs(j) * h(j+1,j)
-                    h(j,j) = temp
+                    ! Apply previous rotations to the new column, then generate the next one.
+                    call apply_givens_rotation(h(1:j+1,j), cs, sn)
 
                     temp = cs(j) * g(j) + sn(j) * g(j+1)
                     g(j+1) = -sn(j) * g(j) + cs(j) * g(j+1)
@@ -268,7 +254,9 @@ contains
 
                 ! Cycle-end update from the least-squares correction.
                 if (j_final > 0) then
-                    call upper_triangular_solve(h, g, y, j_final)
+                    call upper_triangular_solve(h, g, y, j_final, info)
+                    if(info /= 0) exit
+
                     if (compact) then
                         call gemv('N', m=size(x), n=j_final, alpha=one_dp, &
                             a=v, lda=size(v,1), &
@@ -296,21 +284,41 @@ contains
 
     contains
 
-        subroutine upper_triangular_solve(h, g, y, n)
+        subroutine apply_givens_rotation(hcol, c, s)
+            ! implementation inspired by https://github.com/nekStab/LightKrylov
+            real(dp), target, contiguous, intent(inout) :: hcol(:)
+            real(dp), intent(inout) :: c(:), s(:)
+            integer :: k
+            real(dp) :: r
+            real(dp), pointer :: hmat(:, :)
+            ! Size of the column.
+            k = int(size(hcol) - 1, kind=ilp)
+            ! Apply previous Givens rotations to this new column.
+            hmat(1:k, 1:1) => hcol(:k)
+            call lasr('L', 'V', 'F', k, 1_ilp, c(:k-1), s(:k-1), hmat, k)
+            ! Compute the sine and cosine components for the next rotation.
+            call lartg(hcol(k), hcol(k+1), c(k), s(k), r)
+            ! Eliminate H(k+1, k).
+            hcol(k) = r
+            hcol(k+1) = zero_dp
+        end subroutine
+
+        subroutine upper_triangular_solve(h, g, y, n, info)
             real(dp), intent(in) :: h(:,:), g(:)
-            real(dp), intent(inout) :: y(:)
+            real(dp), target, contiguous, intent(inout) :: y(:)
             integer, intent(in) :: n
-            integer :: row
+            integer, intent(out) :: info
+            integer(ilp) :: n_, lda_
+            real(dp), pointer :: rhs(:, :)
 
             y(1:n) = g(1:n)
-            do row = n, 1, -1
-                if (row < n) y(row) = y(row) - dot_product(h(row,row+1:n) , y(row+1:n))
-                if (abs(h(row,row)) > epsilon(one_dp)) then
-                    y(row) = y(row) / h(row,row)
-                else
-                    y(row) = zero_dp
-                end if
-            end do
+
+            n_ = int(n, kind=ilp)
+            lda_ = int(size(h,1), kind=ilp)
+
+            rhs(1:n,1:1) => y(:n)
+
+            call trtrs('U','N','N', n_, 1_ilp, h, lda_, rhs, n_, info)
         end subroutine
     end subroutine
 
