@@ -48,6 +48,7 @@ jobs:
         -DFIND_BLAS:BOOL=FALSE
         -DWITH_XDP=off
         -DWITH_QP=off
+        "-DCMAKE_Fortran_FLAGS=--legacy-array-sections"
         -S . -B build
 
     - name: Build
