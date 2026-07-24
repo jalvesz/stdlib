@@ -11,7 +11,38 @@ submodule (stdlib_sparse_spmv) stdlib_sparse_spmv_bsr
     use stdlib_linalg_blas, only: gemv, gemm
 contains
 
-    !! spmv_bsr kernels and wrappers
+    !! spmv_bsr OOP wrappers
+    #:for k1, t1, s1 in (KINDS_TYPES)
+
+    !> OOP rank=1 wrapper: unpacks BSR matrix and delegates to kernel
+    module subroutine spmv_bsr_1d_${s1}$(matrix, vec_x, vec_y, alpha, beta, op)
+        type(BSR_${s1}$_type), intent(in) :: matrix
+        ${t1}$, intent(in)    :: vec_x(:)
+        ${t1}$, intent(inout) :: vec_y(:)
+        ${t1}$, intent(in), optional :: alpha
+        ${t1}$, intent(in), optional :: beta
+        character(1), intent(in), optional :: op
+        call spmv_bsr_1d_${s1}$_kernel(matrix%data, matrix%rowptr, matrix%col, &
+            matrix%nrows, matrix%ncols, matrix%storage, matrix%block_shape, &
+            vec_x, vec_y, alpha, beta, op)
+    end subroutine spmv_bsr_1d_${s1}$
+
+    !> OOP rank=2 wrapper: unpacks BSR matrix and delegates to kernel
+    module subroutine spmv_bsr_2d_${s1}$(matrix, vec_x, vec_y, alpha, beta, op)
+        type(BSR_${s1}$_type), intent(in) :: matrix
+        ${t1}$, intent(in)    :: vec_x(:,:)
+        ${t1}$, intent(inout) :: vec_y(:,:)
+        ${t1}$, intent(in), optional :: alpha
+        ${t1}$, intent(in), optional :: beta
+        character(1), intent(in), optional :: op
+        call spmv_bsr_2d_${s1}$_kernel(matrix%data, matrix%rowptr, matrix%col, &
+            matrix%nrows, matrix%ncols, matrix%storage, matrix%block_shape, &
+            vec_x, vec_y, alpha, beta, op)
+    end subroutine spmv_bsr_2d_${s1}$
+
+    #:endfor
+
+    !! spmv_bsr non-OOP kernels
     #:for k1, t1, s1 in (KINDS_TYPES)
 
     !> Non-OOP rank=1 kernel for BSR SpMV
@@ -430,32 +461,6 @@ contains
         #:endif
         end if
     end subroutine spmv_bsr_2d_${s1}$_kernel
-
-    !> OOP rank=1 wrapper: unpacks BSR matrix and delegates to kernel
-    module subroutine spmv_bsr_1d_${s1}$(matrix, vec_x, vec_y, alpha, beta, op)
-        type(BSR_${s1}$_type), intent(in) :: matrix
-        ${t1}$, intent(in)    :: vec_x(:)
-        ${t1}$, intent(inout) :: vec_y(:)
-        ${t1}$, intent(in), optional :: alpha
-        ${t1}$, intent(in), optional :: beta
-        character(1), intent(in), optional :: op
-        call spmv_bsr_1d_${s1}$_kernel(matrix%data, matrix%rowptr, matrix%col, &
-            matrix%nrows, matrix%ncols, matrix%storage, matrix%block_shape, &
-            vec_x, vec_y, alpha, beta, op)
-    end subroutine spmv_bsr_1d_${s1}$
-
-    !> OOP rank=2 wrapper: unpacks BSR matrix and delegates to kernel
-    module subroutine spmv_bsr_2d_${s1}$(matrix, vec_x, vec_y, alpha, beta, op)
-        type(BSR_${s1}$_type), intent(in) :: matrix
-        ${t1}$, intent(in)    :: vec_x(:,:)
-        ${t1}$, intent(inout) :: vec_y(:,:)
-        ${t1}$, intent(in), optional :: alpha
-        ${t1}$, intent(in), optional :: beta
-        character(1), intent(in), optional :: op
-        call spmv_bsr_2d_${s1}$_kernel(matrix%data, matrix%rowptr, matrix%col, &
-            matrix%nrows, matrix%ncols, matrix%storage, matrix%block_shape, &
-            vec_x, vec_y, alpha, beta, op)
-    end subroutine spmv_bsr_2d_${s1}$
 
     #:endfor
 
