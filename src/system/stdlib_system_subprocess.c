@@ -45,22 +45,26 @@ static bool write_all_handle(HANDLE handle, const char* buffer) {
 static bool write_all_fd(int fd, const char* buffer) {
     size_t remaining = strlen(buffer);
     const char* current = buffer;
-    void (*previous_handler)(int);
+    struct sigaction ignore_action;
+    struct sigaction previous_action;
 
-    previous_handler = signal(SIGPIPE, SIG_IGN);
+    memset(&ignore_action, 0, sizeof(ignore_action));
+    ignore_action.sa_handler = SIG_IGN;
+    sigemptyset(&ignore_action.sa_mask);
+    sigaction(SIGPIPE, &ignore_action, &previous_action);
     while (remaining > 0) {
         ssize_t written = write(fd, current, remaining);
         if (written < 0) {
             if (errno == EINTR) {
                 continue;
             }
-            signal(SIGPIPE, previous_handler);
+            sigaction(SIGPIPE, &previous_action, NULL);
             return false;
         }
         current += written;
         remaining -= (size_t)written;
     }
-    signal(SIGPIPE, previous_handler);
+    sigaction(SIGPIPE, &previous_action, NULL);
 
     return true;
 }

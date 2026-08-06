@@ -581,17 +581,17 @@ contains
         !> [optional] File name error output (stderr) should be directed to
         character(len=*), optional, intent(in) :: stderr
         !> Keep the current stdin stream instead of redirecting from a file
-        logical, optional, intent(in) :: use_piped_stdin
+        logical, optional, intent(in) :: keep_stdin
         
         character(:), allocatable :: cmd,stdout_file,input_file,stderr_file
-        logical :: keep_stdin
+        logical :: preserve_stdin
 
-        keep_stdin = .false.
-        if (present(use_piped_stdin)) keep_stdin = use_piped_stdin
+        preserve_stdin = .false.
+        if (present(keep_stdin)) preserve_stdin = keep_stdin
          
         if (present(stdin)) then 
             input_file = stdin
-        else if (.not.keep_stdin) then
+        else if (.not.preserve_stdin) then
             input_file = null_device()        
         end if
 
@@ -609,7 +609,7 @@ contains
         end if
         
         cmd = join(args)
-        if (.not.keep_stdin) cmd = cmd//" <"//input_file
+        if (.not.preserve_stdin) cmd = cmd//" <"//input_file
         cmd = cmd//" 1>"//stdout_file//" 2>"//stderr_file   
         
     end function assemble_cmd            
