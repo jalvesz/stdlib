@@ -571,7 +571,7 @@ contains
     !> Assemble a single-line proces command line from a list of arguments.
     !> 
     !> Version: Helper function.
-    function assemble_cmd(args, stdin, stdout, stderr, use_piped_stdin) result(cmd)
+    function assemble_cmd(args, stdin, stdout, stderr, keep_stdin) result(cmd)
         !> Command to execute as a string
         character(len=*), intent(in) :: args(:)    
         !> [optional] File name standard input (stdin) should be taken from
