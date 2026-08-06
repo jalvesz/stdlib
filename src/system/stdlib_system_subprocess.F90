@@ -472,11 +472,11 @@ contains
     subroutine save_completed_state(process,delete_files,invoke_callback)
         class(process_type), intent(inout) :: process
         logical, intent(in) :: delete_files
-       logical, optional, intent(in) :: invoke_callback
+        logical, optional, intent(in) :: invoke_callback
         
-       logical(c_bool) :: running        
-       integer(c_int) :: exit_code        
-       logical :: do_callback
+        logical(c_bool) :: running        
+        integer(c_int) :: exit_code        
+        logical :: do_callback
         
         ! Same as process ID: process exited
         process%completed = .true.

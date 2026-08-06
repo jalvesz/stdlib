@@ -205,7 +205,9 @@ void process_create_windows(const char* cmd, const char* stdin_stream,
     (*pid) = (stdlib_pid) pi.dwProcessId;
 
     if (use_stdin_pipe) {
-        write_all_handle(stdin_write, stdin_stream);
+        if (!write_all_handle(stdin_write, stdin_stream)) {
+            fprintf(stderr, "Failed to write stdin stream to child process\n");
+        }
         CloseHandle(stdin_write);
     }
     
@@ -386,7 +388,9 @@ void process_create_posix(const char* stdin_stream, stdlib_pid* pid)
     } else if ((*pid) > 0) {
         if (use_stdin_pipe) {
             close(stdin_pipe[0]);
-            write_all_fd(stdin_pipe[1], stdin_stream);
+            if (!write_all_fd(stdin_pipe[1], stdin_stream)) {
+                fprintf(stderr, "Failed to write stdin stream to child process\n");
+            }
             close(stdin_pipe[1]);
         }
     } else if (use_stdin_pipe) {
