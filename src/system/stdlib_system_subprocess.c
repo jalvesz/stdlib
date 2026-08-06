@@ -21,6 +21,55 @@
 typedef void* stdlib_handle;
 typedef int64_t stdlib_pid;
 
+static bool has_stdin_stream(const char* stdin_stream) {
+    return stdin_stream != NULL;
+}
+
+#ifdef _WIN32
+static bool write_all_handle(HANDLE handle, const char* buffer) {
+    DWORD written = 0;
+    size_t remaining = strlen(buffer);
+
+    while (remaining > 0) {
+        DWORD chunk = remaining > (size_t)MAXDWORD ? MAXDWORD : (DWORD)remaining;
+        if (!WriteFile(handle, buffer, chunk, &written, NULL)) {
+            return false;
+        }
+        buffer += written;
+        remaining -= written;
+    }
+
+    return true;
+}
+#else
+static bool write_all_fd(int fd, const char* buffer) {
+    size_t remaining = strlen(buffer);
+    const char* current = buffer;
+    struct sigaction ignore_action;
+    struct sigaction previous_action;
+
+    memset(&ignore_action, 0, sizeof(ignore_action));
+    ignore_action.sa_handler = SIG_IGN;
+    sigemptyset(&ignore_action.sa_mask);
+    sigaction(SIGPIPE, &ignore_action, &previous_action);
+    while (remaining > 0) {
+        ssize_t written = write(fd, current, remaining);
+        if (written < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            sigaction(SIGPIPE, &previous_action, NULL);
+            return false;
+        }
+        current += written;
+        remaining -= (size_t)written;
+    }
+    sigaction(SIGPIPE, &previous_action, NULL);
+
+    return true;
+}
+#endif
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Windows-specific code
@@ -35,9 +84,10 @@ void process_create_windows(const char* cmd, const char* stdin_stream,
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     HANDLE hStdout = NULL, hStderr = NULL, hStdin = NULL;
+    HANDLE stdin_read = NULL, stdin_write = NULL;
     SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), NULL, TRUE };
-    FILE* stdin_fp = NULL;
     char* full_cmd = NULL;
+    bool use_stdin_pipe = has_stdin_stream(stdin_stream);
     
     // Initialize null handle
     (*pid) = 0;
@@ -45,19 +95,23 @@ void process_create_windows(const char* cmd, const char* stdin_stream,
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(STARTUPINFO);
     
-    // Write stdin_stream to stdin_file if provided
-    if (stdin_stream && stdin_file) {
-        stdin_fp = fopen(stdin_file, "w");
-        if (!stdin_fp) {
-            fprintf(stderr, "Failed to open stdin file for writing\n");
+    if (use_stdin_pipe) {
+        if (!CreatePipe(&stdin_read, &stdin_write, &sa, 0)) {
+            fprintf(stderr, "Failed to create stdin pipe\n");
             return;
         }
-        fputs(stdin_stream, stdin_fp);
-        fclose(stdin_fp);
+        if (!SetHandleInformation(stdin_write, HANDLE_FLAG_INHERIT, 0)) {
+            fprintf(stderr, "Failed to configure stdin pipe inheritance\n");
+            CloseHandle(stdin_read);
+            CloseHandle(stdin_write);
+            return;
+        }
     }
 
     // Open stdin file if provided, otherwise use the null device
-    if (stdin_file) {
+    if (use_stdin_pipe) {
+        hStdin = stdin_read;
+    } else if (stdin_file) {
         hStdin = CreateFile(stdin_file, GENERIC_READ, 0, &sa, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     } else {
         hStdin = CreateFile("NUL", GENERIC_READ, 0, &sa, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -141,6 +195,7 @@ void process_create_windows(const char* cmd, const char* stdin_stream,
         CloseHandle(hStdin);
         CloseHandle(hStdout);
         CloseHandle(hStderr);
+        if (stdin_write) CloseHandle(stdin_write);
         return;
     }
 
@@ -152,6 +207,13 @@ void process_create_windows(const char* cmd, const char* stdin_stream,
     // Return the process handle for status queries
     CloseHandle(pi.hThread);  // Close the thread handle
     (*pid) = (stdlib_pid) pi.dwProcessId;
+
+    if (use_stdin_pipe) {
+        if (!write_all_handle(stdin_write, stdin_stream)) {
+            fprintf(stderr, "Failed to write stdin stream to child process\n");
+        }
+        CloseHandle(stdin_write);
+    }
     
 }
 
@@ -306,10 +368,39 @@ bool process_kill_unix(stdlib_pid pid) {
 
 
 // On UNIX systems: just fork a new process. The command line will be executed from Fortran.
-void process_create_posix(stdlib_pid* pid) 
+void process_create_posix(const char* stdin_stream, stdlib_pid* pid) 
 {
+    int stdin_pipe[2] = {-1, -1};
+    bool use_stdin_pipe = has_stdin_stream(stdin_stream);
+
+    if (use_stdin_pipe && pipe(stdin_pipe) != 0) {
+        (*pid) = -1;
+        return;
+    }
 
     (*pid) = (stdlib_pid) fork();
+
+    if ((*pid) == 0) {
+        if (use_stdin_pipe) {
+            close(stdin_pipe[1]);
+            if (dup2(stdin_pipe[0], STDIN_FILENO) < 0) {
+                close(stdin_pipe[0]);
+                _exit(EXIT_FAILURE);
+            }
+            close(stdin_pipe[0]);
+        }
+    } else if ((*pid) > 0) {
+        if (use_stdin_pipe) {
+            close(stdin_pipe[0]);
+            if (!write_all_fd(stdin_pipe[1], stdin_stream)) {
+                fprintf(stderr, "Failed to write stdin stream to child process\n");
+            }
+            close(stdin_pipe[1]);
+        }
+    } else if (use_stdin_pipe) {
+        close(stdin_pipe[0]);
+        close(stdin_pipe[1]);
+    }
 }
 
 // On UNIX systems: check if input path is a directory
@@ -342,7 +433,7 @@ void process_create(const char* cmd, const char* stdin_stream, const char* stdin
 #ifdef _WIN32
     process_create_windows(cmd, stdin_stream, stdin_file, stdout_file, stderr_file, pid);
 #else
-    process_create_posix(pid);
+    process_create_posix(stdin_stream, pid);
 #endif // _WIN32
 }
 
@@ -433,4 +524,3 @@ bool process_is_windows()
    return false;
 #endif // _WIN32
 }
-
