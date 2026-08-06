@@ -31,7 +31,7 @@ static bool write_all_handle(HANDLE handle, const char* buffer) {
     size_t remaining = strlen(buffer);
 
     while (remaining > 0) {
-        DWORD chunk = remaining > (size_t)DWORD_MAX ? DWORD_MAX : (DWORD)remaining;
+        DWORD chunk = remaining > (size_t)MAXDWORD ? MAXDWORD : (DWORD)remaining;
         if (!WriteFile(handle, buffer, chunk, &written, NULL)) {
             return false;
         }
