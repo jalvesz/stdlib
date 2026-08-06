@@ -7,6 +7,7 @@ submodule (stdlib_system) stdlib_system_subprocess
     
     ! Number of CPU ticks between status updates
     integer(TICKS), parameter :: CHECK_EVERY_TICKS = 100
+    integer, parameter :: MAX_PIPE_STDIN_LENGTH = 4096
     
     ! Interface to C support functions from stdlib_system_subprocess.c
     interface
@@ -196,7 +197,7 @@ contains
         type(process_type) :: process
         
         real(RTICKS) :: count_rate
-        logical :: asynchronous, collect_stdout, collect_stderr, has_stdin, run_in_subprocess
+        logical :: asynchronous, collect_stdout, collect_stderr, has_stdin, run_in_subprocess, use_piped_stdin
         integer(TICKS) :: count_max
         logical(c_bool) :: running
         integer(c_int) :: exit_code
@@ -206,11 +207,14 @@ contains
         collect_stdout = .false.
         collect_stderr = .false.
         has_stdin      = present(stdin)
-        run_in_subprocess = asynchronous .or. has_stdin
+        use_piped_stdin = .false.
+        if (has_stdin) use_piped_stdin = len(stdin) <= MAX_PIPE_STDIN_LENGTH
+        run_in_subprocess = asynchronous .or. use_piped_stdin
         if (present(want_stdout)) collect_stdout = want_stdout
         if (present(want_stderr)) collect_stderr = want_stderr
         if (has_stdin) process%stdin = stdin
          
+        if (has_stdin .and. .not.use_piped_stdin) process%stdin_file = scratch_name('inp')
         ! Attach stdout to a scratch file (must be named)
         if (collect_stdout) process%stdout_file = scratch_name('out')            
         if (collect_stderr) process%stderr_file = scratch_name('err')
@@ -279,7 +283,7 @@ contains
         
         ! Assemble C strings 
                                             c_cmd   = to_c_char(join(args))
-        if (present(stdin))                 c_stdin = to_c_char(stdin)
+        if (present(stdin) .and. .not.allocated(process%stdin_file)) c_stdin = to_c_char(stdin)
         if (allocated(process%stdin_file))  c_stdin_file  = to_c_char(process%stdin_file)
         if (allocated(process%stdout_file)) c_stdout_file = to_c_char(process%stdout_file)
         if (allocated(process%stderr_file)) c_stderr_file = to_c_char(process%stderr_file)
