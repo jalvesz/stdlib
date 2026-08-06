@@ -196,20 +196,22 @@ contains
         type(process_type) :: process
         
         real(RTICKS) :: count_rate
-        logical :: asynchronous, collect_stdout, collect_stderr, has_stdin
-        integer :: command_state, exit_state
+        logical :: asynchronous, collect_stdout, collect_stderr, has_stdin, run_in_subprocess
         integer(TICKS) :: count_max
+        logical(c_bool) :: running
+        integer(c_int) :: exit_code
         
         ! Process user requests
         asynchronous   = .not.wait
         collect_stdout = .false.
         collect_stderr = .false.
         has_stdin      = present(stdin)
+        run_in_subprocess = asynchronous .or. has_stdin
         if (present(want_stdout)) collect_stdout = want_stdout
         if (present(want_stderr)) collect_stderr = want_stderr
-        
+        if (has_stdin) process%stdin = stdin
+         
         ! Attach stdout to a scratch file (must be named)
-        if (has_stdin)      process%stdin_file  = scratch_name('inp')
         if (collect_stdout) process%stdout_file = scratch_name('out')            
         if (collect_stderr) process%stderr_file = scratch_name('err')
         
@@ -230,7 +232,7 @@ contains
         call system_clock(process%start_time,count_rate,count_max)
         process%last_update = process%start_time                
         
-        if (asynchronous) then 
+        if (run_in_subprocess) then 
             
            ! Create or fork a new process, store pid 
            call launch_asynchronous(process, args, stdin)
@@ -243,25 +245,24 @@ contains
         endif
         
         if (process%id == FORKED_PROCESS) then 
-           
+            
            ! Launch to completion from the local process
            call launch_synchronous(process, args, stdin)
-           call save_completed_state(process,delete_files=.not.asynchronous)
+           call save_completed_state(process, delete_files=.not.run_in_subprocess, invoke_callback=.not.run_in_subprocess)
 
            ! If the process was forked 
            ! Note: use `exit` rather than `stop` to prevent the mandatory stdout STOP message           
-           if (asynchronous) then 
-               if (command_state/=0) then 
-                   ! Invalid command: didn't even start
-                   call exit(command_state)
-               else
-                   ! Return exit state
-                   call exit(exit_state)                   
-               end if                   
-           endif            
-           
+           if (run_in_subprocess) call exit(process%exit_code)
+            
+        else if (.not.asynchronous) then
+
+           call process_query_status(process%id, wait=C_TRUE, is_running=running, exit_code=exit_code)
+           process%completed = .not.running
+           process%exit_code = exit_code
+           call save_completed_state(process, delete_files=.true., invoke_callback=.true.)
+
         endif
-              
+               
         ! Run a first update
         call update_process_state(process)   
            
@@ -299,12 +300,13 @@ contains
         character(:), allocatable :: cmd
         character(4096) :: iomsg
         integer :: iostat,estat,cstat,stdin_unit
-        logical :: has_stdin
+        logical :: has_stdin, use_piped_stdin
         
         has_stdin      = present(stdin)
-        
+        use_piped_stdin = has_stdin .and. .not.allocated(process%stdin_file)
+         
         ! Prepare stdin
-        if (has_stdin) then 
+        if (has_stdin .and. .not.use_piped_stdin) then 
             
             open(newunit=stdin_unit,file=process%stdin_file, &
                  access='stream',action='write',position='rewind', &
@@ -320,7 +322,7 @@ contains
         end if
                        
         ! Run command
-        cmd = assemble_cmd(args,process%stdin_file,process%stdout_file,process%stderr_file)
+        cmd = assemble_cmd(args, process%stdin_file, process%stdout_file, process%stderr_file, use_piped_stdin)
            
         ! Execute command        
         call execute_command_line(cmd,wait=.true.,exitstat=estat,cmdstat=cstat)         
@@ -467,16 +469,19 @@ contains
         
     end subroutine process_kill
     
-    subroutine save_completed_state(process,delete_files)
+    subroutine save_completed_state(process,delete_files,invoke_callback)
         class(process_type), intent(inout) :: process
         logical, intent(in) :: delete_files
+       logical, optional, intent(in) :: invoke_callback
         
-        logical(c_bool) :: running        
-        integer(c_int) :: exit_code        
-        integer :: delete
+       logical(c_bool) :: running        
+       integer(c_int) :: exit_code        
+       logical :: do_callback
         
         ! Same as process ID: process exited
         process%completed = .true.
+        do_callback = .true.
+        if (present(invoke_callback)) do_callback = invoke_callback
         
         ! Clean up process state using waitpid
         if (process%id/=FORKED_PROCESS) call process_query_status(process%id, C_TRUE, running, exit_code)
@@ -500,7 +505,7 @@ contains
         end if
         
         ! Process is over: invoke callback if requested
-        if (associated(process%oncomplete)) &
+        if (do_callback .and. associated(process%oncomplete)) &
             call process%oncomplete(process%id,        &
                                     process%exit_code, &
                                     process%stdin,    &
@@ -562,7 +567,7 @@ contains
     !> Assemble a single-line proces command line from a list of arguments.
     !> 
     !> Version: Helper function.
-    function assemble_cmd(args, stdin, stdout, stderr) result(cmd)
+    function assemble_cmd(args, stdin, stdout, stderr, use_piped_stdin) result(cmd)
         !> Command to execute as a string
         character(len=*), intent(in) :: args(:)    
         !> [optional] File name standard input (stdin) should be taken from
@@ -571,12 +576,18 @@ contains
         character(len=*), optional, intent(in) :: stdout
         !> [optional] File name error output (stderr) should be directed to
         character(len=*), optional, intent(in) :: stderr
+        !> Keep the current stdin stream instead of redirecting from a file
+        logical, optional, intent(in) :: use_piped_stdin
         
         character(:), allocatable :: cmd,stdout_file,input_file,stderr_file
-        
+        logical :: keep_stdin
+
+        keep_stdin = .false.
+        if (present(use_piped_stdin)) keep_stdin = use_piped_stdin
+         
         if (present(stdin)) then 
             input_file = stdin
-        else
+        else if (.not.keep_stdin) then
             input_file = null_device()        
         end if
 
@@ -593,7 +604,9 @@ contains
             stderr_file = null_device()
         end if
         
-        cmd = join(args)//" <"//input_file//" 1>"//stdout_file//" 2>"//stderr_file   
+        cmd = join(args)
+        if (.not.keep_stdin) cmd = cmd//" <"//input_file
+        cmd = cmd//" 1>"//stdout_file//" 2>"//stderr_file   
         
     end function assemble_cmd            
     
