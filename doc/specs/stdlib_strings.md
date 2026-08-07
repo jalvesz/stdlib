@@ -4,11 +4,19 @@ title: strings
 
 # The `stdlib_strings` module
 
-[TOC]
+```{contents}
+:local:
+:depth: 2
+```
 
 ## Introduction
 
 The `stdlib_strings` module provides basic string handling and manipulation routines.
+
+```{note}
+The generated API reference for this pilot module is available in
+[the Sphinx API section](../api/stdlib_strings.rst).
+```
 
 
 ## Procedures and methods provided
@@ -23,7 +31,7 @@ Remove leading and trailing whitespace characters.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):strip(interface)]] ` (string)`
+`string = ` `strip` ` (string)`
 
 #### Status
 
@@ -35,7 +43,7 @@ Pure function.
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
 
 #### Result value
@@ -44,8 +52,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_strip.f90!}
+```{literalinclude} ../../example/strings/example_strip.f90
+:language: fortran
 ```
 
 
@@ -59,7 +67,7 @@ If no character *set* or *substring* is provided trailing whitespace is removed.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):chomp(interface)]] ` (string[, set|substring])`
+`string = ` `chomp` ` (string[, set|substring])`
 
 #### Status
 
@@ -71,10 +79,10 @@ Pure function.
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
 - `set`: Array of length one character. This argument is intent(in).
-- `substring`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `substring`: Character scalar or `string_type`.
   This argument is intent(in).
 
 #### Result value
@@ -83,8 +91,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_chomp.f90!}
+```{literalinclude} ../../example/strings/example_chomp.f90
+:language: fortran
 ```
 
 
@@ -97,7 +105,7 @@ Check if a *string* starts with a given *substring*.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):starts_with(interface)]] ` (string, substring)`
+`string = ` `starts_with` ` (string, substring)`
 
 #### Status
 
@@ -109,9 +117,9 @@ Pure function.
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
-- `substring`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `substring`: Character scalar or `string_type`.
   This argument is intent(in).
 
 #### Result value
@@ -120,8 +128,8 @@ The result is of scalar logical type.
 
 #### Example
 
-```fortran
-{!example/strings/example_starts_with.f90!}
+```{literalinclude} ../../example/strings/example_starts_with.f90
+:language: fortran
 ```
 
 
@@ -134,7 +142,7 @@ Check if a *string* ends with a given *substring*.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):ends_with(interface)]] ` (string, substring)`
+`string = ` `ends_with` ` (string, substring)`
 
 #### Status
 
@@ -146,9 +154,9 @@ Pure function.
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
-- `substring`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `substring`: Character scalar or `string_type`.
   This argument is intent(in).
 
 #### Result value
@@ -157,8 +165,8 @@ The result is of scalar logical type.
 
 #### Example
 
-```fortran
-{!example/strings/example_ends_with.f90!}
+```{literalinclude} ../../example/strings/example_ends_with.f90
+:language: fortran
 ```
 
 
@@ -185,7 +193,7 @@ If no valid index exists in the defined region, empty string is returned.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):slice(interface)]] ` (string [, first, last, stride])`
+`string = ` `slice` ` (string [, first, last, stride])`
 
 #### Status
 
@@ -197,7 +205,7 @@ Pure function.
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
 - `first`: integer.
   This argument is intent(in) and optional.
@@ -212,8 +220,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_slice.f90!}
+```{literalinclude} ../../example/strings/example_slice.f90
+:language: fortran
 ```
 
 
@@ -230,7 +238,7 @@ If `occurrence`th occurrence is not found, function returns `0`.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):find(interface)]] ` (string, pattern [, occurrence, consider_overlapping])`
+`string = ` `find` ` (string, pattern [, occurrence, consider_overlapping])`
 
 #### Status
 
@@ -242,9 +250,9 @@ Elemental function
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
-- `pattern`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `pattern`: Character scalar or `string_type`.
   This argument is intent(in).
 - `occurrence`: integer.
   This argument is intent(in) and optional.
@@ -257,8 +265,8 @@ The result is a scalar of integer type or an integer array of rank equal to the 
 
 #### Example
 
-```fortran
-{!example/strings/example_find.f90!}
+```{literalinclude} ../../example/strings/example_find.f90
+:language: fortran
 ```
 
 
@@ -272,7 +280,7 @@ Occurrences overlapping on a base occurrence will not be replaced.
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):replace_all(interface)]] ` (string, pattern, replacement)`
+`string = ` `replace_all` ` (string, pattern, replacement)`
 
 #### Status
 
@@ -284,11 +292,11 @@ Pure function
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
-- `pattern`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `pattern`: Character scalar or `string_type`.
   This argument is intent(in).
-- `replacement`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `replacement`: Character scalar or `string_type`.
   This argument is intent(in).
 
 #### Result value
@@ -297,8 +305,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_replace_all.f90!}
+```{literalinclude} ../../example/strings/example_replace_all.f90
+:language: fortran
 ```
 
 
@@ -312,7 +320,7 @@ If `output_length` is less than or equal to the length of `string`, padding is n
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):padl(interface)]] ` (string, output_length [, pad_with])`
+`string = ` `padl` ` (string, output_length [, pad_with])`
 
 #### Status
 
@@ -324,7 +332,7 @@ Pure function
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
 - `output_length`: integer.
   This argument is intent(in).
@@ -337,8 +345,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_padl.f90!}
+```{literalinclude} ../../example/strings/example_padl.f90
+:language: fortran
 ```
 
 
@@ -352,7 +360,7 @@ If `output_length` is less than or equal to the length of `string`, padding is n
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):padr(interface)]] ` (string, output_length [, pad_with])`
+`string = ` `padr` ` (string, output_length [, pad_with])`
 
 #### Status
 
@@ -364,7 +372,7 @@ Pure function
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
 - `output_length`: integer.
   This argument is intent(in).
@@ -377,8 +385,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_padr.f90!}
+```{literalinclude} ../../example/strings/example_padr.f90
+:language: fortran
 ```
 
 
@@ -392,7 +400,7 @@ If `consider_overlapping` is not provided or is set to `.true.` the function cou
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):count(interface)]] ` (string, pattern [, consider_overlapping])`
+`string = ` `count` ` (string, pattern [, consider_overlapping])`
 
 #### Status
 
@@ -404,9 +412,9 @@ Elemental function
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
-- `pattern`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `pattern`: Character scalar or `string_type`.
   This argument is intent(in).
 - `consider_overlapping`: logical.
   This argument is intent(in) and optional.
@@ -417,8 +425,8 @@ The result is a scalar of integer type or an integer array of rank equal to the 
 
 #### Example
 
-```fortran
-{!example/strings/example_count.f90!}
+```{literalinclude} ../../example/strings/example_count.f90
+:language: fortran
 ```
 
 
@@ -432,7 +440,7 @@ If `output_length` is less than or equal to the length of `string`, padding is n
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):zfill(interface)]] ` (string, output_length)`
+`string = ` `zfill` ` (string, output_length)`
 
 #### Status
 
@@ -444,7 +452,7 @@ Pure function
 
 #### Argument
 
-- `string`: Character scalar or [[stdlib_string_type(module):string_type(type)]].
+- `string`: Character scalar or `string_type`.
   This argument is intent(in).
 - `output_length`: integer.
   This argument is intent(in).
@@ -455,8 +463,8 @@ The result is of the same type as `string`.
 
 #### Example
 
-```fortran
-{!example/strings/example_zfill.f90!}
+```{literalinclude} ../../example/strings/example_zfill.f90
+:language: fortran
 ```
 
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
@@ -470,7 +478,7 @@ inserting a separator between each string (default: space). A user-defined separ
 
 #### Syntax
 
-`joined = ` [[stdlib_strings(module):join(interface)]] ` (strings, separator)`
+`joined = ` `join` ` (strings, separator)`
 
 #### Status
 
@@ -493,8 +501,8 @@ The result is of the same type as the elements of `strings` (`type(string_type)`
 
 #### Example
 
-```fortran
-{!example/strings/example_join.f90!}
+```{literalinclude} ../../example/strings/example_join.f90
+:language: fortran
 ```
 
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
@@ -508,7 +516,7 @@ Input a wrong `format` that cause the internal-IO to fail, the result value is a
 
 #### Syntax
 
-`string = ` [[stdlib_strings(module):to_string(interface)]] ` (value [, format])`
+`string = ` `to_string` ` (value [, format])`
 
 #### Status
 
@@ -533,8 +541,8 @@ The result is an `allocatable` length `character` scalar with up to `128` cached
 
 #### Example
 
-```fortran
-{!example/strings/example_to_string.f90!}
+```{literalinclude} ../../example/strings/example_to_string.f90
+:language: fortran
 ```
 
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
@@ -547,7 +555,7 @@ This function converts a Fortran string into a C-style array of characters, ensu
 
 #### Syntax
 
-`cstr = ` [[stdlib_strings(module):to_c_char(function)]] ` (value)`
+`cstr = ` `to_c_char` ` (value)`
 
 #### Status
 
@@ -568,6 +576,6 @@ The result is a `character(kind=c_char)` array with a dimension of `len(value) +
 
 #### Example
 
-```fortran
-{!example/strings/example_to_c_char.f90!}
+```{literalinclude} ../../example/strings/example_to_c_char.f90
+:language: fortran
 ```

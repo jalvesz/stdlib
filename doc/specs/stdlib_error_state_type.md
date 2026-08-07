@@ -4,7 +4,10 @@ title: state_type
 
 # State and Error Handling Derived Type
 
-[TOC]
+```{contents}
+:local:
+:depth: 2
+```
 
 ## Introduction
 
@@ -39,8 +42,8 @@ Experimental
 
 #### Example
 
-```fortran
-{!example/error/example_error_state1.f90!}
+```{literalinclude} ../../example/error/example_error_state1.f90
+:language: fortran
 ```
 
 ## Error flags provided

@@ -4,7 +4,10 @@ title: optval
 
 # Default values for optional arguments
 
-[TOC]
+```{contents}
+:local:
+:depth: 2
+```
 
 ## `optval` - fallback value for optional arguments
 
@@ -20,7 +23,7 @@ This function is intended to be called in a procedure with one or more `optional
 
 ### Syntax
 
-`result = ` [[stdlib_optval(module):optval(interface)]] `(x, default)`
+`result = ` `optval` `(x, default)`
 
 ### Arguments
 
@@ -34,6 +37,6 @@ If `x` is present, the result is `x`, otherwise the result is `default`.
 
 ### Example
 
-```fortran
-{!example/optval/example_optval.f90!}
+```{literalinclude} ../../example/optval/example_optval.f90
+:language: fortran
 ```

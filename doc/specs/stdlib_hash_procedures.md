@@ -4,7 +4,10 @@ title: hash
 
 # The `stdlib_hash_32bit` and `stdlib_hash_64bit` modules
 
-[TOC]
+```{contents}
+:local:
+:depth: 2
+```
 
 ## Overview of hash procedures
 
@@ -524,7 +527,7 @@ in mapping hash codes into small arrays.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:fibonacci_hash]] `( key, nbits )`
+`code = ` `fibonacci_hash` `( key, nbits )`
 
 ##### Class
 
@@ -552,8 +555,8 @@ E. Knuth. It multiplies the `key` by the odd valued approximation to
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_fibonacci_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_fibonacci_hash.f90
+:language: fortran
 ```
 
 #### `fnv_1_hash`- calculates a hash code from a key
@@ -569,7 +572,7 @@ character string.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:fnv_1_hash]] `( key )`
+`code = ` `fnv_1_hash` `( key )`
 
 ##### Class
 
@@ -606,8 +609,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_fnv_1_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_fnv_1_hash.f90
+:language: fortran
 ```
 
 
@@ -624,7 +627,7 @@ character string.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:fnv_1a_hash]] `( key )`
+`code = ` `fnv_1a_hash` `( key )`
 
 ##### Class
 
@@ -660,8 +663,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_fnv_1a_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_fnv_1a_hash.f90
+:language: fortran
 ```
 
 
@@ -678,7 +681,7 @@ seed for `nmhash32` and is also different from the input seed.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_32bit:new_nmhash32_seed]] `( seed )`
+`call ` `new_nmhash32_seed` `( seed )`
 
 ##### Class
 
@@ -716,7 +719,7 @@ seed for `nmhash32x` and is also different from the input seed.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_32bit:new_nmhash32x_seed]] `( seed )`
+`call ` `new_nmhash32x_seed` `( seed )`
 
 ##### Class
 
@@ -754,7 +757,7 @@ seed for `water_hash` and is also different from the input seed.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_32bit:new_water_hash_seed]] `( seed )`
+`call ` `new_water_hash_seed` `( seed )`
 
 ##### Class
 
@@ -793,7 +796,7 @@ character string, and the input `seed`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:nmhash32]] `( key, seed )`
+`code = ` `nmhash32` `( key, seed )`
 
 ##### Class
 
@@ -827,8 +830,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_nmhash32.f90!}
+```{literalinclude} ../../example/hash_procedures/example_nmhash32.f90
+:language: fortran
 ```
 
 
@@ -845,7 +848,7 @@ character string, and the input `seed`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:nmhash32x]] `( key, seed )`
+`code = ` `nmhash32x` `( key, seed )`
 
 ##### Class
 
@@ -879,8 +882,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_nmhash32x.f90!}
+```{literalinclude} ../../example/hash_procedures/example_nmhash32x.f90
+:language: fortran
 ```
 
 #### `odd_random_integer` - returns an odd integer
@@ -895,7 +898,7 @@ Returns a random 32-bit integer distributed uniformly over the odd values.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_32bit:odd_random_integer]] `( harvest )`
+`call ` `odd_random_integer` `( harvest )`
 
 ##### Class
 
@@ -931,7 +934,7 @@ in mapping a hash value to a range 0 to `2**nbits-1`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:universal_mult_hash]] `( key, seed, nbits )`
+`code = ` `universal_mult_hash` `( key, seed, nbits )`
 
 ##### Class
 
@@ -962,8 +965,8 @@ It multiplies the `key` by `seed`, and returns the
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_universal_mult_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_universal_mult_hash.f90
+:language: fortran
 ```
 
 #### `water_hash`- calculates a hash code from a key and a seed
@@ -979,7 +982,7 @@ character string, and the input `seed`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_32bit:water_hash]] `( key, seed )`
+`code = ` `water_hash` `( key, seed )`
 
 ##### Class
 
@@ -1020,8 +1023,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_water_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_water_hash.f90
+:language: fortran
 ```
 
 ## The `stdlib_hash_64bit` module
@@ -1083,7 +1086,7 @@ in mapping hash codes into small arrays.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_64bit:fibonacci_hash]] `( key, nbits )`
+`code = ` `fibonacci_hash` `( key, nbits )`
 
 ##### Class
 
@@ -1111,8 +1114,8 @@ E. Knuth. It multiplies the `key` by the odd valued approximation to
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_fibonacci_hash_64.f90!}
+```{literalinclude} ../../example/hash_procedures/example_fibonacci_hash_64.f90
+:language: fortran
 ```
 
 #### `FNV_1`- calculates a hash code from a key
@@ -1128,7 +1131,7 @@ character string.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_64bit:fnv_1_hash]] `( key )`
+`code = ` `fnv_1_hash` `( key )`
 
 ##### Class
 
@@ -1165,8 +1168,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_fnv_1_hash_64.f90!}
+```{literalinclude} ../../example/hash_procedures/example_fnv_1_hash_64.f90
+:language: fortran
 ```
 
 
@@ -1183,7 +1186,7 @@ character string.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_64bit:fnv_1a_hash]] `( key )`
+`code = ` `fnv_1a_hash` `( key )`
 
 ##### Class
 
@@ -1219,8 +1222,8 @@ function for character strings.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_fnv_1a_hash_64.f90!}
+```{literalinclude} ../../example/hash_procedures/example_fnv_1a_hash_64.f90
+:language: fortran
 ```
 
 
@@ -1237,7 +1240,7 @@ seed for `pengy_hash` and is also different from the input seed.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_64bit:new_pengy_hash_seed]] `( seed )`
+`call ` `new_pengy_hash_seed` `( seed )`
 
 ##### Class
 
@@ -1276,7 +1279,7 @@ from the input seed.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_64bit:new_spooky_hash_seed]] `( seed )`
+`call ` `new_spooky_hash_seed` `( seed )`
 
 ##### Class
 
@@ -1313,7 +1316,7 @@ Returns a random 64-bit integer distributed uniformly over the odd values.
 
 ##### Syntax
 
-`call ` [[stdlib_hash_64bit:odd_random_integer]] `( harvest )`
+`call ` `odd_random_integer` `( harvest )`
 
 ##### Class
 
@@ -1349,7 +1352,7 @@ value also depends on a scalar 32-bit integer, `seed`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_64bit:pengy_hash]] `( key, seed )`
+`code = ` `pengy_hash` `( key, seed )`
 
 #####  Class
 
@@ -1382,8 +1385,8 @@ quality is equally good on both architectures.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_pengy_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_pengy_hash.f90
+:language: fortran
 ```
 
 
@@ -1400,7 +1403,7 @@ value also depends on a two element vector,  `seed`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_64bit:spooky_hash]] `( key, seed )`
+`code = ` `spooky_hash` `( key, seed )`
 
 #####  Class
 
@@ -1432,8 +1435,8 @@ and has no known bad seeds.
 
 ##### Example
 
-```fortran
-{!example/hash_procedures/example_spooky_hash.f90!}
+```{literalinclude} ../../example/hash_procedures/example_spooky_hash.f90
+:language: fortran
 ```
 
 #### `universal_mult_hash` - maps an integer to a smaller number of bits
@@ -1449,7 +1452,7 @@ in mapping a hash value to a range 0 to `2**nbits-1`.
 
 ##### Syntax
 
-`code = ` [[stdlib_hash_64bit:universal_mult_hash]] `( key, seed, nbits )`
+`code = ` `universal_mult_hash` `( key, seed, nbits )`
 
 ##### Class
 
@@ -1481,8 +1484,8 @@ It multiplies the `key` by `seed`, and returns the
 ##### Example
 
 
-```fortran
-{!example/hash_procedures/example_universal_mult_hash_64.f90!}
+```{literalinclude} ../../example/hash_procedures/example_universal_mult_hash_64.f90
+:language: fortran
 ```
 
 

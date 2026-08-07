@@ -1,0 +1,5 @@
+sphinx
+myst-parser
+sphinx-fortran-domain
+furo
+fypp

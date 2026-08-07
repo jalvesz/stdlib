@@ -4,7 +4,10 @@ title: specialfunctions
 
 # Special functions
 
-[TOC]
+```{contents}
+:local:
+:depth: 2
+```
 
 ## `legendre` - Calculate Legendre polynomials
 
@@ -21,7 +24,7 @@ This is an `elemental` function.
 
 ### Syntax
 
-`result = ` [[stdlib_specialfunctions(module):legendre(interface)]] ` (n, x)`
+`result = ` `legendre` ` (n, x)`
 
 ### Arguments
 
@@ -50,7 +53,7 @@ This is an `elemental` function.
 
 ### Syntax
 
-`result = ` [[stdlib_specialfunctions(module):dlegendre(interface)]] ` (n, x)`
+`result = ` `dlegendre` ` (n, x)`
 
 ### Arguments
 

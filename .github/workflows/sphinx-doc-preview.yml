@@ -1,0 +1,38 @@
+name: Build Sphinx Documentation Preview
+
+on: [push, pull_request]
+
+env:
+  LANG: "en_US.UTF-8"
+  LC_ALL: "en_US.UTF-8"
+  PIP_DISABLE_PIP_VERSION_CHECK: "ON"
+  PIP_NO_CLEAN: "ON"
+  PIP_PREFER_BINARY: "ON"
+  TZ: "UTC"
+
+jobs:
+  Build-Sphinx-Docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install -r doc/requirements.txt
+          python --version
+          sphinx-build --version
+          fypp --version
+
+      - name: Build Docs
+        run: |
+          sphinx-build -W -b html doc doc/_build/html
+
+      - name: Upload Documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: sphinx-html-preview
+          path: ./doc/_build/html/

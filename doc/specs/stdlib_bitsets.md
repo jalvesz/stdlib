@@ -4,7 +4,10 @@ title: bitsets
 
 # The `stdlib_bitsets` module
 
-[TOC]
+```{contents}
+:local:
+:depth: 2
+```
 
 ## Introduction
 
@@ -78,13 +81,13 @@ position, that, in turn, is indexed from 0 to `bits-1`. `bitset_type` is
 used only as a `class` to define entities that can be either a `bitset_64` or
 a `bitset_large`. The syntax for using the types are:
 
-`class(` [[stdlib_bitsets(module):bitset_type(type)]] `) :: variable`
+`class(` `bitset_type` `) :: variable`
 
-`type(` [[stdlib_bitsets(module):bitset_64(type)]] `) :: variable`
+`type(` `bitset_64` `) :: variable`
 
 and
 
-`type(` [[stdlib_bitsets(module):bitset_large(type)]] `) :: variable`
+`type(` `bitset_large` `) :: variable`
 
 ## The *bitset-literal*
 
@@ -204,8 +207,8 @@ is mapped to a set bit, and `.false.` is mapped to an unset bit.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_assignment.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_assignment.f90
+:language: fortran
 ```
 
 ### Table of the non-member comparison operations
@@ -239,7 +242,7 @@ Determines whether all bits are set to 1 in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):all(bound)]] `()`
+`result = self % ` `all(bound)` `()`
 
 #### Class
 
@@ -258,8 +261,8 @@ otherwise it is `.false.`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_all.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_all.f90
+:language: fortran
 ```
 
 ### `and` - bitwise `and` of the bits of two bitsets
@@ -276,7 +279,7 @@ number of bits, otherwise the result is undefined.
 
 #### Syntax
 
-`call ` [[stdlib_bitsets(module):and(interface)]] `(set1, set2)`
+`call ` `and` `(set1, set2)`
 
 #### Class
 
@@ -295,8 +298,8 @@ number of bits as `set1`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_and.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_and.f90
+:language: fortran
 ```
 
 ### `and_not` - Bitwise `and` of one bitset with the negation of another
@@ -314,7 +317,7 @@ result is undefined.
 
 #### Syntax
 
-`call ` [[stdlib_bitsets(module):and_not(interface)]] `(set1, set2)`
+`call ` `and_not` `(set1, set2)`
 
 #### Class
 
@@ -333,8 +336,8 @@ number of bits as `set1`, otherwise the result is undefined.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_and_not.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_and_not.f90
+:language: fortran
 ```
 
 ### `any` - determine whether any bits are set
@@ -349,7 +352,7 @@ Determines whether any bits are set in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):any(bound)]] `()`
+`result = self % ` `any(bound)` `()`
 
 #### Class
 
@@ -367,8 +370,8 @@ is `.false.`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_any.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_any.f90
+:language: fortran
 ```
 
 ### `bit_count` - return the number of bits that are set
@@ -383,7 +386,7 @@ Returns the number of bits that are set to one in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):bit_count(bound)]] ` ()`
+`result = self % ` `bit_count(bound)` ` ()`
 
 #### Class
 
@@ -401,8 +404,8 @@ equal to the number of bits that are set in `self`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_bit_count.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_bit_count.f90
+:language: fortran
 ```
 
 #### `bits` - returns the number of bits
@@ -417,7 +420,7 @@ Reports the number of bits in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):bits(bound)]] ` ()`
+`result = self % ` `bits(bound)` ` ()`
 
 #### Class
 
@@ -435,8 +438,8 @@ the number of defined bits in `self`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_bits.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_bits.f90
+:language: fortran
 ```
 
 ### `clear` - clears a sequence of one or more bits
@@ -460,11 +463,11 @@ Note: Positions outside the range 0 to `bits(set) -1` are ignored.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):clear(bound)]] `(pos)`
+`call self % ` `clear(bound)` `(pos)`
 
 or
 
-`call self % ` [[bitset_type(type):clear(bound)]] `(start_pos, end_pos)`
+`call self % ` `clear(bound)` `(start_pos, end_pos)`
 
 #### Class
 
@@ -486,8 +489,8 @@ an `intent(in)` argument.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_clear.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_clear.f90
+:language: fortran
 ```
 
 ### `extract` - create a new bitset from a range in an old bitset
@@ -507,7 +510,7 @@ informative message.
 
 #### Syntax
 
-`call ` [[stdlib_bitsets(module):extract(interface)]] `(new, old, start_pos, stop_pos, status )`
+`call ` `extract` `(new, old, start_pos, stop_pos, status )`
 
 #### Class
 
@@ -537,8 +540,8 @@ an `intent(out)` argument. If present it shall have one of the values:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_extract.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_extract.f90
+:language: fortran
 ```
 
 ### `flip` - flip the values of a sequence of one or more bits
@@ -563,11 +566,11 @@ flip the bit values with positions from `start_pos` to `end_pos` in
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):flip(bound)]] ` (pos)`
+`call self % ` `flip(bound)` ` (pos)`
 
 or
 
-`call self % ` [[bitset_type(type):flip(bound)]] ` (start_pos, end_pos)`
+`call self % ` `flip(bound)` ` (start_pos, end_pos)`
 
 #### Class
 
@@ -589,8 +592,8 @@ an `intent(in)` argument.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_flip.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_flip.f90
+:language: fortran
 ```
 
 ### `from_string` - initializes a bitset from a binary literal
@@ -606,7 +609,7 @@ binary literal.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):from_string(bound)]] `(string[, status])`
+`call self % ` `from_string(bound)` `(string[, status])`
 
 #### Class
 
@@ -639,8 +642,8 @@ codes:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_from_string.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_from_string.f90
+:language: fortran
 ```
 
 ### `init` - `bitset_type` initialization routines
@@ -655,7 +658,7 @@ Experimental
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):init(bound)]] ` (bits [, status])`
+`call self % ` `init(bound)` ` (bits [, status])`
 
 #### Class
 
@@ -688,8 +691,8 @@ stop code. It can have any of the following error codes:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_init.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_init.f90
+:language: fortran
 ```
 
 ### `input` - reads a bitset from an unformatted file
@@ -705,7 +708,7 @@ file.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):input(bound)]] ` (unit [, status])`
+`call self % ` `input(bound)` ` (unit [, status])`
 
 #### Class
 
@@ -741,8 +744,8 @@ values for this `status` are:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_input.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_input.f90
+:language: fortran
 ```
 
 ### `none` - determines whether no bits are set
@@ -757,7 +760,7 @@ Determines whether no bits are set in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):none(bound)]] ` ()`
+`result = self % ` `none(bound)` ` ()`
 
 #### Class
 
@@ -776,8 +779,8 @@ The result is `.true.` if no bits in `self` are set, otherwise it is
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_none.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_none.f90
+:language: fortran
 ```
 
 ### `not` - Performs the logical complement on a bitset
@@ -792,7 +795,7 @@ Performs the logical complement on the bits of `self`.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):not(bound)]] ` ()`
+`call self % ` `not(bound)` ` ()`
 
 #### Class
 
@@ -806,8 +809,8 @@ complement of their values on input.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_not.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_not.f90
+:language: fortran
 ```
 
 ### `or` - Bitwise OR of the bits of two bitsets
@@ -824,7 +827,7 @@ same number of bits, otherwise the result is undefined.
 
 #### Syntax
 
-`call ` [[stdlib_bitsets(module):or(interface)]] `(set1, set2)`
+`call ` `or` `(set1, set2)`
 
 #### Class
 
@@ -843,8 +846,8 @@ otherwise the results are undefined.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_or.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_or.f90
+:language: fortran
 ```
 
 ### `output` - Writes a binary representation of a bitset to a file
@@ -859,7 +862,7 @@ Writes a binary representation of a bitset to an unformatted file.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):output(bound)]] ` (unit[, status])`
+`call self % ` `output(bound)` ` (unit[, status])`
 
 #### Class
 
@@ -886,8 +889,8 @@ code. The two code values have the meaning:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_output.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_output.f90
+:language: fortran
 ```
 
 ### `read_bitset` - initializes `self` with the value of a *bitset_literal*
@@ -904,11 +907,11 @@ value.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):read_bitset(bound)]] `(string[, status])`
+`call self % ` `read_bitset(bound)` `(string[, status])`
 
 or
 
-`call self % ` [[bitset_type(type):read_bitset(bound)]] `(unit[, advance, status])`
+`call self % ` `read_bitset(bound)` `(unit[, advance, status])`
 
 
 #### Class
@@ -967,8 +970,8 @@ as its error code. The possible error codes are:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_read_bitset.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_read_bitset.f90
+:language: fortran
 ```
 
 ### `set` - sets a sequence of one or more bits to 1
@@ -995,11 +998,11 @@ set the bits at positions from `start_pos` to `end_pos` in `self` to 1.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):set(bound)]] ` (POS)`
+`call self % ` `set(bound)` ` (POS)`
 
 or
 
-`call self % ` [[bitset_type(type):set(bound)]] ` (START_POS, END_POS)`
+`call self % ` `set(bound)` ` (START_POS, END_POS)`
 
 #### Class
 
@@ -1021,8 +1024,8 @@ Elemental subroutine
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_set.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_set.f90
+:language: fortran
 ```
 
 ### `test` - determine whether a bit is set
@@ -1038,7 +1041,7 @@ Determine whether the bit at position `pos` is set to 1 in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):test(bound)]] `(pos)`
+`result = self % ` `test(bound)` `(pos)`
 
 #### Class
 
@@ -1061,8 +1064,8 @@ otherwise it is `.false.`. If `pos` is outside the range
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_test.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_test.f90
+:language: fortran
 ```
 
 ### `to_string` - represent a bitset as a binary literal
@@ -1077,7 +1080,7 @@ Represents the value of `self` as a binary literal in `string`.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):to_string(bound)]] `(string[, status])`
+`call self % ` `to_string(bound)` `(string[, status])`
 
 #### Class
 
@@ -1105,8 +1108,8 @@ the stop code. The values have the following meanings:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_to_string.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_to_string.f90
+:language: fortran
 ```
 
 ### `value` - determine the value of a bit
@@ -1121,7 +1124,7 @@ Determines the value of the bit at position, `pos`, in `self`.
 
 #### Syntax
 
-`result = self % ` [[bitset_type(type):value(bound)]] `(pos)`
+`result = self % ` `value(bound)` `(pos)`
 
 #### Class
 
@@ -1144,8 +1147,8 @@ is zero.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_value.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_value.f90
+:language: fortran
 ```
 
 ### `write_bitset` - writes a *bitset-literal*
@@ -1162,11 +1165,11 @@ character string or formatted file.
 
 #### Syntax
 
-`call self % ` [[bitset_type(type):write_bitset(bound)]] `(string[, status])`
+`call self % ` `write_bitset(bound)` `(string[, status])`
 
 or
 
-`call self % ` [[bitset_type(type):write_bitset(bound)]] ` (unit[, advance, status])`
+`call self % ` `write_bitset(bound)` ` (unit[, advance, status])`
 
 #### Class
 
@@ -1211,8 +1214,8 @@ the following error code values:
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_write_bitset.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_write_bitset.f90
+:language: fortran
 ```
 
 ### `xor` - bitwise exclusive `or`
@@ -1229,7 +1232,7 @@ the samee number of bits, otherwise the result is undefined.
 
 #### Syntax
 
-`result = ` [[stdlib_bitsets(module):xor(interface)]] ` (set1, set2)`
+`result = ` `xor` ` (set1, set2)`
 
 #### Class
 
@@ -1248,8 +1251,8 @@ samee number of bits, otherwise the result is undefined.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_xor.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_xor.f90
+:language: fortran
 ```
 
 ## Specification of the `stdlib_bitsets` operators
@@ -1267,7 +1270,7 @@ Returns `.true.` if all bits in `set1` and `set2` have the same value,
 
 #### Syntax
 
-`result = set1 ` [[stdlib_bitsets(module):==(interface)]] ` set2`
+`result = set1 ` `==` ` set2`
 
 or
 
@@ -1294,8 +1297,8 @@ to the same value, otherwise the result is `.false.`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_equality.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_equality.f90
+:language: fortran
 ```
 
 ### `/=` - compare two bitsets to determine whether any bits differ in value
@@ -1311,7 +1314,7 @@ Returns `.true.` if any bits in `self` and `set2` differ in value,
 
 #### Syntax
 
-`result = set1 ` [[stdlib_bitsets(module):/=(interface)]] ` set2`
+`result = set1 ` `/=` ` set2`
 
 or
 
@@ -1338,8 +1341,8 @@ the result is `.false.`.
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_inequality.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_inequality.f90
+:language: fortran
 ```
 
 ### `>=` - compare two bitsets to determine whether the first is greater than or equal to the second
@@ -1357,7 +1360,7 @@ results are undefined.
 
 #### Syntax
 
-`result = set1 ` [[stdlib_bitsets(module):>=(interface)]] ` set2`
+`result = set1 ` `>=` ` set2`
 
 or
 
@@ -1385,8 +1388,8 @@ or the highest order different bit is set to 1 in `set1` and to 0 in
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_ge.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_ge.f90
+:language: fortran
 ```
 
 ### `>` - compare two bitsets to determine whether the first is greater than the other
@@ -1404,7 +1407,7 @@ results are undefined.
 
 #### Syntax
 
-`result = set1 ` [[stdlib_bitsets(module):>(interface)]] ` set2`
+`result = set1 ` `>` ` set2`
 
 or
 
@@ -1432,8 +1435,8 @@ highest order different bit is set to 1 in `set1` and to 0 in `set2`,
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_gt.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_gt.f90
+:language: fortran
 ```
 
 ### `<=` - compare two bitsets to determine whether the first is less than or equal to the other
@@ -1451,7 +1454,7 @@ results are undefined.
 
 #### Syntax
 
-`result = set1 ` [[stdlib_bitsets(module):<=(interface)]] ` set2`
+`result = set1 ` `<=` ` set2`
 
 or
 
@@ -1479,8 +1482,8 @@ or the highest order different bit is set to 0 in `set1` and to 1 in
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_le.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_le.f90
+:language: fortran
 ```
 
 ### `<` - compare two bitsets to determine whether the first is less than the other
@@ -1498,7 +1501,7 @@ results are undefined.
 
 #### Syntax
 
-`result = set1 ` [[stdlib_bitsets(module):<(interface)]] ` set2`
+`result = set1 ` `<` ` set2`
 
 or
 
@@ -1526,6 +1529,6 @@ highest order different bit is set to 0 in `set1` and to 1 in `set2`,
 
 #### Example
 
-```fortran
-{!example/bitsets/example_bitsets_lt.f90!}
+```{literalinclude} ../../example/bitsets/example_bitsets_lt.f90
+:language: fortran
 ```
