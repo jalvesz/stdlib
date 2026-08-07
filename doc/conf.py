@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -12,6 +11,7 @@ release = 'experimental'
 extensions = [
     'myst_parser',
     'sphinx.ext.mathjax',
+    'sphinx.ext.todo',
     'sphinx_fortran_domain',
 ]
 
@@ -26,16 +26,16 @@ html_theme = 'furo'
 html_title = 'Fortran-lang stdlib'
 html_static_path = ['media']
 html_favicon = 'media/favicon.ico'
+suppress_warnings = [
+    'misc.highlighting_failure',
+    'myst.domains',
+    'myst.header',
+    'myst.xref_missing',
+]
+todo_include_todos = True
 
 myst_heading_anchors = 3
 myst_enable_extensions = ['colon_fence', 'deflist', 'substitution']
-
-fortran_lexer = 'regex'
-fortran_doc_chars = ['>', '!']
-fortran_sources = [
-    '_generated/fortran/**/*.f90',
-]
-fortran_sources_exclude = []
 
 DOCS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = DOCS_DIR.parent
@@ -47,20 +47,33 @@ FORTRAN_PILOT_SOURCES = {
 }
 
 
-def preprocess_fortran_sources(app) -> None:
-    fypp = shutil.which('fypp')
-    if fypp is None:
-        raise RuntimeError('fypp is required to build the Sphinx Fortran documentation preview.')
-
+def preprocess_fortran_sources() -> None:
+    version = (REPO_ROOT / 'VERSION').read_text().strip().split('.')
     GENERATED_FORTRAN_DIR.mkdir(parents=True, exist_ok=True)
     for source, destination in FORTRAN_PILOT_SOURCES.items():
         destination.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(
-            [fypp, '-I', str(REPO_ROOT / 'include'), str(source), str(destination)],
+            [
+                'fypp',
+                '-I',
+                str(REPO_ROOT / 'include'),
+                f'-DPROJECT_VERSION_MAJOR={version[0]}',
+                f'-DPROJECT_VERSION_MINOR={version[1]}',
+                f'-DPROJECT_VERSION_PATCH={version[2]}',
+                str(source),
+                str(destination),
+            ],
             check=True,
             cwd=REPO_ROOT,
         )
 
 
-def setup(app) -> None:
-    app.connect('builder-inited', preprocess_fortran_sources)
+preprocess_fortran_sources()
+
+fortran_lexer = 'regex'
+fortran_doc_chars = ['>', '!']
+fortran_sources = [
+    str(path.relative_to(DOCS_DIR))
+    for path in FORTRAN_PILOT_SOURCES.values()
+]
+fortran_sources_exclude = []

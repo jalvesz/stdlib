@@ -1702,6 +1702,7 @@ Exceptions trigger an `error stop`, unless argument `err` is present.
 
 ```{literalinclude} ../../example/linalg/example_svd.f90
 :language: fortran
+:encoding: iso-8859-1
 ```
 
 ## `svdvals` - Compute the singular values of a rank-2 array (matrix).
@@ -2316,4 +2317,3 @@ If `err` is not present, exceptions trigger an `error stop`.
 ```{literalinclude} ../../example/linalg/example_matrix_exp.f90
 :language: fortran
 ```
-
