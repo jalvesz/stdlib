@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
 project = 'Fortran-lang stdlib'
@@ -39,33 +40,20 @@ myst_enable_extensions = ['colon_fence', 'deflist', 'substitution']
 
 DOCS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = DOCS_DIR.parent
-GENERATED_FORTRAN_DIR = DOCS_DIR / '_generated' / 'fortran'
-FORTRAN_PILOT_SOURCES = {
-    REPO_ROOT / 'src' / 'core' / 'stdlib_kinds.fypp': GENERATED_FORTRAN_DIR / 'core' / 'stdlib_kinds.f90',
-    REPO_ROOT / 'src' / 'strings' / 'stdlib_string_type.fypp': GENERATED_FORTRAN_DIR / 'strings' / 'stdlib_string_type.f90',
-    REPO_ROOT / 'src' / 'strings' / 'stdlib_strings.fypp': GENERATED_FORTRAN_DIR / 'strings' / 'stdlib_strings.f90',
-}
+STDLIB_FPM_SRC_DIR = REPO_ROOT / 'stdlib-fpm' / 'src'
+FORTRAN_PILOT_SOURCES = [
+    STDLIB_FPM_SRC_DIR / 'stdlib_kinds.f90',
+    STDLIB_FPM_SRC_DIR / 'stdlib_string_type.f90',
+    STDLIB_FPM_SRC_DIR / 'stdlib_strings.f90',
+]
 
 
 def preprocess_fortran_sources() -> None:
-    version = (REPO_ROOT / 'VERSION').read_text().strip().split('.')
-    GENERATED_FORTRAN_DIR.mkdir(parents=True, exist_ok=True)
-    for source, destination in FORTRAN_PILOT_SOURCES.items():
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run(
-            [
-                'fypp',
-                '-I',
-                str(REPO_ROOT / 'include'),
-                f'-DPROJECT_VERSION_MAJOR={version[0]}',
-                f'-DPROJECT_VERSION_MINOR={version[1]}',
-                f'-DPROJECT_VERSION_PATCH={version[2]}',
-                str(source),
-                str(destination),
-            ],
-            check=True,
-            cwd=REPO_ROOT,
-        )
+    subprocess.run(
+        [sys.executable, 'config/fypp_deployment.py', '--deploy_stdlib_fpm'],
+        check=True,
+        cwd=REPO_ROOT,
+    )
 
 
 preprocess_fortran_sources()
@@ -73,7 +61,7 @@ preprocess_fortran_sources()
 fortran_lexer = 'ford'
 fortran_doc_chars = ['>', '!']
 fortran_sources = [
-    str(path.relative_to(DOCS_DIR))
-    for path in FORTRAN_PILOT_SOURCES.values()
+    str(path)
+    for path in FORTRAN_PILOT_SOURCES
 ]
 fortran_sources_exclude = []
