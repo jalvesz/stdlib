@@ -1,5 +1,5 @@
 sphinx
 myst-parser
+ford
 sphinx-fortran-domain
-furo
 fypp
