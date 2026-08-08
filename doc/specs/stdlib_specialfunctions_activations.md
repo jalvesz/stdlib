@@ -1,7 +1,3 @@
----
-title: specialfunctions_activations
----
-
 # Special functions - Neural Networks activations and their gradients
 
 ```{contents}

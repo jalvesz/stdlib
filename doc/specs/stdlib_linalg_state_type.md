@@ -1,7 +1,3 @@
----
-title: linalg_state_type
----
-
 # Linear Algebra -- State and Error Handling Module
 
 ```{contents}

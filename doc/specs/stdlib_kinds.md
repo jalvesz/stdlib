@@ -1,7 +1,3 @@
----
-title: kinds
----
-
 # `stdlib_kinds`
 
 ```{contents}

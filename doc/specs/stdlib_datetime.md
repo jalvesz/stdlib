@@ -1,6 +1,4 @@
----
-title: datetime
----
+# `stdlib_datetime`
 
 ```{contents}
 :local:

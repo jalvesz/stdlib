@@ -1,6 +1,4 @@
----
-title: constants
----
+# `stdlib_constants`
 
 ```{contents}
 :local:

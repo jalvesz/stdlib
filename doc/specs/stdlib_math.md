@@ -1,7 +1,3 @@
----
-title: math
----
-
 # `stdlib_math`
 
 ```{contents}

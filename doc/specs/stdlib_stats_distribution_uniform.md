@@ -1,7 +1,3 @@
----
-title: stats_distribution_uniform
----
-
 # Statistical Distributions -- Uniform Distribution Module
 
 ```{contents}

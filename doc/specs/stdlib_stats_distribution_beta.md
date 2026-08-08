@@ -1,7 +1,3 @@
----
-title: stats_distribution_beta
----
-
 # Statistical Distributions -- Beta Distribution Module
 
 ```{contents}

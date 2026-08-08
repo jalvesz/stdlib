@@ -1,7 +1,3 @@
----
-title: array
----
-
 # `stdlib_array`
 
 ```{contents}

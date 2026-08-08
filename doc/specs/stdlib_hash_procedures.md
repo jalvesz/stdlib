@@ -1,7 +1,3 @@
----
-title: hash
----
-
 # `stdlib_hash_32bit` and `stdlib_hash_64bit`
 
 ```{contents}

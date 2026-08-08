@@ -1,8 +1,3 @@
----
-title: terminal colors
-...
-
-
 # `stdlib_ansi`
 
 ```{contents}

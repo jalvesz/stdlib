@@ -1,7 +1,3 @@
----
-title: optval
----
-
 # Default values for optional arguments
 
 ```{contents}

@@ -1,7 +1,3 @@
----
-title: Hash maps
----
-
 # `stdlib_hashmap_wrappers` and `stdlib_hashmaps`
 
 ```{contents}

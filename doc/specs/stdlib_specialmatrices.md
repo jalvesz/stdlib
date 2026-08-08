@@ -1,7 +1,3 @@
----
-title: specialmatrices
----
-
 # `stdlib_specialmatrices`
 
 ```{contents}

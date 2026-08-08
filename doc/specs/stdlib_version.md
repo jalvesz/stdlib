@@ -1,7 +1,3 @@
----
-title: version
----
-
 # `stdlib_version`
 
 ```{contents}

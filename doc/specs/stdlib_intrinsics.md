@@ -1,7 +1,3 @@
----
-title: intrinsics
----
-
 # `stdlib_intrinsics`
 
 ```{contents}

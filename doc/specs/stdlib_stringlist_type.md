@@ -1,7 +1,3 @@
----
-title: stringlist_type
----
-
 # `stdlib_stringlist_type` module (1-D list of strings)
 
 ```{contents}

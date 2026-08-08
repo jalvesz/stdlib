@@ -1,7 +1,3 @@
----
-title: stats_distribution_exponential
----
-
 # Statistical Distributions -- Exponential Distribution Module
 
 ```{contents}

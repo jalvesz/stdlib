@@ -1,7 +1,3 @@
----
-title: sparse
----
-
 # `stdlib_sparse`
 
 ```{contents}

@@ -1,7 +1,3 @@
----
-title: linalg_iterative_solvers
----
-
 # `stdlib_linalg_iterative_solvers`
 
 ```{contents}

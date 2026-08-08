@@ -1,7 +1,3 @@
----
-title: string_type
----
-
 # `stdlib_string_type`
 
 ```{contents}

@@ -1,7 +1,3 @@
----
-title: stats_distribution_normal
----
-
 # Statistical Distributions -- Normal Distribution Module
 
 ```{contents}

@@ -1,8 +1,4 @@
----
-title: state_type
----
-
-# State and Error Handling Derived Type
+# `stdlib_error` - State and Error Handling Derived Type
 
 ```{contents}
 :local:

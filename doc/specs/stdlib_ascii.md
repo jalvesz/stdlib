@@ -1,7 +1,3 @@
----
-title: ascii
----
-
 # `stdlib_ascii`
 
 ```{contents}

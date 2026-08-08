@@ -1,8 +1,3 @@
----
-
-title: stats_distribution_gamma
----
-
 # Statistical Distributions -- Gamma Distribution Module
 
 ```{contents}

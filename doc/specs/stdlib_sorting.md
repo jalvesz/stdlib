@@ -1,7 +1,3 @@
----
-title: sorting
----
-
 # `stdlib_sorting`
 
 ```{contents}

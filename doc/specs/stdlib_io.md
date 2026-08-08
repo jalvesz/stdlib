@@ -1,8 +1,4 @@
----
-title: io
----
-
-# IO
+# `stdlib_io`
 
 ```{contents}
 :local:

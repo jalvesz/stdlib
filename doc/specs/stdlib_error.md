@@ -1,7 +1,3 @@
----
-title: error
----
-
 # `stdlib_error`
 
 ```{contents}

@@ -1,7 +1,3 @@
----
-title: specialfunctions
----
-
 # Special functions
 
 ```{contents}

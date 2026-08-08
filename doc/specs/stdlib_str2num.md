@@ -1,7 +1,3 @@
----
-title: str2num
----
-
 # `stdlib_str2num`
 
 This module proposes a function-style interface for string-to-number conversion. It also profits from Fortran's interfaces to implement precision-dependant algorithms to maximize runtime efficiency.

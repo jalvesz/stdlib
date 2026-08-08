@@ -1,7 +1,3 @@
----
-title: specialfunctions_gamma
----
-
 # Special functions gamma
 
 ```{contents}

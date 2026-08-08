@@ -1,7 +1,3 @@
----
-title: selection
----
-
 # `stdlib_selection`
 
 ```{contents}

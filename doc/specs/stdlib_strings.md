@@ -1,7 +1,3 @@
----
-title: strings
----
-
 # `stdlib_strings`
 
 ```{contents}

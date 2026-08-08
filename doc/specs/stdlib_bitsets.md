@@ -1,7 +1,3 @@
----
-title: bitsets
----
-
 # `stdlib_bitsets`
 
 ```{contents}

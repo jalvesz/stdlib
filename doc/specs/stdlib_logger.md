@@ -1,6 +1,3 @@
----
-title: logger
----
 # Loggers
 
 ```{contents}
