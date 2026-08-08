@@ -18,6 +18,9 @@ on:
       - 'WORKFLOW.md'
       - '.github/workflows/sphinx-doc-preview.yml'
 
+permissions:
+  contents: read
+
 env:
   CTEST_TIME_TIMEOUT: "5" # some failures hang forever
   CMAKE_GENERATOR: Ninja

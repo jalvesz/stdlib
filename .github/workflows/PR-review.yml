@@ -8,6 +8,9 @@ on:
       - 'STYLE_GUIDE.md'
       - 'WORKFLOW.md'
       - '.github/workflows/sphinx-doc-preview.yml'
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   misspell:
     if: ${{ github.ref_name != 'copilot/modernize-docs-with-sphinx' && github.head_ref != 'copilot/modernize-docs-with-sphinx' }}

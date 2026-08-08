@@ -18,6 +18,10 @@ on:
       - 'WORKFLOW.md'
       - '.github/workflows/sphinx-doc-preview.yml'
 
+permissions:
+  contents: read
+  issues: write
+
 env:
   LANG: "en_US.UTF-8"
   LC_ALL: "en_US.UTF-8"
