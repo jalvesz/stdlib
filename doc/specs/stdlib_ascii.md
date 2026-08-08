@@ -2,7 +2,7 @@
 title: ascii
 ---
 
-# The `stdlib_ascii` module
+# `stdlib_ascii`
 
 ```{contents}
 :local:

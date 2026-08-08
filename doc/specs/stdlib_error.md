@@ -2,7 +2,7 @@
 title: error
 ---
 
-# The `stdlib_error` module
+# `stdlib_error`
 
 ```{contents}
 :local:

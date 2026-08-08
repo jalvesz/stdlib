@@ -2,7 +2,7 @@
 title: specialmatrices
 ---
 
-# The `stdlib_specialmatrices` module
+# `stdlib_specialmatrices`
 
 ```{contents}
 :local:

@@ -2,7 +2,7 @@
 title: string_type
 ---
 
-# The `stdlib_string_type` module
+# `stdlib_string_type`
 
 ```{contents}
 :local:

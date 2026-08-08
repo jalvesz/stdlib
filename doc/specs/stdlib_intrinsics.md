@@ -2,7 +2,7 @@
 title: intrinsics
 ---
 
-# The `stdlib_intrinsics` module
+# `stdlib_intrinsics`
 
 ```{contents}
 :local:

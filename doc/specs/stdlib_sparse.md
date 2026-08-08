@@ -2,7 +2,7 @@
 title: sparse
 ---
 
-# The `stdlib_sparse` module
+# `stdlib_sparse`
 
 ```{contents}
 :local:

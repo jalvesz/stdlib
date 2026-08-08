@@ -2,7 +2,7 @@
 title: math
 ---
 
-# The `stdlib_math` module
+# `stdlib_math`
 
 ```{contents}
 :local:

@@ -2,7 +2,7 @@
 title: Hash maps
 ---
 
-# The `stdlib_hashmap_wrappers`, and `stdlib_hashmaps` modules
+# `stdlib_hashmap_wrappers` and `stdlib_hashmaps`
 
 ```{contents}
 :local:

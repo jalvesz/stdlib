@@ -2,7 +2,7 @@
 title: array
 ---
 
-# The `stdlib_array` module
+# `stdlib_array`
 
 ```{contents}
 :local:

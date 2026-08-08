@@ -2,7 +2,7 @@
 title: strings
 ---
 
-# The `stdlib_strings` module
+# `stdlib_strings`
 
 ```{contents}
 :local:

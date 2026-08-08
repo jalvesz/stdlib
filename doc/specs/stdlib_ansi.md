@@ -3,7 +3,7 @@ title: terminal colors
 ...
 
 
-# The `stdlib_ansi` module
+# `stdlib_ansi`
 
 ```{contents}
 :local:

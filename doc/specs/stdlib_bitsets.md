@@ -2,7 +2,7 @@
 title: bitsets
 ---
 
-# The `stdlib_bitsets` module
+# `stdlib_bitsets`
 
 ```{contents}
 :local:

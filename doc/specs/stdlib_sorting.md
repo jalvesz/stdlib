@@ -2,7 +2,7 @@
 title: sorting
 ---
 
-# The `stdlib_sorting` module
+# `stdlib_sorting`
 
 ```{contents}
 :local:

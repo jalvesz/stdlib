@@ -2,7 +2,7 @@
 title: kinds
 ---
 
-# The `stdlib_kinds` module
+# `stdlib_kinds`
 
 ```{contents}
 :local:

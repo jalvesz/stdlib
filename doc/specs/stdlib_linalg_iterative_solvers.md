@@ -2,7 +2,7 @@
 title: linalg_iterative_solvers
 ---
 
-# The `stdlib_linalg_iterative_solvers` module
+# `stdlib_linalg_iterative_solvers`
 
 ```{contents}
 :local:

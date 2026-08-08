@@ -2,7 +2,7 @@
 title: selection
 ---
 
-# The `stdlib_selection` module
+# `stdlib_selection`
 
 ```{contents}
 :local:

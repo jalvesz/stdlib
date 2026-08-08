@@ -2,7 +2,7 @@
 title: version
 ---
 
-# The `stdlib_version` module
+# `stdlib_version`
 
 ```{contents}
 :local:
