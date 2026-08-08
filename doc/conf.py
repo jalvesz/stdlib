@@ -22,7 +22,7 @@ source_suffix = {
 
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-html_theme = 'furo'
+html_theme = 'pydata_sphinx_theme'
 html_title = 'Fortran-lang stdlib'
 html_static_path = ['media']
 html_favicon = 'media/favicon.ico'
@@ -70,7 +70,7 @@ def preprocess_fortran_sources() -> None:
 
 preprocess_fortran_sources()
 
-fortran_lexer = 'regex'
+fortran_lexer = 'ford'
 fortran_doc_chars = ['>', '!']
 fortran_sources = [
     str(path.relative_to(DOCS_DIR))
