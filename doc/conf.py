@@ -41,11 +41,6 @@ myst_enable_extensions = ['colon_fence', 'deflist', 'substitution']
 DOCS_DIR = Path(__file__).resolve().parent
 REPO_ROOT = DOCS_DIR.parent
 STDLIB_FPM_SRC_DIR = REPO_ROOT / 'stdlib-fpm' / 'src'
-FORTRAN_PILOT_SOURCES = [
-    STDLIB_FPM_SRC_DIR / 'stdlib_kinds.f90',
-    STDLIB_FPM_SRC_DIR / 'stdlib_string_type.f90',
-    STDLIB_FPM_SRC_DIR / 'stdlib_strings.f90',
-]
 
 
 def preprocess_fortran_sources() -> None:
@@ -61,7 +56,10 @@ preprocess_fortran_sources()
 fortran_lexer = 'ford'
 fortran_doc_chars = ['>', '!']
 fortran_sources = [
-    str(path)
-    for path in FORTRAN_PILOT_SOURCES
+    STDLIB_FPM_SRC_DIR / '*.f90',
+    STDLIB_FPM_SRC_DIR / '*.F90',
 ]
-fortran_sources_exclude = []
+fortran_sources_exclude = [
+    STDLIB_FPM_SRC_DIR / 'blas',
+    STDLIB_FPM_SRC_DIR / 'lapack',
+]

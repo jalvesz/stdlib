@@ -11,6 +11,12 @@ remain the primary reference for proposal-level documentation.
 ```{toctree}
 :maxdepth: 2
 
+stdlib_ansi
+stdlib_array
+stdlib_ascii
+stdlib_bitsets
+stdlib_codata
+stdlib_constants
 stdlib_kinds
 stdlib_string_type
 stdlib_strings
