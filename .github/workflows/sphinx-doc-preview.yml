@@ -1,6 +1,14 @@
 name: Build Sphinx Documentation Preview
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'doc/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'STYLE_GUIDE.md'
+      - 'WORKFLOW.md'
+      - '.github/workflows/sphinx-doc-preview.yml'
 
 permissions:
   contents: read

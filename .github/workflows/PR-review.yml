@@ -1,5 +1,13 @@
 name: PR-Review
-on: [pull_request]
+on:
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'STYLE_GUIDE.md'
+      - 'WORKFLOW.md'
+      - '.github/workflows/sphinx-doc-preview.yml'
 jobs:
   misspell:
     name: review-dog / misspell
