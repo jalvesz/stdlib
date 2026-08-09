@@ -60,6 +60,6 @@ fortran_sources = [
     STDLIB_FPM_SRC_DIR / '*.F90',
 ]
 fortran_sources_exclude = [
-    STDLIB_FPM_SRC_DIR / 'blas',
-    STDLIB_FPM_SRC_DIR / 'lapack',
+    STDLIB_FPM_SRC_DIR / 'stdlib_blas*',
+    STDLIB_FPM_SRC_DIR / 'stdlib_lapack*',
 ]
