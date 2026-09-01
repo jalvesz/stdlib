@@ -123,7 +123,7 @@ public :: is_directory
 !!
 !!## Description
 !! This function makes an empty directory according to the path provided.
-!! Relative paths are supported. On Windows, paths involving either `/` or `\` are accepted.
+!! Relative paths are supported. On Windows, paths involving either ``/`` or ``\`` are accepted.
 !! An appropriate error message is returned whenever any error occurs.
 !!
 public :: make_directory
@@ -154,7 +154,7 @@ public :: make_directory_all
 !!
 !!## Description
 !! This function Removes an empty directory according to the path provided.
-!! Relative paths are supported. On Windows paths involving either `/` or `\` are accepted.
+!! Relative paths are supported. On Windows paths involving either ``/`` or ``\`` are accepted.
 !! An appropriate error message is returned whenever any error occurs.
 !!
 public :: remove_directory

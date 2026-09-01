@@ -157,26 +157,30 @@ contains
         !!
         !!## Examples
         !!
-        !! * If ``a /= 5``, stops the program with exit code ``1``
-        !!  and prints ``Check failed.``
-        !!```fortran
-        !!  call check(a == 5)
-        !!```
+        !! If ``a /= 5``, the following stops the program with exit code ``1``
+        !! and prints ``Check failed.``:
         !!
-        !! * As above, but prints ``a == 5 failed``.
-        !!```fortran
-        !!  call check(a == 5, msg='a == 5 failed.')
-        !!```
+        !! ```fortran
+        !! call check(a == 5)
+        !! ```
         !!
-        !! * As above, but doesn't stop the program.
-        !!```fortran
-        !!  call check(a == 5, msg='a == 5 failed.', warn=.true.)
-        !!```
+        !! To print ``a == 5 failed.``, use:
         !!
-        !! * As example #2, but stops the program with exit code ``77``
-        !!```fortran
-        !!  call check(a == 5, msg='a == 5 failed.', code=77)
-        !!```
+        !! ```fortran
+        !! call check(a == 5, msg='a == 5 failed.')
+        !! ```
+        !!
+        !! To emit the message without stopping the program, use:
+        !!
+        !! ```fortran
+        !! call check(a == 5, msg='a == 5 failed.', warn=.true.)
+        !! ```
+        !!
+        !! To stop the program with exit code ``77``, use:
+        !!
+        !! ```fortran
+        !! call check(a == 5, msg='a == 5 failed.', code=77)
+        !! ```
 
         !
         ! Arguments
