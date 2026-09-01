@@ -53,8 +53,9 @@ contains
           ${inttype}$, parameter :: Nreps = 2  ! Number of repetitions of random sampling
           ${inttype}$, parameter :: Nr = 25_ip ! Size of random array, must be < HUGE(N)
 
+          ${arraytype}$, parameter :: one = 1
           ${arraytype}$ :: x(N), x_copy(N), mat(Nm), mat_copy(Nm), len1(1), len2(2), &
-              kth_smallest, random_vals(Nr), one = 1
+              kth_smallest, random_vals(Nr)
           ${inttype}$ :: i, p, up_rank, down_rank, mid_rank
           real(dp) :: random_doubles(Nr) ! Deliberately double precision for all cases
           logical :: test1, test2, test3
