@@ -1,8 +1,8 @@
+!> version: experimental
+!>
+!> Date, time, and time interval handling for Fortran.
+!> ([Specification](../page/specs/stdlib_datetime.html))
 module stdlib_datetime
-    !! version: experimental
-    !!
-    !! Date, time, and time interval handling for Fortran.
-    !! ([Specification](../page/specs/stdlib_datetime.html))
     use stdlib_kinds, only: dp, int64
     use stdlib_strings, only: to_string
     implicit none

@@ -73,12 +73,7 @@ module stdlib_math
     #:endfor
     end interface gcd
 
-    !> Version: Experimental
-    !>
-    !> Create rank 1 array of linearly spaced elements.
-    !> If the number of elements is not specified, create an array with size 100.
-    !> If ``n`` is negative, return an array with size 0.
-    !> If ``n = 1``, return an array whose only element is ``end``.
+    !> Create rank 1 arrays of linearly spaced elements.
     !> ([Specification](../page/specs/stdlib_math.html#linspace-create-a-linearly-spaced-rank-one-array))
     interface linspace
     #:for k1, t1 in RC_KINDS_TYPES
@@ -130,14 +125,7 @@ module stdlib_math
 
   end interface
 
-  !> Version: Experimental
-  !>
-  !> Create rank 1 array of logarithmically spaced elements from ``base**start`` to ``base**end``.
-  !> If the number of elements is not specified, create an array with size 50.
-  !> If ``n`` is negative, return an array with size 0.
-  !> If ``n = 1``, return an array whose only element is ``base**end``.
-  !> If no ``base`` is specified, logspace defaults to 10.
-  !>
+  !> Create rank 1 arrays of logarithmically spaced elements.
   !> ([Specification](../page/specs/stdlib_math.html#logspace-create-a-logarithmically-spaced-rank-one-array))
   interface logspace
   #!=========================================================
