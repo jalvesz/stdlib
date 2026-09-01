@@ -299,8 +299,8 @@ module stdlib_math
 
     !> Version: experimental
     !>
-    !> `arange` creates a one-dimensional `array` of the `integer/real` type 
-    !>  with fixed-spaced values of given spacing, within a given interval.
+    !> `arange` creates a one-dimensional `array` of the `integer/real` type
+    !> with fixed-spaced values of given spacing, within a given interval.
     !> ([Specification](../page/specs/stdlib_math.html#arange-function))
     interface arange
         #:set RI_KINDS_TYPES = REAL_KINDS_TYPES + INT_KINDS_TYPES
