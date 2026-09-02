@@ -18,9 +18,6 @@ on:
       - 'WORKFLOW.md'
       - '.github/workflows/**'
 
-permissions:
-  contents: read
-
 env:
   LANG: "en_US.UTF-8"
   LC_ALL: "en_US.UTF-8"
@@ -31,9 +28,19 @@ env:
 
 jobs:
   Build-Sphinx-Docs:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
+    outputs:
+      preview_slug: ${{ steps.preview-path.outputs.slug }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Compute preview path
+        id: preview-path
+        run: |
+          preview_slug=$(printf '%s' "${GITHUB_REF_NAME}" | tr '/' '-' | tr -cd '[:alnum:]._-' )
+          echo "slug=${preview_slug}" >> "${GITHUB_OUTPUT}"
 
       - uses: actions/setup-python@v5
         with:
@@ -55,3 +62,30 @@ jobs:
         with:
           name: sphinx-html-preview
           path: ./doc/_build/html/
+
+  Deploy-Sphinx-Docs:
+    if: github.event_name == 'push' && github.ref_name == 'copilot/modernize-docs-with-sphinx' && github.repository != 'fortran-lang/stdlib'
+    needs: Build-Sphinx-Docs
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: sphinx-html-preview
+          path: ./sphinx-html-preview
+
+      - name: Deploy Sphinx preview
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./sphinx-html-preview
+          publish_branch: gh-pages
+          destination_dir: sphinx-preview/${{ needs.Build-Sphinx-Docs.outputs.preview_slug }}
+          keep_files: true
+          enable_jekyll: false
+
+      - name: Report preview URL
+        run: |
+          echo "Preview URL: https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/sphinx-preview/${{ needs.Build-Sphinx-Docs.outputs.preview_slug }}/" >> "${GITHUB_STEP_SUMMARY}"
