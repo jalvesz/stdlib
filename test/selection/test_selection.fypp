@@ -236,7 +236,8 @@ contains
           ${inttype}$, parameter :: Nreps = 2  ! Number of repetitions of random sampling
           ${inttype}$, parameter :: Nr = 25_ip ! Size of random array, must be < HUGE(N)
 
-          ${arraytype}$ :: x(N), mat(Nm), len1(1), len2(2), random_vals(Nr), one=1
+          ${arraytype}$, parameter :: one = 1
+          ${arraytype}$ :: x(N), mat(Nm), len1(1), len2(2), random_vals(Nr)
 
           integer(ip) :: indx(N), indx_copy(N), indx_mat(Nm), indx_mat_copy(Nm), &
               indx_len1(1), indx_len2(2), indx_r(Nr)
