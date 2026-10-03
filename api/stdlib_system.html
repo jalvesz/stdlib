@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>stdlib_system &#8212; Fortran-lang stdlib</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+
+    <script src="../_static/documentation_options.js?v=2856efab"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/stdlib_system';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="stdlib_version" href="stdlib_version.html" />
+    <link rel="prev" title="stdlib_strings" href="stdlib_strings.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Fortran-lang stdlib</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../specs/index.html">
+    Fortran stdlib Specifications (specs)
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../License.html">
+    Fortran stdlib License (MIT)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Changelog
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contributing
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../specs/index.html">
+    Fortran stdlib Specifications (specs)
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../License.html">
+    Fortran stdlib License (MIT)
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    Changelog
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="stdlib_ansi.html">stdlib_ansi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_array.html">stdlib_array</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_ascii.html">stdlib_ascii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_bitsets.html">stdlib_bitsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_codata.html">stdlib_codata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_constants.html">stdlib_constants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_datetime.html">stdlib_datetime</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_error.html">stdlib_error</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_hash_32bit.html">stdlib_hash_32bit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_hash_64bit.html">stdlib_hash_64bit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_hashmap_wrappers.html">stdlib_hashmap_wrappers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_hashmaps.html">stdlib_hashmaps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_intrinsics.html">stdlib_intrinsics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_io.html">stdlib_io</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_kinds.html">stdlib_kinds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_quadrature.html">stdlib_quadrature</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_random.html">stdlib_random</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_selection.html">stdlib_selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_sorting.html">stdlib_sorting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_sparse.html">stdlib_sparse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions.html">stdlib_specialfunctions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_strings.html">stdlib_strings</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">stdlib_system</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_version.html">stdlib_version</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">API reference</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">stdlib_system</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="stdlib-system">
+<h1>stdlib_system<a class="headerlink" href="#stdlib-system" title="Link to this heading">#</a></h1>
+<p>See also the specification page: <a class="reference internal" href="../specs/stdlib_system.html"><span class="doc">System and sub-processing module</span></a>.</p>
+<section id="f-module-stdlib-system">
+<h2>stdlib_system (module)<a class="headerlink" href="#f-module-stdlib-system" title="Link to this heading">#</a></h2>
+<div class="docutils container">
+<p>version: experimental</p>
+<p>Cached OS type retrieval with negligible runtime overhead.
+([Specification](../page/specs/stdlib_system.html#os_type-cached-os-type-retrieval))</p>
+<p class="rubric">Summary</p>
+<p>Provides a cached value for the runtime OS type.</p>
+<p class="rubric">Description</p>
+<p>This function caches the result of <cite>get_runtime_os</cite> after the first invocation. 
+Subsequent calls return the cached value, ensuring minimal overhead.</p>
+<p>version: experimental</p>
+<p>Determine the current operating system (OS) type at runtime.
+([Specification](../page/specs/stdlib_system.html#get_runtime_os-determine-the-os-type-at-runtime))</p>
+<p class="rubric">Summary</p>
+<p>This function inspects the runtime environment to identify the OS type.</p>
+<p class="rubric">Description</p>
+<p>The function evaluates environment variables (<cite>OSTYPE</cite> or <cite>OS</cite>) and filesystem attributes
+to identify the OS. It distinguishes between several common operating systems:
+- Linux
+- macOS
+- Windows
+- Cygwin
+- Solaris
+- FreeBSD
+- OpenBSD</p>
+<p>Returns a constant representing the OS type or <cite>OS_UNKNOWN</cite> if the OS cannot be determined.</p>
+<p>Helper function returning the name of an OS parameter</p>
+<p>Public sub-processing interface
+Public path related functions and interfaces
+version: experimental</p>
+<p>Tests if a given path matches an existing directory.
+([Specification](../page/specs/stdlib_system.html#is_directory-test-if-a-path-is-a-directory))</p>
+<p class="rubric">Summary</p>
+<p>Function to evaluate whether a specified path corresponds to an existing directory.</p>
+<p class="rubric">Description</p>
+<p>This function checks if a given file system path is a directory. 
+It follows symbolic links to return the status of the <cite>target</cite>.</p>
+<p>It is cross-platform and utilizes native system calls. 
+It supports common operating systems such as Linux, macOS, Windows, and various UNIX-like environments. 
+On unsupported operating systems, the function will return <cite>.false.</cite>.</p>
+<p>version: experimental</p>
+<p>Makes an empty directory.
+([Specification](../page/specs/stdlib_system.html#make_directory))</p>
+<p class="rubric">Summary</p>
+<p>Creates an empty directory with default permissions.</p>
+<p class="rubric">Description</p>
+<p>This function makes an empty directory according to the path provided.
+Relative paths are supported. On Windows, paths involving either <code class="docutils literal notranslate"><span class="pre">/</span></code> or <code class="docutils literal notranslate"><span class="pre">\</span></code> are accepted.
+An appropriate error message is returned whenever any error occurs.</p>
+<p>version: experimental</p>
+<p>Makes an empty directory, also creating all the parent directories required.
+([Specification](../page/specs/stdlib_system.html#make_directory))</p>
+<p class="rubric">Summary</p>
+<p>Creates an empty directory with all the parent directories required to do so.</p>
+<p class="rubric">Description</p>
+<p>This function makes an empty directory according to the path provided.
+It also creates all the necessary parent directories in the path if they do not exist already.
+Relative paths are supported.
+An appropriate error message is returned whenever any error occurs.</p>
+<p>version: experimental</p>
+<p>Removes an empty directory.
+([Specification](../page/specs/stdlib_system.html#remove_directory))</p>
+<p class="rubric">Summary</p>
+<p>Removes an empty directory.</p>
+<p class="rubric">Description</p>
+<p>This function Removes an empty directory according to the path provided.
+Relative paths are supported. On Windows paths involving either <code class="docutils literal notranslate"><span class="pre">/</span></code> or <code class="docutils literal notranslate"><span class="pre">\</span></code> are accepted.
+An appropriate error message is returned whenever any error occurs.</p>
+<p>version: experimental</p>
+<p>Gets the current working directory of the process
+([Specification](../page/specs/stdlib_system.html#get_cwd))</p>
+<p class="rubric">Summary</p>
+<p>Gets the current working directory.</p>
+<p class="rubric">Description</p>
+<p>This subroutine gets the current working directory the process is executing from.</p>
+<p>version: experimental</p>
+<p>Sets the current working directory of the process
+([Specification](../page/specs/stdlib_system.html#set_cwd))</p>
+<p class="rubric">Summary</p>
+<p>Changes the current working directory to the one specified.</p>
+<p class="rubric">Description</p>
+<p>This subroutine sets the current working directory the process is executing from.</p>
+<p>version: experimental</p>
+<p>Deletes a specified file from the filesystem.
+([Specification](../page/specs/stdlib_system.html#delete_file-delete-a-file))</p>
+<p class="rubric">Summary</p>
+<p>Subroutine to safely delete a file from the filesystem. It handles errors gracefully using the library’s <cite>state_type</cite>.</p>
+<p class="rubric">Description</p>
+<p>This subroutine deletes a specified file. If the file is a directory or inaccessible, an error is raised.
+If the file does not exist, a warning is returned, but no error state. Errors are handled using the 
+library’s <cite>state_type</cite> mechanism. If the optional <cite>err</cite> argument is not provided, exceptions trigger 
+an <cite>error stop</cite>.</p>
+<p>version: experimental</p>
+<p>Returns the file path of the null device, which discards all data written to it.
+([Specification](../page/specs/stdlib_system.html#null_device-return-the-null-device-file-path))</p>
+<p class="rubric">Summary</p>
+<p>Function that provides the file path of the null device appropriate for the current operating system.</p>
+<p class="rubric">Description</p>
+<p>The null device is a special file that discards all data written to it and always reads as 
+an empty file. This function returns the null device path, adapted for the operating system in use.</p>
+<p>On Windows, this is <cite>NUL</cite>. On UNIX-like systems, this is <cite>/dev/null</cite>.</p>
+<p>version: experimental</p>
+<p>A helper function for returning the <cite>type(state_type)</cite> with the flag <cite>STDLIB_FS_ERROR</cite> set.
+([Specification](../page/specs/stdlib_system.html#FS_ERROR))</p>
+<p>version: experimental</p>
+<p>A helper function for returning the <cite>type(state_type)</cite> with the flag <cite>STDLIB_FS_ERROR</cite> set.
+It also formats and prefixes the <cite>code</cite> passed to it as the first argument
+([Specification](../page/specs/stdlib_system.html#FS_ERROR_CODE))</p>
+<p>version: experimental</p>
+<p>Checks if a path exists in the filesystem.
+([Specification](../page/specs/stdlib_system.html#exists))</p>
+<p class="rubric">Summary</p>
+<p>Function to check whether the path exists in the fileystem at all.
+If the path does exist, returns the type of the path.</p>
+<p class="rubric">Description</p>
+<p>This function makes a system call (syscall) to retrieve metadata for the specified path and determines its type.
+It can distinguish between the following path types:</p>
+<ul class="simple">
+<li><p>Regular File</p></li>
+<li><p>Directory</p></li>
+<li><p>Symbolic Link</p></li>
+</ul>
+<p>It does not follow symbolic links.</p>
+<p>It returns a constant representing the detected path type, or <cite>type_unknown</cite> if the type cannot be determined. 
+Any encountered errors are handled using <cite>state_type</cite>.</p>
+<p>version: experimental</p>
+<p>Tests if a given path is a symbolic link.
+([Specification](../page/specs/stdlib_system.html#is_symlink))</p>
+<p class="rubric">Summary</p>
+<p>Function to evaluate whether a specified path corresponds to a symbolic link.</p>
+<p class="rubric">Description</p>
+<p>This function checks if a given file system path is a symbolic link either to a 
+file or a directory. It is cross-platform and utilizes native system calls. 
+It supports common operating systems such as Linux, macOS, Windows, and various UNIX-like environments.</p>
+<p>version: experimental</p>
+<p>Tests if a given path is a regular file.
+([Specification](../page/specs/stdlib_system.html#is_file))</p>
+<p class="rubric">Summary</p>
+<p>Function to evaluate whether a specified path corresponds to a regular file.</p>
+<p class="rubric">Description</p>
+<p>This function checks if a given file system path is a regular file. 
+It follows symbolic links to return the status of the <cite>target</cite>.
+It is cross-platform and utilizes native system calls. 
+It supports common operating systems such as Linux, macOS, Windows, and various UNIX-like environments.</p>
+</div>
+<p class="section-subtitle">Variables</p>
+<dl class="simple">
+<dt><span class="target" id="f-variable-stdlib-system-os-unknown"></span><strong>OS_UNKNOWN</strong><span class="classifier">integer, parameter, Default = 0</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-linux"></span><strong>OS_LINUX</strong><span class="classifier">integer, parameter, Default = 1</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-macos"></span><strong>OS_MACOS</strong><span class="classifier">integer, parameter, Default = 2</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-windows"></span><strong>OS_WINDOWS</strong><span class="classifier">integer, parameter, Default = 3</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-cygwin"></span><strong>OS_CYGWIN</strong><span class="classifier">integer, parameter, Default = 4</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-solaris"></span><strong>OS_SOLARIS</strong><span class="classifier">integer, parameter, Default = 5</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-freebsd"></span><strong>OS_FREEBSD</strong><span class="classifier">integer, parameter, Default = 6</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-os-openbsd"></span><strong>OS_OPENBSD</strong><span class="classifier">integer, parameter, Default = 7</span></dt><dd><p>Integer constants representing known operating system (OS) types
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown operating system
+Represents a Linux operating system
+Represents a macOS operating system
+Represents a Windows operating system
+Represents a Cygwin environment
+Represents a Solaris operating system
+Represents a FreeBSD operating system
+Represents an OpenBSD operating system</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-fs-type-unknown"></span><strong>fs_type_unknown</strong><span class="classifier">integer, parameter, Default = 0</span></dt><dd><p>Integer constants representing the most common path types.
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown path type
+Represents a regular file
+Represents a directory
+Represents a symbolic link</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-fs-type-regular-file"></span><strong>fs_type_regular_file</strong><span class="classifier">integer, parameter, Default = 1</span></dt><dd><p>Integer constants representing the most common path types.
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown path type
+Represents a regular file
+Represents a directory
+Represents a symbolic link</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-fs-type-directory"></span><strong>fs_type_directory</strong><span class="classifier">integer, parameter, Default = 2</span></dt><dd><p>Integer constants representing the most common path types.
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown path type
+Represents a regular file
+Represents a directory
+Represents a symbolic link</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-fs-type-symlink"></span><strong>fs_type_symlink</strong><span class="classifier">integer, parameter, Default = 3</span></dt><dd><p>Integer constants representing the most common path types.
+([Specification](../page/specs/stdlib_system.html))
+Represents an unknown path type
+Represents a regular file
+Represents a directory
+Represents a symbolic link</p>
+</dd>
+<dt><span class="target" id="f-variable-stdlib-system-process-id"></span><strong>process_ID</strong><span class="classifier">integer, parameter, Default = c_int64_t</span></dt><dd></dd>
+</dl>
+<p class="section-subtitle">Types</p>
+<section id="f-type-stdlib-system-process-type">
+<h3>process_type (type)<a class="headerlink" href="#f-type-stdlib-system-process-type" title="Link to this heading">#</a></h3>
+<dl class="f type">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">process_type</span> <span class="pre">(type)</span></code></dt>
+<dd><div class="docutils container">
+<p>Process type holding process information and the connected stdout, stderr, stdin units</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>id</strong><span class="classifier">integer(kind=process_ID), Default = FORKED_PROCESS</span></dt><dd><p>Process ID (if external); 0 if run by the program process</p>
+</dd>
+<dt><strong>completed</strong><span class="classifier">logical, Default = .false.</span></dt><dd><p>Process is completed</p>
+</dd>
+<dt><strong>start_time</strong><span class="classifier">integer(kind=TICKS), Default = 0</span></dt><dd></dd>
+<dt><strong>stdin_file</strong><span class="classifier">character(len=:), allocatable</span></dt><dd><p>Standard input</p>
+</dd>
+<dt><strong>stdin</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+<dt><strong>stdout_file</strong><span class="classifier">character(len=:), allocatable</span></dt><dd><p>Standard output</p>
+</dd>
+<dt><strong>stdout</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+<dt><strong>exit_code</strong><span class="classifier">integer, Default = 0</span></dt><dd><p>Error output</p>
+</dd>
+<dt><strong>stderr_file</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+<dt><strong>stderr</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+<dt><strong>oncomplete</strong><span class="classifier">procedure(process_callback), nopass, pointer, Default = null()</span></dt><dd><p>Callback function</p>
+</dd>
+<dt><strong>payload</strong><span class="classifier">class(*), pointer, Default = null()</span></dt><dd><p>Optional payload for the callback function</p>
+</dd>
+<dt><strong>last_update</strong><span class="classifier">integer(kind=TICKS), Default = 0</span></dt><dd><p>Store time at the last update</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">is_running</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_completed</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elapsed</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">update</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kill</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pid</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Procedures</p>
+<section id="f-function-stdlib-system-get-runtime-os">
+<h3>get_runtime_os (function)<a class="headerlink" href="#f-function-stdlib-system-get-runtime-os" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">get_runtime_os</span> <span class="pre">-&gt;</span> <span class="pre">os</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>os</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-os-type">
+<h3>OS_TYPE (function)<a class="headerlink" href="#f-function-stdlib-system-os-type" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">OS_TYPE</span> <span class="pre">-&gt;</span> <span class="pre">os</span></code></dt>
+<dd><div class="docutils container">
+<p>Retrieves the cached OS type for minimal runtime overhead.
+This function uses a static cache to avoid recalculating the OS type after the first call.
+It is recommended for performance-sensitive use cases where the OS type is checked multiple times.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>os</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-os-name">
+<h3>OS_NAME (function)<a class="headerlink" href="#f-function-stdlib-system-os-name" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">OS_NAME(os)</span> <span class="pre">-&gt;</span> <span class="pre">OS_NAME</span></code></dt>
+<dd><div class="docutils container">
+<p>Return string describing the OS type flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>os</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>OS_NAME</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-is-directory">
+<h3>is_directory (function)<a class="headerlink" href="#f-function-stdlib-system-is-directory" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">is_directory(path)</span> <span class="pre">-&gt;</span> <span class="pre">is_directory</span></code></dt>
+<dd><div class="docutils container">
+<p>Tests if a given path matches an existing directory.
+Cross-platform implementation without using external C libraries.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Input path to evaluate</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>is_directory</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-null-device">
+<h3>null_device (function)<a class="headerlink" href="#f-function-stdlib-system-null-device" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">null_device</span> <span class="pre">-&gt;</span> <span class="pre">path</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the file path of the null device for the current operating system.</p>
+<p>Version: Helper function.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=:), allocatable</span></dt><dd><p>File path of the null device</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-fs-error-code">
+<h3>FS_ERROR_CODE (function)<a class="headerlink" href="#f-function-stdlib-system-fs-error-code" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">FS_ERROR_CODE(code,</span> <span class="pre">a1,</span> <span class="pre">a2,</span> <span class="pre">a3,</span> <span class="pre">a4,</span> <span class="pre">a5,</span> <span class="pre">a6,</span> <span class="pre">a7,</span> <span class="pre">a8,</span> <span class="pre">a9,</span> <span class="pre">a10,</span> <span class="pre">a11,</span> <span class="pre">a12,</span> <span class="pre">a13,</span> <span class="pre">a14,</span> <span class="pre">a15,</span> <span class="pre">a16,</span> <span class="pre">a17,</span> <span class="pre">a18,</span> <span class="pre">a19)</span> <span class="pre">-&gt;</span> <span class="pre">state</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>code</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Platform specific error code</p>
+</dd>
+<dt><strong>a1</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a2</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a3</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a4</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a5</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a6</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a7</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a8</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a9</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a10</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a11</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a12</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a13</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a14</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a15</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a16</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a17</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a18</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a19</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state</strong><span class="classifier">type(state_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-fs-error">
+<h3>FS_ERROR (function)<a class="headerlink" href="#f-function-stdlib-system-fs-error" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">FS_ERROR(a1,</span> <span class="pre">a2,</span> <span class="pre">a3,</span> <span class="pre">a4,</span> <span class="pre">a5,</span> <span class="pre">a6,</span> <span class="pre">a7,</span> <span class="pre">a8,</span> <span class="pre">a9,</span> <span class="pre">a10,</span> <span class="pre">a11,</span> <span class="pre">a12,</span> <span class="pre">a13,</span> <span class="pre">a14,</span> <span class="pre">a15,</span> <span class="pre">a16,</span> <span class="pre">a17,</span> <span class="pre">a18,</span> <span class="pre">a19,</span> <span class="pre">a20)</span> <span class="pre">-&gt;</span> <span class="pre">state</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>a1</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a2</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a3</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a4</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a5</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a6</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a7</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a8</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a9</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a10</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a11</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a12</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a13</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a14</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a15</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a16</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a17</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a18</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a19</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a20</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state</strong><span class="classifier">type(state_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-exists">
+<h3>exists (function)<a class="headerlink" href="#f-function-stdlib-system-exists" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">exists(path,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">fs_type</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fs_type</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-is-symlink">
+<h3>is_symlink (function)<a class="headerlink" href="#f-function-stdlib-system-is-symlink" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">is_symlink(path)</span> <span class="pre">-&gt;</span> <span class="pre">is_symlink</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>is_symlink</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-is-file">
+<h3>is_file (function)<a class="headerlink" href="#f-function-stdlib-system-is-file" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">is_file(path)</span> <span class="pre">-&gt;</span> <span class="pre">is_file</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>is_file</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-system-path-sep">
+<h3>path_sep (function)<a class="headerlink" href="#f-function-stdlib-system-path-sep" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">path_sep</span> <span class="pre">-&gt;</span> <span class="pre">path_sep</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path_sep</strong><span class="classifier">character(len=1)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-make-directory">
+<h3>make_directory (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-make-directory" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">make_directory(path,</span> <span class="pre">err)</span></code></dt>
+<dd><div class="docutils container">
+<p>makes an empty directory</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-make-directory-all">
+<h3>make_directory_all (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-make-directory-all" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">make_directory_all(path,</span> <span class="pre">err)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-remove-directory">
+<h3>remove_directory (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-remove-directory" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">remove_directory(path,</span> <span class="pre">err)</span></code></dt>
+<dd><div class="docutils container">
+<p>removes an empty directory</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-get-cwd">
+<h3>get_cwd (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-get-cwd" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_cwd(cwd,</span> <span class="pre">err)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cwd</strong><span class="classifier">character(len=:), allocatable, intent(out)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-set-cwd">
+<h3>set_cwd (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-set-cwd" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">set_cwd(path,</span> <span class="pre">err)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-delete-file">
+<h3>delete_file (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-delete-file" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">delete_file(path,</span> <span class="pre">err)</span></code></dt>
+<dd><div class="docutils container">
+<p>Delete a file at the given path.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Interfaces</p>
+<section id="f-interface-stdlib-system-runasync">
+<h3>runasync (interface)<a class="headerlink" href="#f-interface-stdlib-system-runasync" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-run">
+<h3>run (interface)<a class="headerlink" href="#f-interface-stdlib-system-run" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-is-running">
+<h3>is_running (interface)<a class="headerlink" href="#f-interface-stdlib-system-is-running" title="Link to this heading">#</a></h3>
+<div class="docutils container">
+<p>Logical result: <cite>.true.</cite> if the process is still running, <cite>.false.</cite> otherwise.</p>
+</div>
+</section>
+<section id="f-interface-stdlib-system-is-completed">
+<h3>is_completed (interface)<a class="headerlink" href="#f-interface-stdlib-system-is-completed" title="Link to this heading">#</a></h3>
+<div class="docutils container">
+<p>Logical result: <cite>.true.</cite> if the process has completed, <cite>.false.</cite> otherwise.</p>
+</div>
+</section>
+<section id="f-interface-stdlib-system-elapsed">
+<h3>elapsed (interface)<a class="headerlink" href="#f-interface-stdlib-system-elapsed" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-wait">
+<h3>wait (interface)<a class="headerlink" href="#f-interface-stdlib-system-wait" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-update">
+<h3>update (interface)<a class="headerlink" href="#f-interface-stdlib-system-update" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-kill">
+<h3>kill (interface)<a class="headerlink" href="#f-interface-stdlib-system-kill" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-sleep">
+<h3>sleep (interface)<a class="headerlink" href="#f-interface-stdlib-system-sleep" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-is-windows">
+<h3>is_windows (interface)<a class="headerlink" href="#f-interface-stdlib-system-is-windows" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-join-path">
+<h3>join_path (interface)<a class="headerlink" href="#f-interface-stdlib-system-join-path" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-operator">
+<h3>operator(/) (interface)<a class="headerlink" href="#f-interface-stdlib-system-operator" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-split-path">
+<h3>split_path (interface)<a class="headerlink" href="#f-interface-stdlib-system-split-path" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-base-name">
+<h3>base_name (interface)<a class="headerlink" href="#f-interface-stdlib-system-base-name" title="Link to this heading">#</a></h3>
+</section>
+<section id="f-interface-stdlib-system-dir-name">
+<h3>dir_name (interface)<a class="headerlink" href="#f-interface-stdlib-system-dir-name" title="Link to this heading">#</a></h3>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="stdlib_strings.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">stdlib_strings</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="stdlib_version.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">stdlib_version</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#f-module-stdlib-system">stdlib_system (module)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-system-process-type">process_type (type)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-get-runtime-os">get_runtime_os (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-os-type">OS_TYPE (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-os-name">OS_NAME (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-is-directory">is_directory (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-null-device">null_device (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-fs-error-code">FS_ERROR_CODE (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-fs-error">FS_ERROR (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-exists">exists (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-is-symlink">is_symlink (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-is-file">is_file (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-system-path-sep">path_sep (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-make-directory">make_directory (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-make-directory-all">make_directory_all (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-remove-directory">remove_directory (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-get-cwd">get_cwd (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-set-cwd">set_cwd (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-delete-file">delete_file (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-runasync">runasync (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-run">run (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-is-running">is_running (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-is-completed">is_completed (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-elapsed">elapsed (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-wait">wait (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-update">update (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-kill">kill (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-sleep">sleep (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-is-windows">is_windows (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-join-path">join_path (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-operator">operator(/) (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-split-path">split_path (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-base-name">base_name (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-dir-name">dir_name (interface)</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/api/stdlib_system.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, fortran-lang contributors.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
