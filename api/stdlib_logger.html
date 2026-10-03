@@ -431,9 +431,8 @@
 <p class="rubric">Module stdlib_logger</p>
 <p>This module defines a derived type, procedures, a variable, and
 constants to be used for logging information and reporting errors
-in Fortran applications.
-([Specification](../page/specs/stdlib_logger.html))
-The derived type, <cite>logger_type</cite>, is to be used to define variables to
+in Fortran applications. See also <a class="reference internal" href="../specs/stdlib_logger.html"><span class="doc">Loggers</span></a>.</p>
+<p>The derived type, <cite>logger_type</cite>, is to be used to define variables to
 serve as both local and global loggers. A logger directs its messages
 to selected I/O units so the user has a record (a log) of major events.
 For each entity of <cite>logger_type</cite> the reports go to a list of I/O units
@@ -442,15 +441,17 @@ empty then output by default goes to <cite>output_unit</cite>. Otherwise reports
 go to <cite>output_unit</cite> only if it has been explicitly added to <cite>log_units</cite>.
 Each entity of type <cite>logger_type</cite> also maintains an internal state
 controlling the formatting of output.</p>
-<p>The procedures are as follows. The logical function
-<cite>log_units_assigned</cite> returns the number of I/O units in <cite>log_units</cite>. The
-subroutines <cite>add_log_file</cite> and <cite>add_log_unit</cite> include the specified file
-in <cite>log_units</cite>. <cite>remove_log_units</cite> removes the specified logical unit from
-the <cite>log_units</cite> array and optionally closes the file. <cite>configure</cite>
-configures the details of the logging process. <cite>configuration</cite>
-reports the details of that configuration. The subroutines
-<cite>log_error</cite>, <cite>log_information</cite>, <cite>log_io_error</cite>, <cite>log_message</cite>,
-<cite>log_text_error</cite>, and <cite>log_warning</cite> send messages to the log units.</p>
+<p>The procedures are as follows. The logical function <code class="xref f f-func docutils literal notranslate"><span class="pre">log_units_assigned</span></code>
+returns the number of I/O units in <cite>log_units</cite>. The subroutines
+<code class="xref f f-subr docutils literal notranslate"><span class="pre">add_log_file</span></code> and <code class="xref f f-subr docutils literal notranslate"><span class="pre">add_log_unit</span></code> include the specified file
+in <cite>log_units</cite>. <code class="xref f f-subr docutils literal notranslate"><span class="pre">remove_log_unit</span></code> removes the specified logical unit
+from the <cite>log_units</cite> array and optionally closes the file.
+<code class="xref f f-subr docutils literal notranslate"><span class="pre">configure</span></code> configures the details of the logging process and
+<code class="xref f f-subr docutils literal notranslate"><span class="pre">configuration</span></code> reports the details of that configuration.
+The subroutines <code class="xref f f-subr docutils literal notranslate"><span class="pre">log_error</span></code>, <code class="xref f f-subr docutils literal notranslate"><span class="pre">log_information</span></code>,
+<code class="xref f f-subr docutils literal notranslate"><span class="pre">log_io_error</span></code>, <code class="xref f f-subr docutils literal notranslate"><span class="pre">log_message</span></code>,
+<code class="xref f f-subr docutils literal notranslate"><span class="pre">log_text_error</span></code>, and <code class="xref f f-subr docutils literal notranslate"><span class="pre">log_warning</span></code>
+send messages to the log units.</p>
 <p>The variable <cite>global_logger</cite> of type <cite>logger_type</cite> can be used
 as a default global logger anywhere in the source code.</p>
 <p>The constants are used to report errors by some of the subroutines
@@ -505,7 +506,7 @@ indicates that at least one of the writes to <cite>log_units</cite> failed.</p>
 <code class="docutils literal notranslate"><span class="pre">logger_type</span> <span class="pre">(type)</span></code></dt>
 <dd><div class="docutils container">
 <p>version: experimental
-Public derived type ([Specification](../page/specs/stdlib_logger.html#the-derived-type-logger_type))</p>
+Public derived type. See <a class="reference internal" href="../specs/stdlib_logger.html"><span class="doc">Loggers</span></a>.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Procedures<span class="colon">:</span></dt>
