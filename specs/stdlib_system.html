@@ -338,6 +338,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">Linear Algebra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html"><code class="docutils literal notranslate"><span class="pre">stdlib_linalg_iterative_solvers</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state_type.html">Linear Algebra – State and Error Handling Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">Run-time loading of dynamically linked libraries</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">Loggers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html"><code class="docutils literal notranslate"><span class="pre">stdlib_math</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">Default values for optional arguments</a></li>
@@ -2017,7 +2018,40 @@ It is designed to work across multiple platforms. On Windows, paths with both fo
 </section>
 <section id="id139">
 <h3><a class="toc-backref" href="#id373" role="doc-backlink">Example</a><a class="headerlink" href="#id139" title="Link to this heading">#</a></h3>
-<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="err">{</span><span class="c">!example/system/example_environment_variable.f90!}</span>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="c">! Illustrate the usage of `set_environment_variable`, `delete_environment_variable`</span>
+<span class="k">program </span><span class="n">example_environment_variable</span>
+<span class="w">    </span><span class="k">use </span><span class="n">stdlib_system</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">set_environment_variable</span><span class="p">,</span><span class="w"> </span><span class="n">delete_environment_variable</span>
+<span class="w">    </span><span class="k">use </span><span class="n">stdlib_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">state_type</span>
+<span class="w">    </span><span class="k">implicit none</span>
+
+<span class="k">    type</span><span class="p">(</span><span class="n">state_type</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">err</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">value</span>
+<span class="k">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
+
+<span class="nb">    </span><span class="k">call </span><span class="n">set_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="s2">"hello"</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">%</span><span class="n">error</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Error setting the variable: "</span><span class="o">//</span><span class="n">err</span><span class="p">%</span><span class="k">print</span><span class="p">()</span>
+<span class="w">        </span><span class="k">error stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"STDLIB_EXAMPLE is "</span><span class="o">//</span><span class="k">value</span><span class="p">(:</span><span class="n">length</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! `overwrite` is `.true.` by default. Asking for `.false.` keeps whatever</span>
+<span class="w">    </span><span class="c">! value the variable already has, and is not an error.</span>
+<span class="w">    </span><span class="k">call </span><span class="n">set_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="s2">"goodbye"</span><span class="p">,</span><span class="w"> </span><span class="n">overwrite</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"after a refused overwrite it is still "</span><span class="o">//</span><span class="k">value</span><span class="p">(:</span><span class="n">length</span><span class="p">)</span>
+
+<span class="w">    </span><span class="k">call </span><span class="n">delete_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">%</span><span class="n">error</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Error deleting the variable: "</span><span class="o">//</span><span class="n">err</span><span class="p">%</span><span class="k">print</span><span class="p">()</span>
+<span class="w">        </span><span class="k">error stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"after deleting it, the lookup status is"</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
+<span class="k">end program </span><span class="n">example_environment_variable</span>
 </pre></div>
 </div>
 </section>
@@ -2054,7 +2088,40 @@ It is designed to work across multiple platforms. On Windows, paths with both fo
 </section>
 <section id="id146">
 <h3><a class="toc-backref" href="#id381" role="doc-backlink">Example</a><a class="headerlink" href="#id146" title="Link to this heading">#</a></h3>
-<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="err">{</span><span class="c">!example/system/example_environment_variable.f90!}</span>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="c">! Illustrate the usage of `set_environment_variable`, `delete_environment_variable`</span>
+<span class="k">program </span><span class="n">example_environment_variable</span>
+<span class="w">    </span><span class="k">use </span><span class="n">stdlib_system</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">set_environment_variable</span><span class="p">,</span><span class="w"> </span><span class="n">delete_environment_variable</span>
+<span class="w">    </span><span class="k">use </span><span class="n">stdlib_error</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">state_type</span>
+<span class="w">    </span><span class="k">implicit none</span>
+
+<span class="k">    type</span><span class="p">(</span><span class="n">state_type</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">err</span>
+<span class="w">    </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">value</span>
+<span class="k">    </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
+
+<span class="nb">    </span><span class="k">call </span><span class="n">set_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="s2">"hello"</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">%</span><span class="n">error</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Error setting the variable: "</span><span class="o">//</span><span class="n">err</span><span class="p">%</span><span class="k">print</span><span class="p">()</span>
+<span class="w">        </span><span class="k">error stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"STDLIB_EXAMPLE is "</span><span class="o">//</span><span class="k">value</span><span class="p">(:</span><span class="n">length</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! `overwrite` is `.true.` by default. Asking for `.false.` keeps whatever</span>
+<span class="w">    </span><span class="c">! value the variable already has, and is not an error.</span>
+<span class="w">    </span><span class="k">call </span><span class="n">set_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="s2">"goodbye"</span><span class="p">,</span><span class="w"> </span><span class="n">overwrite</span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"after a refused overwrite it is still "</span><span class="o">//</span><span class="k">value</span><span class="p">(:</span><span class="n">length</span><span class="p">)</span>
+
+<span class="w">    </span><span class="k">call </span><span class="n">delete_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="o">=</span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">%</span><span class="n">error</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Error deleting the variable: "</span><span class="o">//</span><span class="n">err</span><span class="p">%</span><span class="k">print</span><span class="p">()</span>
+<span class="w">        </span><span class="k">error stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="k">    call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">"STDLIB_EXAMPLE"</span><span class="p">,</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"after deleting it, the lookup status is"</span><span class="p">,</span><span class="w"> </span><span class="nb">stat</span>
+<span class="k">end program </span><span class="n">example_environment_variable</span>
 </pre></div>
 </div>
 </section>
