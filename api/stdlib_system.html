@@ -509,6 +509,24 @@ An appropriate error message is returned whenever any error occurs.</p>
 <p class="rubric">Description</p>
 <p>This subroutine sets the current working directory the process is executing from.</p>
 <p>version: experimental</p>
+<p>Sets an environment variable for the calling process
+([Specification](../page/specs/stdlib_system.html#set_environment_variable))</p>
+<p>### Summary
+Creates an environment variable, or changes the value of an existing one.</p>
+<p>### Description
+The variable is visible to this process and to any process it starts
+afterwards. It is not written back to the parent shell, which is a property
+of the operating system rather than of this implementation.</p>
+<p><cite>overwrite</cite> selects whether an existing variable is replaced, and defaults
+to <cite>.true.</cite>. It has no effect on Windows, whose <cite>_putenv_s</cite> always replaces.</p>
+<p>version: experimental</p>
+<p>Removes an environment variable from the calling process
+([Specification](../page/specs/stdlib_system.html#delete_environment_variable))</p>
+<p>### Summary
+Deletes an environment variable, if it is set.</p>
+<p>### Description
+Removing a variable that is not set is not an error, which matches <cite>unsetenv</cite>.</p>
+<p>version: experimental</p>
 <p>Deletes a specified file from the filesystem.
 ([Specification](../page/specs/stdlib_system.html#delete_file-delete-a-file))</p>
 <p class="rubric">Summary</p>
@@ -1140,6 +1158,53 @@ Cross-platform implementation without using external C libraries.</p>
 </dd></dl>
 
 </section>
+<section id="f-subroutine-stdlib-system-set-environment-variable">
+<h3>set_environment_variable (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-set-environment-variable" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">set_environment_variable(name,</span> <span class="pre">value,</span> <span class="pre">overwrite,</span> <span class="pre">err)</span></code></dt>
+<dd><div class="docutils container">
+<p>Sets an environment variable for the calling process.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Name of the variable. Must not be empty or contain ‘=’.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Value to give it.</p>
+</dd>
+<dt><strong>overwrite</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>Replace the variable if it already exists. Default <cite>.true.</cite>.
+Ignored on Windows, where the underlying call always replaces.</p>
+</dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd><p>Error handler</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-system-delete-environment-variable">
+<h3>delete_environment_variable (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-delete-environment-variable" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">delete_environment_variable(name,</span> <span class="pre">err)</span></code></dt>
+<dd><div class="docutils container">
+<p>Removes an environment variable from the calling process.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Name of the variable. Must not be empty or contain ‘=’.</p>
+</dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd><p>Error handler</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="f-subroutine-stdlib-system-delete-file">
 <h3>delete_file (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-system-delete-file" title="Link to this heading">#</a></h3>
 <dl class="f subroutine">
@@ -1279,6 +1344,8 @@ Cross-platform implementation without using external C libraries.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-remove-directory">remove_directory (subroutine)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-get-cwd">get_cwd (subroutine)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-set-cwd">set_cwd (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-set-environment-variable">set_environment_variable (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-delete-environment-variable">delete_environment_variable (subroutine)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-system-delete-file">delete_file (subroutine)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-runasync">runasync (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-system-run">run (interface)</a></li>
