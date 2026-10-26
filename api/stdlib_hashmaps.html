@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_intrinsics" href="stdlib_intrinsics.html" />
     <link rel="prev" title="stdlib_hashmap_wrappers" href="stdlib_hashmap_wrappers.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -430,35 +426,29 @@
 <section id="f-module-stdlib-hashmaps">
 <h2>stdlib_hashmaps (module)<a class="headerlink" href="#f-module-stdlib-hashmaps" title="Link to this heading">#</a></h2>
 <div class="docutils container">
-<p>The module, STDLIB_HASH_MAPS, implements two hash maps:
-CHAINING_HASH_MAP_TYPE, a separate chaining hash map; and OPEN_HASH_MAP_TYPE,
-an open addressing hash map using linear addressing. The two hash maps are
-implementations of the abstract type, HASH_MAP_TYPE.</p>
-<p>Public data_types</p>
-<p>Next bucket</p>
-<p>Index into inverse table</p>
+<p>Public data_types
+Values that parameterize David Chase’s empirical SLOT expansion code
+API for the chaining_hashmap_type</p>
+<p>API for the open_hashmap_type</p>
 </div>
 <p class="section-subtitle">Variables</p>
 <dl class="simple">
-<dt><span class="target" id="f-variable-stdlib-hashmaps-default-bits"></span><strong>default_bits</strong><span class="classifier">integer, parameter, Default = 6</span></dt><dd><p>Values that parameterize the SLOTS table size</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-default-bits"></span><strong>default_bits</strong><span class="classifier">integer, parameter, Default = 6</span></dt><dd><p>KIND values used to parameterixe the hash map and its procedures</p>
 </dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-max-bits"></span><strong>max_bits</strong><span class="classifier">integer, parameter, Default = 30</span></dt><dd><p>Values that parameterize the SLOTS table size</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-max-bits"></span><strong>max_bits</strong><span class="classifier">integer, parameter, Default = 30</span></dt><dd><p>KIND values used to parameterixe the hash map and its procedures</p>
 </dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-int-calls"></span><strong>int_calls</strong><span class="classifier">integer, parameter, Default = int64</span></dt><dd><p>KIND values used to parameterixe the hash map and its procedures</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-int-calls"></span><strong>int_calls</strong><span class="classifier">integer, parameter, Default = int64</span></dt><dd><p>Error codes returned by the hash map procedures</p>
 </dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-int-depth"></span><strong>int_depth</strong><span class="classifier">integer, parameter, Default = int64</span></dt><dd><p>KIND values used to parameterixe the hash map and its procedures</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-int-depth"></span><strong>int_depth</strong><span class="classifier">integer, parameter, Default = int64</span></dt><dd><p>Error codes returned by the hash map procedures</p>
 </dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-int-index"></span><strong>int_index</strong><span class="classifier">integer, parameter, Default = int32</span></dt><dd><p>KIND values used to parameterixe the hash map and its procedures</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-int-index"></span><strong>int_index</strong><span class="classifier">integer, parameter, Default = int32</span></dt><dd><p>Error codes returned by the hash map procedures</p>
 </dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-int-probes"></span><strong>int_probes</strong><span class="classifier">integer, parameter, Default = int64</span></dt><dd><p>KIND values used to parameterixe the hash map and its procedures</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-int-probes"></span><strong>int_probes</strong><span class="classifier">integer, parameter, Default = int64</span></dt><dd><p>Error codes returned by the hash map procedures</p>
 </dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-success"></span><strong>success</strong><span class="classifier">integer, parameter, Default = 0</span></dt><dd><p>Error codes returned by the hash map procedures</p>
-</dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-alloc-fault"></span><strong>alloc_fault</strong><span class="classifier">integer, parameter, Default = 1</span></dt><dd><p>Error codes returned by the hash map procedures</p>
-</dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-array-size-error"></span><strong>array_size_error</strong><span class="classifier">integer, parameter, Default = 2</span></dt><dd><p>Error codes returned by the hash map procedures</p>
-</dd>
-<dt><span class="target" id="f-variable-stdlib-hashmaps-load-factor"></span><strong>load_factor</strong><span class="classifier">real, parameter, Default = 0.5625</span></dt><dd><p>The hash map load factor</p>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-success"></span><strong>success</strong><span class="classifier">integer, parameter, Default = 0</span></dt><dd></dd>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-alloc-fault"></span><strong>alloc_fault</strong><span class="classifier">integer, parameter, Default = 1</span></dt><dd></dd>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-array-size-error"></span><strong>array_size_error</strong><span class="classifier">integer, parameter, Default = 2</span></dt><dd></dd>
+<dt><span class="target" id="f-variable-stdlib-hashmaps-load-factor"></span><strong>load_factor</strong><span class="classifier">real, parameter, Default = 0.5625</span></dt><dd><p>The size of the pools of allocated map entries</p>
 </dd>
 </dl>
 <p class="section-subtitle">Types</p>
@@ -468,24 +458,22 @@ implementations of the abstract type, HASH_MAP_TYPE.</p>
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">chaining_hashmap_type</span> <span class="pre">(type)</span></code></dt>
 <dd><div class="docutils container">
-<p>Version: Experimental</p>
 <p>Type implementing the <cite>chaining_hashmap_type</cite> types
-([Specifications](../page/specs/stdlib_hashmaps.html#the-chaining_hashmap_type-derived-type))
-Array of bucket lists Note # slots=size(slots)</p>
+(Specifications: <a class="reference internal" href="../specs/stdlib_hashmaps.html"><span class="doc">stdlib_hashmap_wrappers and stdlib_hashmaps</span></a>)</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Procedures<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">get_all_keys</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_get_other_data</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">init</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">loading</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_map_entry</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rehash</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_remove_entry</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_set_other_data</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">total_depth</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_key_test</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_all_keys</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">get_all_chaining_keys</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_get_other_data</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">get_other_chaining_data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">init</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">init_chaining_map</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">loading</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">chaining_loading</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_map_entry</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">map_chain_entry</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rehash</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">rehash_chaining_map</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_remove_entry</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">remove_chaining_entry</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_set_other_data</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">set_other_chaining_data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_depth</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">total_chaining_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_key_test</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">chaining_key_test</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -498,23 +486,21 @@ Array of bucket lists Note # slots=size(slots)</p>
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">open_hashmap_type</span> <span class="pre">(type)</span></code></dt>
 <dd><div class="docutils container">
-<p>Version: Experimental</p>
-<p>Type implementing an “open” hash map
-Array of indices to the inverse Note # slots=size(slots)</p>
+<p>Type implementing an “open” hash map</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Procedures<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">get_all_keys</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_get_other_data</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">init</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">loading</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_map_entry</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rehash</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_remove_entry</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_set_other_data</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">total_depth</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">key_key_test</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_all_keys</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">get_all_open_keys</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_get_other_data</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">get_other_open_data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">init</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">init_open_map</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">loading</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">open_loading</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_map_entry</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">map_open_entry</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rehash</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">rehash_open_map</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_remove_entry</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">remove_open_entry</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_set_other_data</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">set_other_open_data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">total_depth</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">total_open_depth</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">key_key_test</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">open_key_test</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -601,8 +587,8 @@ Array of indices to the inverse Note # slots=size(slots)</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -622,7 +608,7 @@ Array of indices to the inverse Note # slots=size(slots)</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -635,7 +621,7 @@ Array of indices to the inverse Note # slots=size(slots)</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

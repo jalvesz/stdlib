@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_quadrature" href="stdlib_quadrature.html" />
     <link rel="prev" title="stdlib_math" href="stdlib_math.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -433,7 +429,7 @@
 <p>Provides a generic function <cite>optval</cite>, which can be used to
 conveniently implement fallback values for optional arguments
 to subprograms
-([Specification](../page/specs/stdlib_optval.html))</p>
+(Specification: <a class="reference internal" href="../specs/stdlib_optval.html"><span class="doc">stdlib_optval</span></a>)</p>
 <p>If <cite>x</cite> is an <cite>optional</cite> parameter of a
 subprogram, then the expression <cite>optval(x, default)</cite> inside that
 subprogram evaluates to <cite>x</cite> if it is present, otherwise <cite>default</cite>.</p>
@@ -442,6 +438,262 @@ subprogram evaluates to <cite>x</cite> if it is present, otherwise <cite>default
 <p class="section-subtitle">Interfaces</p>
 <section id="f-interface-stdlib-optval-optval">
 <h3>optval (interface)<a class="headerlink" href="#f-interface-stdlib-optval-optval" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">optval</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Fallback value for optional arguments
+(Specification: <a class="reference internal" href="../specs/stdlib_optval.html"><span class="doc">stdlib_optval</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-rsp" title="optval_rsp"><code class="docutils literal notranslate"><span class="pre">optval_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-rdp" title="optval_rdp"><code class="docutils literal notranslate"><span class="pre">optval_rdp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-iint8" title="optval_iint8"><code class="docutils literal notranslate"><span class="pre">optval_iint8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-iint16" title="optval_iint16"><code class="docutils literal notranslate"><span class="pre">optval_iint16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-iint32" title="optval_iint32"><code class="docutils literal notranslate"><span class="pre">optval_iint32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-iint64" title="optval_iint64"><code class="docutils literal notranslate"><span class="pre">optval_iint64</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-csp" title="optval_csp"><code class="docutils literal notranslate"><span class="pre">optval_csp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-cdp" title="optval_cdp"><code class="docutils literal notranslate"><span class="pre">optval_cdp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-ll1" title="optval_ll1"><code class="docutils literal notranslate"><span class="pre">optval_ll1</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-optval-optval-character" title="optval_character"><code class="docutils literal notranslate"><span class="pre">optval_character</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Procedures</p>
+<section id="f-function-stdlib-optval-optval-rsp">
+<h3>optval_rsp (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_rsp(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-rdp">
+<h3>optval_rdp (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_rdp(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-iint8">
+<h3>optval_iint8 (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-iint8" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_iint8(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">integer(kind=int8), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">integer(kind=int8)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-iint16">
+<h3>optval_iint16 (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-iint16" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_iint16(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">integer(kind=int16), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">integer(kind=int16)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-iint32">
+<h3>optval_iint32 (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-iint32" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_iint32(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">integer(kind=int32), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">integer(kind=int32)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-iint64">
+<h3>optval_iint64 (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-iint64" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_iint64(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">integer(kind=int64), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">integer(kind=int64)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-csp">
+<h3>optval_csp (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-csp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_csp(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">complex(kind=sp), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">complex(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">complex(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-cdp">
+<h3>optval_cdp (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-cdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_cdp(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">complex(kind=dp), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">complex(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">complex(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-ll1">
+<h3>optval_ll1 (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-ll1" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">optval_ll1(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">logical, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-optval-optval-character">
+<h3>optval_character (function)<a class="headerlink" href="#f-function-stdlib-optval-optval-character" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">optval_character(x,</span> <span class="pre">default)</span> <span class="pre">-&gt;</span> <span class="pre">y</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>default</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -495,6 +747,16 @@ subprogram evaluates to <cite>x</cite> if it is present, otherwise <cite>default
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#f-module-stdlib-optval">stdlib_optval (module)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-optval-optval">optval (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-rsp">optval_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-rdp">optval_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-iint8">optval_iint8 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-iint16">optval_iint16 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-iint32">optval_iint32 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-iint64">optval_iint64 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-csp">optval_csp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-cdp">optval_cdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-ll1">optval_ll1 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-optval-optval-character">optval_character (function)</a></li>
 </ul>
 </li>
 </ul>
@@ -522,8 +784,8 @@ subprogram evaluates to <cite>x</cite> if it is present, otherwise <cite>default
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -543,7 +805,7 @@ subprogram evaluates to <cite>x</cite> if it is present, otherwise <cite>default
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -556,7 +818,7 @@ subprogram evaluates to <cite>x</cite> if it is present, otherwise <cite>default
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

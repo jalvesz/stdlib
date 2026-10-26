@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_strings" href="stdlib_strings.html" />
     <link rel="prev" title="stdlib_string_type" href="stdlib_string_type.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">stdlib_stringlist_type</a></li>
@@ -451,10 +447,10 @@
 <dd><dl class="field-list simple">
 <dt class="field-odd">Procedures<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">clear</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">len</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">insert_at</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">get</span></code></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-stringlist-type-clear-list" title="clear_list"><code class="docutils literal notranslate"><span class="pre">clear</span></code></a> =&gt; <a class="reference internal" href="#f-subroutine-stdlib-stringlist-type-clear-list" title="clear_list"><code class="docutils literal notranslate"><span class="pre">clear_list</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-length-list" title="length_list"><code class="docutils literal notranslate"><span class="pre">len</span></code></a> =&gt; <a class="reference internal" href="#f-function-stdlib-stringlist-type-length-list" title="length_list"><code class="docutils literal notranslate"><span class="pre">length_list</span></code></a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">insert_at</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">insert_at_char_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">insert_at_string_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">insert_at_stringlist_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">insert_at_chararray_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">insert_at_stringarray_idx</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get</span></code> =&gt; <code class="docutils literal notranslate"><span class="pre">get_string_idx</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -464,41 +460,726 @@
 <p class="section-subtitle">Interfaces</p>
 <section id="f-interface-stdlib-stringlist-type-fidx">
 <h3>fidx (interface)<a class="headerlink" href="#f-interface-stdlib-stringlist-type-fidx" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">fidx</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Returns an instance of type ‘stringlist_index_type’ representing forward index
-[Specifications](../page/specs/stdlib_stringlist_type.html#fidx)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_stringlist_type.html"><span class="doc">stdlib_stringlist_type</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-forward-index" title="forward_index"><code class="docutils literal notranslate"><span class="pre">forward_index</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-stringlist-type-bidx">
 <h3>bidx (interface)<a class="headerlink" href="#f-interface-stdlib-stringlist-type-bidx" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">bidx</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Returns an instance of type ‘stringlist_index_type’ representing backward index
-[Specifications](../page/specs/stdlib_stringlist_type.html#bidx)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_stringlist_type.html"><span class="doc">stdlib_stringlist_type</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-backward-index" title="backward_index"><code class="docutils literal notranslate"><span class="pre">backward_index</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-stringlist-type-operator">
 <h3>operator(//) (interface)<a class="headerlink" href="#f-interface-stdlib-stringlist-type-operator" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(//)</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Concatenates stringlist with the input entity
 Returns a new stringlist
-[Specifications](../page/specs/stdlib_stringlist_type.html#append-operator)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_stringlist_type.html"><span class="doc">stdlib_stringlist_type</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-append-char" title="append_char"><code class="docutils literal notranslate"><span class="pre">append_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-append-string" title="append_string"><code class="docutils literal notranslate"><span class="pre">append_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-prepend-char" title="prepend_char"><code class="docutils literal notranslate"><span class="pre">prepend_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-prepend-string" title="prepend_string"><code class="docutils literal notranslate"><span class="pre">prepend_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-append-stringlist" title="append_stringlist"><code class="docutils literal notranslate"><span class="pre">append_stringlist</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-append-carray" title="append_carray"><code class="docutils literal notranslate"><span class="pre">append_carray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-append-sarray" title="append_sarray"><code class="docutils literal notranslate"><span class="pre">append_sarray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-prepend-carray" title="prepend_carray"><code class="docutils literal notranslate"><span class="pre">prepend_carray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-prepend-sarray" title="prepend_sarray"><code class="docutils literal notranslate"><span class="pre">prepend_sarray</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-stringlist-type-operator">
 <h3>operator(==) (interface)<a class="headerlink" href="#f-interface-stdlib-stringlist-type-operator" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(==)</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Compares stringlist for equality with the input entity
 Returns a logical
-[Specifications](../page/specs/stdlib_stringlist_type.html#equality-operator)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_stringlist_type.html"><span class="doc">stdlib_stringlist_type</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-eq-stringlist" title="eq_stringlist"><code class="docutils literal notranslate"><span class="pre">eq_stringlist</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-eq-stringlist-carray" title="eq_stringlist_carray"><code class="docutils literal notranslate"><span class="pre">eq_stringlist_carray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-eq-stringlist-sarray" title="eq_stringlist_sarray"><code class="docutils literal notranslate"><span class="pre">eq_stringlist_sarray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-eq-carray-stringlist" title="eq_carray_stringlist"><code class="docutils literal notranslate"><span class="pre">eq_carray_stringlist</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-eq-sarray-stringlist" title="eq_sarray_stringlist"><code class="docutils literal notranslate"><span class="pre">eq_sarray_stringlist</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-stringlist-type-operator">
 <h3>operator(/=) (interface)<a class="headerlink" href="#f-interface-stdlib-stringlist-type-operator" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(/=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Compares stringlist for inequality with the input entity
 Returns a logical
-[Specifications](../page/specs/stdlib_stringlist_type.html#inequality-operator)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_stringlist_type.html"><span class="doc">stdlib_stringlist_type</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-ineq-stringlist" title="ineq_stringlist"><code class="docutils literal notranslate"><span class="pre">ineq_stringlist</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-ineq-stringlist-carray" title="ineq_stringlist_carray"><code class="docutils literal notranslate"><span class="pre">ineq_stringlist_carray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-ineq-stringlist-sarray" title="ineq_stringlist_sarray"><code class="docutils literal notranslate"><span class="pre">ineq_stringlist_sarray</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-ineq-carray-stringlist" title="ineq_carray_stringlist"><code class="docutils literal notranslate"><span class="pre">ineq_carray_stringlist</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-stringlist-type-ineq-sarray-stringlist" title="ineq_sarray_stringlist"><code class="docutils literal notranslate"><span class="pre">ineq_sarray_stringlist</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Procedures</p>
+<section id="f-function-stdlib-stringlist-type-forward-index">
+<h3>forward_index (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-forward-index" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">forward_index(idx)</span> <span class="pre">-&gt;</span> <span class="pre">forward_index</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns an instance of type ‘stringlist_index_type’ representing forward index ‘idx’</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>idx</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>forward_index</strong><span class="classifier">type(stringlist_index_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-backward-index">
+<h3>backward_index (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-backward-index" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">backward_index(idx)</span> <span class="pre">-&gt;</span> <span class="pre">backward_index</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns an instance of type ‘stringlist_index_type’ representing backward index ‘idx’</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>idx</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>backward_index</strong><span class="classifier">type(stringlist_index_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-append-char">
+<h3>append_char (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-append-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">append_char(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">append_char</span></code></dt>
+<dd><div class="docutils container">
+<p>Appends character scalar ‘rhs’ to the stringlist ‘list’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>append_char</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-append-string">
+<h3>append_string (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-append-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">append_string(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">append_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Appends string ‘rhs’ to the stringlist ‘list’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>append_string</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-prepend-char">
+<h3>prepend_char (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-prepend-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">prepend_char(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">prepend_char</span></code></dt>
+<dd><div class="docutils container">
+<p>Prepends character scalar ‘lhs’ to the stringlist ‘rhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prepend_char</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-prepend-string">
+<h3>prepend_string (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-prepend-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">prepend_string(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">prepend_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Prepends string ‘lhs’ to the stringlist ‘rhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prepend_string</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-append-stringlist">
+<h3>append_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-append-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">append_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">append_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Appends stringlist ‘rhs’ to the stringlist ‘lhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>append_stringlist</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-append-carray">
+<h3>append_carray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-append-carray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">append_carray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">append_carray</span></code></dt>
+<dd><div class="docutils container">
+<p>Appends chararray ‘rhs’ to the stringlist ‘lhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">character(len=*), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>append_carray</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-append-sarray">
+<h3>append_sarray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-append-sarray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">append_sarray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">append_sarray</span></code></dt>
+<dd><div class="docutils container">
+<p>Appends stringarray ‘rhs’ to the stringlist ‘lhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(string_type), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>append_sarray</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-prepend-carray">
+<h3>prepend_carray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-prepend-carray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">prepend_carray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">prepend_carray</span></code></dt>
+<dd><div class="docutils container">
+<p>Prepends chararray ‘lhs’ to the stringlist ‘rhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">character(len=*), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prepend_carray</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-prepend-sarray">
+<h3>prepend_sarray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-prepend-sarray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">prepend_sarray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">prepend_sarray</span></code></dt>
+<dd><div class="docutils container">
+<p>Prepends stringarray ‘lhs’ to the stringlist ‘rhs’
+Returns a new stringlist</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(string_type), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>prepend_sarray</strong><span class="classifier">type(stringlist_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-eq-stringlist">
+<h3>eq_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-eq-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">eq_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">eq_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringlist ‘lhs’ for equality with stringlist ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>eq_stringlist</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-eq-stringlist-carray">
+<h3>eq_stringlist_carray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-eq-stringlist-carray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">eq_stringlist_carray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">eq_stringlist_carray</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringlist ‘lhs’ for equality with chararray ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">character(len=*), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>eq_stringlist_carray</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-eq-stringlist-sarray">
+<h3>eq_stringlist_sarray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-eq-stringlist-sarray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">eq_stringlist_sarray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">eq_stringlist_sarray</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringlist ‘lhs’ for equality with stringarray ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(string_type), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>eq_stringlist_sarray</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-eq-carray-stringlist">
+<h3>eq_carray_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-eq-carray-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">eq_carray_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">eq_carray_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares chararray ‘lhs’ for equality with stringlist ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">character(len=*), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>eq_carray_stringlist</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-eq-sarray-stringlist">
+<h3>eq_sarray_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-eq-sarray-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">eq_sarray_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">eq_sarray_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringarray ‘lhs’ for equality with stringlist ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(string_type), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>eq_sarray_stringlist</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-ineq-stringlist">
+<h3>ineq_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-ineq-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">ineq_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">ineq_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringlist ‘lhs’ for inequality with stringlist ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ineq_stringlist</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-ineq-stringlist-carray">
+<h3>ineq_stringlist_carray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-ineq-stringlist-carray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">ineq_stringlist_carray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">ineq_stringlist_carray</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringlist ‘lhs’ for inequality with chararray ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">character(len=*), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ineq_stringlist_carray</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-ineq-stringlist-sarray">
+<h3>ineq_stringlist_sarray (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-ineq-stringlist-sarray" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">ineq_stringlist_sarray(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">ineq_stringlist_sarray</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringlist ‘lhs’ for inequality with stringarray ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(string_type), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ineq_stringlist_sarray</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-ineq-carray-stringlist">
+<h3>ineq_carray_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-ineq-carray-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">ineq_carray_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">ineq_carray_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares chararray ‘lhs’ for inequality with stringlist ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">character(len=*), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ineq_carray_stringlist</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-ineq-sarray-stringlist">
+<h3>ineq_sarray_stringlist (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-ineq-sarray-stringlist" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">ineq_sarray_stringlist(lhs,</span> <span class="pre">rhs)</span> <span class="pre">-&gt;</span> <span class="pre">ineq_sarray_stringlist</span></code></dt>
+<dd><div class="docutils container">
+<p>Compares stringarray ‘lhs’ for inequality with stringlist ‘rhs’
+Returns a logical</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lhs</strong><span class="classifier">type(string_type), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>rhs</strong><span class="classifier">type(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ineq_sarray_stringlist</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-stringlist-type-length-list">
+<h3>length_list (function)<a class="headerlink" href="#f-function-stdlib-stringlist-type-length-list" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">length_list(list)</span> <span class="pre">-&gt;</span> <span class="pre">length_list</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the len (length) of the list
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>list</strong><span class="classifier">class(stringlist_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>length_list</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-stringlist-type-clear-list">
+<h3>clear_list (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-stringlist-type-clear-list" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">clear_list(list)</span></code></dt>
+<dd><div class="docutils container">
+<p>Resets stringlist ‘list’ to an empy stringlist of len 0
+Modifies the input stringlist ‘list’</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>list</strong><span class="classifier">class(stringlist_type), intent(inout)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -558,6 +1239,29 @@ Returns a logical
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-stringlist-type-operator">operator(//) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-stringlist-type-operator">operator(==) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-stringlist-type-operator">operator(/=) (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-forward-index">forward_index (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-backward-index">backward_index (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-append-char">append_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-append-string">append_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-prepend-char">prepend_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-prepend-string">prepend_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-append-stringlist">append_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-append-carray">append_carray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-append-sarray">append_sarray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-prepend-carray">prepend_carray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-prepend-sarray">prepend_sarray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-eq-stringlist">eq_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-eq-stringlist-carray">eq_stringlist_carray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-eq-stringlist-sarray">eq_stringlist_sarray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-eq-carray-stringlist">eq_carray_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-eq-sarray-stringlist">eq_sarray_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-ineq-stringlist">ineq_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-ineq-stringlist-carray">ineq_stringlist_carray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-ineq-stringlist-sarray">ineq_stringlist_sarray (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-ineq-carray-stringlist">ineq_carray_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-ineq-sarray-stringlist">ineq_sarray_stringlist (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-stringlist-type-length-list">length_list (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-stringlist-type-clear-list">clear_list (subroutine)</a></li>
 </ul>
 </li>
 </ul>
@@ -585,8 +1289,8 @@ Returns a logical
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -606,7 +1310,7 @@ Returns a logical
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -619,7 +1323,7 @@ Returns a logical
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

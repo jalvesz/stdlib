@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_hash_32bit" href="stdlib_hash_32bit.html" />
     <link rel="prev" title="stdlib_datetime" href="stdlib_datetime.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -431,7 +427,7 @@
 <h2>stdlib_error (module)<a class="headerlink" href="#f-module-stdlib-error" title="Link to this heading">#</a></h2>
 <div class="docutils container">
 <p>Provides support for catching and handling errors
-([Specification](../page/specs/stdlib_error.html))
+(Specification: <a class="reference internal" href="../specs/stdlib_error.html"><span class="doc">stdlib_error</span></a>)
 Version: experimental</p>
 <p>A fixed-storage state variable for error handling of linear algebra routines</p>
 <p>Version: experimental</p>
@@ -473,14 +469,134 @@ procedure specifier that can be used to mark where the error happened</p>
 <dl class="field-list simple">
 <dt class="field-odd">Procedures<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">destroy</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">parse</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">print</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">print_msg</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ok</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">error</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">handle</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">update_location</span></code></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-error-state-destroy" title="state_destroy"><code class="docutils literal notranslate"><span class="pre">destroy</span></code></a> =&gt; <a class="reference internal" href="#f-subroutine-stdlib-error-state-destroy" title="state_destroy"><code class="docutils literal notranslate"><span class="pre">state_destroy</span></code></a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parse</span></code> =&gt; <a class="reference internal" href="#f-subroutine-stdlib-error-state-parse-at-location" title="state_parse_at_location"><code class="docutils literal notranslate"><span class="pre">state_parse_at_location</span></code></a>, <a class="reference internal" href="#f-subroutine-stdlib-error-state-parse-arguments" title="state_parse_arguments"><code class="docutils literal notranslate"><span class="pre">state_parse_arguments</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-print" title="state_print"><code class="docutils literal notranslate"><span class="pre">print</span></code></a> =&gt; <a class="reference internal" href="#f-function-stdlib-error-state-print" title="state_print"><code class="docutils literal notranslate"><span class="pre">state_print</span></code></a></p></li>
+<li><p><a class="reference internal" href="stdlib_linalg_state.html#f-function-stdlib-linalg-state-state-message" title="state_message"><code class="docutils literal notranslate"><span class="pre">print_msg</span></code></a> =&gt; <a class="reference internal" href="stdlib_linalg_state.html#f-function-stdlib-linalg-state-state-message" title="state_message"><code class="docutils literal notranslate"><span class="pre">state_message</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-is-ok" title="state_is_ok"><code class="docutils literal notranslate"><span class="pre">ok</span></code></a> =&gt; <a class="reference internal" href="#f-function-stdlib-error-state-is-ok" title="state_is_ok"><code class="docutils literal notranslate"><span class="pre">state_is_ok</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-is-error" title="state_is_error"><code class="docutils literal notranslate"><span class="pre">error</span></code></a> =&gt; <a class="reference internal" href="#f-function-stdlib-error-state-is-error" title="state_is_error"><code class="docutils literal notranslate"><span class="pre">state_is_error</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-error-error-handling" title="error_handling"><code class="docutils literal notranslate"><span class="pre">handle</span></code></a> =&gt; <a class="reference internal" href="#f-subroutine-stdlib-error-error-handling" title="error_handling"><code class="docutils literal notranslate"><span class="pre">error_handling</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-error-state-update-location" title="state_update_location"><code class="docutils literal notranslate"><span class="pre">update_location</span></code></a> =&gt; <a class="reference internal" href="#f-subroutine-stdlib-error-state-update-location" title="state_update_location"><code class="docutils literal notranslate"><span class="pre">state_update_location</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Interfaces</p>
+<section id="f-interface-stdlib-error-error-stop">
+<h3>error_stop (interface)<a class="headerlink" href="#f-interface-stdlib-error-error-stop" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">error_stop(msg,</span> <span class="pre">code)</span></code></dt>
+<dd><div class="docutils container">
+<p>Provides a call to <cite>error stop</cite> and allows the user to specify a code and message
+(see also <a class="reference internal" href="../specs/stdlib_error.html"><span class="doc">stdlib_error</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>msg</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>code</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-error-operator">
+<h3>operator(==) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(==)</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Comparison operators</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-eq-flag" title="state_eq_flag"><code class="docutils literal notranslate"><span class="pre">state_eq_flag</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-flag-eq-state" title="flag_eq_state"><code class="docutils literal notranslate"><span class="pre">flag_eq_state</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-error-operator">
+<h3>operator(/=) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(/=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-neq-flag" title="state_neq_flag"><code class="docutils literal notranslate"><span class="pre">state_neq_flag</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-flag-neq-state" title="flag_neq_state"><code class="docutils literal notranslate"><span class="pre">flag_neq_state</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-error-operator">
+<h3>operator(&lt;) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&lt;)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-lt-flag" title="state_lt_flag"><code class="docutils literal notranslate"><span class="pre">state_lt_flag</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-flag-lt-state" title="flag_lt_state"><code class="docutils literal notranslate"><span class="pre">flag_lt_state</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-error-operator">
+<h3>operator(&lt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&lt;=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-le-flag" title="state_le_flag"><code class="docutils literal notranslate"><span class="pre">state_le_flag</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-flag-le-state" title="flag_le_state"><code class="docutils literal notranslate"><span class="pre">flag_le_state</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-error-operator">
+<h3>operator(&gt;) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&gt;)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-gt-flag" title="state_gt_flag"><code class="docutils literal notranslate"><span class="pre">state_gt_flag</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-flag-gt-state" title="flag_gt_state"><code class="docutils literal notranslate"><span class="pre">flag_gt_state</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-error-operator">
+<h3>operator(&gt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&gt;=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-error-state-ge-flag" title="state_ge_flag"><code class="docutils literal notranslate"><span class="pre">state_ge_flag</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-error-flag-ge-state" title="flag_ge_state"><code class="docutils literal notranslate"><span class="pre">flag_ge_state</span></code></a></p></li>
 </ul>
 </dd>
 </dl>
@@ -488,16 +604,438 @@ procedure specifier that can be used to mark where the error happened</p>
 
 </section>
 <p class="section-subtitle">Procedures</p>
+<section id="f-function-stdlib-error-state-message">
+<h3>state_message (function)<a class="headerlink" href="#f-function-stdlib-error-state-message" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">state_message(this)</span> <span class="pre">-&gt;</span> <span class="pre">msg</span></code></dt>
+<dd><div class="docutils container">
+<p>Return a formatted message</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>msg</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-print">
+<h3>state_print (function)<a class="headerlink" href="#f-function-stdlib-error-state-print" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">state_print(this)</span> <span class="pre">-&gt;</span> <span class="pre">msg</span></code></dt>
+<dd><div class="docutils container">
+<p>Produce a nice error string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>msg</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-is-ok">
+<h3>state_is_ok (function)<a class="headerlink" href="#f-function-stdlib-error-state-is-ok" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_is_ok(this)</span> <span class="pre">-&gt;</span> <span class="pre">state_is_ok</span></code></dt>
+<dd><div class="docutils container">
+<p>Check if the current state is successful</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_is_ok</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-is-error">
+<h3>state_is_error (function)<a class="headerlink" href="#f-function-stdlib-error-state-is-error" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_is_error(this)</span> <span class="pre">-&gt;</span> <span class="pre">state_is_error</span></code></dt>
+<dd><div class="docutils container">
+<p>Check if the current state is an error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_is_error</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-eq-flag">
+<h3>state_eq_flag (function)<a class="headerlink" href="#f-function-stdlib-error-state-eq-flag" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_eq_flag(err,</span> <span class="pre">flag)</span> <span class="pre">-&gt;</span> <span class="pre">state_eq_flag</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an error state with an integer flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_eq_flag</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-flag-eq-state">
+<h3>flag_eq_state (function)<a class="headerlink" href="#f-function-stdlib-error-flag-eq-state" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">flag_eq_state(flag,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">flag_eq_state</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an integer flag with the error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_eq_state</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-neq-flag">
+<h3>state_neq_flag (function)<a class="headerlink" href="#f-function-stdlib-error-state-neq-flag" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_neq_flag(err,</span> <span class="pre">flag)</span> <span class="pre">-&gt;</span> <span class="pre">state_neq_flag</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare the error state with an integer flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_neq_flag</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-flag-neq-state">
+<h3>flag_neq_state (function)<a class="headerlink" href="#f-function-stdlib-error-flag-neq-state" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">flag_neq_state(flag,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">flag_neq_state</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an integer flag with the error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_neq_state</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-lt-flag">
+<h3>state_lt_flag (function)<a class="headerlink" href="#f-function-stdlib-error-state-lt-flag" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_lt_flag(err,</span> <span class="pre">flag)</span> <span class="pre">-&gt;</span> <span class="pre">state_lt_flag</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare the error state with an integer flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_lt_flag</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-le-flag">
+<h3>state_le_flag (function)<a class="headerlink" href="#f-function-stdlib-error-state-le-flag" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_le_flag(err,</span> <span class="pre">flag)</span> <span class="pre">-&gt;</span> <span class="pre">state_le_flag</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare the error state with an integer flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_le_flag</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-flag-lt-state">
+<h3>flag_lt_state (function)<a class="headerlink" href="#f-function-stdlib-error-flag-lt-state" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">flag_lt_state(flag,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">flag_lt_state</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an integer flag with the error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_lt_state</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-flag-le-state">
+<h3>flag_le_state (function)<a class="headerlink" href="#f-function-stdlib-error-flag-le-state" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">flag_le_state(flag,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">flag_le_state</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an integer flag with the error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_le_state</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-gt-flag">
+<h3>state_gt_flag (function)<a class="headerlink" href="#f-function-stdlib-error-state-gt-flag" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_gt_flag(err,</span> <span class="pre">flag)</span> <span class="pre">-&gt;</span> <span class="pre">state_gt_flag</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare the error state with an integer flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_gt_flag</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-state-ge-flag">
+<h3>state_ge_flag (function)<a class="headerlink" href="#f-function-stdlib-error-state-ge-flag" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">state_ge_flag(err,</span> <span class="pre">flag)</span> <span class="pre">-&gt;</span> <span class="pre">state_ge_flag</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare the error state with an integer flag</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>state_ge_flag</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-flag-gt-state">
+<h3>flag_gt_state (function)<a class="headerlink" href="#f-function-stdlib-error-flag-gt-state" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">flag_gt_state(flag,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">flag_gt_state</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an integer flag with the error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_gt_state</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-error-flag-ge-state">
+<h3>flag_ge_state (function)<a class="headerlink" href="#f-function-stdlib-error-flag-ge-state" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">flag_ge_state(flag,</span> <span class="pre">err)</span> <span class="pre">-&gt;</span> <span class="pre">flag_ge_state</span></code></dt>
+<dd><div class="docutils container">
+<p>Compare an integer flag with the error state</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>err</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>flag_ge_state</strong><span class="classifier">logical(kind=lk)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="f-subroutine-stdlib-error-check">
 <h3>check (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-error-check" title="Link to this heading">#</a></h3>
 <dl class="f subroutine">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">check(condition,</span> <span class="pre">msg,</span> <span class="pre">code,</span> <span class="pre">warn)</span></code></dt>
-<dd><dl class="field-list">
+<dd><div class="docutils container">
+<p>Checks the value of a logical condition
+(Specification: <a class="reference internal" href="../specs/stdlib_error.html"><span class="doc">stdlib_error</span></a>)</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>condition</strong><span class="classifier">logical, intent(in)</span></dt><dd><p>Checks the value of a logical condition
-([Specification](../page/specs/stdlib_error.html#description))</p>
+<dt><strong>condition</strong><span class="classifier">logical, intent(in)</span></dt><dd></dd>
+<dt><strong>msg</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>code</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>warn</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<div class="docutils container">
 <p class="rubric">Behavior</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">condition</span> <span class="pre">==</span> <span class="pre">.false.</span></code> and:</p>
 <ul class="simple">
@@ -526,40 +1064,194 @@ and prints <code class="docutils literal notranslate"><span class="pre">Check</s
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">call </span><span class="n">check</span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="o">=</span><span class="s1">'a == 5 failed.'</span><span class="p">,</span><span class="w"> </span><span class="n">code</span><span class="o">=</span><span class="mi">77</span><span class="p">)</span>
 </pre></div>
 </div>
-</dd>
-<dt><strong>msg</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
-<dt><strong>code</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
-<dt><strong>warn</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</div>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-error-state-destroy">
+<h3>state_destroy (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-error-state-destroy" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">subroutine</span> <span class="pre">state_destroy(this)</span></code></dt>
+<dd><div class="docutils container">
+<p>Cleanup the object</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">class(state_type), intent(inout)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
 </dd></dl>
 
 </section>
-<p class="section-subtitle">Interfaces</p>
-<section id="f-interface-stdlib-error-error-stop">
-<h3>error_stop (interface)<a class="headerlink" href="#f-interface-stdlib-error-error-stop" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-error-operator">
-<h3>operator(==) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>Comparison operators</p>
+<section id="f-subroutine-stdlib-error-error-handling">
+<h3>error_handling (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-error-error-handling" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">subroutine</span> <span class="pre">error_handling(ierr,</span> <span class="pre">ierr_out)</span></code></dt>
+<dd><div class="docutils container">
+<p>Flow control: on output flag present, return it; otherwise, halt on error</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ierr</strong><span class="classifier">class(state_type), intent(in)</span></dt><dd></dd>
+<dt><strong>ierr_out</strong><span class="classifier">class(state_type), intent(inout), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="f-interface-stdlib-error-operator">
-<h3>operator(/=) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<section id="f-subroutine-stdlib-error-state-update-location">
+<h3>state_update_location (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-error-state-update-location" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">subroutine</span> <span class="pre">state_update_location(this,</span> <span class="pre">where_at)</span></code></dt>
+<dd><div class="docutils container">
+<p>Update the location of the error message</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>this</strong><span class="classifier">class(state_type), intent(inout)</span></dt><dd></dd>
+<dt><strong>where_at</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="f-interface-stdlib-error-operator">
-<h3>operator(&lt;) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<section id="f-subroutine-stdlib-error-state-parse-at-location">
+<h3>state_parse_at_location (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-error-state-parse-at-location" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">subroutine</span> <span class="pre">state_parse_at_location(new_state,</span> <span class="pre">where_at,</span> <span class="pre">flag,</span> <span class="pre">a1,</span> <span class="pre">a2,</span> <span class="pre">a3,</span> <span class="pre">a4,</span> <span class="pre">a5,</span> <span class="pre">a6,</span> <span class="pre">a7,</span> <span class="pre">a8,</span> <span class="pre">a9,</span> <span class="pre">a10,</span> <span class="pre">a11,</span> <span class="pre">a12,</span> <span class="pre">a13,</span> <span class="pre">a14,</span> <span class="pre">a15,</span> <span class="pre">a16,</span> <span class="pre">a17,</span> <span class="pre">a18,</span> <span class="pre">a19,</span> <span class="pre">a20)</span></code></dt>
+<dd><div class="docutils container">
+<p>Parse a generic list of arguments provided to the error constructor</p>
+<p>Set error flag</p>
+<p>Set chain
+Add location</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>new_state</strong><span class="classifier">class(state_type), intent(inout)</span></dt><dd><p>The current state variable</p>
+</dd>
+<dt><strong>where_at</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Error Location</p>
+</dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Input error flag</p>
+</dd>
+<dt><strong>a1</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a2</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a3</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a4</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a5</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a6</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a7</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a8</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a9</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a10</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a11</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a12</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a13</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a14</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a15</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a16</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a17</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a18</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a19</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a20</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="f-interface-stdlib-error-operator">
-<h3>operator(&lt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-error-operator">
-<h3>operator(&gt;) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-error-operator">
-<h3>operator(&gt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-error-operator" title="Link to this heading">#</a></h3>
+<section id="f-subroutine-stdlib-error-state-parse-arguments">
+<h3>state_parse_arguments (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-error-state-parse-arguments" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">subroutine</span> <span class="pre">state_parse_arguments(new_state,</span> <span class="pre">flag,</span> <span class="pre">a1,</span> <span class="pre">a2,</span> <span class="pre">a3,</span> <span class="pre">a4,</span> <span class="pre">a5,</span> <span class="pre">a6,</span> <span class="pre">a7,</span> <span class="pre">a8,</span> <span class="pre">a9,</span> <span class="pre">a10,</span> <span class="pre">a11,</span> <span class="pre">a12,</span> <span class="pre">a13,</span> <span class="pre">a14,</span> <span class="pre">a15,</span> <span class="pre">a16,</span> <span class="pre">a17,</span> <span class="pre">a18,</span> <span class="pre">a19,</span> <span class="pre">a20)</span></code></dt>
+<dd><div class="docutils container">
+<p>Parse a generic list of arguments provided to the error constructor</p>
+<p>Set error flag</p>
+<p>Set chain</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>new_state</strong><span class="classifier">class(state_type), intent(inout)</span></dt><dd><p>The current state variable</p>
+</dd>
+<dt><strong>flag</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Input error flag</p>
+</dd>
+<dt><strong>a1</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a2</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a3</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a4</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a5</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a6</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a7</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a8</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a9</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a10</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a11</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a12</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a13</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a14</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a15</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a16</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a17</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a18</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a19</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+<dt><strong>a20</strong><span class="classifier">class(*), dimension(..), intent(in), optional</span></dt><dd><p>Optional rank-agnostic arguments</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -613,7 +1305,6 @@ and prints <code class="docutils literal notranslate"><span class="pre">Check</s
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#f-module-stdlib-error">stdlib_error (module)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-error-state-type">state_type (type)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-check">check (subroutine)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-error-error-stop">error_stop (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-error-operator">operator(==) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-error-operator">operator(/=) (interface)</a></li>
@@ -621,6 +1312,28 @@ and prints <code class="docutils literal notranslate"><span class="pre">Check</s
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-error-operator">operator(&lt;=) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-error-operator">operator(&gt;) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-error-operator">operator(&gt;=) (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-message">state_message (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-print">state_print (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-is-ok">state_is_ok (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-is-error">state_is_error (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-eq-flag">state_eq_flag (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-flag-eq-state">flag_eq_state (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-neq-flag">state_neq_flag (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-flag-neq-state">flag_neq_state (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-lt-flag">state_lt_flag (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-le-flag">state_le_flag (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-flag-lt-state">flag_lt_state (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-flag-le-state">flag_le_state (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-gt-flag">state_gt_flag (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-state-ge-flag">state_ge_flag (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-flag-gt-state">flag_gt_state (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-error-flag-ge-state">flag_ge_state (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-check">check (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-state-destroy">state_destroy (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-error-handling">error_handling (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-state-update-location">state_update_location (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-state-parse-at-location">state_parse_at_location (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-error-state-parse-arguments">state_parse_arguments (subroutine)</a></li>
 </ul>
 </li>
 </ul>
@@ -648,8 +1361,8 @@ and prints <code class="docutils literal notranslate"><span class="pre">Check</s
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -669,7 +1382,7 @@ and prints <code class="docutils literal notranslate"><span class="pre">Check</s
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -682,7 +1395,7 @@ and prints <code class="docutils literal notranslate"><span class="pre">Check</s
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

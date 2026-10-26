@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_random" href="stdlib_random.html" />
     <link rel="prev" title="stdlib_optval" href="stdlib_optval.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -430,26 +426,398 @@
 <section id="f-module-stdlib-quadrature">
 <h2>stdlib_quadrature (module)<a class="headerlink" href="#f-module-stdlib-quadrature" title="Link to this heading">#</a></h2>
 <div class="docutils container">
-<p>([Specification](../page/specs/stdlib_quadrature.html#description))</p>
+<p>(Specification: <a class="reference internal" href="../specs/stdlib_quadrature.html"><span class="doc">stdlib_quadrature</span></a>)</p>
 </div>
 <p class="section-subtitle">Interfaces</p>
 <section id="f-interface-stdlib-quadrature-trapz">
 <h3>trapz (interface)<a class="headerlink" href="#f-interface-stdlib-quadrature-trapz" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">trapz</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Integrates sampled values using trapezoidal rule
+(Specification: <a class="reference internal" href="../specs/stdlib_quadrature.html"><span class="doc">stdlib_quadrature</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-trapz-trapz-dx-sp" title="trapz_dx_sp"><code class="docutils literal notranslate"><span class="pre">trapz_dx_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-trapz-trapz-dx-dp" title="trapz_dx_dp"><code class="docutils literal notranslate"><span class="pre">trapz_dx_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-trapz-trapz-x-sp" title="trapz_x_sp"><code class="docutils literal notranslate"><span class="pre">trapz_x_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-trapz-trapz-x-dp" title="trapz_x_dp"><code class="docutils literal notranslate"><span class="pre">trapz_x_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-trapz-trapz-dx-sp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">trapz_dx_sp(y,</span> <span class="pre">dx)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-trapz-trapz-dx-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>dx</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-trapz-trapz-dx-dp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">trapz_dx_dp(y,</span> <span class="pre">dx)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-trapz-trapz-dx-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>dx</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-trapz-trapz-x-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">function</span> <span class="pre">trapz_x_sp(y,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-trapz-trapz-x-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-trapz-trapz-x-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">function</span> <span class="pre">trapz_x_dp(y,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-trapz-trapz-x-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-quadrature-trapz-weights">
 <h3>trapz_weights (interface)<a class="headerlink" href="#f-interface-stdlib-quadrature-trapz-weights" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">trapz_weights</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Integrates sampled values using trapezoidal rule weights for given abscissas
+(Specification: <a class="reference internal" href="../specs/stdlib_quadrature.html"><span class="doc">stdlib_quadrature</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-trapz-weights-trapz-weights-sp" title="trapz_weights_sp"><code class="docutils literal notranslate"><span class="pre">trapz_weights_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-trapz-weights-trapz-weights-dp" title="trapz_weights_dp"><code class="docutils literal notranslate"><span class="pre">trapz_weights_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-trapz-weights-trapz-weights-sp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">trapz_weights_sp(x)</span> <span class="pre">-&gt;</span> <span class="pre">w</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-trapz-weights-trapz-weights-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">real(kind=sp), dimension(size(x))</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-trapz-weights-trapz-weights-dp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">trapz_weights_dp(x)</span> <span class="pre">-&gt;</span> <span class="pre">w</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-trapz-weights-trapz-weights-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">real(kind=dp), dimension(size(x))</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-quadrature-simps">
 <h3>simps (interface)<a class="headerlink" href="#f-interface-stdlib-quadrature-simps" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">simps</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Integrates sampled values using Simpson’s rule
+(Specification: <a class="reference internal" href="../specs/stdlib_quadrature.html"><span class="doc">stdlib_quadrature</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-simps-simps-dx-sp" title="simps_dx_sp"><code class="docutils literal notranslate"><span class="pre">simps_dx_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-simps-simps-dx-dp" title="simps_dx_dp"><code class="docutils literal notranslate"><span class="pre">simps_dx_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-simps-simps-x-sp" title="simps_x_sp"><code class="docutils literal notranslate"><span class="pre">simps_x_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-simps-simps-x-dp" title="simps_x_dp"><code class="docutils literal notranslate"><span class="pre">simps_x_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-simps-simps-dx-sp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">recursive</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">simps_dx_sp(y,</span> <span class="pre">dx,</span> <span class="pre">even)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-simps-simps-dx-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>dx</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>even</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-simps-simps-dx-dp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">recursive</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">simps_dx_dp(y,</span> <span class="pre">dx,</span> <span class="pre">even)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-simps-simps-dx-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>dx</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>even</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-simps-simps-x-sp">
+<code class="docutils literal notranslate"><span class="pre">recursive</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">simps_x_sp(y,</span> <span class="pre">x,</span> <span class="pre">even)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-simps-simps-x-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>even</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-simps-simps-x-dp">
+<code class="docutils literal notranslate"><span class="pre">recursive</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">simps_x_dp(y,</span> <span class="pre">x,</span> <span class="pre">even)</span> <span class="pre">-&gt;</span> <span class="pre">integral</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-simps-simps-x-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>even</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integral</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-quadrature-simps-weights">
 <h3>simps_weights (interface)<a class="headerlink" href="#f-interface-stdlib-quadrature-simps-weights" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">simps_weights</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Integrates sampled values using trapezoidal rule weights for given abscissas
+(Specification: <a class="reference internal" href="../specs/stdlib_quadrature.html"><span class="doc">stdlib_quadrature</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-simps-weights-simps-weights-sp" title="simps_weights_sp"><code class="docutils literal notranslate"><span class="pre">simps_weights_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-quadrature-simps-weights-simps-weights-dp" title="simps_weights_dp"><code class="docutils literal notranslate"><span class="pre">simps_weights_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-simps-weights-simps-weights-sp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">recursive</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">simps_weights_sp(x,</span> <span class="pre">even)</span> <span class="pre">-&gt;</span> <span class="pre">w</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-simps-weights-simps-weights-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=sp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>even</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">real(kind=sp), dimension(size(x))</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-quadrature-simps-weights-simps-weights-dp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">recursive</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">simps_weights_dp(x,</span> <span class="pre">even)</span> <span class="pre">-&gt;</span> <span class="pre">w</span></code><a class="headerlink" href="#f-function-stdlib-quadrature-simps-weights-simps-weights-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=dp), dimension(:), intent(in)</span></dt><dd></dd>
+<dt><strong>even</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>w</strong><span class="classifier">real(kind=dp), dimension(size(x))</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-quadrature-gauss-legendre">
 <h3>gauss_legendre (interface)<a class="headerlink" href="#f-interface-stdlib-quadrature-gauss-legendre" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">gauss_legendre</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Computes Gauss-Legendre quadrature nodes and weights.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-quadrature-gauss-legendre-gauss-legendre-fp64" title="gauss_legendre_fp64"><code class="docutils literal notranslate"><span class="pre">gauss_legendre_fp64</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-quadrature-gauss-legendre-gauss-legendre-fp64">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">gauss_legendre_fp64(x,</span> <span class="pre">w,</span> <span class="pre">interval)</span></code><a class="headerlink" href="#f-subroutine-stdlib-quadrature-gauss-legendre-gauss-legendre-fp64" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(out), dimension(:)</span></dt><dd></dd>
+<dt><strong>w</strong><span class="classifier">real(kind=dp), intent(out), dimension(:)</span></dt><dd></dd>
+<dt><strong>interval</strong><span class="classifier">real(kind=dp), intent(in), optional, dimension(2)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-quadrature-gauss-legendre-lobatto">
 <h3>gauss_legendre_lobatto (interface)<a class="headerlink" href="#f-interface-stdlib-quadrature-gauss-legendre-lobatto" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">gauss_legendre_lobatto</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Computes Gauss-Legendre-Lobatto quadrature nodes and weights.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-quadrature-gauss-legendre-lobatto-gauss-legendre-lobatto-fp64" title="gauss_legendre_lobatto_fp64"><code class="docutils literal notranslate"><span class="pre">gauss_legendre_lobatto_fp64</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-quadrature-gauss-legendre-lobatto-gauss-legendre-lobatto-fp64">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">gauss_legendre_lobatto_fp64(x,</span> <span class="pre">w,</span> <span class="pre">interval)</span></code><a class="headerlink" href="#f-subroutine-stdlib-quadrature-gauss-legendre-lobatto-gauss-legendre-lobatto-fp64" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(out), dimension(:)</span></dt><dd></dd>
+<dt><strong>w</strong><span class="classifier">real(kind=dp), intent(out), dimension(:)</span></dt><dd></dd>
+<dt><strong>interval</strong><span class="classifier">real(kind=dp), intent(in), optional, dimension(2)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -535,8 +903,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -556,7 +924,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -569,7 +937,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

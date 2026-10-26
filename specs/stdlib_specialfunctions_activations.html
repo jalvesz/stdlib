@@ -26,21 +26,23 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'specs/stdlib_specialfunctions_activations';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../_static/favicon.ico"/>
@@ -49,6 +51,7 @@
     <link rel="next" title="stdlib_specialfunctions_gamma" href="stdlib_specialfunctions_gamma.html" />
     <link rel="prev" title="stdlib_specialfunctions_legendre" href="stdlib_specialfunctions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -424,7 +427,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="stdlib-specialfunctions">
+  <section class="tex2jax_ignore mathjax_ignore" id="stdlib-specialfunctions">
 <h1><code class="docutils literal notranslate"><span class="pre">stdlib_specialfunctions</span></code><a class="headerlink" href="#stdlib-specialfunctions" title="Link to this heading">#</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -719,7 +722,9 @@
 <section id="description">
 <h3><a class="toc-backref" href="#id168" role="doc-backlink">Description</a><a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
 <p>Computes the gaussian function:
-$$f(x)=\exp(-x^2)$$</p>
+<div class="math notranslate nohighlight">
+\[f(x)=\exp(-x^2)\]</div>
+</p>
 </section>
 <section id="syntax">
 <h3><a class="toc-backref" href="#id169" role="doc-backlink">Syntax</a><a class="headerlink" href="#syntax" title="Link to this heading">#</a></h3>
@@ -765,7 +770,9 @@ $$f(x)=\exp(-x^2)$$</p>
 <section id="id2">
 <h3><a class="toc-backref" href="#id176" role="doc-backlink">Description</a><a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the gaussian function:
-$$f(x)=-2 * x * \exp( - x ^ 2)$$</p>
+<div class="math notranslate nohighlight">
+\[f(x)=-2 * x * \exp( - x ^ 2)\]</div>
+</p>
 </section>
 <section id="id3">
 <h3><a class="toc-backref" href="#id177" role="doc-backlink">Syntax</a><a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
@@ -793,13 +800,15 @@ $$f(x)=-2 * x * \exp( - x ^ 2)$$</p>
 <section id="id8">
 <h3><a class="toc-backref" href="#id183" role="doc-backlink">Description</a><a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <p>Computes the gaussian function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 \text{f}(x) =
-\begin{cases}
-x, &amp; \text{if } x \geq 0 \
+\begin{cases} 
+x, &amp; \text{if } x \geq 0 \\
 a * (\exp(x) - 1), &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id9">
 <h3><a class="toc-backref" href="#id184" role="doc-backlink">Syntax</a><a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
@@ -846,13 +855,15 @@ $$</p>
 <section id="id15">
 <h3><a class="toc-backref" href="#id191" role="doc-backlink">Description</a><a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the gaussian function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 \text{f}(x) =
-\begin{cases}
-1, &amp; \text{if } x \geq 0 \
+\begin{cases} 
+1, &amp; \text{if } x \geq 0 \\
 a * \exp(x), &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id16">
 <h3><a class="toc-backref" href="#id192" role="doc-backlink">Syntax</a><a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
@@ -881,7 +892,9 @@ $$</p>
 <section id="id21">
 <h3><a class="toc-backref" href="#id198" role="doc-backlink">Description</a><a class="headerlink" href="#id21" title="Link to this heading">#</a></h3>
 <p>Computes the Rectified Linear Unit function:
-$$f(x) = \text{max}(0,x)$$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \text{max}(0,x)\]</div>
+</p>
 </section>
 <section id="id22">
 <h3><a class="toc-backref" href="#id199" role="doc-backlink">Syntax</a><a class="headerlink" href="#id22" title="Link to this heading">#</a></h3>
@@ -927,13 +940,15 @@ $$f(x) = \text{max}(0,x)$$</p>
 <section id="id28">
 <h3><a class="toc-backref" href="#id206" role="doc-backlink">Description</a><a class="headerlink" href="#id28" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the gaussian function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 f(x) =
-\begin{cases}
-1, &amp; \text{if } x \geq 0 \
+\begin{cases} 
+1, &amp; \text{if } x \geq 0 \\
 0, &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id29">
 <h3><a class="toc-backref" href="#id207" role="doc-backlink">Syntax</a><a class="headerlink" href="#id29" title="Link to this heading">#</a></h3>
@@ -961,13 +976,15 @@ $$</p>
 <section id="id34">
 <h3><a class="toc-backref" href="#id213" role="doc-backlink">Description</a><a class="headerlink" href="#id34" title="Link to this heading">#</a></h3>
 <p>Computes the gaussian function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 \text{f}(x) =
-\begin{cases}
-x, &amp; \text{if } x \geq 0 \
+\begin{cases} 
+x, &amp; \text{if } x \geq 0 \\
 a * x, &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id35">
 <h3><a class="toc-backref" href="#id214" role="doc-backlink">Syntax</a><a class="headerlink" href="#id35" title="Link to this heading">#</a></h3>
@@ -1014,13 +1031,15 @@ $$</p>
 <section id="id41">
 <h3><a class="toc-backref" href="#id221" role="doc-backlink">Description</a><a class="headerlink" href="#id41" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the leaky_relu function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 \text{f}(x) =
-\begin{cases}
-1, &amp; \text{if } x \geq 0 \
+\begin{cases} 
+1, &amp; \text{if } x \geq 0 \\
 a , &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id42">
 <h3><a class="toc-backref" href="#id222" role="doc-backlink">Syntax</a><a class="headerlink" href="#id42" title="Link to this heading">#</a></h3>
@@ -1049,7 +1068,9 @@ $$</p>
 <section id="id47">
 <h3><a class="toc-backref" href="#id228" role="doc-backlink">Description</a><a class="headerlink" href="#id47" title="Link to this heading">#</a></h3>
 <p>Computes the Gaussian Error Linear Unit function:
-$$f(x) = \frac{1}{2} x ( 1 + \text{erf}(\frac{x}{\sqrt{2}}) ) $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{1}{2} x ( 1 + \text{erf}(\frac{x}{\sqrt{2}}) ) \]</div>
+</p>
 </section>
 <section id="id48">
 <h3><a class="toc-backref" href="#id229" role="doc-backlink">Syntax</a><a class="headerlink" href="#id48" title="Link to this heading">#</a></h3>
@@ -1095,9 +1116,11 @@ $$f(x) = \frac{1}{2} x ( 1 + \text{erf}(\frac{x}{\sqrt{2}}) ) $$</p>
 <section id="id54">
 <h3><a class="toc-backref" href="#id236" role="doc-backlink">Description</a><a class="headerlink" href="#id54" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the gaussian error linear unit function:
-$$
+<div class="math notranslate nohighlight">
+\[
 f(x) = \frac{1}{2} ( 1 + \text{erf}(x \sqrt{2}) ) + x \sqrt{2} \exp( -\frac{1}{2} x^2)
-$$</p>
+\]</div>
+</p>
 </section>
 <section id="id55">
 <h3><a class="toc-backref" href="#id237" role="doc-backlink">Syntax</a><a class="headerlink" href="#id55" title="Link to this heading">#</a></h3>
@@ -1124,8 +1147,10 @@ $$</p>
 </section>
 <section id="id60">
 <h3><a class="toc-backref" href="#id243" role="doc-backlink">Description</a><a class="headerlink" href="#id60" title="Link to this heading">#</a></h3>
-<p>Computes a fast approximation of the Gaussian Error Linear Unit function using a fast $\text{erf}$ approximation:
-$$f(x) = \frac{1}{2} x ( 1 + \text{ferf}(\frac{x}{\sqrt{2}}) ) $$</p>
+<p>Computes a fast approximation of the Gaussian Error Linear Unit function using a fast <span class="math notranslate nohighlight">\(\text{erf}\)</span> approximation:
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{1}{2} x ( 1 + \text{ferf}(\frac{x}{\sqrt{2}}) ) \]</div>
+</p>
 </section>
 <section id="id61">
 <h3><a class="toc-backref" href="#id244" role="doc-backlink">Syntax</a><a class="headerlink" href="#id61" title="Link to this heading">#</a></h3>
@@ -1152,10 +1177,12 @@ $$f(x) = \frac{1}{2} x ( 1 + \text{ferf}(\frac{x}{\sqrt{2}}) ) $$</p>
 </section>
 <section id="id66">
 <h3><a class="toc-backref" href="#id250" role="doc-backlink">Description</a><a class="headerlink" href="#id66" title="Link to this heading">#</a></h3>
-<p>Computes the gradient of the gaussian error linear unit function using a fast $\text{erf}$ approximation:
-$$
+<p>Computes the gradient of the gaussian error linear unit function using a fast <span class="math notranslate nohighlight">\(\text{erf}\)</span> approximation:
+<div class="math notranslate nohighlight">
+\[
 f(x) = \frac{1}{2} ( 1 + \text{ferf}(x \sqrt{2}) ) + x \sqrt{2} \exp( -\frac{1}{2} x^2)
-$$</p>
+\]</div>
+</p>
 </section>
 <section id="id67">
 <h3><a class="toc-backref" href="#id251" role="doc-backlink">Syntax</a><a class="headerlink" href="#id67" title="Link to this heading">#</a></h3>
@@ -1183,15 +1210,21 @@ $$</p>
 <section id="id72">
 <h3><a class="toc-backref" href="#id257" role="doc-backlink">Description</a><a class="headerlink" href="#id72" title="Link to this heading">#</a></h3>
 <p>Applies the Scaled Exponential Linear Unit activation function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 f(x) =
-\begin{cases}
-scale * x, &amp; \text{if } x \ge 0 \
+\begin{cases} 
+scale * x, &amp; \text{if } x \ge 0 \\
 scale * (\alpha * exp(x) - \alpha ), &amp; \text{otherwise}
 \end{cases}
-$$
+\end{split}\]</div>
+
 Where,
-$$scale = 1.0507009873554804934193349852946$$ and $$\alpha = 1.6732632423543772848170429916717$$</p>
+<div class="math notranslate nohighlight">
+\[scale = 1.0507009873554804934193349852946\]</div>
+ and <div class="math notranslate nohighlight">
+\[\alpha = 1.6732632423543772848170429916717\]</div>
+</p>
 </section>
 <section id="id73">
 <h3><a class="toc-backref" href="#id258" role="doc-backlink">Syntax</a><a class="headerlink" href="#id73" title="Link to this heading">#</a></h3>
@@ -1237,13 +1270,15 @@ $$scale = 1.0507009873554804934193349852946$$ and $$\alpha = 1.67326324235437728
 <section id="id79">
 <h3><a class="toc-backref" href="#id265" role="doc-backlink">Description</a><a class="headerlink" href="#id79" title="Link to this heading">#</a></h3>
 <p>Applies the gradient of the Scaled Exponential Linear Unit activation function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 f(x) =
-\begin{cases}
-scale, &amp; \text{if } x \ge 0 \
+\begin{cases} 
+scale, &amp; \text{if } x \ge 0 \\
 scale * \alpha * exp(x) , &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id80">
 <h3><a class="toc-backref" href="#id266" role="doc-backlink">Syntax</a><a class="headerlink" href="#id80" title="Link to this heading">#</a></h3>
@@ -1271,7 +1306,9 @@ $$</p>
 <section id="id85">
 <h3><a class="toc-backref" href="#id272" role="doc-backlink">Description</a><a class="headerlink" href="#id85" title="Link to this heading">#</a></h3>
 <p>Computes the sigmoid function:
-$$f(x) = \frac{1}{1+\exp(-x)} $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{1}{1+\exp(-x)} \]</div>
+</p>
 </section>
 <section id="id86">
 <h3><a class="toc-backref" href="#id273" role="doc-backlink">Syntax</a><a class="headerlink" href="#id86" title="Link to this heading">#</a></h3>
@@ -1299,7 +1336,9 @@ $$f(x) = \frac{1}{1+\exp(-x)} $$</p>
 <section id="id91">
 <h3><a class="toc-backref" href="#id279" role="doc-backlink">Description</a><a class="headerlink" href="#id91" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the Sigmoid function:
-$$f(x) = \frac{\exp(x)}{(1+\exp(x))^2} $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{\exp(x)}{(1+\exp(x))^2} \]</div>
+</p>
 </section>
 <section id="id92">
 <h3><a class="toc-backref" href="#id280" role="doc-backlink">Syntax</a><a class="headerlink" href="#id92" title="Link to this heading">#</a></h3>
@@ -1327,7 +1366,9 @@ $$f(x) = \frac{\exp(x)}{(1+\exp(x))^2} $$</p>
 <section id="id97">
 <h3><a class="toc-backref" href="#id286" role="doc-backlink">Description</a><a class="headerlink" href="#id97" title="Link to this heading">#</a></h3>
 <p>Computes the Sigmoid Linear Unit function:
-$$f(x) = \frac{x}{1+\exp(-x)} $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{x}{1+\exp(-x)} \]</div>
+</p>
 </section>
 <section id="id98">
 <h3><a class="toc-backref" href="#id287" role="doc-backlink">Syntax</a><a class="headerlink" href="#id98" title="Link to this heading">#</a></h3>
@@ -1373,7 +1414,9 @@ $$f(x) = \frac{x}{1+\exp(-x)} $$</p>
 <section id="id104">
 <h3><a class="toc-backref" href="#id294" role="doc-backlink">Description</a><a class="headerlink" href="#id104" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the Sigmoid function:
-$$f(x) = \frac{\exp(x)*(x+(1+\exp(x))^2)}{(1+\exp(x))^2} $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{\exp(x)*(x+(1+\exp(x))^2)}{(1+\exp(x))^2} \]</div>
+</p>
 </section>
 <section id="id105">
 <h3><a class="toc-backref" href="#id295" role="doc-backlink">Syntax</a><a class="headerlink" href="#id105" title="Link to this heading">#</a></h3>
@@ -1401,13 +1444,15 @@ $$f(x) = \frac{\exp(x)*(x+(1+\exp(x))^2)}{(1+\exp(x))^2} $$</p>
 <section id="id110">
 <h3><a class="toc-backref" href="#id301" role="doc-backlink">Description</a><a class="headerlink" href="#id110" title="Link to this heading">#</a></h3>
 <p>Computes the step function:
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
 f(x) =
-\begin{cases}
-1, &amp; \text{if } x &gt; 0 \
+\begin{cases} 
+1, &amp; \text{if } x &gt; 0 \\
 0, &amp; \text{otherwise}
 \end{cases}
-$$</p>
+\end{split}\]</div>
+</p>
 </section>
 <section id="id111">
 <h3><a class="toc-backref" href="#id302" role="doc-backlink">Syntax</a><a class="headerlink" href="#id111" title="Link to this heading">#</a></h3>
@@ -1453,7 +1498,9 @@ $$</p>
 <section id="id117">
 <h3><a class="toc-backref" href="#id309" role="doc-backlink">Description</a><a class="headerlink" href="#id117" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the Sigmoid function:
-$$f(x) = 0 $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = 0 \]</div>
+</p>
 </section>
 <section id="id118">
 <h3><a class="toc-backref" href="#id310" role="doc-backlink">Syntax</a><a class="headerlink" href="#id118" title="Link to this heading">#</a></h3>
@@ -1481,7 +1528,9 @@ $$f(x) = 0 $$</p>
 <section id="id123">
 <h3><a class="toc-backref" href="#id316" role="doc-backlink">Description</a><a class="headerlink" href="#id123" title="Link to this heading">#</a></h3>
 <p>Computes the softmax function:
-$$f(x) = \frac{\exp(x)-\text{max}(x_j)}{\sum_j{\exp(x)-\text{max}(x_j)}}$$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{\exp(x)-\text{max}(x_j)}{\sum_j{\exp(x)-\text{max}(x_j)}}\]</div>
+</p>
 </section>
 <section id="id124">
 <h3><a class="toc-backref" href="#id317" role="doc-backlink">Syntax</a><a class="headerlink" href="#id124" title="Link to this heading">#</a></h3>
@@ -1528,7 +1577,9 @@ $$f(x) = \frac{\exp(x)-\text{max}(x_j)}{\sum_j{\exp(x)-\text{max}(x_j)}}$$</p>
 <section id="id130">
 <h3><a class="toc-backref" href="#id324" role="doc-backlink">Description</a><a class="headerlink" href="#id130" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the softmax function:
-$$f(x,dim) = \text{softmax}(x,dim)*(1-\text{softmax}(x,dim)) $$</p>
+<div class="math notranslate nohighlight">
+\[f(x,dim) = \text{softmax}(x,dim)*(1-\text{softmax}(x,dim)) \]</div>
+</p>
 </section>
 <section id="id131">
 <h3><a class="toc-backref" href="#id325" role="doc-backlink">Syntax</a><a class="headerlink" href="#id131" title="Link to this heading">#</a></h3>
@@ -1557,7 +1608,9 @@ $$f(x,dim) = \text{softmax}(x,dim)*(1-\text{softmax}(x,dim)) $$</p>
 <section id="id136">
 <h3><a class="toc-backref" href="#id331" role="doc-backlink">Description</a><a class="headerlink" href="#id136" title="Link to this heading">#</a></h3>
 <p>Computes the softplus function:
-$$f(x) = \log(\exp(x)+1)$$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \log(\exp(x)+1)\]</div>
+</p>
 </section>
 <section id="id137">
 <h3><a class="toc-backref" href="#id332" role="doc-backlink">Syntax</a><a class="headerlink" href="#id137" title="Link to this heading">#</a></h3>
@@ -1603,7 +1656,9 @@ $$f(x) = \log(\exp(x)+1)$$</p>
 <section id="id143">
 <h3><a class="toc-backref" href="#id339" role="doc-backlink">Description</a><a class="headerlink" href="#id143" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the softplus function:
-$$f(x) = \frac{\exp(x)}{\exp(x)+1} $$</p>
+<div class="math notranslate nohighlight">
+\[f(x) = \frac{\exp(x)}{\exp(x)+1} \]</div>
+</p>
 </section>
 <section id="id144">
 <h3><a class="toc-backref" href="#id340" role="doc-backlink">Syntax</a><a class="headerlink" href="#id144" title="Link to this heading">#</a></h3>
@@ -1631,7 +1686,9 @@ $$f(x) = \frac{\exp(x)}{\exp(x)+1} $$</p>
 <section id="id149">
 <h3><a class="toc-backref" href="#id346" role="doc-backlink">Description</a><a class="headerlink" href="#id149" title="Link to this heading">#</a></h3>
 <p>Computes an approximated but faster solution to:
-$$f(x)=\tanh(x)$$</p>
+<div class="math notranslate nohighlight">
+\[f(x)=\tanh(x)\]</div>
+</p>
 </section>
 <section id="id150">
 <h3><a class="toc-backref" href="#id347" role="doc-backlink">Syntax</a><a class="headerlink" href="#id150" title="Link to this heading">#</a></h3>
@@ -1659,7 +1716,9 @@ $$f(x)=\tanh(x)$$</p>
 <section id="id155">
 <h3><a class="toc-backref" href="#id353" role="doc-backlink">Description</a><a class="headerlink" href="#id155" title="Link to this heading">#</a></h3>
 <p>Computes the gradient of the <code class="docutils literal notranslate"><span class="pre">fast_tanh</span></code> function:
-$$f(x)=1 - \fast_tanh(x)^2$$</p>
+<div class="math notranslate nohighlight">
+\[f(x)=1 - \text{fast\_tanh}(x)^2\]</div>
+</p>
 </section>
 <section id="id156">
 <h3><a class="toc-backref" href="#id354" role="doc-backlink">Syntax</a><a class="headerlink" href="#id156" title="Link to this heading">#</a></h3>
@@ -1687,7 +1746,9 @@ $$f(x)=1 - \fast_tanh(x)^2$$</p>
 <section id="id161">
 <h3><a class="toc-backref" href="#id360" role="doc-backlink">Description</a><a class="headerlink" href="#id161" title="Link to this heading">#</a></h3>
 <p>Computes an approximated but faster solution to:
-$$f(x)=\erf(x)$$</p>
+<div class="math notranslate nohighlight">
+\[f(x)=\text{erf}(x)\]</div>
+</p>
 </section>
 <section id="id162">
 <h3><a class="toc-backref" href="#id361" role="doc-backlink">Syntax</a><a class="headerlink" href="#id162" title="Link to this heading">#</a></h3>
@@ -2033,8 +2094,8 @@ $$f(x)=\erf(x)$$</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -2054,7 +2115,7 @@ $$f(x)=\erf(x)$$</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -2067,7 +2128,7 @@ $$f(x)=\erf(x)$$</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

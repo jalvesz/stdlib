@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_kinds" href="stdlib_kinds.html" />
     <link rel="prev" title="stdlib_intrinsics" href="stdlib_intrinsics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -431,19 +427,145 @@
 <h2>stdlib_io (module)<a class="headerlink" href="#f-module-stdlib-io" title="Link to this heading">#</a></h2>
 <div class="docutils container">
 <p>Provides a support for file handling
-([Specification](../page/specs/stdlib_io.html))</p>
+(Specification: <a class="reference internal" href="../specs/stdlib_io.html"><span class="doc">stdlib_io</span></a>)</p>
+<p>version: experimental</p>
+<p>Reads a whole ASCII file and loads its contents into a string variable. 
+(Specification: <a class="reference internal" href="../specs/stdlib_io.html"><span class="doc">stdlib_io</span></a>)</p>
+<p class="rubric">Summary</p>
+<p>Subroutine interface for reading the content of a file into a string.</p>
+<p class="rubric">Description</p>
+<p>This subroutine reads the entirety of a specified ASCII file and returns it as a string. The optional 
+<cite>err</cite> argument allows for handling errors through the library’s <cite>state_type</cite> class. 
+An optional <cite>logical</cite> flag can be passed to delete the file after reading.</p>
+<p class="rubric">Notes</p>
+<p>Handles errors using the library’s <cite>state_type</cite> error-handling class. If not provided, 
+exceptions will trigger an <cite>error stop</cite>.</p>
 </div>
+<p class="section-subtitle">Interfaces</p>
+<section id="f-interface-stdlib-io-get-file">
+<h3>get_file (interface)<a class="headerlink" href="#f-interface-stdlib-io-get-file" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">get_file</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-get-file-char" title="get_file_char"><code class="docutils literal notranslate"><span class="pre">get_file_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-get-file-string" title="get_file_string"><code class="docutils literal notranslate"><span class="pre">get_file_string</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-io-get-line">
+<h3>get_line (interface)<a class="headerlink" href="#f-interface-stdlib-io-get-line" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">get_line</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Read a whole line from a formatted unit into a string variable</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-get-line-char" title="get_line_char"><code class="docutils literal notranslate"><span class="pre">get_line_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-get-line-string" title="get_line_string"><code class="docutils literal notranslate"><span class="pre">get_line_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-get-line-input-char" title="get_line_input_char"><code class="docutils literal notranslate"><span class="pre">get_line_input_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-get-line-input-string" title="get_line_input_string"><code class="docutils literal notranslate"><span class="pre">get_line_input_string</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-io-loadtxt">
+<h3>loadtxt (interface)<a class="headerlink" href="#f-interface-stdlib-io-loadtxt" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">loadtxt</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file
+(Specification: <a class="reference internal" href="../specs/stdlib_io.html"><span class="doc">stdlib_io</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-rsp" title="loadtxt_rsp"><code class="docutils literal notranslate"><span class="pre">loadtxt_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-rdp" title="loadtxt_rdp"><code class="docutils literal notranslate"><span class="pre">loadtxt_rdp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-iint8" title="loadtxt_iint8"><code class="docutils literal notranslate"><span class="pre">loadtxt_iint8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-iint16" title="loadtxt_iint16"><code class="docutils literal notranslate"><span class="pre">loadtxt_iint16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-iint32" title="loadtxt_iint32"><code class="docutils literal notranslate"><span class="pre">loadtxt_iint32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-iint64" title="loadtxt_iint64"><code class="docutils literal notranslate"><span class="pre">loadtxt_iint64</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-csp" title="loadtxt_csp"><code class="docutils literal notranslate"><span class="pre">loadtxt_csp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-loadtxt-cdp" title="loadtxt_cdp"><code class="docutils literal notranslate"><span class="pre">loadtxt_cdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-io-savetxt">
+<h3>savetxt (interface)<a class="headerlink" href="#f-interface-stdlib-io-savetxt" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">savetxt</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file
+(Specification: <a class="reference internal" href="../specs/stdlib_io.html"><span class="doc">stdlib_io</span></a>)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-rspf" title="savetxt_rspf"><code class="docutils literal notranslate"><span class="pre">savetxt_rspf</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-rdpf" title="savetxt_rdpf"><code class="docutils literal notranslate"><span class="pre">savetxt_rdpf</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint8f" title="savetxt_iint8f"><code class="docutils literal notranslate"><span class="pre">savetxt_iint8f</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint16f" title="savetxt_iint16f"><code class="docutils literal notranslate"><span class="pre">savetxt_iint16f</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint32f" title="savetxt_iint32f"><code class="docutils literal notranslate"><span class="pre">savetxt_iint32f</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint64f" title="savetxt_iint64f"><code class="docutils literal notranslate"><span class="pre">savetxt_iint64f</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-cspf" title="savetxt_cspf"><code class="docutils literal notranslate"><span class="pre">savetxt_cspf</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-cdpf" title="savetxt_cdpf"><code class="docutils literal notranslate"><span class="pre">savetxt_cdpf</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-rspu" title="savetxt_rspu"><code class="docutils literal notranslate"><span class="pre">savetxt_rspu</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-rdpu" title="savetxt_rdpu"><code class="docutils literal notranslate"><span class="pre">savetxt_rdpu</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint8u" title="savetxt_iint8u"><code class="docutils literal notranslate"><span class="pre">savetxt_iint8u</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint16u" title="savetxt_iint16u"><code class="docutils literal notranslate"><span class="pre">savetxt_iint16u</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint32u" title="savetxt_iint32u"><code class="docutils literal notranslate"><span class="pre">savetxt_iint32u</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-iint64u" title="savetxt_iint64u"><code class="docutils literal notranslate"><span class="pre">savetxt_iint64u</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-cspu" title="savetxt_cspu"><code class="docutils literal notranslate"><span class="pre">savetxt_cspu</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-io-savetxt-cdpu" title="savetxt_cdpu"><code class="docutils literal notranslate"><span class="pre">savetxt_cdpu</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <p class="section-subtitle">Procedures</p>
 <section id="f-function-stdlib-io-open">
 <h3>open (function)<a class="headerlink" href="#f-function-stdlib-io-open" title="Link to this heading">#</a></h3>
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">open(filename,</span> <span class="pre">mode,</span> <span class="pre">iostat)</span> <span class="pre">-&gt;</span> <span class="pre">u</span></code></dt>
-<dd><dl class="field-list">
+<dd><div class="docutils container">
+<p>Opens a file
+(Specification: <a class="reference internal" href="../specs/stdlib_io.html"><span class="doc">stdlib_io</span></a>)</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Opens a file
-([Specification](../page/specs/stdlib_io.html#description_1))</p>
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>mode</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>iostat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>u</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<div class="docutils container">
 <p class="rubric">Behavior</p>
 <p>To open a file to read:</p>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">open</span><span class="p">(</span><span class="s2">"somefile.txt"</span><span class="p">)</span><span class="w">        </span><span class="c">! The default `mode` is "rt"</span>
@@ -458,19 +580,7 @@
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">open</span><span class="p">(</span><span class="s2">"somefile.txt"</span><span class="p">,</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span>
 </pre></div>
 </div>
-</dd>
-<dt><strong>mode</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
-<dt><strong>iostat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>u</strong><span class="classifier">integer</span></dt><dd></dd>
-</dl>
-</dd>
-</dl>
+</div>
 </dd></dl>
 
 </section>
@@ -496,34 +606,964 @@
 </dd></dl>
 
 </section>
-<p class="section-subtitle">Interfaces</p>
-<section id="f-interface-stdlib-io-get-file">
-<h3>get_file (interface)<a class="headerlink" href="#f-interface-stdlib-io-get-file" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>Reads a whole ASCII file and loads its contents into a string variable. 
-([Specification](../page/specs/stdlib_io.html#get-file-read-a-whole-ascii-file-into-a-character-or-a-string-variable))</p>
-<p class="rubric">Summary</p>
-<p>Subroutine interface for reading the content of a file into a string.</p>
-<p class="rubric">Description</p>
-<p>This subroutine reads the entirety of a specified ASCII file and returns it as a string. The optional 
-<cite>err</cite> argument allows for handling errors through the library’s <cite>state_type</cite> class. 
-An optional <cite>logical</cite> flag can be passed to delete the file after reading.</p>
-<p class="rubric">Notes</p>
-<p>Handles errors using the library’s <cite>state_type</cite> error-handling class. If not provided, 
-exceptions will trigger an <cite>error stop</cite>.</p>
+<section id="f-subroutine-stdlib-io-loadtxt-rsp">
+<h3>loadtxt_rsp (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-rsp" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_rsp(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="arguments">
+<h4>Arguments<a class="headerlink" href="#arguments" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">real(kind=sp), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-rdp">
+<h3>loadtxt_rdp (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-rdp" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_rdp(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id1">
+<h4>Arguments<a class="headerlink" href="#id1" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">real(kind=dp), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-iint8">
+<h3>loadtxt_iint8 (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-iint8" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_iint8(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id2">
+<h4>Arguments<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int8), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-iint16">
+<h3>loadtxt_iint16 (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-iint16" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_iint16(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id3">
+<h4>Arguments<a class="headerlink" href="#id3" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int16), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-iint32">
+<h3>loadtxt_iint32 (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-iint32" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_iint32(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id4">
+<h4>Arguments<a class="headerlink" href="#id4" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int32), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-iint64">
+<h3>loadtxt_iint64 (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-iint64" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_iint64(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id5">
+<h4>Arguments<a class="headerlink" href="#id5" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int64), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-csp">
+<h3>loadtxt_csp (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-csp" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_csp(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id6">
+<h4>Arguments<a class="headerlink" href="#id6" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">complex(kind=sp), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-loadtxt-cdp">
+<h3>loadtxt_cdp (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-loadtxt-cdp" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">loadtxt_cdp(filename,</span> <span class="pre">d,</span> <span class="pre">skiprows,</span> <span class="pre">max_rows,</span> <span class="pre">fmt,</span> <span class="pre">delimiter)</span></code></dt>
+<dd><div class="docutils container">
+<p>Loads a 2D array from a text file.</p>
+<section id="id7">
+<h4>Arguments<a class="headerlink" href="#id7" title="Link to this heading">#</a></h4>
+<p>Filename to load the array from</p>
+</section>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>The array ‘d’ will be automatically allocated with the correct dimensions</p>
+</dd>
+<dt><strong>d</strong><span class="classifier">complex(kind=dp), allocatable, (:, :), intent(out), dimension(:,:)</span></dt><dd><p>Skip the first <cite>skiprows</cite> lines. If skipping more rows than present, a 0-sized array will be returned. The default is 0.</p>
+</dd>
+<dt><strong>skiprows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Read <cite>max_rows</cite> lines of content after <cite>skiprows</cite> lines.
+A negative value results in reading all lines.
+A value of zero results in no lines to be read.
+The default value is -1.</p>
+</dd>
+<dt><strong>max_rows</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=1), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-rspf">
+<h3>savetxt_rspf (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-rspf" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_rspf(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id8">
+<h4>Arguments<a class="headerlink" href="#id8" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">real(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="example">
+<h4>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">real</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
 </div>
 </section>
-<section id="f-interface-stdlib-io-get-line">
-<h3>get_line (interface)<a class="headerlink" href="#f-interface-stdlib-io-get-line" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-rdpf">
+<h3>savetxt_rdpf (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-rdpf" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_rdpf(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id9">
+<h4>Arguments<a class="headerlink" href="#id9" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">real(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id10">
+<h4>Example<a class="headerlink" href="#id10" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">real</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint8f">
+<h3>savetxt_iint8f (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint8f" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint8f(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id11">
+<h4>Arguments<a class="headerlink" href="#id11" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int8), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id12">
+<h4>Example<a class="headerlink" href="#id12" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int8</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint16f">
+<h3>savetxt_iint16f (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint16f" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint16f(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id13">
+<h4>Arguments<a class="headerlink" href="#id13" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int16), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id14">
+<h4>Example<a class="headerlink" href="#id14" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int16</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint32f">
+<h3>savetxt_iint32f (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint32f" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint32f(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id15">
+<h4>Arguments<a class="headerlink" href="#id15" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int32), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id16">
+<h4>Example<a class="headerlink" href="#id16" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int32</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint64f">
+<h3>savetxt_iint64f (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint64f" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint64f(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id17">
+<h4>Arguments<a class="headerlink" href="#id17" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int64), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id18">
+<h4>Example<a class="headerlink" href="#id18" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-cspf">
+<h3>savetxt_cspf (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-cspf" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_cspf(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id19">
+<h4>Arguments<a class="headerlink" href="#id19" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">complex(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id20">
+<h4>Example<a class="headerlink" href="#id20" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">complex</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-cdpf">
+<h3>savetxt_cdpf (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-cdpf" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_cdpf(filename,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id21">
+<h4>Arguments<a class="headerlink" href="#id21" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">complex(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id22">
+<h4>Example<a class="headerlink" href="#id22" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">complex</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-rspu">
+<h3>savetxt_rspu (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-rspu" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_rspu(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id23">
+<h4>Arguments<a class="headerlink" href="#id23" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">real(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id24">
+<h4>Example<a class="headerlink" href="#id24" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">real</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-rdpu">
+<h3>savetxt_rdpu (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-rdpu" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_rdpu(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id25">
+<h4>Arguments<a class="headerlink" href="#id25" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">real(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id26">
+<h4>Example<a class="headerlink" href="#id26" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">real</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint8u">
+<h3>savetxt_iint8u (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint8u" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint8u(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id27">
+<h4>Arguments<a class="headerlink" href="#id27" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int8), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id28">
+<h4>Example<a class="headerlink" href="#id28" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int8</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint16u">
+<h3>savetxt_iint16u (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint16u" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint16u(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id29">
+<h4>Arguments<a class="headerlink" href="#id29" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int16), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id30">
+<h4>Example<a class="headerlink" href="#id30" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int16</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint32u">
+<h3>savetxt_iint32u (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint32u" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint32u(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id31">
+<h4>Arguments<a class="headerlink" href="#id31" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int32), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id32">
+<h4>Example<a class="headerlink" href="#id32" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int32</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-iint64u">
+<h3>savetxt_iint64u (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-iint64u" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_iint64u(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id33">
+<h4>Arguments<a class="headerlink" href="#id33" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">integer(kind=int64), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id34">
+<h4>Example<a class="headerlink" href="#id34" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">integer</span><span class="p">(</span><span class="n">int64</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-cspu">
+<h3>savetxt_cspu (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-cspu" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_cspu(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id35">
+<h4>Arguments<a class="headerlink" href="#id35" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">complex(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id36">
+<h4>Example<a class="headerlink" href="#id36" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">complex</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-savetxt-cdpu">
+<h3>savetxt_cdpu (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-savetxt-cdpu" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">savetxt_cdpu(unit,</span> <span class="pre">d,</span> <span class="pre">delimiter,</span> <span class="pre">fmt,</span> <span class="pre">header,</span> <span class="pre">footer,</span> <span class="pre">comments)</span></code></dt>
+<dd><div class="docutils container">
+<p>Saves a 2D array into a text file.</p>
+<section id="id37">
+<h4>Arguments<a class="headerlink" href="#id37" title="Link to this heading">#</a></h4>
+</section>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>d</strong><span class="classifier">complex(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>delimiter</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>fmt</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>header</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>footer</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+<dt><strong>comments</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd><section id="id38">
+<h4>Example<a class="headerlink" href="#id38" title="Link to this heading">#</a></h4>
+<div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="kt">complex</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s2">"log.txt"</span><span class="p">,</span><span class="w"> </span><span class="k">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-get-line-char">
+<h3>get_line_char (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-get-line-char" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_line_char(unit,</span> <span class="pre">line,</span> <span class="pre">iostat,</span> <span class="pre">iomsg)</span></code></dt>
+<dd><div class="docutils container">
+<p>Read a whole line from a formatted unit into a deferred length character variable</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Formatted IO unit</p>
+</dd>
+<dt><strong>line</strong><span class="classifier">character(len=:), allocatable, intent(out)</span></dt><dd><p>Line to read</p>
+</dd>
+<dt><strong>iostat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd><p>Status of operation</p>
+</dd>
+<dt><strong>iomsg</strong><span class="classifier">character(len=:), allocatable, optional</span></dt><dd><p>Error message</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-get-line-string">
+<h3>get_line_string (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-get-line-string" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_line_string(unit,</span> <span class="pre">line,</span> <span class="pre">iostat,</span> <span class="pre">iomsg)</span></code></dt>
+<dd><div class="docutils container">
 <p>Read a whole line from a formatted unit into a string variable</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>unit</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Formatted IO unit</p>
+</dd>
+<dt><strong>line</strong><span class="classifier">type(string_type), intent(out)</span></dt><dd><p>Line to read</p>
+</dd>
+<dt><strong>iostat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd><p>Status of operation</p>
+</dd>
+<dt><strong>iomsg</strong><span class="classifier">character(len=:), allocatable, optional</span></dt><dd><p>Error message</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="f-interface-stdlib-io-loadtxt">
-<h3>loadtxt (interface)<a class="headerlink" href="#f-interface-stdlib-io-loadtxt" title="Link to this heading">#</a></h3>
+<section id="f-subroutine-stdlib-io-get-line-input-char">
+<h3>get_line_input_char (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-get-line-input-char" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_line_input_char(line,</span> <span class="pre">iostat,</span> <span class="pre">iomsg)</span></code></dt>
+<dd><div class="docutils container">
+<p>Read a whole line from the standard input into a deferred length character variable</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>line</strong><span class="classifier">character(len=:), allocatable, intent(out)</span></dt><dd><p>Line to read</p>
+</dd>
+<dt><strong>iostat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd><p>Status of operation</p>
+</dd>
+<dt><strong>iomsg</strong><span class="classifier">character(len=:), allocatable, optional</span></dt><dd><p>Error message</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="f-interface-stdlib-io-savetxt">
-<h3>savetxt (interface)<a class="headerlink" href="#f-interface-stdlib-io-savetxt" title="Link to this heading">#</a></h3>
+<section id="f-subroutine-stdlib-io-get-line-input-string">
+<h3>get_line_input_string (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-get-line-input-string" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_line_input_string(line,</span> <span class="pre">iostat,</span> <span class="pre">iomsg)</span></code></dt>
+<dd><div class="docutils container">
+<p>Read a whole line from the standard input into a string variable</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>line</strong><span class="classifier">type(string_type), intent(out)</span></dt><dd><p>Line to read</p>
+</dd>
+<dt><strong>iostat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd><p>Status of operation</p>
+</dd>
+<dt><strong>iomsg</strong><span class="classifier">character(len=:), allocatable, optional</span></dt><dd><p>Error message</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-get-file-string">
+<h3>get_file_string (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-get-file-string" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_file_string(filename,</span> <span class="pre">file,</span> <span class="pre">err,</span> <span class="pre">delete)</span></code></dt>
+<dd><div class="docutils container">
+<p>Reads a whole ASCII file and loads its contents into a string variable.
+The function handles error states and optionally deletes the file after reading.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Input file name</p>
+</dd>
+<dt><strong>file</strong><span class="classifier">type(string_type), intent(out)</span></dt><dd><p>Output string variable</p>
+</dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd><p>[optional] State return flag. On error, if not requested, the code will stop.</p>
+</dd>
+<dt><strong>delete</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>[optional] Delete file after reading? Default: do not delete</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-subroutine-stdlib-io-get-file-char">
+<h3>get_file_char (subroutine)<a class="headerlink" href="#f-subroutine-stdlib-io-get-file-char" title="Link to this heading">#</a></h3>
+<dl class="f subroutine">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">subroutine</span> <span class="pre">get_file_char(filename,</span> <span class="pre">file,</span> <span class="pre">err,</span> <span class="pre">delete)</span></code></dt>
+<dd><div class="docutils container">
+<p>Reads a whole ASCII file and loads its contents into an allocatable <cite>character</cite> variable.
+The function handles error states and optionally deletes the file after reading.
+Check if the file should be deleted after reading
+Check file existing
+Retrieve file size</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Input file name</p>
+</dd>
+<dt><strong>file</strong><span class="classifier">character(len=:), allocatable, intent(out)</span></dt><dd><p>Output string variable</p>
+</dd>
+<dt><strong>err</strong><span class="classifier">type(state_type), intent(out), optional</span></dt><dd><p>[optional] State return flag. On error, if not requested, the code will stop.</p>
+</dd>
+<dt><strong>delete</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>[optional] Delete file after reading? Default: do not delete</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -576,12 +1616,42 @@ exceptions will trigger an <cite>error stop</cite>.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#f-module-stdlib-io">stdlib_io (module)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-io-open">open (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-io-parse-mode">parse_mode (function)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-io-get-file">get_file (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-io-get-line">get_line (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-io-loadtxt">loadtxt (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-io-savetxt">savetxt (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-io-open">open (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-io-parse-mode">parse_mode (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-rsp">loadtxt_rsp (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-rdp">loadtxt_rdp (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-iint8">loadtxt_iint8 (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-iint16">loadtxt_iint16 (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-iint32">loadtxt_iint32 (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-iint64">loadtxt_iint64 (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-csp">loadtxt_csp (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-loadtxt-cdp">loadtxt_cdp (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-rspf">savetxt_rspf (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-rdpf">savetxt_rdpf (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint8f">savetxt_iint8f (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint16f">savetxt_iint16f (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint32f">savetxt_iint32f (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint64f">savetxt_iint64f (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-cspf">savetxt_cspf (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-cdpf">savetxt_cdpf (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-rspu">savetxt_rspu (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-rdpu">savetxt_rdpu (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint8u">savetxt_iint8u (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint16u">savetxt_iint16u (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint32u">savetxt_iint32u (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-iint64u">savetxt_iint64u (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-cspu">savetxt_cspu (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-savetxt-cdpu">savetxt_cdpu (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-get-line-char">get_line_char (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-get-line-string">get_line_string (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-get-line-input-char">get_line_input_char (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-get-line-input-string">get_line_input_string (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-get-file-string">get_file_string (subroutine)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-subroutine-stdlib-io-get-file-char">get_file_char (subroutine)</a></li>
 </ul>
 </li>
 </ul>
@@ -609,8 +1679,8 @@ exceptions will trigger an <cite>error stop</cite>.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -630,7 +1700,7 @@ exceptions will trigger an <cite>error stop</cite>.</p>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -643,7 +1713,7 @@ exceptions will trigger an <cite>error stop</cite>.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

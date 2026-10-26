@@ -16,7 +16,7 @@ Loads a rank-2 `array` from a text file.
 
 ### Syntax
 
-`call ` `loadtxt` `(filename, array [, skiprows] [, max_rows] [, fmt] [, delimiter])`
+`call ` {f:subr}`loadtxt` `(filename, array [, skiprows] [, max_rows] [, fmt] [, delimiter])`
 
 ### Arguments
 
@@ -56,7 +56,7 @@ Text files are opened using a sequential access, while binary files are opened u
 
 ### Syntax
 
-`u = ` `open` `(filename [, mode] [, iostat])`
+`u = ` {f:func}`open` `(filename [, mode] [, iostat])`
 
 ### Arguments
 
@@ -109,9 +109,9 @@ If the text file already exists:
 
 ### Syntax
 
-`call ` `savetxt` `(filename, array [,  delimiter] [, fmt] [, header] [, footer] [, comments])`
+`call ` {f:iface}`savetxt` `(filename, array [,  delimiter] [, fmt] [, header] [, footer] [, comments])`
 
-`call ` `savetxt` `(unit, array [,  delimiter] [, fmt] [, header] [, footer] [, comments])`
+`call ` {f:iface}`savetxt` `(unit, array [,  delimiter] [, fmt] [, header] [, footer] [, comments])`
 
 ### Arguments
 
@@ -154,7 +154,7 @@ Loads an `array` from a npy formatted binary file.
 
 ### Syntax
 
-`call ` `load_npy` `(filename, array[, iostat][, iomsg])`
+`call ` {f:subr}`load_npy` `(filename, array[, iostat][, iomsg])`
 
 ### Arguments
 
@@ -195,7 +195,7 @@ Saves an `array` into a npy formatted binary file.
 
 ### Syntax
 
-`call ` `save_npy` `(filename, array[, iostat][, iomsg])`
+`call ` {f:subr}`save_npy` `(filename, array[, iostat][, iomsg])`
 
 ### Arguments
 
@@ -235,9 +235,9 @@ Read a whole line from a formatted unit into a string variable
 
 ### Syntax
 
-`call ` `get_line` ` (unit, line[, iostat][, iomsg])`
+`call ` {f:iface}`get_line` ` (unit, line[, iostat][, iomsg])`
 
-`call ` `get_line` ` (line[, iostat][, iomsg])`
+`call ` {f:iface}`get_line` ` (line[, iostat][, iomsg])`
 
 ### Arguments
 
@@ -292,7 +292,7 @@ The function provides an optional error-handling mechanism via the `state_type` 
 
 ### Syntax
 
-`call ` `get_file` ` (filename, file [, err] [, delete=.false.])`
+`call ` {f:subr}`get_file` ` (filename, file [, err] [, delete=.false.])`
 
 ### Class
 Function
@@ -338,17 +338,17 @@ Loads a 2D matrix from a Matrix Market format file. Symmetric matrices are expan
 
 - To load a matrix of `array` format:
 
-`call ` `load_mm` `(filename, matrix [, iostat, iomsg])`
+`call ` {f:iface}`load_mm` `(filename, matrix [, iostat, iomsg])`
 
 - To load a matrix of `coordinate` format:
 
-`call ` `load_mm` `(filename, index, data [, iostat, iomsg])`
+`call ` {f:iface}`load_mm` `(filename, index, data [, iostat, iomsg])`
 
 #### Arguments
 
 **`Array` format**
 
-`call ` `load_mm` `(filename, matrix [, iostat, iomsg])`
+`call ` {f:iface}`load_mm` `(filename, matrix [, iostat, iomsg])`
 
 - `filename`: Shall be a character expression containing the Matrix Market file name to read from.
 
@@ -360,7 +360,7 @@ Loads a 2D matrix from a Matrix Market format file. Symmetric matrices are expan
 
 **`Coordinate` format**
 
-`call ` `load_mm` `(filename, index, data [, iostat, iomsg])`
+`call ` {f:iface}`load_mm` `(filename, index, data [, iostat, iomsg])`
 
 - `filename`: Shall be a character expression containing the Matrix Market file name to read from.
 
@@ -380,17 +380,17 @@ Saves a 2D matrix to Matrix Market format file.
 
 - To save a matrix of `array` format:
 
-`call ` `save_mm` `(filename, matrix [, comment, format, symmetry, iostat, iomsg])`
+`call ` {f:iface}`save_mm` `(filename, matrix [, comment, format, symmetry, iostat, iomsg])`
 
 - To save a matrix of `coordinate` format:
 
-`call ` `save_mm` `(filename, index, data [, comment, format, symmetry, iostat, iomsg])`
+`call ` {f:iface}`save_mm` `(filename, index, data [, comment, format, symmetry, iostat, iomsg])`
 
 #### Arguments
 
 **`Array` format**
 
-`call ` `save_mm` `(filename, matrix [, comment, format, symmetry, iostat, iomsg])`
+`call ` {f:iface}`save_mm` `(filename, matrix [, comment, format, symmetry, iostat, iomsg])`
 
 - `filename`: Shall be a character expression containing the Matrix Market file name to write to.
 
@@ -414,7 +414,7 @@ Saves a 2D matrix to Matrix Market format file.
 
 **`Coordinate` format**
 
-`call ` `save_mm` `(filename, index, data [, comment, format, symmetry, iostat, iomsg])`
+`call ` {f:iface}`save_mm` `(filename, index, data [, comment, format, symmetry, iostat, iomsg])`
 
 - `filename`: Shall be a character expression containing the Matrix Market file name to write to.
 

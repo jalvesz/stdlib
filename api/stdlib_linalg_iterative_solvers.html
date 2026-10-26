@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_linalg_state" href="stdlib_linalg_state.html" />
     <link rel="prev" title="stdlib_linalg" href="stdlib_linalg.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -430,7 +426,34 @@
 <section id="f-module-stdlib-linalg-iterative-solvers">
 <h2>stdlib_linalg_iterative_solvers (module)<a class="headerlink" href="#f-module-stdlib-linalg-iterative-solvers" title="Link to this heading">#</a></h2>
 <div class="docutils container">
-<p>The <cite>stdlib_linalg_iterative_solvers</cite> module provides interfaces for iterative solvers.</p>
+<p>workspace sizes: defined by the number of vectors used by the iterative solver.
+version: experimental</p>
+<p>Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a></p>
+<p>linop type holding the linear operator and its associated methods.
+The <cite>linop</cite> type is used to define the linear operator for the iterative solvers.
+version: experimental</p>
+<p>Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a></p>
+<p>solver_workspace type holding temporal array data for the iterative solvers.
+version: experimental</p>
+<p>stdlib_solve_cg_kernel interface for the conjugate gradient method.
+Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>stdlib_solve_pcg_kernel interface for the preconditionned conjugate gradient method.
+Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>stdlib_solve_bicgstab_kernel interface for the biconjugate gradient stabilized method.
+Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>stdlib_solve_gmres_kernel interface for the restarted generalized minimal residual method.
+Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a>
+version: experimental</p>
+<p>Specifications: <a class="reference internal" href="../specs/stdlib_linalg_iterative_solvers.html"><span class="doc">stdlib_linalg_iterative_solvers</span></a></p>
 </div>
 <p class="section-subtitle">Types</p>
 <section id="f-type-stdlib-linalg-iterative-solvers-stdlib-linop-sp-type">
@@ -438,12 +461,7 @@
 <dl class="f type">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">stdlib_linop_sp_type</span> <span class="pre">(type)</span></code></dt>
-<dd><div class="docutils container">
-<p>[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_linop)</p>
-<p>linop type holding the linear operator and its associated methods.
-The <cite>linop</cite> type is used to define the linear operator for the iterative solvers.</p>
-</div>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>matvec</strong><span class="classifier">procedure(vector_sub_sp), nopass, pointer, Default = null()</span></dt><dd></dd>
@@ -475,11 +493,7 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
 <dl class="f type">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">stdlib_solver_workspace_sp_type</span> <span class="pre">(type)</span></code></dt>
-<dd><div class="docutils container">
-<p>[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solver_workspace)</p>
-<p>solver_workspace type holding temporal array data for the iterative solvers.</p>
-</div>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>tmp</strong><span class="classifier">real(kind=sp), allocatable, (:, :), dimension(:,:)</span></dt><dd></dd>
@@ -506,6 +520,923 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
 </dd></dl>
 
 </section>
+<p class="section-subtitle">Interfaces</p>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel">
+<h3>stdlib_solve_cg_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_kernel</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel-stdlib-solve-cg-kernel-sp" title="stdlib_solve_cg_kernel_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_kernel_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel-stdlib-solve-cg-kernel-dp" title="stdlib_solve_cg_kernel_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_kernel_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel-stdlib-solve-cg-kernel-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_cg_kernel_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel-stdlib-solve-cg-kernel-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>absolut tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel-stdlib-solve-cg-kernel-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_cg_kernel_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel-stdlib-solve-cg-kernel-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>absolut tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg">
+<h3>stdlib_solve_cg (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-dense-sp" title="stdlib_solve_cg_dense_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_dense_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-dense-dp" title="stdlib_solve_cg_dense_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_dense_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-csr-sp" title="stdlib_solve_cg_CSR_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_CSR_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-csr-dp" title="stdlib_solve_cg_CSR_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_cg_CSR_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-dense-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_cg_dense_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-dense-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-dense-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_cg_dense_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-dense-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-csr-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_cg_CSR_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-csr-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_sp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-csr-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_cg_CSR_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-cg-stdlib-solve-cg-csr-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_dp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel">
+<h3>stdlib_solve_pcg_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_kernel</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel-stdlib-solve-pcg-kernel-sp" title="stdlib_solve_pcg_kernel_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_kernel_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel-stdlib-solve-pcg-kernel-dp" title="stdlib_solve_pcg_kernel_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_kernel_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel-stdlib-solve-pcg-kernel-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_pcg_kernel_sp(A,</span> <span class="pre">M,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel-stdlib-solve-pcg-kernel-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel-stdlib-solve-pcg-kernel-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_pcg_kernel_dp(A,</span> <span class="pre">M,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel-stdlib-solve-pcg-kernel-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel">
+<h3>stdlib_solve_bicgstab_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_kernel</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel-stdlib-solve-bicgstab-kernel-sp" title="stdlib_solve_bicgstab_kernel_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_kernel_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel-stdlib-solve-bicgstab-kernel-dp" title="stdlib_solve_bicgstab_kernel_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_kernel_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel-stdlib-solve-bicgstab-kernel-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_bicgstab_kernel_sp(A,</span> <span class="pre">M,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel-stdlib-solve-bicgstab-kernel-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel-stdlib-solve-bicgstab-kernel-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_bicgstab_kernel_dp(A,</span> <span class="pre">M,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel-stdlib-solve-bicgstab-kernel-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel">
+<h3>stdlib_solve_gmres_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_kernel</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel-stdlib-solve-gmres-kernel-sp" title="stdlib_solve_gmres_kernel_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_kernel_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel-stdlib-solve-gmres-kernel-dp" title="stdlib_solve_gmres_kernel_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_kernel_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel-stdlib-solve-gmres-kernel-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_gmres_kernel_sp(A,</span> <span class="pre">M,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">kdim,</span> <span class="pre">workspace,</span> <span class="pre">compact)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel-stdlib-solve-gmres-kernel-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), intent(in)</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>kdim</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Krylov subspace size before restart</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+<dt><strong>compact</strong><span class="classifier">logical, intent(in)</span></dt><dd><p>keep only one preconditioned basis vector and rebuild the cycle update at restart</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel-stdlib-solve-gmres-kernel-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_gmres_kernel_dp(A,</span> <span class="pre">M,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">kdim,</span> <span class="pre">workspace,</span> <span class="pre">compact)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel-stdlib-solve-gmres-kernel-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>linear operator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), intent(in)</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>kdim</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Krylov subspace size before restart</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), intent(inout)</span></dt><dd><p>workspace for the solver</p>
+</dd>
+<dt><strong>compact</strong><span class="classifier">logical, intent(in)</span></dt><dd><p>keep only one preconditioned basis vector and rebuild the cycle update at restart</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg">
+<h3>stdlib_solve_pcg (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-dense-sp" title="stdlib_solve_pcg_dense_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_dense_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-dense-dp" title="stdlib_solve_pcg_dense_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_dense_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-csr-sp" title="stdlib_solve_pcg_CSR_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_CSR_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-csr-dp" title="stdlib_solve_pcg_CSR_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_pcg_CSR_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-dense-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_pcg_dense_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-dense-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-dense-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_pcg_dense_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-dense-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-csr-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_pcg_CSR_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-csr-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_sp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-csr-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_pcg_CSR_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-stdlib-solve-pcg-csr-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_dp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab">
+<h3>stdlib_solve_bicgstab (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-dense-sp" title="stdlib_solve_bicgstab_dense_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_dense_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-dense-dp" title="stdlib_solve_bicgstab_dense_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_dense_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-csr-sp" title="stdlib_solve_bicgstab_CSR_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_CSR_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-csr-dp" title="stdlib_solve_bicgstab_CSR_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_bicgstab_CSR_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-dense-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_bicgstab_dense_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-dense-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-dense-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_bicgstab_dense_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-dense-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-csr-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_bicgstab_CSR_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-csr-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_sp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-csr-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_bicgstab_CSR_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-stdlib-solve-bicgstab-csr-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_dp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres">
+<h3>stdlib_solve_gmres (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-dense-sp" title="stdlib_solve_gmres_dense_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_dense_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-dense-dp" title="stdlib_solve_gmres_dense_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_dense_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-csr-sp" title="stdlib_solve_gmres_CSR_sp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_CSR_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-csr-dp" title="stdlib_solve_gmres_CSR_dp"><code class="docutils literal notranslate"><span class="pre">stdlib_solve_gmres_CSR_dp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-dense-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_gmres_dense_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">kdim,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace,</span> <span class="pre">compact)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-dense-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=sp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>kdim</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Krylov subspace size before restart</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+<dt><strong>compact</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>if true, favor lower memory use over cycle-end update speed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-dense-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_gmres_dense_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">kdim,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace,</span> <span class="pre">compact)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-dense-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">real(kind=dp), (:, :), intent(in), dimension(:,:)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>kdim</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Krylov subspace size before restart</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+<dt><strong>compact</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>if true, favor lower memory use over cycle-end update speed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-csr-sp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_gmres_CSR_sp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">kdim,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace,</span> <span class="pre">compact)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-csr-sp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_sp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=sp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>kdim</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Krylov subspace size before restart</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_sp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_sp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+<dt><strong>compact</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>if true, favor lower memory use over cycle-end update speed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f subroutine">
+<dt class="sig sig-object f" id="f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-csr-dp">
+<code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">subroutine</span> <span class="pre">stdlib_solve_gmres_CSR_dp(A,</span> <span class="pre">b,</span> <span class="pre">x,</span> <span class="pre">di,</span> <span class="pre">rtol,</span> <span class="pre">atol,</span> <span class="pre">maxiter,</span> <span class="pre">restart,</span> <span class="pre">kdim,</span> <span class="pre">precond,</span> <span class="pre">M,</span> <span class="pre">workspace,</span> <span class="pre">compact)</span></code><a class="headerlink" href="#f-subroutine-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-stdlib-solve-gmres-csr-dp" title="Link to this definition">#</a></dt>
+<dd><div class="docutils container">
+<p>linear operator matrix</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>A</strong><span class="classifier">type(CSR_dp_type), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in), dimension(:)</span></dt><dd><p>right-hand side vector</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(inout), dimension(:)</span></dt><dd><p>solution vector and initial guess</p>
+</dd>
+<dt><strong>di</strong><span class="classifier">logical(kind=int8), target, intent(in), optional, dimension(:)</span></dt><dd><p>dirichlet conditions mask</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>relative tolerance for convergence</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">real(kind=dp), intent(in), optional</span></dt><dd><p>absolute tolerance for convergence</p>
+</dd>
+<dt><strong>maxiter</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>maximum number of iterations</p>
+</dd>
+<dt><strong>restart</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>restart flag</p>
+</dd>
+<dt><strong>kdim</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Krylov subspace size before restart</p>
+</dd>
+<dt><strong>precond</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>preconditioner method enumerator</p>
+</dd>
+<dt><strong>M</strong><span class="classifier">class(stdlib_linop_dp_type), target, intent(in), optional</span></dt><dd><p>preconditioner linear operator</p>
+</dd>
+<dt><strong>workspace</strong><span class="classifier">type(stdlib_solver_workspace_dp_type), target, intent(inout), optional</span></dt><dd><p>workspace for the solver</p>
+</dd>
+<dt><strong>compact</strong><span class="classifier">logical, intent(in), optional</span></dt><dd><p>if true, favor lower memory use over cycle-end update speed</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <p class="section-subtitle">Procedures</p>
 <section id="f-function-stdlib-linalg-iterative-solvers-stdlib-size-wksp-gmres">
 <h3>stdlib_size_wksp_gmres (function)<a class="headerlink" href="#f-function-stdlib-linalg-iterative-solvers-stdlib-size-wksp-gmres" title="Link to this heading">#</a></h3>
@@ -529,59 +1460,6 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
 </dl>
 </dd></dl>
 
-</section>
-<p class="section-subtitle">Interfaces</p>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel">
-<h3>stdlib_solve_cg_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>stdlib_solve_cg_kernel interface for the conjugate gradient method.
-[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_cg_kernel)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg">
-<h3>stdlib_solve_cg (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_cg)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel">
-<h3>stdlib_solve_pcg_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>stdlib_solve_pcg_kernel interface for the preconditionned conjugate gradient method.
-[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_pcg_kernel)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel">
-<h3>stdlib_solve_bicgstab_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab-kernel" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>stdlib_solve_bicgstab_kernel interface for the biconjugate gradient stabilized method.
-[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_bicgstab_kernel)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel">
-<h3>stdlib_solve_gmres_kernel (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres-kernel" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>stdlib_solve_gmres_kernel interface for the restarted generalized minimal residual method.
-[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_gmres_kernel)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg">
-<h3>stdlib_solve_pcg (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_pcg)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab">
-<h3>stdlib_solve_bicgstab (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_bicgstab)</p>
-</div>
-</section>
-<section id="f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres">
-<h3>stdlib_solve_gmres (interface)<a class="headerlink" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres" title="Link to this heading">#</a></h3>
-<div class="docutils container">
-<p>[Specifications](../page/specs/stdlib_linalg_iterative_solvers.html#stdlib_solve_gmres)</p>
-</div>
 </section>
 </section>
 </section>
@@ -638,7 +1516,6 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-linalg-iterative-solvers-stdlib-linop-dp-type">stdlib_linop_dp_type (type)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-linalg-iterative-solvers-stdlib-solver-workspace-sp-type">stdlib_solver_workspace_sp_type (type)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-linalg-iterative-solvers-stdlib-solver-workspace-dp-type">stdlib_solver_workspace_dp_type (type)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-linalg-iterative-solvers-stdlib-size-wksp-gmres">stdlib_size_wksp_gmres (function)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg-kernel">stdlib_solve_cg_kernel (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-cg">stdlib_solve_cg (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg-kernel">stdlib_solve_pcg_kernel (interface)</a></li>
@@ -647,6 +1524,7 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-pcg">stdlib_solve_pcg (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-bicgstab">stdlib_solve_bicgstab (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-linalg-iterative-solvers-stdlib-solve-gmres">stdlib_solve_gmres (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-linalg-iterative-solvers-stdlib-size-wksp-gmres">stdlib_size_wksp_gmres (function)</a></li>
 </ul>
 </li>
 </ul>
@@ -674,8 +1552,8 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -695,7 +1573,7 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -708,7 +1586,7 @@ The <cite>linop</cite> type is used to define the linear operator for the iterat
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

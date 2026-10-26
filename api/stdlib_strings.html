@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -46,9 +46,10 @@
     <link rel="icon" href="../_static/favicon.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="stdlib_system" href="stdlib_system.html" />
+    <link rel="next" title="System modules" href="stdlib_system.html" />
     <link rel="prev" title="stdlib_stringlist_type" href="stdlib_stringlist_type.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -436,106 +432,1974 @@
 <p class="section-subtitle">Interfaces</p>
 <section id="f-interface-stdlib-strings-to-string">
 <h3>to_string (interface)<a class="headerlink" href="#f-interface-stdlib-strings-to-string" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">to_string</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Format or transfer other types as a string.
-([Specification](../page/specs/stdlib_strings.html#to_string))</p>
+(Specification: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a>)</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-r-sp" title="to_string_r_sp"><code class="docutils literal notranslate"><span class="pre">to_string_r_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-r-dp" title="to_string_r_dp"><code class="docutils literal notranslate"><span class="pre">to_string_r_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-c-sp" title="to_string_c_sp"><code class="docutils literal notranslate"><span class="pre">to_string_c_sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-c-dp" title="to_string_c_dp"><code class="docutils literal notranslate"><span class="pre">to_string_c_dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-1-i-int8" title="to_string_1_i_int8"><code class="docutils literal notranslate"><span class="pre">to_string_1_i_int8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-2-i-int8" title="to_string_2_i_int8"><code class="docutils literal notranslate"><span class="pre">to_string_2_i_int8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-1-i-int16" title="to_string_1_i_int16"><code class="docutils literal notranslate"><span class="pre">to_string_1_i_int16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-2-i-int16" title="to_string_2_i_int16"><code class="docutils literal notranslate"><span class="pre">to_string_2_i_int16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-1-i-int32" title="to_string_1_i_int32"><code class="docutils literal notranslate"><span class="pre">to_string_1_i_int32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-2-i-int32" title="to_string_2_i_int32"><code class="docutils literal notranslate"><span class="pre">to_string_2_i_int32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-1-i-int64" title="to_string_1_i_int64"><code class="docutils literal notranslate"><span class="pre">to_string_1_i_int64</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-2-i-int64" title="to_string_2_i_int64"><code class="docutils literal notranslate"><span class="pre">to_string_2_i_int64</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-1-l-lk" title="to_string_1_l_lk"><code class="docutils literal notranslate"><span class="pre">to_string_1_l_lk</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-string-to-string-2-l-lk" title="to_string_2_l_lk"><code class="docutils literal notranslate"><span class="pre">to_string_2_l_lk</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-r-sp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_r_sp(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-r-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-r-dp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_r_dp(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-r-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-c-sp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_c_sp(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-c-sp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">complex(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-c-dp">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_c_dp(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-c-dp" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">complex(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-1-i-int8">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_1_i_int8(value)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-1-i-int8" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-2-i-int8">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_2_i_int8(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-2-i-int8" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-1-i-int16">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_1_i_int16(value)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-1-i-int16" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-2-i-int16">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_2_i_int16(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-2-i-int16" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-1-i-int32">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_1_i_int32(value)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-1-i-int32" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-2-i-int32">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_2_i_int32(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-2-i-int32" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-1-i-int64">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_1_i_int64(value)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-1-i-int64" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-2-i-int64">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_2_i_int64(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-2-i-int64" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-1-l-lk">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_1_l_lk(value)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-1-l-lk" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">logical(kind=lk), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=1)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="f function">
+<dt class="sig sig-object f" id="f-function-stdlib-strings-to-string-to-string-2-l-lk">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">module</span> <span class="pre">function</span> <span class="pre">to_string_2_l_lk(value,</span> <span class="pre">format)</span> <span class="pre">-&gt;</span> <span class="pre">string</span></code><a class="headerlink" href="#f-function-stdlib-strings-to-string-to-string-2-l-lk" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">logical(kind=lk), intent(in)</span></dt><dd></dd>
+<dt><strong>format</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-to-c-char">
 <h3>to_c_char (interface)<a class="headerlink" href="#f-interface-stdlib-strings-to-c-char" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">to_c_char</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Format or transfer other types as a string.
-([Specification](../page/specs/stdlib_strings.html#to_c_char))</p>
+(Specification: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a>)</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-c-char-from-char" title="to_c_char_from_char"><code class="docutils literal notranslate"><span class="pre">to_c_char_from_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-to-c-char-from-string" title="to_c_char_from_string"><code class="docutils literal notranslate"><span class="pre">to_c_char_from_string</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-strip">
 <h3>strip (interface)<a class="headerlink" href="#f-interface-stdlib-strings-strip" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">strip</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Remove leading and trailing whitespace characters.</p>
 <p>Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-strip-string" title="strip_string"><code class="docutils literal notranslate"><span class="pre">strip_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-strip-char" title="strip_char"><code class="docutils literal notranslate"><span class="pre">strip_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-chomp">
 <h3>chomp (interface)<a class="headerlink" href="#f-interface-stdlib-strings-chomp" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">chomp</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Remove trailing characters in set from string.
 If no character set is provided trailing whitespace is removed.</p>
 <p>Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-string" title="chomp_string"><code class="docutils literal notranslate"><span class="pre">chomp_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-char" title="chomp_char"><code class="docutils literal notranslate"><span class="pre">chomp_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-set-string-char" title="chomp_set_string_char"><code class="docutils literal notranslate"><span class="pre">chomp_set_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-set-char-char" title="chomp_set_char_char"><code class="docutils literal notranslate"><span class="pre">chomp_set_char_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-substring-string-string" title="chomp_substring_string_string"><code class="docutils literal notranslate"><span class="pre">chomp_substring_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-substring-char-string" title="chomp_substring_char_string"><code class="docutils literal notranslate"><span class="pre">chomp_substring_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-substring-string-char" title="chomp_substring_string_char"><code class="docutils literal notranslate"><span class="pre">chomp_substring_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-chomp-substring-char-char" title="chomp_substring_char_char"><code class="docutils literal notranslate"><span class="pre">chomp_substring_char_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-starts-with">
 <h3>starts_with (interface)<a class="headerlink" href="#f-interface-stdlib-strings-starts-with" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">starts_with</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Check whether a string starts with substring or not</p>
 <p>Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-starts-with-string-string" title="starts_with_string_string"><code class="docutils literal notranslate"><span class="pre">starts_with_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-starts-with-string-char" title="starts_with_string_char"><code class="docutils literal notranslate"><span class="pre">starts_with_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-starts-with-char-string" title="starts_with_char_string"><code class="docutils literal notranslate"><span class="pre">starts_with_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-starts-with-char-char" title="starts_with_char_char"><code class="docutils literal notranslate"><span class="pre">starts_with_char_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-ends-with">
 <h3>ends_with (interface)<a class="headerlink" href="#f-interface-stdlib-strings-ends-with" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">ends_with</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Check whether a string ends with substring or not</p>
 <p>Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-ends-with-string-string" title="ends_with_string_string"><code class="docutils literal notranslate"><span class="pre">ends_with_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-ends-with-string-char" title="ends_with_string_char"><code class="docutils literal notranslate"><span class="pre">ends_with_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-ends-with-char-string" title="ends_with_char_string"><code class="docutils literal notranslate"><span class="pre">ends_with_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-ends-with-char-char" title="ends_with_char_char"><code class="docutils literal notranslate"><span class="pre">ends_with_char_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-slice">
 <h3>slice (interface)<a class="headerlink" href="#f-interface-stdlib-strings-slice" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">slice</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Extracts characters from the input string to return a new string</p>
 <p>Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-slice-string" title="slice_string"><code class="docutils literal notranslate"><span class="pre">slice_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-slice-char" title="slice_char"><code class="docutils literal notranslate"><span class="pre">slice_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-find">
 <h3>find (interface)<a class="headerlink" href="#f-interface-stdlib-strings-find" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">find</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Finds the starting index of substring ‘pattern’ in the input ‘string’
 [Specifications](link to the specs - to be completed)</p>
 <p>Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-find-string-string" title="find_string_string"><code class="docutils literal notranslate"><span class="pre">find_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-find-string-char" title="find_string_char"><code class="docutils literal notranslate"><span class="pre">find_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-find-char-string" title="find_char_string"><code class="docutils literal notranslate"><span class="pre">find_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-find-char-char" title="find_char_char"><code class="docutils literal notranslate"><span class="pre">find_char_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-replace-all">
 <h3>replace_all (interface)<a class="headerlink" href="#f-interface-stdlib-strings-replace-all" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">replace_all</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Replaces all the occurrences of substring ‘pattern’ in the input ‘string’
 with the replacement ‘replacement’
 Version: experimental</p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-string-string-string" title="replace_all_string_string_string"><code class="docutils literal notranslate"><span class="pre">replace_all_string_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-string-string-char" title="replace_all_string_string_char"><code class="docutils literal notranslate"><span class="pre">replace_all_string_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-string-char-string" title="replace_all_string_char_string"><code class="docutils literal notranslate"><span class="pre">replace_all_string_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-char-string-string" title="replace_all_char_string_string"><code class="docutils literal notranslate"><span class="pre">replace_all_char_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-string-char-char" title="replace_all_string_char_char"><code class="docutils literal notranslate"><span class="pre">replace_all_string_char_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-char-string-char" title="replace_all_char_string_char"><code class="docutils literal notranslate"><span class="pre">replace_all_char_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-char-char-string" title="replace_all_char_char_string"><code class="docutils literal notranslate"><span class="pre">replace_all_char_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-replace-all-char-char-char" title="replace_all_char_char_char"><code class="docutils literal notranslate"><span class="pre">replace_all_char_char_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-padl">
 <h3>padl (interface)<a class="headerlink" href="#f-interface-stdlib-strings-padl" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">padl</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Left pad the input string
-[Specifications](../page/specs/stdlib_strings.html#padl)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padl-string-default" title="padl_string_default"><code class="docutils literal notranslate"><span class="pre">padl_string_default</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padl-string-pad-with" title="padl_string_pad_with"><code class="docutils literal notranslate"><span class="pre">padl_string_pad_with</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padl-char-default" title="padl_char_default"><code class="docutils literal notranslate"><span class="pre">padl_char_default</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padl-char-pad-with" title="padl_char_pad_with"><code class="docutils literal notranslate"><span class="pre">padl_char_pad_with</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-padr">
 <h3>padr (interface)<a class="headerlink" href="#f-interface-stdlib-strings-padr" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">padr</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Right pad the input string
-[Specifications](../page/specs/stdlib_strings.html#padr)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padr-string-default" title="padr_string_default"><code class="docutils literal notranslate"><span class="pre">padr_string_default</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padr-string-pad-with" title="padr_string_pad_with"><code class="docutils literal notranslate"><span class="pre">padr_string_pad_with</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padr-char-default" title="padr_char_default"><code class="docutils literal notranslate"><span class="pre">padr_char_default</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-padr-char-pad-with" title="padr_char_pad_with"><code class="docutils literal notranslate"><span class="pre">padr_char_pad_with</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-count">
 <h3>count (interface)<a class="headerlink" href="#f-interface-stdlib-strings-count" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">count</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Returns the number of times substring ‘pattern’ has appeared in the
 input string ‘string’
-[Specifications](../page/specs/stdlib_strings.html#count)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-count-string-string" title="count_string_string"><code class="docutils literal notranslate"><span class="pre">count_string_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-count-string-char" title="count_string_char"><code class="docutils literal notranslate"><span class="pre">count_string_char</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-count-char-string" title="count_char_string"><code class="docutils literal notranslate"><span class="pre">count_char_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-count-char-char" title="count_char_char"><code class="docutils literal notranslate"><span class="pre">count_char_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-zfill">
 <h3>zfill (interface)<a class="headerlink" href="#f-interface-stdlib-strings-zfill" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">zfill</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Left pad the input string with zeros.
-[Specifications](../page/specs/stdlib_strings.html#zfill)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-zfill-string" title="zfill_string"><code class="docutils literal notranslate"><span class="pre">zfill_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-zfill-char" title="zfill_char"><code class="docutils literal notranslate"><span class="pre">zfill_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-strings-join">
 <h3>join (interface)<a class="headerlink" href="#f-interface-stdlib-strings-join" title="Link to this heading">#</a></h3>
-<div class="docutils container">
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">join</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
 <p>Joins an array of strings into a single string. 
 The chunks are separated with a space, or an optional user-defined separator.
-[Specifications](../page/specs/stdlib_strings.html#join)</p>
+Specifications: <a class="reference internal" href="../specs/stdlib_strings.html"><span class="doc">stdlib_strings</span></a></p>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-join-string" title="join_string"><code class="docutils literal notranslate"><span class="pre">join_string</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-strings-join-char" title="join_char"><code class="docutils literal notranslate"><span class="pre">join_char</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Procedures</p>
+<section id="f-function-stdlib-strings-strip-string">
+<h3>strip_string (function)<a class="headerlink" href="#f-function-stdlib-strings-strip-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">strip_string(string)</span> <span class="pre">-&gt;</span> <span class="pre">stripped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove leading and trailing whitespace characters.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>stripped_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-strip-char">
+<h3>strip_char (function)<a class="headerlink" href="#f-function-stdlib-strings-strip-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">strip_char(string)</span> <span class="pre">-&gt;</span> <span class="pre">stripped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove leading and trailing whitespace characters.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>stripped_string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-string">
+<h3>chomp_string (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_string(string)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing characters in set from string.
+Default character set variant where trailing whitespace is removed.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-char">
+<h3>chomp_char (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_char(string)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing characters in set from string.
+Default character set variant where trailing whitespace is removed.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-set-string-char">
+<h3>chomp_set_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-set-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_set_string_char(string,</span> <span class="pre">set)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing characters in set from string.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>set</strong><span class="classifier">character(len=1), intent(in), dimension(:)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-set-char-char">
+<h3>chomp_set_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-set-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_set_char_char(string,</span> <span class="pre">set)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing characters in set from string.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>set</strong><span class="classifier">character(len=1), intent(in), dimension(:)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-substring-string-string">
+<h3>chomp_substring_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-substring-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_substring_string_string(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing substrings from string.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-substring-string-char">
+<h3>chomp_substring_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-substring-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_substring_string_char(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing substrings from string.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-substring-char-string">
+<h3>chomp_substring_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-substring-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_substring_char_string(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing substrings from string.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-chomp-substring-char-char">
+<h3>chomp_substring_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-chomp-substring-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">chomp_substring_char_char(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">chomped_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Remove trailing substrings from string.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chomped_string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-starts-with-char-char">
+<h3>starts_with_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-starts-with-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">starts_with_char_char(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string starts with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-starts-with-string-char">
+<h3>starts_with_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-starts-with-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">starts_with_string_char(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string starts with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-starts-with-char-string">
+<h3>starts_with_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-starts-with-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">starts_with_char_string(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string starts with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-starts-with-string-string">
+<h3>starts_with_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-starts-with-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">starts_with_string_string(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string starts with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-ends-with-char-char">
+<h3>ends_with_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-ends-with-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">ends_with_char_char(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string ends with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-ends-with-string-char">
+<h3>ends_with_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-ends-with-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ends_with_string_char(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string ends with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-ends-with-char-string">
+<h3>ends_with_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-ends-with-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ends_with_char_string(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string ends with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-ends-with-string-string">
+<h3>ends_with_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-ends-with-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ends_with_string_string(string,</span> <span class="pre">substring)</span> <span class="pre">-&gt;</span> <span class="pre">match</span></code></dt>
+<dd><div class="docutils container">
+<p>Check whether a string ends with substring or not</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>substring</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>match</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-slice-string">
+<h3>slice_string (function)<a class="headerlink" href="#f-function-stdlib-strings-slice-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">slice_string(string,</span> <span class="pre">first,</span> <span class="pre">last,</span> <span class="pre">stride)</span> <span class="pre">-&gt;</span> <span class="pre">sliced_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Extract the characters from the region between ‘first’ and ‘last’ index (both inclusive)
+of the input ‘string’ by taking strides of length ‘stride’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>first</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>last</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>stride</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sliced_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-slice-char">
+<h3>slice_char (function)<a class="headerlink" href="#f-function-stdlib-strings-slice-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">slice_char(string,</span> <span class="pre">first,</span> <span class="pre">last,</span> <span class="pre">stride)</span> <span class="pre">-&gt;</span> <span class="pre">sliced_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Extract the characters from the region between ‘first’ and ‘last’ index (both inclusive)
+of the input ‘string’ by taking strides of length ‘stride’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>first</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>last</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>stride</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sliced_string</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-find-string-string">
+<h3>find_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-find-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">find_string_string(string,</span> <span class="pre">pattern,</span> <span class="pre">occurrence,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the starting index of the ‘occurrence’th occurrence of substring ‘pattern’
+in input ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>occurrence</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-find-string-char">
+<h3>find_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-find-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">find_string_char(string,</span> <span class="pre">pattern,</span> <span class="pre">occurrence,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the starting index of the ‘occurrence’th occurrence of substring ‘pattern’
+in input ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>occurrence</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-find-char-string">
+<h3>find_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-find-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">find_char_string(string,</span> <span class="pre">pattern,</span> <span class="pre">occurrence,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the starting index of the ‘occurrence’th occurrence of substring ‘pattern’
+in input ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>occurrence</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-find-char-char">
+<h3>find_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-find-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">find_char_char(string,</span> <span class="pre">pattern,</span> <span class="pre">occurrence,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the starting index of the ‘occurrence’th occurrence of substring ‘pattern’
+in input ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>occurrence</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-string-string-string">
+<h3>replace_all_string_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-string-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_string_string_string(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-string-string-char">
+<h3>replace_all_string_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-string-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_string_string_char(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-string-char-string">
+<h3>replace_all_string_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-string-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_string_char_string(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-char-string-string">
+<h3>replace_all_char_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-char-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_char_string_string(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-string-char-char">
+<h3>replace_all_string_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-string-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_string_char_char(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-char-string-char">
+<h3>replace_all_char_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-char-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_char_string_char(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-char-char-string">
+<h3>replace_all_char_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-char-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_char_char_string(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-replace-all-char-char-char">
+<h3>replace_all_char_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-replace-all-char-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">replace_all_char_char_char(string,</span> <span class="pre">pattern,</span> <span class="pre">replacement)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Replaces all the occurrences of substring ‘pattern’ in the input ‘string’
+with the replacement ‘replacement’
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>replacement</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padl-string-default">
+<h3>padl_string_default (function)<a class="headerlink" href="#f-function-stdlib-strings-padl-string-default" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padl_string_default(string,</span> <span class="pre">output_length)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Left pad the input string with “ “ (1 whitespace)</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padl-string-pad-with">
+<h3>padl_string_pad_with (function)<a class="headerlink" href="#f-function-stdlib-strings-padl-string-pad-with" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padl_string_pad_with(string,</span> <span class="pre">output_length,</span> <span class="pre">pad_with)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Left pad the input string with the ‘pad_with’ character</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>pad_with</strong><span class="classifier">character(len=1), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padl-char-default">
+<h3>padl_char_default (function)<a class="headerlink" href="#f-function-stdlib-strings-padl-char-default" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padl_char_default(string,</span> <span class="pre">output_length)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Left pad the input string with “ “ (1 whitespace)</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(kind=output_length), len=max)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padl-char-pad-with">
+<h3>padl_char_pad_with (function)<a class="headerlink" href="#f-function-stdlib-strings-padl-char-pad-with" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padl_char_pad_with(string,</span> <span class="pre">output_length,</span> <span class="pre">pad_with)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Left pad the input string with the ‘pad_with’ character</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>pad_with</strong><span class="classifier">character(len=1), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(kind=output_length), len=max)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padr-string-default">
+<h3>padr_string_default (function)<a class="headerlink" href="#f-function-stdlib-strings-padr-string-default" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padr_string_default(string,</span> <span class="pre">output_length)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Right pad the input string with “ “ (1 whitespace)</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padr-string-pad-with">
+<h3>padr_string_pad_with (function)<a class="headerlink" href="#f-function-stdlib-strings-padr-string-pad-with" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padr_string_pad_with(string,</span> <span class="pre">output_length,</span> <span class="pre">pad_with)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Right pad the input string with the ‘pad_with’ character</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>pad_with</strong><span class="classifier">character(len=1), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padr-char-default">
+<h3>padr_char_default (function)<a class="headerlink" href="#f-function-stdlib-strings-padr-char-default" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padr_char_default(string,</span> <span class="pre">output_length)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Right pad the input string with “ “ (1 whitespace)</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(kind=output_length), len=max)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-padr-char-pad-with">
+<h3>padr_char_pad_with (function)<a class="headerlink" href="#f-function-stdlib-strings-padr-char-pad-with" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">padr_char_pad_with(string,</span> <span class="pre">output_length,</span> <span class="pre">pad_with)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Right pad the input string with the ‘pad_with’ character</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>pad_with</strong><span class="classifier">character(len=1), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(kind=output_length), len=max)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-count-string-string">
+<h3>count_string_string (function)<a class="headerlink" href="#f-function-stdlib-strings-count-string-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">count_string_string(string,</span> <span class="pre">pattern,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the number of times substring ‘pattern’ has appeared in the
+input string ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-count-string-char">
+<h3>count_string_char (function)<a class="headerlink" href="#f-function-stdlib-strings-count-string-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">count_string_char(string,</span> <span class="pre">pattern,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the number of times substring ‘pattern’ has appeared in the
+input string ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-count-char-string">
+<h3>count_char_string (function)<a class="headerlink" href="#f-function-stdlib-strings-count-char-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">count_char_string(string,</span> <span class="pre">pattern,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the number of times substring ‘pattern’ has appeared in the
+input string ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-count-char-char">
+<h3>count_char_char (function)<a class="headerlink" href="#f-function-stdlib-strings-count-char-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">count_char_char(string,</span> <span class="pre">pattern,</span> <span class="pre">consider_overlapping)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Returns the number of times substring ‘pattern’ has appeared in the
+input string ‘string’
+Returns an integer</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>pattern</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>consider_overlapping</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-zfill-string">
+<h3>zfill_string (function)<a class="headerlink" href="#f-function-stdlib-strings-zfill-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">zfill_string(string,</span> <span class="pre">output_length)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Left pad the input string with zeros</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-zfill-char">
+<h3>zfill_char (function)<a class="headerlink" href="#f-function-stdlib-strings-zfill-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">zfill_char(string,</span> <span class="pre">output_length)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Left pad the input string with zeros</p>
+<p>Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>string</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+<dt><strong>output_length</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">character(kind=output_length), len=max)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-to-c-char-from-char">
+<h3>to_c_char_from_char (function)<a class="headerlink" href="#f-function-stdlib-strings-to-c-char-from-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">to_c_char_from_char(value)</span> <span class="pre">-&gt;</span> <span class="pre">cstr</span></code></dt>
+<dd><div class="docutils container">
+<p>Convert a Fortran character string to a C character array</p>
+<p>Version: experimental</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cstr</strong><span class="classifier">character(kind=c_char, len=1), dimension(len(value)+1)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-to-c-char-from-string">
+<h3>to_c_char_from_string (function)<a class="headerlink" href="#f-function-stdlib-strings-to-c-char-from-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">to_c_char_from_string(value)</span> <span class="pre">-&gt;</span> <span class="pre">cstr</span></code></dt>
+<dd><div class="docutils container">
+<p>Convert a Fortran string type to a C character array</p>
+<p>Version: experimental</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">type(string_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cstr</strong><span class="classifier">character(kind=c_char, len=1), dimension(len(value)+1)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-join-string">
+<h3>join_string (function)<a class="headerlink" href="#f-function-stdlib-strings-join-string" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">join_string(strings,</span> <span class="pre">separator)</span> <span class="pre">-&gt;</span> <span class="pre">join_string</span></code></dt>
+<dd><div class="docutils container">
+<p>Joins a list of strings with a separator (default: space).
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>strings</strong><span class="classifier">type(string_type), intent(in), dimension(:)</span></dt><dd></dd>
+<dt><strong>separator</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>join_string</strong><span class="classifier">type(string_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-strings-join-char">
+<h3>join_char (function)<a class="headerlink" href="#f-function-stdlib-strings-join-char" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">join_char(strings,</span> <span class="pre">separator)</span> <span class="pre">-&gt;</span> <span class="pre">joined</span></code></dt>
+<dd><div class="docutils container">
+<p>Joins a list of strings with a separator (default: space).
+Returns a new string</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>strings</strong><span class="classifier">character(len=*), intent(in), dimension(:)</span></dt><dd></dd>
+<dt><strong>separator</strong><span class="classifier">character(len=*), intent(in), optional</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>joined</strong><span class="classifier">character(len=:), allocatable</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -564,7 +2428,7 @@ The chunks are separated with a space, or an optional user-defined separator.
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">stdlib_system</p>
+        <p class="prev-next-title">System modules</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -602,6 +2466,56 @@ The chunks are separated with a space, or an optional user-defined separator.
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-strings-count">count (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-strings-zfill">zfill (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-strings-join">join (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-strip-string">strip_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-strip-char">strip_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-string">chomp_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-char">chomp_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-set-string-char">chomp_set_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-set-char-char">chomp_set_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-substring-string-string">chomp_substring_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-substring-string-char">chomp_substring_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-substring-char-string">chomp_substring_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-chomp-substring-char-char">chomp_substring_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-starts-with-char-char">starts_with_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-starts-with-string-char">starts_with_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-starts-with-char-string">starts_with_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-starts-with-string-string">starts_with_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-ends-with-char-char">ends_with_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-ends-with-string-char">ends_with_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-ends-with-char-string">ends_with_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-ends-with-string-string">ends_with_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-slice-string">slice_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-slice-char">slice_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-find-string-string">find_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-find-string-char">find_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-find-char-string">find_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-find-char-char">find_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-string-string-string">replace_all_string_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-string-string-char">replace_all_string_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-string-char-string">replace_all_string_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-char-string-string">replace_all_char_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-string-char-char">replace_all_string_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-char-string-char">replace_all_char_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-char-char-string">replace_all_char_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-replace-all-char-char-char">replace_all_char_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padl-string-default">padl_string_default (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padl-string-pad-with">padl_string_pad_with (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padl-char-default">padl_char_default (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padl-char-pad-with">padl_char_pad_with (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padr-string-default">padr_string_default (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padr-string-pad-with">padr_string_pad_with (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padr-char-default">padr_char_default (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-padr-char-pad-with">padr_char_pad_with (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-count-string-string">count_string_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-count-string-char">count_string_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-count-char-string">count_char_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-count-char-char">count_char_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-zfill-string">zfill_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-zfill-char">zfill_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-to-c-char-from-char">to_c_char_from_char (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-to-c-char-from-string">to_c_char_from_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-join-string">join_string (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-strings-join-char">join_char (function)</a></li>
 </ul>
 </li>
 </ul>
@@ -629,8 +2543,8 @@ The chunks are separated with a space, or an optional user-defined separator.
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -650,7 +2564,7 @@ The chunks are separated with a space, or an optional user-defined separator.
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -663,7 +2577,7 @@ The chunks are separated with a space, or an optional user-defined separator.
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

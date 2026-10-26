@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_specialmatrices" href="stdlib_specialmatrices.html" />
     <link rel="prev" title="stdlib_specialfunctions" href="stdlib_specialfunctions.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -432,39 +428,2162 @@
 <p class="section-subtitle">Interfaces</p>
 <section id="f-interface-stdlib-specialfunctions-gamma-gamma">
 <h3>gamma (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-gamma" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">gamma</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Gamma function for integer and complex numbers</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint8" title="gamma_iint8"><code class="docutils literal notranslate"><span class="pre">gamma_iint8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint16" title="gamma_iint16"><code class="docutils literal notranslate"><span class="pre">gamma_iint16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint32" title="gamma_iint32"><code class="docutils literal notranslate"><span class="pre">gamma_iint32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint64" title="gamma_iint64"><code class="docutils literal notranslate"><span class="pre">gamma_iint64</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-gamma-csp" title="gamma_csp"><code class="docutils literal notranslate"><span class="pre">gamma_csp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-gamma-cdp" title="gamma_cdp"><code class="docutils literal notranslate"><span class="pre">gamma_cdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-log-gamma">
 <h3>log_gamma (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-log-gamma" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">log_gamma</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Logarithm of gamma function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint8" title="l_gamma_iint8"><code class="docutils literal notranslate"><span class="pre">l_gamma_iint8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint16" title="l_gamma_iint16"><code class="docutils literal notranslate"><span class="pre">l_gamma_iint16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint32" title="l_gamma_iint32"><code class="docutils literal notranslate"><span class="pre">l_gamma_iint32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint64" title="l_gamma_iint64"><code class="docutils literal notranslate"><span class="pre">l_gamma_iint64</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-csp" title="l_gamma_csp"><code class="docutils literal notranslate"><span class="pre">l_gamma_csp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-cdp" title="l_gamma_cdp"><code class="docutils literal notranslate"><span class="pre">l_gamma_cdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-log-factorial">
 <h3>log_factorial (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-log-factorial" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">log_factorial</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Logarithm of factorial n!, integer variable</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint8" title="l_factorial_iint8"><code class="docutils literal notranslate"><span class="pre">l_factorial_iint8</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint16" title="l_factorial_iint16"><code class="docutils literal notranslate"><span class="pre">l_factorial_iint16</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint32" title="l_factorial_iint32"><code class="docutils literal notranslate"><span class="pre">l_factorial_iint32</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint64" title="l_factorial_iint64"><code class="docutils literal notranslate"><span class="pre">l_factorial_iint64</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-lower-incomplete-gamma">
 <h3>lower_incomplete_gamma (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-lower-incomplete-gamma" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">lower_incomplete_gamma</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Lower incomplete gamma function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8sp" title="ingamma_low_iint8sp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint8sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8dp" title="ingamma_low_iint8dp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint8dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16sp" title="ingamma_low_iint16sp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint16sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16dp" title="ingamma_low_iint16dp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint16dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32sp" title="ingamma_low_iint32sp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint32sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32dp" title="ingamma_low_iint32dp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint32dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64sp" title="ingamma_low_iint64sp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint64sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64dp" title="ingamma_low_iint64dp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_iint64dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-rsp" title="ingamma_low_rsp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-rdp" title="ingamma_low_rdp"><code class="docutils literal notranslate"><span class="pre">ingamma_low_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-log-lower-incomplete-gamma">
 <h3>log_lower_incomplete_gamma (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-log-lower-incomplete-gamma" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">log_lower_incomplete_gamma</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Logarithm of lower incomplete gamma function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8sp" title="l_ingamma_low_iint8sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint8sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8dp" title="l_ingamma_low_iint8dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint8dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16sp" title="l_ingamma_low_iint16sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint16sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16dp" title="l_ingamma_low_iint16dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint16dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32sp" title="l_ingamma_low_iint32sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint32sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32dp" title="l_ingamma_low_iint32dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint32dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64sp" title="l_ingamma_low_iint64sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint64sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64dp" title="l_ingamma_low_iint64dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_iint64dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rsp" title="l_ingamma_low_rsp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rdp" title="l_ingamma_low_rdp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_low_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-upper-incomplete-gamma">
 <h3>upper_incomplete_gamma (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-upper-incomplete-gamma" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">upper_incomplete_gamma</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Upper incomplete gamma function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8sp" title="ingamma_up_iint8sp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint8sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8dp" title="ingamma_up_iint8dp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint8dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16sp" title="ingamma_up_iint16sp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint16sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16dp" title="ingamma_up_iint16dp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint16dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32sp" title="ingamma_up_iint32sp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint32sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32dp" title="ingamma_up_iint32dp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint32dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64sp" title="ingamma_up_iint64sp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint64sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64dp" title="ingamma_up_iint64dp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_iint64dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-rsp" title="ingamma_up_rsp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-rdp" title="ingamma_up_rdp"><code class="docutils literal notranslate"><span class="pre">ingamma_up_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-log-upper-incomplete-gamma">
 <h3>log_upper_incomplete_gamma (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-log-upper-incomplete-gamma" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">log_upper_incomplete_gamma</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Logarithm of upper incomplete gamma function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8sp" title="l_ingamma_up_iint8sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint8sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8dp" title="l_ingamma_up_iint8dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint8dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16sp" title="l_ingamma_up_iint16sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint16sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16dp" title="l_ingamma_up_iint16dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint16dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32sp" title="l_ingamma_up_iint32sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint32sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32dp" title="l_ingamma_up_iint32dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint32dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64sp" title="l_ingamma_up_iint64sp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint64sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64dp" title="l_ingamma_up_iint64dp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_iint64dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rsp" title="l_ingamma_up_rsp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rdp" title="l_ingamma_up_rdp"><code class="docutils literal notranslate"><span class="pre">l_ingamma_up_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-regularized-gamma-p">
 <h3>regularized_gamma_p (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-regularized-gamma-p" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">regularized_gamma_p</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Regularized (normalized) lower incomplete gamma function, P</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint8sp" title="regamma_p_iint8sp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint8sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint8dp" title="regamma_p_iint8dp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint8dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint16sp" title="regamma_p_iint16sp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint16sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint16dp" title="regamma_p_iint16dp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint16dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint32sp" title="regamma_p_iint32sp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint32sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint32dp" title="regamma_p_iint32dp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint32dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint64sp" title="regamma_p_iint64sp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint64sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint64dp" title="regamma_p_iint64dp"><code class="docutils literal notranslate"><span class="pre">regamma_p_iint64dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-rsp" title="regamma_p_rsp"><code class="docutils literal notranslate"><span class="pre">regamma_p_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-rdp" title="regamma_p_rdp"><code class="docutils literal notranslate"><span class="pre">regamma_p_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-regularized-gamma-q">
 <h3>regularized_gamma_q (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-regularized-gamma-q" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">regularized_gamma_q</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Regularized (normalized) upper incomplete gamma function, Q</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint8sp" title="regamma_q_iint8sp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint8sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint8dp" title="regamma_q_iint8dp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint8dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint16sp" title="regamma_q_iint16sp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint16sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint16dp" title="regamma_q_iint16dp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint16dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint32sp" title="regamma_q_iint32sp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint32sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint32dp" title="regamma_q_iint32dp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint32dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint64sp" title="regamma_q_iint64sp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint64sp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint64dp" title="regamma_q_iint64dp"><code class="docutils literal notranslate"><span class="pre">regamma_q_iint64dp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-rsp" title="regamma_q_rsp"><code class="docutils literal notranslate"><span class="pre">regamma_q_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-rdp" title="regamma_q_rdp"><code class="docutils literal notranslate"><span class="pre">regamma_q_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-beta">
 <h3>beta (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-beta" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">beta</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Beta function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-beta-rsp" title="beta_rsp"><code class="docutils literal notranslate"><span class="pre">beta_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-beta-rdp" title="beta_rdp"><code class="docutils literal notranslate"><span class="pre">beta_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-log-beta">
 <h3>log_beta (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-log-beta" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">log_beta</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Logarithm of beta function</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-log-beta-rsp" title="log_beta_rsp"><code class="docutils literal notranslate"><span class="pre">log_beta_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-log-beta-rdp" title="log_beta_rdp"><code class="docutils literal notranslate"><span class="pre">log_beta_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="f-interface-stdlib-specialfunctions-gamma-incomplete-beta">
 <h3>incomplete_beta (interface)<a class="headerlink" href="#f-interface-stdlib-specialfunctions-gamma-incomplete-beta" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">incomplete_beta</span> <span class="pre">(interface)</span></code></dt>
+<dd><div class="docutils container">
+<p>Regularized incomplete beta function I_x(a,b)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-incomplete-beta-rsp" title="incomplete_beta_rsp"><code class="docutils literal notranslate"><span class="pre">incomplete_beta_rsp</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-specialfunctions-gamma-incomplete-beta-rdp" title="incomplete_beta_rdp"><code class="docutils literal notranslate"><span class="pre">incomplete_beta_rdp</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<p class="section-subtitle">Procedures</p>
+<section id="f-function-stdlib-specialfunctions-gamma-gamma-iint8">
+<h3>gamma_iint8 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint8" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">gamma_iint8(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer(kind=int8)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-gamma-iint16">
+<h3>gamma_iint16 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint16" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">gamma_iint16(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer(kind=int16)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-gamma-iint32">
+<h3>gamma_iint32 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint32" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">gamma_iint32(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer(kind=int32)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-gamma-iint64">
+<h3>gamma_iint64 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint64" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">gamma_iint64(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">integer(kind=int64)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-gamma-csp">
+<h3>gamma_csp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-gamma-csp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">gamma_csp(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">complex(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">complex(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-gamma-cdp">
+<h3>gamma_cdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-gamma-cdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">gamma_cdp(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">complex(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">complex(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-gamma-iint8">
+<h3>l_gamma_iint8 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint8" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_gamma_iint8(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-gamma-iint16">
+<h3>l_gamma_iint16 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint16" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_gamma_iint16(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-gamma-iint32">
+<h3>l_gamma_iint32 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint32" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_gamma_iint32(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-gamma-iint64">
+<h3>l_gamma_iint64 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint64" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_gamma_iint64(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-gamma-csp">
+<h3>l_gamma_csp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-csp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_gamma_csp(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">complex(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">complex(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-gamma-cdp">
+<h3>l_gamma_cdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-cdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_gamma_cdp(z)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>z</strong><span class="classifier">complex(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">complex(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-factorial-iint8">
+<h3>l_factorial_iint8 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint8" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_factorial_iint8(n)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-factorial-iint16">
+<h3>l_factorial_iint16 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint16" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_factorial_iint16(n)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-factorial-iint32">
+<h3>l_factorial_iint32 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint32" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_factorial_iint32(n)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-factorial-iint64">
+<h3>l_factorial_iint64 (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint64" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_factorial_iint64(n)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-rsp">
+<h3>ingamma_low_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_rsp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-rdp">
+<h3>ingamma_low_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_rdp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8sp">
+<h3>ingamma_low_iint8sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint8sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8dp">
+<h3>ingamma_low_iint8dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint8dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16sp">
+<h3>ingamma_low_iint16sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint16sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16dp">
+<h3>ingamma_low_iint16dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint16dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32sp">
+<h3>ingamma_low_iint32sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint32sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32dp">
+<h3>ingamma_low_iint32dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint32dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64sp">
+<h3>ingamma_low_iint64sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint64sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64dp">
+<h3>ingamma_low_iint64dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_low_iint64dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rsp">
+<h3>l_ingamma_low_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_rsp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rdp">
+<h3>l_ingamma_low_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_rdp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8sp">
+<h3>l_ingamma_low_iint8sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint8sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8dp">
+<h3>l_ingamma_low_iint8dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint8dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16sp">
+<h3>l_ingamma_low_iint16sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint16sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16dp">
+<h3>l_ingamma_low_iint16dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint16dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32sp">
+<h3>l_ingamma_low_iint32sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint32sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32dp">
+<h3>l_ingamma_low_iint32dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint32dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64sp">
+<h3>l_ingamma_low_iint64sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint64sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64dp">
+<h3>l_ingamma_low_iint64dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_low_iint64dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-rsp">
+<h3>ingamma_up_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_rsp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-rdp">
+<h3>ingamma_up_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_rdp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8sp">
+<h3>ingamma_up_iint8sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint8sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8dp">
+<h3>ingamma_up_iint8dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint8dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16sp">
+<h3>ingamma_up_iint16sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint16sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16dp">
+<h3>ingamma_up_iint16dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint16dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32sp">
+<h3>ingamma_up_iint32sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint32sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32dp">
+<h3>ingamma_up_iint32dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint32dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64sp">
+<h3>ingamma_up_iint64sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint64sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64dp">
+<h3>ingamma_up_iint64dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">ingamma_up_iint64dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rsp">
+<h3>l_ingamma_up_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_rsp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rdp">
+<h3>l_ingamma_up_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_rdp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8sp">
+<h3>l_ingamma_up_iint8sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint8sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8dp">
+<h3>l_ingamma_up_iint8dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint8dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16sp">
+<h3>l_ingamma_up_iint16sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint16sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16dp">
+<h3>l_ingamma_up_iint16dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint16dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32sp">
+<h3>l_ingamma_up_iint32sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint32sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32dp">
+<h3>l_ingamma_up_iint32dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint32dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64sp">
+<h3>l_ingamma_up_iint64sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint64sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64dp">
+<h3>l_ingamma_up_iint64dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">l_ingamma_up_iint64dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-rsp">
+<h3>regamma_p_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_rsp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-rdp">
+<h3>regamma_p_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_rdp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint8sp">
+<h3>regamma_p_iint8sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint8sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint8sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint8dp">
+<h3>regamma_p_iint8dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint8dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint8dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint16sp">
+<h3>regamma_p_iint16sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint16sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint16sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint16dp">
+<h3>regamma_p_iint16dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint16dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint16dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint32sp">
+<h3>regamma_p_iint32sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint32sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint32sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint32dp">
+<h3>regamma_p_iint32dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint32dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint32dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint64sp">
+<h3>regamma_p_iint64sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint64sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint64sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-p-iint64dp">
+<h3>regamma_p_iint64dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint64dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_p_iint64dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-rsp">
+<h3>regamma_q_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_rsp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-rdp">
+<h3>regamma_q_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_rdp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint8sp">
+<h3>regamma_q_iint8sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint8sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint8sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint8dp">
+<h3>regamma_q_iint8dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint8dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint8dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int8), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint16sp">
+<h3>regamma_q_iint16sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint16sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint16sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint16dp">
+<h3>regamma_q_iint16dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint16dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint16dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int16), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint32sp">
+<h3>regamma_q_iint32sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint32sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint32sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint32dp">
+<h3>regamma_q_iint32dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint32dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint32dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int32), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint64sp">
+<h3>regamma_q_iint64sp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint64sp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint64sp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-regamma-q-iint64dp">
+<h3>regamma_q_iint64dp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint64dp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">impure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">regamma_q_iint64dp(p,</span> <span class="pre">x)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p</strong><span class="classifier">integer(kind=int64), intent(in)</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-beta-rsp">
+<h3>beta_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-beta-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">beta_rsp(a,</span> <span class="pre">b)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>a</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-beta-rdp">
+<h3>beta_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-beta-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">beta_rdp(a,</span> <span class="pre">b)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>a</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-log-beta-rsp">
+<h3>log_beta_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-log-beta-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">log_beta_rsp(a,</span> <span class="pre">b)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>a</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-log-beta-rdp">
+<h3>log_beta_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-log-beta-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">log_beta_rdp(a,</span> <span class="pre">b)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>a</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-incomplete-beta-rsp">
+<h3>incomplete_beta_rsp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-incomplete-beta-rsp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">incomplete_beta_rsp(x,</span> <span class="pre">a,</span> <span class="pre">b)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>a</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=sp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=sp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-specialfunctions-gamma-incomplete-beta-rdp">
+<h3>incomplete_beta_rdp (function)<a class="headerlink" href="#f-function-stdlib-specialfunctions-gamma-incomplete-beta-rdp" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">incomplete_beta_rdp(x,</span> <span class="pre">a,</span> <span class="pre">b)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>a</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+<dt><strong>b</strong><span class="classifier">real(kind=dp), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">real(kind=dp)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -529,6 +2648,88 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-specialfunctions-gamma-beta">beta (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-specialfunctions-gamma-log-beta">log_beta (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-specialfunctions-gamma-incomplete-beta">incomplete_beta (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint8">gamma_iint8 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint16">gamma_iint16 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint32">gamma_iint32 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-gamma-iint64">gamma_iint64 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-gamma-csp">gamma_csp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-gamma-cdp">gamma_cdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint8">l_gamma_iint8 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint16">l_gamma_iint16 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint32">l_gamma_iint32 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-iint64">l_gamma_iint64 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-csp">l_gamma_csp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-gamma-cdp">l_gamma_cdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint8">l_factorial_iint8 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint16">l_factorial_iint16 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint32">l_factorial_iint32 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-factorial-iint64">l_factorial_iint64 (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-rsp">ingamma_low_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-rdp">ingamma_low_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8sp">ingamma_low_iint8sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint8dp">ingamma_low_iint8dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16sp">ingamma_low_iint16sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint16dp">ingamma_low_iint16dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32sp">ingamma_low_iint32sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint32dp">ingamma_low_iint32dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64sp">ingamma_low_iint64sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-low-iint64dp">ingamma_low_iint64dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rsp">l_ingamma_low_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-rdp">l_ingamma_low_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8sp">l_ingamma_low_iint8sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint8dp">l_ingamma_low_iint8dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16sp">l_ingamma_low_iint16sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint16dp">l_ingamma_low_iint16dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32sp">l_ingamma_low_iint32sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint32dp">l_ingamma_low_iint32dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64sp">l_ingamma_low_iint64sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-low-iint64dp">l_ingamma_low_iint64dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-rsp">ingamma_up_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-rdp">ingamma_up_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8sp">ingamma_up_iint8sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint8dp">ingamma_up_iint8dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16sp">ingamma_up_iint16sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint16dp">ingamma_up_iint16dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32sp">ingamma_up_iint32sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint32dp">ingamma_up_iint32dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64sp">ingamma_up_iint64sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-ingamma-up-iint64dp">ingamma_up_iint64dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rsp">l_ingamma_up_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-rdp">l_ingamma_up_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8sp">l_ingamma_up_iint8sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint8dp">l_ingamma_up_iint8dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16sp">l_ingamma_up_iint16sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint16dp">l_ingamma_up_iint16dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32sp">l_ingamma_up_iint32sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint32dp">l_ingamma_up_iint32dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64sp">l_ingamma_up_iint64sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-l-ingamma-up-iint64dp">l_ingamma_up_iint64dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-rsp">regamma_p_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-rdp">regamma_p_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint8sp">regamma_p_iint8sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint8dp">regamma_p_iint8dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint16sp">regamma_p_iint16sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint16dp">regamma_p_iint16dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint32sp">regamma_p_iint32sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint32dp">regamma_p_iint32dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint64sp">regamma_p_iint64sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-p-iint64dp">regamma_p_iint64dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-rsp">regamma_q_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-rdp">regamma_q_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint8sp">regamma_q_iint8sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint8dp">regamma_q_iint8dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint16sp">regamma_q_iint16sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint16dp">regamma_q_iint16dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint32sp">regamma_q_iint32sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint32dp">regamma_q_iint32dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint64sp">regamma_q_iint64sp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-regamma-q-iint64dp">regamma_q_iint64dp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-beta-rsp">beta_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-beta-rdp">beta_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-log-beta-rsp">log_beta_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-log-beta-rdp">log_beta_rdp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-incomplete-beta-rsp">incomplete_beta_rsp (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-specialfunctions-gamma-incomplete-beta-rdp">incomplete_beta_rdp (function)</a></li>
 </ul>
 </li>
 </ul>
@@ -556,8 +2757,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -577,7 +2778,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -590,7 +2791,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

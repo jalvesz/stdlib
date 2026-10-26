@@ -26,17 +26,17 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -49,6 +49,7 @@
     <link rel="next" title="stdlib_error" href="stdlib_error.html" />
     <link rel="prev" title="stdlib_constants" href="stdlib_constants.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -341,7 +342,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg.html">stdlib_linalg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_iterative_solvers.html">stdlib_linalg_iterative_solvers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_linalg_state.html">stdlib_linalg_state</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_load_library.html">stdlib_load_library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_logger.html">stdlib_logger</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_math.html">stdlib_math</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_optval.html">stdlib_optval</a></li>
@@ -354,10 +354,6 @@
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialfunctions_gamma.html">stdlib_specialfunctions_gamma</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_specialmatrices.html">stdlib_specialmatrices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stats.html">stdlib_stats</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_beta.html">stdlib_stats_distribution_beta</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_exponential.html">stdlib_stats_distribution_exponential</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_normal.html">stdlib_stats_distribution_normal</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stdlib_stats_distribution_uniform.html">stdlib_stats_distribution_uniform</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_str2num.html">stdlib_str2num</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_string_type.html">stdlib_string_type</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stdlib_stringlist_type.html">stdlib_stringlist_type</a></li>
@@ -431,7 +427,7 @@
 <h2>stdlib_datetime (module)<a class="headerlink" href="#f-module-stdlib-datetime" title="Link to this heading">#</a></h2>
 <div class="docutils container">
 <p>Date, time, and time interval handling for Fortran.
-([Specification](../page/specs/stdlib_datetime.html))</p>
+(Specification: <a class="reference internal" href="../specs/stdlib_datetime.html"><span class="doc">stdlib_datetime</span></a>)</p>
 </div>
 <p class="section-subtitle">Types</p>
 <section id="f-type-stdlib-datetime-datetime-type">
@@ -439,13 +435,13 @@
 <dl class="f type">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">datetime_type</span> <span class="pre">(type)</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Represents a specific point in time.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>year</strong><span class="classifier">integer, Default = 1</span></dt><dd><dl class="simple">
-<dt>Represents a specific point in time.</dt><dd><p>Year (1-9999)</p>
-</dd>
-</dl>
+<dt><strong>year</strong><span class="classifier">integer, Default = 1</span></dt><dd><p>Year (1-9999)</p>
 </dd>
 <dt><strong>month</strong><span class="classifier">integer, Default = 1</span></dt><dd><p>Month (1-12)</p>
 </dd>
@@ -472,13 +468,13 @@
 <dl class="f type">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">timedelta_type</span> <span class="pre">(type)</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Represents a duration or time interval. Normalized: seconds in [0,86399], ms in [0,999]. Days can be negative for negative durations.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>days</strong><span class="classifier">integer, Default = 0</span></dt><dd><dl class="simple">
-<dt>Represents a duration or time interval. Normalized: seconds in [0,86399], ms in [0,999]. Days can be negative for negative durations.</dt><dd><p>Number of days</p>
-</dd>
-</dl>
+<dt><strong>days</strong><span class="classifier">integer, Default = 0</span></dt><dd><p>Number of days</p>
 </dd>
 <dt><strong>seconds</strong><span class="classifier">integer, Default = 0</span></dt><dd><p>Seconds (0-86399)</p>
 </dd>
@@ -490,21 +486,169 @@
 </dd></dl>
 
 </section>
+<p class="section-subtitle">Interfaces</p>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(+) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(+)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-plus-td" title="dt_plus_td"><code class="docutils literal notranslate"><span class="pre">dt_plus_td</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-plus-dt" title="td_plus_dt"><code class="docutils literal notranslate"><span class="pre">td_plus_dt</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-plus-td" title="td_plus_td"><code class="docutils literal notranslate"><span class="pre">td_plus_td</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(-) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(-)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-minus-td" title="dt_minus_td"><code class="docutils literal notranslate"><span class="pre">dt_minus_td</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-minus-dt" title="dt_minus_dt"><code class="docutils literal notranslate"><span class="pre">dt_minus_dt</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-minus-td" title="td_minus_td"><code class="docutils literal notranslate"><span class="pre">td_minus_td</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-negate" title="td_negate"><code class="docutils literal notranslate"><span class="pre">td_negate</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(==) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(==)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-eq" title="dt_eq"><code class="docutils literal notranslate"><span class="pre">dt_eq</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-eq" title="td_eq"><code class="docutils literal notranslate"><span class="pre">td_eq</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(/=) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(/=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-ne" title="dt_ne"><code class="docutils literal notranslate"><span class="pre">dt_ne</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-ne" title="td_ne"><code class="docutils literal notranslate"><span class="pre">td_ne</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(&lt;) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&lt;)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-lt" title="dt_lt"><code class="docutils literal notranslate"><span class="pre">dt_lt</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-lt" title="td_lt"><code class="docutils literal notranslate"><span class="pre">td_lt</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(&lt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&lt;=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-le" title="dt_le"><code class="docutils literal notranslate"><span class="pre">dt_le</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-le" title="td_le"><code class="docutils literal notranslate"><span class="pre">td_le</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(&gt;) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&gt;)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-gt" title="dt_gt"><code class="docutils literal notranslate"><span class="pre">dt_gt</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-gt" title="td_gt"><code class="docutils literal notranslate"><span class="pre">td_gt</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-operator">
+<h3>operator(&gt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">operator(&gt;=)</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-dt-ge" title="dt_ge"><code class="docutils literal notranslate"><span class="pre">dt_ge</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-td-ge" title="td_ge"><code class="docutils literal notranslate"><span class="pre">td_ge</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-interface-stdlib-datetime-is-leap-year">
+<h3>is_leap_year (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-is-leap-year" title="Link to this heading">#</a></h3>
+<dl class="f interface">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">is_leap_year</span> <span class="pre">(interface)</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Procedures<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-is-leap-year-int" title="is_leap_year_int"><code class="docutils literal notranslate"><span class="pre">is_leap_year_int</span></code></a></p></li>
+<li><p><a class="reference internal" href="#f-function-stdlib-datetime-is-leap-year-dt" title="is_leap_year_dt"><code class="docutils literal notranslate"><span class="pre">is_leap_year_dt</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <p class="section-subtitle">Procedures</p>
 <section id="f-function-stdlib-datetime-datetime">
 <h3>datetime (function)<a class="headerlink" href="#f-function-stdlib-datetime-datetime" title="Link to this heading">#</a></h3>
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">datetime(year,</span> <span class="pre">month,</span> <span class="pre">day,</span> <span class="pre">hour,</span> <span class="pre">minute,</span> <span class="pre">second,</span> <span class="pre">millisecond,</span> <span class="pre">utc_offset_minutes)</span> <span class="pre">-&gt;</span> <span class="pre">dt</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Create a datetime_type from individual components.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>year</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Create a datetime_type from individual components.</p>
-</dd>
-<dt><strong>month</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Create a datetime_type from individual components.</p>
-</dd>
-<dt><strong>day</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Create a datetime_type from individual components.</p>
-</dd>
+<dt><strong>year</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>month</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>day</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
 <dt><strong>hour</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
 <dt><strong>minute</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
 <dt><strong>second</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
@@ -528,15 +672,15 @@
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">timedelta(days,</span> <span class="pre">hours,</span> <span class="pre">minutes,</span> <span class="pre">seconds,</span> <span class="pre">milliseconds)</span> <span class="pre">-&gt;</span> <span class="pre">td</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Create a normalized timedelta_type from mixed units.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>days</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Create a normalized timedelta_type from mixed units.</p>
-</dd>
-<dt><strong>hours</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Create a normalized timedelta_type from mixed units.</p>
-</dd>
-<dt><strong>minutes</strong><span class="classifier">integer, intent(in), optional</span></dt><dd><p>Create a normalized timedelta_type from mixed units.</p>
-</dd>
+<dt><strong>days</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>hours</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
+<dt><strong>minutes</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
 <dt><strong>seconds</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
 <dt><strong>milliseconds</strong><span class="classifier">integer, intent(in), optional</span></dt><dd></dd>
 </dl>
@@ -557,11 +701,13 @@
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">now</span> <span class="pre">-&gt;</span> <span class="pre">dt</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return the current local date and time.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type)</span></dt><dd><p>Return the current local date and time.</p>
-</dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -573,11 +719,13 @@
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">now_utc</span> <span class="pre">-&gt;</span> <span class="pre">dt</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return the current UTC date and time.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type)</span></dt><dd><p>Return the current UTC date and time.</p>
-</dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -589,11 +737,470 @@
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">epoch</span> <span class="pre">-&gt;</span> <span class="pre">dt</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return the Unix epoch: 1970-01-01T00:00:00Z.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type)</span></dt><dd><p>Return the Unix epoch: 1970-01-01T00:00:00Z.</p>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type)</span></dt><dd></dd>
+</dl>
 </dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-plus-td">
+<h3>dt_plus_td (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-plus-td" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_plus_td(dt,</span> <span class="pre">td)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>datetime + timedelta</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(datetime_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-plus-dt">
+<h3>td_plus_dt (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-plus-dt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_plus_dt(td,</span> <span class="pre">dt)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>timedelta + datetime (commutative)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(datetime_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-plus-td">
+<h3>td_plus_td (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-plus-td" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_plus_td(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>timedelta + timedelta</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(timedelta_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-minus-td">
+<h3>dt_minus_td (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-minus-td" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_minus_td(dt,</span> <span class="pre">td)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>datetime - timedelta</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(datetime_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-minus-dt">
+<h3>dt_minus_dt (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-minus-dt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_minus_dt(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>datetime - datetime (both converted to UTC)</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(timedelta_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-minus-td">
+<h3>td_minus_td (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-minus-td" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_minus_td(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>timedelta - timedelta</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(timedelta_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-negate">
+<h3>td_negate (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-negate" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_negate(td)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Unary minus: -timedelta</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">type(timedelta_type)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-eq">
+<h3>dt_eq (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-eq" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_eq(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-ne">
+<h3>dt_ne (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-ne" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_ne(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-lt">
+<h3>dt_lt (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-lt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_lt(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-le">
+<h3>dt_le (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-le" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_le(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-gt">
+<h3>dt_gt (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-gt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_gt(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-dt-ge">
+<h3>dt_ge (function)<a class="headerlink" href="#f-function-stdlib-datetime-dt-ge" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">dt_ge(dt1,</span> <span class="pre">dt2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt1</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+<dt><strong>dt2</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-eq">
+<h3>td_eq (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-eq" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_eq(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-ne">
+<h3>td_ne (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-ne" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_ne(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-lt">
+<h3>td_lt (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-lt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_lt(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-le">
+<h3>td_le (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-le" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_le(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-gt">
+<h3>td_gt (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-gt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_gt(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-td-ge">
+<h3>td_ge (function)<a class="headerlink" href="#f-function-stdlib-datetime-td-ge" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">td_ge(td1,</span> <span class="pre">td2)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td1</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+<dt><strong>td2</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -605,11 +1212,13 @@
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">format_datetime(dt)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Format a datetime_type as an ISO 8601 string.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd><p>Format a datetime_type as an ISO 8601 string.</p>
-</dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -628,14 +1237,16 @@
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">format_timedelta(td,</span> <span class="pre">compact)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Arguments<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd><p>Format a timedelta_type as a readable string.
+<dd><div class="docutils container">
+<p>Format a timedelta_type as a readable string.
 When days == 0 and compact is present and .true., sub-second/sub-minute durations are
 formatted compactly (e.g. “5ms”, “1.500s”, “05:30[.mmm]”); the “0 days, “ prefix is omitted.
 When compact is absent or .false., or when days /= 0, the original verbose format is preserved.</p>
-</dd>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
 <dt><strong>compact</strong><span class="classifier">logical, intent(in), optional</span></dt><dd></dd>
 </dl>
 </dd>
@@ -655,11 +1266,13 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">function</span> <span class="pre">parse_datetime(str,</span> <span class="pre">stat)</span> <span class="pre">-&gt;</span> <span class="pre">dt</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Parse an ISO 8601 date/time string.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>str</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd><p>Parse an ISO 8601 date/time string.</p>
-</dd>
+<dt><strong>str</strong><span class="classifier">character(len=*), intent(in)</span></dt><dd></dd>
 <dt><strong>stat</strong><span class="classifier">integer, intent(out), optional</span></dt><dd></dd>
 </dl>
 </dd>
@@ -674,18 +1287,69 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 </dd></dl>
 
 </section>
+<section id="f-function-stdlib-datetime-is-leap-year-int">
+<h3>is_leap_year_int (function)<a class="headerlink" href="#f-function-stdlib-datetime-is-leap-year-int" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">is_leap_year_int(year)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Check if a year is a leap year.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>year</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="f-function-stdlib-datetime-is-leap-year-dt">
+<h3>is_leap_year_dt (function)<a class="headerlink" href="#f-function-stdlib-datetime-is-leap-year-dt" title="Link to this heading">#</a></h3>
+<dl class="f function">
+<dt class="sig sig-object f">
+<code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">elemental</span> <span class="pre">function</span> <span class="pre">is_leap_year_dt(dt)</span> <span class="pre">-&gt;</span> <span class="pre">res</span></code></dt>
+<dd><div class="docutils container">
+<p>Check if a datetime’s year is a leap year.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>res</strong><span class="classifier">logical</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="f-function-stdlib-datetime-days-in-month">
 <h3>days_in_month (function)<a class="headerlink" href="#f-function-stdlib-datetime-days-in-month" title="Link to this heading">#</a></h3>
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">days_in_month(month,</span> <span class="pre">year)</span> <span class="pre">-&gt;</span> <span class="pre">d</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return the number of days in a given month.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>month</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Return the number of days in a given month.</p>
-</dd>
-<dt><strong>year</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Return the number of days in a given month.</p>
-</dd>
+<dt><strong>month</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
+<dt><strong>year</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -704,11 +1368,13 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">days_in_year(year)</span> <span class="pre">-&gt;</span> <span class="pre">d</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return 366 for leap years, 365 otherwise.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>year</strong><span class="classifier">integer, intent(in)</span></dt><dd><p>Return 366 for leap years, 365 otherwise.</p>
-</dd>
+<dt><strong>year</strong><span class="classifier">integer, intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -727,11 +1393,13 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">day_of_year(dt)</span> <span class="pre">-&gt;</span> <span class="pre">doy</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return the ordinal day of the year (1-366).</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd><p>Return the ordinal day of the year (1-366).</p>
-</dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -750,11 +1418,13 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">day_of_week(dt)</span> <span class="pre">-&gt;</span> <span class="pre">dow</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return ISO weekday (1=Monday … 7=Sunday).</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd><p>Return ISO weekday (1=Monday … 7=Sunday).</p>
-</dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -773,11 +1443,13 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">to_utc(dt)</span> <span class="pre">-&gt;</span> <span class="pre">utc_dt</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Convert a datetime to UTC.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd><p>Convert a datetime to UTC.</p>
-</dd>
+<dt><strong>dt</strong><span class="classifier">type(datetime_type), intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -796,11 +1468,13 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <dl class="f function">
 <dt class="sig sig-object f">
 <code class="docutils literal notranslate"><span class="pre">pure</span> <span class="pre">function</span> <span class="pre">total_seconds(td)</span> <span class="pre">-&gt;</span> <span class="pre">secs</span></code></dt>
-<dd><dl class="field-list simple">
+<dd><div class="docutils container">
+<p>Return the total duration in seconds as real(dp).</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Arguments<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd><p>Return the total duration in seconds as real(dp).</p>
-</dd>
+<dt><strong>td</strong><span class="classifier">type(timedelta_type), intent(in)</span></dt><dd></dd>
 </dl>
 </dd>
 </dl>
@@ -813,34 +1487,6 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 </dl>
 </dd></dl>
 
-</section>
-<p class="section-subtitle">Interfaces</p>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(+) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(-) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(==) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(/=) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(&lt;) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(&lt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(&gt;) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-operator">
-<h3>operator(&gt;=) (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-operator" title="Link to this heading">#</a></h3>
-</section>
-<section id="f-interface-stdlib-datetime-is-leap-year">
-<h3>is_leap_year (interface)<a class="headerlink" href="#f-interface-stdlib-datetime-is-leap-year" title="Link to this heading">#</a></h3>
 </section>
 </section>
 </section>
@@ -895,20 +1541,6 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#f-module-stdlib-datetime">stdlib_datetime (module)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-datetime-datetime-type">datetime_type (type)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-type-stdlib-datetime-timedelta-type">timedelta_type (type)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-datetime">datetime (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-timedelta">timedelta (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-now">now (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-now-utc">now_utc (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-epoch">epoch (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-format-datetime">format_datetime (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-format-timedelta">format_timedelta (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-parse-datetime">parse_datetime (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-days-in-month">days_in_month (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-days-in-year">days_in_year (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-day-of-year">day_of_year (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-day-of-week">day_of_week (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-to-utc">to_utc (function)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-total-seconds">total_seconds (function)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-datetime-operator">operator(+) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-datetime-operator">operator(-) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-datetime-operator">operator(==) (interface)</a></li>
@@ -918,6 +1550,41 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-datetime-operator">operator(&gt;) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-datetime-operator">operator(&gt;=) (interface)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-interface-stdlib-datetime-is-leap-year">is_leap_year (interface)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-datetime">datetime (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-timedelta">timedelta (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-now">now (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-now-utc">now_utc (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-epoch">epoch (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-plus-td">dt_plus_td (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-plus-dt">td_plus_dt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-plus-td">td_plus_td (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-minus-td">dt_minus_td (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-minus-dt">dt_minus_dt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-minus-td">td_minus_td (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-negate">td_negate (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-eq">dt_eq (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-ne">dt_ne (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-lt">dt_lt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-le">dt_le (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-gt">dt_gt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-dt-ge">dt_ge (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-eq">td_eq (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-ne">td_ne (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-lt">td_lt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-le">td_le (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-gt">td_gt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-td-ge">td_ge (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-format-datetime">format_datetime (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-format-timedelta">format_timedelta (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-parse-datetime">parse_datetime (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-is-leap-year-int">is_leap_year_int (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-is-leap-year-dt">is_leap_year_dt (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-days-in-month">days_in_month (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-days-in-year">days_in_year (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-day-of-year">day_of_year (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-day-of-week">day_of_week (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-to-utc">to_utc (function)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#f-function-stdlib-datetime-total-seconds">total_seconds (function)</a></li>
 </ul>
 </li>
 </ul>
@@ -945,8 +1612,8 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -966,7 +1633,7 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -979,7 +1646,7 @@ When compact is absent or .false., or when days /= 0, the original verbose forma
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

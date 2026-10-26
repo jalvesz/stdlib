@@ -26,21 +26,23 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'specs/stdlib_specialfunctions_gamma';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../_static/favicon.ico"/>
@@ -49,6 +51,7 @@
     <link rel="next" title="stdlib_specialmatrices" href="stdlib_specialmatrices.html" />
     <link rel="prev" title="stdlib_specialfunctions" href="stdlib_specialfunctions_activations.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -424,7 +427,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="stdlib-specialfunctions-gamma">
+  <section class="tex2jax_ignore mathjax_ignore" id="stdlib-specialfunctions-gamma">
 <h1><code class="docutils literal notranslate"><span class="pre">stdlib_specialfunctions_gamma</span></code><a class="headerlink" href="#stdlib-specialfunctions-gamma" title="Link to this heading">#</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -536,7 +539,8 @@
 <section id="description">
 <h3><a class="toc-backref" href="#id57" role="doc-backlink">Description</a><a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
 <p>The gamma function is defined as the analytic continuation of a convergent improper integral function on the whole complex plane except zero and negative integers:</p>
-<p>$$\Gamma(z)=\int_{0}^{\infty}x^{z-1}e^{-x}dx, ;;  z\in \mathbb{C} \setminus 0, -1, -2, \cdots$$</p>
+<div class="math notranslate nohighlight">
+\[\Gamma(z)=\int_{0}^{\infty}x^{z-1}e^{-x}dx, \;\;  z\in \mathbb{C} \setminus 0, -1, -2, \cdots\]</div>
 <p>Fortran 2018 standard implements the intrinsic gamma function of real type argument in single and double precisions. Here the gamma function is extended to both integer and complex arguments. The values of the gamma function with integer arguments are exact. The values of the gamma function with complex arguments are approximated in single and double precisions by using Lanczos approximation.</p>
 </section>
 <section id="syntax">
@@ -714,7 +718,8 @@
 <section id="id16">
 <h3><a class="toc-backref" href="#id81" role="doc-backlink">Description</a><a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
 <p>The lower incomplete gamma function is defined as:</p>
-<p>$$\gamma(p,x)=\int_{0}^{x}t^{p-1}e^{-t}dt, ;;  p &gt; 0, x\in \mathbb{R}$$</p>
+<div class="math notranslate nohighlight">
+\[\gamma(p,x)=\int_{0}^{x}t^{p-1}e^{-t}dt, \;\;  p &gt; 0, x\in \mathbb{R}\]</div>
 <p>When x &lt; 0, p must be positive integer.</p>
 </section>
 <section id="id17">
@@ -765,7 +770,8 @@
 <section id="id23">
 <h3><a class="toc-backref" href="#id89" role="doc-backlink">Description</a><a class="headerlink" href="#id23" title="Link to this heading">#</a></h3>
 <p>The upper incomplete gamma function is defined as:</p>
-<p>$$\Gamma (p, x) = \int_{x}^{\infty }t^{p-1}e^{-t}dt, ; ; p &gt;0,; x \in \mathbb{R}$$</p>
+<div class="math notranslate nohighlight">
+\[\Gamma (p, x) = \int_{x}^{\infty }t^{p-1}e^{-t}dt, \; \; p &gt;0,\; x \in \mathbb{R}\]</div>
 <p>When x &lt; 0, p must be a positive integer.</p>
 </section>
 <section id="id24">
@@ -868,7 +874,8 @@
 <section id="id42">
 <h3><a class="toc-backref" href="#id111" role="doc-backlink">Description</a><a class="headerlink" href="#id42" title="Link to this heading">#</a></h3>
 <p>The regularized gamma quotient P, also known as normalized incomplete gamma function, is defined as:</p>
-<p>$$P(p,x)=\gamma(p,x)/\Gamma(p)$$</p>
+<div class="math notranslate nohighlight">
+\[P(p,x)=\gamma(p,x)/\Gamma(p)\]</div>
 <p>The values of regularized gamma P is in the range of [0, 1]</p>
 </section>
 <section id="id43">
@@ -911,7 +918,8 @@
 <section id="id49">
 <h3><a class="toc-backref" href="#id119" role="doc-backlink">Description</a><a class="headerlink" href="#id49" title="Link to this heading">#</a></h3>
 <p>The regularized gamma quotient Q is defined as:</p>
-<p>$$Q(p,x)=\Gamma(p,x)/\Gamma(p)=1-P(p,x)$$</p>
+<div class="math notranslate nohighlight">
+\[Q(p,x)=\Gamma(p,x)/\Gamma(p)=1-P(p,x)\]</div>
 <p>The values of regularized gamma Q is in the range of [0, 1]</p>
 </section>
 <section id="id50">
@@ -1107,8 +1115,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1128,7 +1136,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -1141,7 +1149,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

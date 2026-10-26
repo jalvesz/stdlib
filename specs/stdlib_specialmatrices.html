@@ -26,21 +26,23 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/fortran-lang.css?v=3185729b" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
     <script src="../_static/documentation_options.js?v=2856efab"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'specs/stdlib_specialmatrices';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../_static/favicon.ico"/>
@@ -49,6 +51,7 @@
     <link rel="next" title="stdlib_stats" href="stdlib_stats.html" />
     <link rel="prev" title="stdlib_specialfunctions_gamma" href="stdlib_specialfunctions_gamma.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   
@@ -424,7 +427,7 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="stdlib-specialmatrices">
+  <section class="tex2jax_ignore mathjax_ignore" id="stdlib-specialmatrices">
 <h1><code class="docutils literal notranslate"><span class="pre">stdlib_specialmatrices</span></code><a class="headerlink" href="#stdlib-specialmatrices" title="Link to this heading">#</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -477,17 +480,19 @@ Note that this module is under active development and this list will eventually 
 <h4>Description<a class="headerlink" href="#description" title="Link to this heading">#</a></h4>
 <p>Tridiagonal matrices are ubiquitous in scientific computing and often appear when discretizing 1D differential operators.
 A generic tridiagonal matrix has the following structure:
-$$
-A
-=
-\begin{bmatrix}
-a_1 &amp;  b_1  \
-c_1 &amp;  a_2      &amp;  b_2  \
-&amp;  \ddots   &amp;  \ddots   &amp;  \ddots   \
-&amp;           &amp;  c_{n-2} &amp;  a_{n-1}  &amp;  b_{n-1} \
-&amp;           &amp;           &amp;  c_{n-1} &amp;  a_n
-\end{bmatrix}.
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
+    A
+    =
+    \begin{bmatrix}
+        a_1 &amp;  b_1  \\
+        c_1 &amp;  a_2      &amp;  b_2  \\
+            &amp;  \ddots   &amp;  \ddots   &amp;  \ddots   \\
+            &amp;           &amp;  c_{n-2} &amp;  a_{n-1}  &amp;  b_{n-1} \\
+            &amp;           &amp;           &amp;  c_{n-1} &amp;  a_n
+    \end{bmatrix}.
+\end{split}\]</div>
+
 Hence, only one vector of size <code class="docutils literal notranslate"><span class="pre">n</span></code> and two of size <code class="docutils literal notranslate"><span class="pre">n-1</span></code> need to be stored to fully represent the matrix.
 This particular structure also lends itself to specialized implementations for many linear algebra tasks.
 Interfaces to the most common ones will soon be provided by <code class="docutils literal notranslate"><span class="pre">stdlib_specialmatrices</span></code>.
@@ -581,17 +586,19 @@ In either case, the elements of the resulting matrix <code class="docutils liter
 <h4>Description<a class="headerlink" href="#id2" title="Link to this heading">#</a></h4>
 <p>Symmetric tridiagonal matrices are a special case of tridiagonal matrices in which the subdiagonal and superdiagonal are identical.
 A generic symmetric tridiagonal matrix has the following structure:
-$$
-A
-=
-\begin{bmatrix}
-a_1 &amp;  b_1  \
-b_1 &amp;  a_2      &amp;  b_2  \
-&amp;  \ddots   &amp;  \ddots   &amp;  \ddots   \
-&amp;           &amp;  b_{n-2} &amp;  a_{n-1}  &amp;  b_{n-1} \
-&amp;           &amp;           &amp;  b_{n-1} &amp;  a_n
-\end{bmatrix}.
-$$
+<div class="math notranslate nohighlight">
+\[\begin{split}
+    A
+    =
+    \begin{bmatrix}
+        a_1 &amp;  b_1  \\
+        b_1 &amp;  a_2      &amp;  b_2  \\
+            &amp;  \ddots   &amp;  \ddots   &amp;  \ddots   \\
+            &amp;           &amp;  b_{n-2} &amp;  a_{n-1}  &amp;  b_{n-1} \\
+            &amp;           &amp;           &amp;  b_{n-1} &amp;  a_n
+    \end{bmatrix}.
+\end{split}\]</div>
+
 Hence, only one vector of size <code class="docutils literal notranslate"><span class="pre">n</span></code> and one vector of size <code class="docutils literal notranslate"><span class="pre">n-1</span></code> need to be stored to fully represent the matrix.
 This particular structure also lends itself to specialized implementations for many linear algebra tasks.
 Interfaces to the most common ones will soon be provided by <code class="docutils literal notranslate"><span class="pre">stdlib_specialmatrices</span></code>.
@@ -690,7 +697,7 @@ In either case, the elements of the resulting matrix <code class="docutils liter
 </section>
 <section id="id10">
 <h4>Syntax<a class="headerlink" href="#id10" title="Link to this heading">#</a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">call</span> </code> <code class="docutils literal notranslate"><span class="pre">spmv</span></code> <code class="docutils literal notranslate"><span class="pre">(A,</span> <span class="pre">x,</span> <span class="pre">y</span> <span class="pre">[,</span> <span class="pre">alpha,</span> <span class="pre">beta,</span> <span class="pre">op])</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">call</span> </code> <a class="reference internal" href="../api/stdlib_specialmatrices.html#f-interface-stdlib-specialmatrices-spmv" title="spmv"><code class="xref f f-iface docutils literal notranslate"><span class="pre">spmv</span></code></a> <code class="docutils literal notranslate"><span class="pre">(A,</span> <span class="pre">x,</span> <span class="pre">y</span> <span class="pre">[,</span> <span class="pre">alpha,</span> <span class="pre">beta,</span> <span class="pre">op])</span></code></p>
 </section>
 <section id="id11">
 <h4>Arguments<a class="headerlink" href="#id11" title="Link to this heading">#</a></h4>
@@ -1015,8 +1022,8 @@ In either case, the elements of the resulting matrix <code class="docutils liter
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1036,7 +1043,7 @@ In either case, the elements of the resulting matrix <code class="docutils liter
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
   </p>
 </div>
       
@@ -1049,7 +1056,7 @@ In either case, the elements of the resulting matrix <code class="docutils liter
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>
