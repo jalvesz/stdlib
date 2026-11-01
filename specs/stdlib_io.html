@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=05e7f280"></script>
+    <script src="../_static/documentation_options.js?v=8be43154"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'specs/stdlib_io';</script>
@@ -627,7 +627,7 @@ Text files are opened using a sequential access, while binary files are opened u
 <span class="w">  </span><span class="k">use </span><span class="n">stdlib_io</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="k">open</span>
 <span class="k">  implicit none</span>
 <span class="k">  </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u</span>
-<span class="w">  </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="p">(</span><span class="s1">'example.dat'</span><span class="p">,</span><span class="w"> </span><span class="s1">'wt'</span><span class="p">)</span>
+<span class="w">  </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">open</span><span class="w"> </span><span class="p">(</span><span class="s1">'example_open.dat'</span><span class="p">,</span><span class="w"> </span><span class="s1">'wt'</span><span class="p">)</span>
 <span class="w">  </span><span class="k">write</span><span class="w"> </span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="s1">'(a)'</span><span class="p">)</span><span class="w"> </span><span class="s1">'This is an example for open'</span>
 <span class="w">  </span><span class="k">close</span><span class="w"> </span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 <span class="k">end program </span><span class="n">example_open</span>
@@ -681,15 +681,15 @@ Text files are opened using a sequential access, while binary files are opened u
 <span class="w">    </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">])</span>
 
 <span class="w">    </span><span class="c">! Output to file, default options</span>
-<span class="w">    </span><span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s1">'example.dat'</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">)</span>
-<span class="w">    </span><span class="c">! Result in example.dat:</span>
+<span class="w">    </span><span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s1">'example_savetxt.dat'</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">)</span>
+<span class="w">    </span><span class="c">! Result in example_savetxt.dat:</span>
 <span class="w">    </span><span class="c">!  1.00000000E+00  4.00000000E+00</span>
 <span class="w">    </span><span class="c">!  2.00000000E+00  5.00000000E+00</span>
 <span class="w">    </span><span class="c">!  3.00000000E+00  6.00000000E+00</span>
 <span class="w">    </span><span class="c">!</span>
 <span class="w">    </span><span class="c">! Output to file, with custom delimiter</span>
-<span class="w">    </span><span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s1">'example.csv'</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">delimiter</span><span class="o">=</span><span class="s1">','</span><span class="p">)</span>
-<span class="w">    </span><span class="c">! Result in example.csv:</span>
+<span class="w">    </span><span class="k">call </span><span class="n">savetxt</span><span class="p">(</span><span class="s1">'example_savetxt.csv'</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">delimiter</span><span class="o">=</span><span class="s1">','</span><span class="p">)</span>
+<span class="w">    </span><span class="c">! Result in example_savetxt.csv:</span>
 <span class="w">    </span><span class="c">! 1.00000000E+00, 4.00000000E+00</span>
 <span class="w">    </span><span class="c">! 2.00000000E+00, 5.00000000E+00</span>
 <span class="w">    </span><span class="c">! 3.00000000E+00, 6.00000000E+00</span>
