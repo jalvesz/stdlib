@@ -375,10 +375,15 @@ contains
         use stdlib_bitsets
         type(error_type), allocatable, intent(out) :: error
         type(bitset_64) :: x, y, u, v
-        
-        x = [.true.,.false.,.true.,.false.] 
+        logical :: lv1(4), lv2(4)
+
+        ! Workaround for LFortran: array constructors cannot be passed directly
+        ! to a defined-assignment subroutine (LFortran limitation).
+        lv1 = [.true.,.false.,.true.,.false.]
+        lv2 = [.false.,.true.,.false.,.true.]
+        x = lv1
         u = x
-        y = [.false.,.true.,.false.,.true.]
+        y = lv2
         v = y
         call swap(x,y)
         
@@ -398,10 +403,15 @@ contains
         use stdlib_bitsets
         type(error_type), allocatable, intent(out) :: error
         type(bitset_large) :: x, y, u, v
-        
-        x = [.true.,.false.,.true.,.false.] 
+        logical :: lv1(4), lv2(4)
+
+        ! Workaround for LFortran: array constructors cannot be passed directly
+        ! to a defined-assignment subroutine (LFortran limitation).
+        lv1 = [.true.,.false.,.true.,.false.]
+        lv2 = [.false.,.true.,.false.,.true.]
+        x = lv1
         u = x
-        y = [.false.,.true.,.false.,.true.]
+        y = lv2
         v = y
         call swap(x,y)
         
