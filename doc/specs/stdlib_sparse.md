@@ -117,11 +117,6 @@ BSR%data(:,:,4) = reshape(real([4,0,3,0]),[2,2])
 BSR%data(:,:,5) = reshape(real([7,0,2,0]),[2,2])
 ```
 
-The following example uses the same grid graph for a scalar temperature field
-in CSR and a two-component velocity field in BSR. The low-level SpMV kernels
-take the same `rowptr` and `col` arrays directly, while the scalar and block
-values are stored separately.
-
 ```{literalinclude} ../../example/linalg/example_sparse_bsr_grid.f90
 :language: fortran
 ```

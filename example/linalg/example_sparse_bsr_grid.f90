@@ -1,3 +1,7 @@
+! This example uses the same grid graph for a scalar temperature field
+! in CSR and a two-component velocity field in BSR. The low-level SpMV kernels
+! take the same rowptr and col arrays directly, while the scalar and block
+! values are stored separately.
 program example_sparse_bsr_grid
     use stdlib_linalg_constants, only: dp
     use stdlib_sparse_constants, only: ilp
