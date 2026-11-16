@@ -116,6 +116,10 @@ BSR%data(:,:,3) = reshape(real([1,5,4,1]),[2,2])
 BSR%data(:,:,4) = reshape(real([4,0,3,0]),[2,2])
 BSR%data(:,:,5) = reshape(real([7,0,2,0]),[2,2])
 ```
+
+```{literalinclude} ../../example/linalg/example_sparse_bsr_grid.f90
+:language: fortran
+```
 <!-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -->
 ### `CSC`: The Compressed Sparse Column format
 #### Status
@@ -278,7 +282,7 @@ $$y=\alpha*op(M)*x+\beta*y$$
 `call ` {f:iface}`spmv_kernel_csr` `(op,alpha,data,col,rowptr,storage,vec_x,beta,vec_y)`
 
 `call ` {f:iface}`spmv_kernel_ell` `(op,alpha,data,index,storage,vec_x,beta,vec_y)`
-`call ` {f:iface}`spmv_kernel_sellc` `(op,alpha,data,ia,ja,storage,vec_x,beta,vec_y)`
+
 `call ` {f:iface}`spmv_kernel_sellc` `(op,alpha,data,ia,ja,storage,vec_x,beta,vec_y)`
 
 ### Arguments

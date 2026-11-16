@@ -38,7 +38,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=df371c42"></script>
+    <script src="../_static/documentation_options.js?v=edb49e81"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
@@ -434,7 +434,7 @@
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="stdlib-stats-distribution-gamma">
-<h1><code class="docutils literal notranslate"><span class="pre">stdlib_stats_distribution_gamma</span></code><a class="headerlink" href="#stdlib-stats-distribution-gamma" title="Link to this heading">#</a></h1>
+<span id="stdlib_stats_distribution_gamma"></span><h1><code class="docutils literal notranslate"><span class="pre">stdlib_stats_distribution_gamma</span></code><a class="headerlink" href="#stdlib-stats-distribution-gamma" title="Link to this heading">#</a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#rvs-gamma-gamma-distribution-random-variates" id="id20"><code class="docutils literal notranslate"><span class="pre">rvs_gamma</span></code> - gamma distribution random variates</a></p>
@@ -473,17 +473,17 @@
 </ul>
 </nav>
 <section id="rvs-gamma-gamma-distribution-random-variates">
-<h2><a class="toc-backref" href="#id20" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">rvs_gamma</span></code> - gamma distribution random variates</a><a class="headerlink" href="#rvs-gamma-gamma-distribution-random-variates" title="Link to this heading">#</a></h2>
+<span id="rvs_gamma---gamma-distribution-random-variates"></span><h2><a class="toc-backref" href="#id20" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">rvs_gamma</span></code> - gamma distribution random variates</a><a class="headerlink" href="#rvs-gamma-gamma-distribution-random-variates" title="Link to this heading">#</a></h2>
 <section id="status">
 <h3><a class="toc-backref" href="#id21" role="doc-backlink">Status</a><a class="headerlink" href="#status" title="Link to this heading">#</a></h3>
 <p>Experimental</p>
 </section>
 <section id="description">
 <h3><a class="toc-backref" href="#id22" role="doc-backlink">Description</a><a class="headerlink" href="#description" title="Link to this heading">#</a></h3>
-<p>The gamma distribution is a continuous probability distribution widely used in modeling waiting times, queue lengths, and other non-negative quantities. It is defined by a shape parameter (\(k\) or \(\alpha\)) that controls the distribution’s form and a rate parameter (\(\lambda\)) that controls its scale.</p>
-<p>Without arguments, the function returns a random sample from the standard gamma distribution \(\Gamma(k=1, \lambda=1)\).</p>
-<p>With a single argument for shape parameter, the function returns a random sample from the gamma distribution \(\Gamma(k=\text{shape}, \lambda=1)\).</p>
-<p>With two arguments (shape, rate), the function returns a random sample from the gamma distribution \(\Gamma(k=\text{shape}, \lambda=\text{rate})\).</p>
+<p>The gamma distribution is a continuous probability distribution widely used in modeling waiting times, queue lengths, and other non-negative quantities. It is defined by a shape parameter (<span class="math notranslate nohighlight">\(k\)</span> or <span class="math notranslate nohighlight">\(\alpha\)</span>) that controls the distribution’s form and a rate parameter (<span class="math notranslate nohighlight">\(\lambda\)</span>) that controls its scale.</p>
+<p>Without arguments, the function returns a random sample from the standard gamma distribution <span class="math notranslate nohighlight">\(\Gamma(k=1, \lambda=1)\)</span>.</p>
+<p>With a single argument for shape parameter, the function returns a random sample from the gamma distribution <span class="math notranslate nohighlight">\(\Gamma(k=\text{shape}, \lambda=1)\)</span>.</p>
+<p>With two arguments (shape, rate), the function returns a random sample from the gamma distribution <span class="math notranslate nohighlight">\(\Gamma(k=\text{shape}, \lambda=\text{rate})\)</span>.</p>
 <p>The optional <code class="docutils literal notranslate"><span class="pre">loc</span></code> parameter specifies the location (shift) of the distribution.</p>
 <p>With three or more arguments including <code class="docutils literal notranslate"><span class="pre">array_size</span></code>, the function returns a rank-1 array of gamma distributed random variates.</p>
 <p>For complex shape and rate parameters, the real and imaginary parts are sampled independently of each other.</p>
@@ -503,9 +503,9 @@
 <section id="arguments">
 <h3><a class="toc-backref" href="#id25" role="doc-backlink">Arguments</a><a class="headerlink" href="#arguments" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">shape</span></code>: optional argument has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>.
-If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive. This is the shape (or “form”) parameter \(k\) of the distribution. Default value is 1.0.</p>
+If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive. This is the shape (or “form”) parameter <span class="math notranslate nohighlight">\(k\)</span> of the distribution. Default value is 1.0.</p>
 <p><code class="docutils literal notranslate"><span class="pre">rate</span></code>: optional argument has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>.
-If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive. This is the rate parameter (\lambda) (inverse of scale). Default value is 1.0.</p>
+If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive. This is the rate parameter <span class="math notranslate nohighlight">\(\lambda\)</span> (inverse of scale). Default value is 1.0.</p>
 <p><code class="docutils literal notranslate"><span class="pre">loc</span></code>: optional argument has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>.
 Specifies the location (shift) of the distribution with default value 0.0. The distribution support is x &gt; loc.</p>
 <p><code class="docutils literal notranslate"><span class="pre">array_size</span></code>: optional argument has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">integer</span></code> with default kind.</p>
@@ -572,46 +572,46 @@ Specifies the location (shift) of the distribution with default value 0.0. The d
 </section>
 </section>
 <section id="pdf-gamma-gamma-distribution-probability-density-function">
-<h2><a class="toc-backref" href="#id28" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">pdf_gamma</span></code> - gamma distribution probability density function</a><a class="headerlink" href="#pdf-gamma-gamma-distribution-probability-density-function" title="Link to this heading">#</a></h2>
+<span id="pdf_gamma---gamma-distribution-probability-density-function"></span><h2><a class="toc-backref" href="#id28" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">pdf_gamma</span></code> - gamma distribution probability density function</a><a class="headerlink" href="#pdf-gamma-gamma-distribution-probability-density-function" title="Link to this heading">#</a></h2>
 <section id="id2">
-<h3><a class="toc-backref" href="#id29" role="doc-backlink">Status</a><a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<span id="status-1"></span><h3><a class="toc-backref" href="#id29" role="doc-backlink">Status</a><a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <p>Experimental</p>
 </section>
 <section id="id3">
-<h3><a class="toc-backref" href="#id30" role="doc-backlink">Description</a><a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<span id="description-1"></span><h3><a class="toc-backref" href="#id30" role="doc-backlink">Description</a><a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <p>The probability density function (pdf) of the single real variable gamma distribution is:</p>
 <div class="math notranslate nohighlight">
 \[ f(x)= \frac{\lambda^{k}}{\Gamma (k)}x^{k-1}e^{-\lambda x} ,\quad x&gt;0,\ k&gt;0,\ \lambda&gt;0 \]</div>
-<p>where \(k\) is the shape parameter, \(\lambda\) is the rate parameter, and \(\Gamma(k)\) is the gamma function.</p>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> is the shape parameter, <span class="math notranslate nohighlight">\(\lambda\)</span> is the rate parameter, and <span class="math notranslate nohighlight">\(\Gamma(k)\)</span> is the gamma function.</p>
 <p>An optional <code class="docutils literal notranslate"><span class="pre">loc</span></code> parameter specifies the location (shift) of the distribution.</p>
-<p>For a complex variable \(z=(x + y i)\) with independent real \(x\) and imaginary \(y\) parts, the joint probability density function is the product of the corresponding real and imaginary marginal pdfs:<a class="footnote-reference brackets" href="#id19" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
+<p>For a complex variable <span class="math notranslate nohighlight">\(z=(x + y i)\)</span> with independent real <span class="math notranslate nohighlight">\(x\)</span> and imaginary <span class="math notranslate nohighlight">\(y\)</span> parts, the joint probability density function is the product of the corresponding real and imaginary marginal pdfs:<a class="footnote-reference brackets" href="#id19" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
 <div class="math notranslate nohighlight">
 \[f(x+\mathit{i}y)=f(x)f(y)\]</div>
 </section>
 <section id="id5">
-<h3><a class="toc-backref" href="#id31" role="doc-backlink">Syntax</a><a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<span id="syntax-1"></span><h3><a class="toc-backref" href="#id31" role="doc-backlink">Syntax</a><a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> </code>pdf_gamma<code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">shape,</span> <span class="pre">rate</span> </code>, loc<code class="docutils literal notranslate"><span class="pre">)</span></code></p>
 </section>
 <section id="id6">
-<h3><a class="toc-backref" href="#id32" role="doc-backlink">Class</a><a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<span id="class-1"></span><h3><a class="toc-backref" href="#id32" role="doc-backlink">Class</a><a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <p>Impure elemental function</p>
 </section>
 <section id="id7">
-<h3><a class="toc-backref" href="#id33" role="doc-backlink">Arguments</a><a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<span id="arguments-1"></span><h3><a class="toc-backref" href="#id33" role="doc-backlink">Arguments</a><a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">x</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The point at which to evaluate the pdf.</p>
-<p><code class="docutils literal notranslate"><span class="pre">shape</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The shape parameter \(k\).
+<p><code class="docutils literal notranslate"><span class="pre">shape</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The shape parameter <span class="math notranslate nohighlight">\(k\)</span>.
 If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive.</p>
-<p><code class="docutils literal notranslate"><span class="pre">rate</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The rate parameter \(\lambda\).
+<p><code class="docutils literal notranslate"><span class="pre">rate</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The rate parameter <span class="math notranslate nohighlight">\(\lambda\)</span>.
 If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive.</p>
 <p><code class="docutils literal notranslate"><span class="pre">loc</span></code>: optional argument has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The location (shift) parameter with default value 0.0.</p>
 <p>All arguments must have the same type.</p>
 </section>
 <section id="id8">
-<h3><a class="toc-backref" href="#id34" role="doc-backlink">Return value</a><a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<span id="return-value-1"></span><h3><a class="toc-backref" href="#id34" role="doc-backlink">Return value</a><a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <p>The result is a scalar or an array, with a shape conformable to the arguments, and the same type as the input arguments. If <code class="docutils literal notranslate"><span class="pre">shape</span></code> or <code class="docutils literal notranslate"><span class="pre">rate</span></code> is non-positive, the result is <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
 </section>
 <section id="id9">
-<h3><a class="toc-backref" href="#id35" role="doc-backlink">Example</a><a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<span id="example-1"></span><h3><a class="toc-backref" href="#id35" role="doc-backlink">Example</a><a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">program </span><span class="n">example_gamma_pdf</span>
 <span class="w">  </span><span class="k">use </span><span class="n">stdlib_stats</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="nb">random_seed</span>
 <span class="nb">  </span><span class="k">use </span><span class="n">stdlib_stats</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">rgamma</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">rvs_gamma</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
@@ -677,46 +677,46 @@ If <code class="docutils literal notranslate"><span class="pre">rate</span></cod
 </section>
 </section>
 <section id="cdf-gamma-gamma-distribution-cumulative-distribution-function">
-<h2><a class="toc-backref" href="#id36" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">cdf_gamma</span></code> - gamma distribution cumulative distribution function</a><a class="headerlink" href="#cdf-gamma-gamma-distribution-cumulative-distribution-function" title="Link to this heading">#</a></h2>
+<span id="cdf_gamma---gamma-distribution-cumulative-distribution-function"></span><h2><a class="toc-backref" href="#id36" role="doc-backlink"><code class="docutils literal notranslate"><span class="pre">cdf_gamma</span></code> - gamma distribution cumulative distribution function</a><a class="headerlink" href="#cdf-gamma-gamma-distribution-cumulative-distribution-function" title="Link to this heading">#</a></h2>
 <section id="id10">
-<h3><a class="toc-backref" href="#id37" role="doc-backlink">Status</a><a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
+<span id="status-2"></span><h3><a class="toc-backref" href="#id37" role="doc-backlink">Status</a><a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
 <p>Experimental</p>
 </section>
 <section id="id11">
-<h3><a class="toc-backref" href="#id38" role="doc-backlink">Description</a><a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
+<span id="description-2"></span><h3><a class="toc-backref" href="#id38" role="doc-backlink">Description</a><a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
 <p>Cumulative distribution function (cdf) of the single real variable gamma distribution:</p>
 <div class="math notranslate nohighlight">
 \[ F(x)= \frac{\gamma (k, \lambda x)}{\Gamma (k)},\quad x&gt;0,\ k&gt;0,\ \lambda&gt;0 \]</div>
-<p>where \(\gamma(k, z)\) is the lower incomplete gamma function, and \(\Gamma(k)\) is the gamma function. This is often referred to as the regularized gamma P function.</p>
+<p>where <span class="math notranslate nohighlight">\(\gamma(k, z)\)</span> is the lower incomplete gamma function, and <span class="math notranslate nohighlight">\(\Gamma(k)\)</span> is the gamma function. This is often referred to as the regularized gamma P function.</p>
 <p>An optional <code class="docutils literal notranslate"><span class="pre">loc</span></code> parameter specifies the location (shift) of the distribution.</p>
-<p>For a complex variable \(z=(x + y i)\) with independent real \(x\) and imaginary \(y\) parts, the joint cumulative distribution function is the product of the corresponding real and imaginary marginal cdfs:<a class="footnote-reference brackets" href="#id19" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
+<p>For a complex variable <span class="math notranslate nohighlight">\(z=(x + y i)\)</span> with independent real <span class="math notranslate nohighlight">\(x\)</span> and imaginary <span class="math notranslate nohighlight">\(y\)</span> parts, the joint cumulative distribution function is the product of the corresponding real and imaginary marginal cdfs:<a class="footnote-reference brackets" href="#id19" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
 <div class="math notranslate nohighlight">
 \[F(x+\mathit{i}y)=F(x)F(y)\]</div>
 </section>
 <section id="id13">
-<h3><a class="toc-backref" href="#id39" role="doc-backlink">Syntax</a><a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
+<span id="syntax-2"></span><h3><a class="toc-backref" href="#id39" role="doc-backlink">Syntax</a><a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> </code>cdf_gamma<code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">shape,</span> <span class="pre">rate</span> </code>, loc<code class="docutils literal notranslate"><span class="pre">)</span></code></p>
 </section>
 <section id="id14">
-<h3><a class="toc-backref" href="#id40" role="doc-backlink">Class</a><a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
+<span id="class-2"></span><h3><a class="toc-backref" href="#id40" role="doc-backlink">Class</a><a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
 <p>Impure elemental function</p>
 </section>
 <section id="id15">
-<h3><a class="toc-backref" href="#id41" role="doc-backlink">Arguments</a><a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
+<span id="arguments-2"></span><h3><a class="toc-backref" href="#id41" role="doc-backlink">Arguments</a><a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">x</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The point at which to evaluate the cdf.</p>
-<p><code class="docutils literal notranslate"><span class="pre">shape</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The shape parameter (k).
+<p><code class="docutils literal notranslate"><span class="pre">shape</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The shape parameter <span class="math notranslate nohighlight">\(k\)</span>.
 If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">shape</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive.</p>
-<p><code class="docutils literal notranslate"><span class="pre">rate</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The rate parameter (\lambda).
+<p><code class="docutils literal notranslate"><span class="pre">rate</span></code>: has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The rate parameter <span class="math notranslate nohighlight">\(\lambda\)</span>.
 If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">real</span></code>, its value must be positive. If <code class="docutils literal notranslate"><span class="pre">rate</span></code> is <code class="docutils literal notranslate"><span class="pre">complex</span></code>, both the real and imaginary components must be positive.</p>
 <p><code class="docutils literal notranslate"><span class="pre">loc</span></code>: optional argument has <code class="docutils literal notranslate"><span class="pre">intent(in)</span></code> and is a scalar of type <code class="docutils literal notranslate"><span class="pre">real</span></code> or <code class="docutils literal notranslate"><span class="pre">complex</span></code>. The location (shift) parameter with default value 0.0.</p>
 <p>All arguments must have the same type.</p>
 </section>
 <section id="id16">
-<h3><a class="toc-backref" href="#id42" role="doc-backlink">Return value</a><a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
+<span id="return-value-2"></span><h3><a class="toc-backref" href="#id42" role="doc-backlink">Return value</a><a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
 <p>The result is a scalar or an array, with a shape conformable to the arguments, and the same type as the input arguments. If <code class="docutils literal notranslate"><span class="pre">shape</span></code> or <code class="docutils literal notranslate"><span class="pre">rate</span></code> is non-positive, the result is <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
 </section>
 <section id="id17">
-<h3><a class="toc-backref" href="#id43" role="doc-backlink">Example</a><a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
+<span id="example-2"></span><h3><a class="toc-backref" href="#id43" role="doc-backlink">Example</a><a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
 <div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span><span class="k">program </span><span class="n">example_gamma_cdf</span>
 <span class="w">  </span><span class="k">use </span><span class="n">stdlib_stats</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="nb">random_seed</span>
 <span class="nb">  </span><span class="k">use </span><span class="n">stdlib_stats</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">rgamma</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">rvs_gamma</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
